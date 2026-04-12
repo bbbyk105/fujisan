@@ -6,6 +6,16 @@ import { use, useEffect, useRef, useState } from "react";
 import { bushidoDesigns } from "@/data/bushido-data";
 import { notFound } from "next/navigation";
 
+function useScrollY() {
+  const [y, setY] = useState(0);
+  useEffect(() => {
+    const h = () => setY(window.scrollY);
+    window.addEventListener("scroll", h, { passive: true });
+    return () => window.removeEventListener("scroll", h);
+  }, []);
+  return y;
+}
+
 export default function BushidoDetailPage({
   params,
 }: {
@@ -13,254 +23,278 @@ export default function BushidoDetailPage({
 }) {
   const { slug } = use(params);
   const design = bushidoDesigns.find((d) => d.slug === slug);
-  const sectionRef = useRef<HTMLElement>(null);
+  const mainRef = useRef<HTMLElement>(null);
   const [loaded, setLoaded] = useState(false);
+  const scrollY = useScrollY();
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoaded(true), 100);
-    return () => clearTimeout(timer);
+    const t = setTimeout(() => setLoaded(true), 80);
+    return () => clearTimeout(t);
   }, []);
 
   useEffect(() => {
-    const el = sectionRef.current;
+    const el = mainRef.current;
     if (!el) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("visible");
-            observer.unobserve(entry.target);
+    const obs = new IntersectionObserver(
+      (entries) =>
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add("visible");
+            obs.unobserve(e.target);
           }
-        });
-      },
+        }),
       { threshold: 0.08 }
     );
-    el.querySelectorAll(".reveal").forEach((child) => observer.observe(child));
-    return () => observer.disconnect();
+    el.querySelectorAll(".reveal").forEach((c) => obs.observe(c));
+    return () => obs.disconnect();
   }, []);
 
-  if (!design) {
-    notFound();
-  }
+  if (!design) notFound();
 
-  const currentIndex = bushidoDesigns.findIndex((d) => d.slug === slug);
-  const prevDesign =
-    bushidoDesigns[
-      (currentIndex - 1 + bushidoDesigns.length) % bushidoDesigns.length
-    ];
-  const nextDesign =
-    bushidoDesigns[(currentIndex + 1) % bushidoDesigns.length];
+  const idx = bushidoDesigns.findIndex((d) => d.slug === slug);
+  const prev = bushidoDesigns[(idx - 1 + bushidoDesigns.length) % bushidoDesigns.length];
+  const next = bushidoDesigns[(idx + 1) % bushidoDesigns.length];
+
+  // Parallax values
+  const heroParallax = scrollY * 0.3;
+  const heroScale = 1.15 + scrollY * 0.0003;
+  const heroOpacity = Math.max(0, 1 - scrollY / 700);
 
   return (
-    <main ref={sectionRef} className="bg-ink min-h-screen">
-      {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-12 py-5 bg-ink/80 backdrop-blur-[16px] border-b border-gold/8">
+    <main ref={mainRef} className="bg-ink min-h-screen">
+      {/* Nav — disappears on scroll, very minimal */}
+      <nav
+        className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-10 py-5 transition-all duration-700 ${
+          scrollY > 100
+            ? "bg-ink/90 backdrop-blur-[16px] border-b border-gold/6"
+            : "bg-transparent"
+        }`}
+      >
         <Link
           href="/#bushido"
-          className="font-serif text-xs tracking-[5px] uppercase text-gold no-underline hover:text-gold-lt transition-colors"
+          className="font-serif text-[11px] tracking-[5px] uppercase text-gold/70 no-underline hover:text-gold transition-colors"
         >
           Amachi Hoshisora
         </Link>
         <div className="flex gap-8 items-center">
           <Link
-            href={`/bushido/${prevDesign.slug}`}
-            className="text-[10px] tracking-[3px] uppercase text-off-white/40 no-underline hover:text-gold transition-colors"
+            href={`/bushido/${prev.slug}`}
+            className="text-[9px] tracking-[3px] uppercase text-off-white/30 no-underline hover:text-gold transition-colors"
           >
-            ← {prevDesign.letter}
+            ← {prev.letter}
           </Link>
-          <span className="text-[10px] tracking-[3px] uppercase text-gold/80">
-            Design {design.letter}
+          <span className="text-[9px] tracking-[3px] uppercase text-gold/50">
+            {design.letter}
           </span>
           <Link
-            href={`/bushido/${nextDesign.slug}`}
-            className="text-[10px] tracking-[3px] uppercase text-off-white/40 no-underline hover:text-gold transition-colors"
+            href={`/bushido/${next.slug}`}
+            className="text-[9px] tracking-[3px] uppercase text-off-white/30 no-underline hover:text-gold transition-colors"
           >
-            {nextDesign.letter} →
+            {next.letter} →
           </Link>
         </div>
       </nav>
 
-      {/* ===== HERO — Opus One style cinematic bottle reveal ===== */}
-      <section className="relative min-h-screen flex items-center overflow-hidden">
-        {/* Pitch black base with subtle radial spotlight */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_35%_55%,rgba(30,26,20,1)_0%,rgba(14,12,10,1)_70%)]" />
-
-        {/* Background kanji — very subtle */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
-          <span className="font-jp text-[clamp(220px,42vw,550px)] font-extralight text-off-white kanji-breathe">
-            {design.virtueJp}
-          </span>
+      {/* ============================================================
+          SECTION 1 — Full-bleed hero with scene image + parallax
+          ============================================================ */}
+      <section className="relative h-screen overflow-hidden">
+        {/* Background scene — parallax zoom */}
+        <div
+          className="absolute inset-[-15%] transition-none"
+          style={{
+            transform: `scale(${heroScale}) translateY(${-heroParallax}px)`,
+          }}
+        >
+          <Image
+            src={design.imageScene}
+            alt={`${design.name} atmosphere`}
+            fill
+            priority
+            className="object-cover brightness-[0.3] saturate-[0.7]"
+            sizes="130vw"
+          />
         </div>
 
-        {/* Content grid */}
-        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-0 w-full min-h-screen">
+        {/* Vignette */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_55%_at_50%_40%,transparent_0%,rgba(14,12,10,0.65)_100%)]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-ink/50 via-transparent to-ink" />
 
-          {/* LEFT — Cinematic bottle presentation */}
-          <div className="relative flex items-center justify-center min-h-[80vh] lg:min-h-screen max-lg:order-1">
+        {/* Hero text — fades out on scroll */}
+        <div
+          className="relative z-10 flex flex-col items-center justify-center h-full text-center px-8"
+          style={{ opacity: heroOpacity, transform: `translateY(${scrollY * 0.15}px)` }}
+        >
+          <p className={`text-[9px] tracking-[8px] uppercase text-gold/40 mb-8 transition-all duration-[1.5s] ${
+            loaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+          }`}>
+            Design {design.letter} · The Bushido Edition
+          </p>
 
-            {/* Spotlight cone from above */}
-            <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-[45%] h-[70%] transition-opacity duration-[3s] delay-300 ${
-              loaded ? "opacity-100" : "opacity-0"
-            }`}>
-              <div className="w-full h-full bg-[conic-gradient(from_180deg,transparent_35%,rgba(201,168,76,0.04)_45%,rgba(248,245,238,0.06)_50%,rgba(201,168,76,0.04)_55%,transparent_65%)]" />
-            </div>
+          <h1 className={`font-serif text-[clamp(48px,9vw,120px)] font-light leading-[0.95] tracking-[-0.03em] mb-5 transition-all duration-[2s] delay-200 ${
+            loaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+          }`}>
+            {design.name.replace("\n", " ")}
+          </h1>
 
-            {/* Floor reflection pool */}
-            <div className={`absolute bottom-[8%] left-1/2 -translate-x-1/2 w-[55%] h-[18%] rounded-full transition-all duration-[2.5s] delay-700 ${
-              loaded ? "opacity-100 scale-x-100" : "opacity-0 scale-x-50"
-            }`}>
-              <div className="w-full h-full bg-[radial-gradient(ellipse,rgba(201,168,76,0.10)_0%,rgba(201,168,76,0.04)_40%,transparent_70%)] blur-[8px]" />
-            </div>
+          <div className={`w-[40px] h-px bg-gold/30 mb-6 transition-all duration-[1.5s] delay-500 ${
+            loaded ? "opacity-100 scale-x-100" : "opacity-0 scale-x-0"
+          }`} />
 
-            {/* The bottle — emerges from darkness */}
-            <div className={`opus-float relative transition-all ease-[cubic-bezier(0.16,1,0.3,1)] ${
-              loaded
-                ? "opacity-100 translate-y-0 scale-100 duration-[2s] delay-200"
-                : "opacity-0 translate-y-16 scale-[0.92] duration-[0s]"
-            }`}
-              style={{ width: "clamp(280px,48vw,520px)", aspectRatio: "3/5" }}
-            >
-              <Image
-                src={design.image}
-                alt={design.name}
-                fill
-                priority
-                className="object-contain opus-shadow"
-                sizes="(max-width: 1024px) 85vw, 48vw"
-              />
-            </div>
-
-            {/* Warm rim light — left edge */}
-            <div className={`absolute left-[15%] top-[20%] w-[1px] h-[40%] bg-gradient-to-b from-transparent via-gold/15 to-transparent transition-opacity duration-[3s] delay-1000 ${
-              loaded ? "opacity-100" : "opacity-0"
-            }`} />
-
-            {/* Cool rim light — right edge */}
-            <div className={`absolute right-[18%] top-[25%] w-[1px] h-[35%] bg-gradient-to-b from-transparent via-off-white/8 to-transparent transition-opacity duration-[3s] delay-1200 ${
-              loaded ? "opacity-100" : "opacity-0"
-            }`} />
-
-            {/* Bottom info — fades in late */}
-            <div className={`absolute bottom-6 left-1/2 -translate-x-1/2 text-center transition-all duration-[1.5s] delay-[2s] ${
-              loaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-            }`}>
-              <p className="text-[9px] tracking-[5px] uppercase text-gold/40">
-                {design.bottle} · {design.capSeal} Seal
-              </p>
-            </div>
-          </div>
-
-          {/* RIGHT — Text content */}
-          <div className="flex flex-col justify-center px-[clamp(40px,6vw,100px)] py-[clamp(60px,5vw,100px)] lg:pr-[clamp(60px,8vw,140px)] max-lg:order-2">
-
-            <div className="reveal">
-              <p className="text-[10px] tracking-[5px] uppercase text-crimson/80 mb-8">
-                The Bushido Edition
-              </p>
-            </div>
-
-            <div className="reveal d1">
-              <p className="text-[10px] tracking-[6px] uppercase text-gold/60 font-normal mb-3">
-                Design {design.letter} · 300ml
-              </p>
-            </div>
-
-            <h1 className="reveal d1 font-serif text-[clamp(40px,5.5vw,80px)] font-light leading-[1.02] mb-5 tracking-[-0.02em]">
-              {design.name.split("\n").map((line, i) => (
-                <span key={i}>
-                  {i === 0 ? line : <><br />{line}</>}
-                </span>
-              ))}
-            </h1>
-
-            <div className="reveal d1 w-[40px] h-px bg-gold/40 mb-8" />
-
-            <p className="reveal d2 font-serif text-[clamp(17px,2.2vw,24px)] italic text-gold-lt/60 mb-10 leading-[1.6]">
-              &ldquo;{design.subtitle}&rdquo;
-            </p>
-
-            <div className="reveal d2 flex items-center gap-5 mb-12">
-              <span className="font-jp text-[clamp(36px,4vw,52px)] font-extralight text-gold/70">
-                {design.virtueJp}
-              </span>
-              <div className="h-10 w-px bg-gold/15" />
-              <div>
-                <p className="text-[9px] tracking-[4px] uppercase text-off-white/30 mb-1">
-                  Bushido Virtue
-                </p>
-                <p className="font-serif text-[clamp(16px,1.8vw,20px)] italic text-off-white/70">
-                  {design.virtue}
-                </p>
-              </div>
-            </div>
-
-            {/* Tasting Note */}
-            <div className="reveal d3 border-t border-gold/10 pt-8 mb-12">
-              <p className="text-[9px] tracking-[4px] uppercase text-gold/40 mb-3">
-                Tasting Notes
-              </p>
-              <p className="font-serif text-[clamp(15px,1.6vw,18px)] italic text-off-white/55 leading-[1.8]">
-                {design.tastingNote}
-              </p>
-            </div>
-
-            {/* Specs row */}
-            <div className="reveal d3 flex gap-10 text-off-white/40">
-              {[
-                ["Volume", "300ml"],
-                ["Cap Seal", design.capSeal],
-                ["Class", "純米大吟醸"],
-              ].map(([label, value]) => (
-                <div key={label}>
-                  <p className="text-[8px] tracking-[3px] uppercase text-off-white/25 mb-1">
-                    {label}
-                  </p>
-                  <p className="font-serif text-[13px] text-off-white/60">{value}</p>
-                </div>
-              ))}
-            </div>
-          </div>
+          <p className={`font-serif text-[clamp(16px,2.5vw,24px)] italic text-gold-lt/50 transition-all duration-[2s] delay-700 ${
+            loaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+          }`}>
+            &ldquo;{design.subtitle}&rdquo;
+          </p>
         </div>
 
         {/* Scroll indicator */}
-        <div className={`absolute bottom-8 left-1/2 -translate-x-1/2 lg:left-[25%] flex flex-col items-center gap-2 transition-all duration-[1.5s] delay-[2.5s] ${
+        <div className={`absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 transition-all duration-[1.5s] delay-[2s] ${
           loaded ? "opacity-100" : "opacity-0"
         }`}>
-          <div className="w-px h-8 bg-gradient-to-b from-transparent to-gold/30 animate-scroll-pulse" />
+          <div className="w-px h-10 bg-gradient-to-b from-off-white/20 to-transparent animate-scroll-pulse" />
         </div>
       </section>
 
-      {/* ===== STORY ===== */}
+      {/* ============================================================
+          SECTION 2 — Split: Bottle emerges from darkness + Specs
+          ============================================================ */}
+      <section className="relative grid grid-cols-1 lg:grid-cols-2 min-h-screen">
+        {/* LEFT — Bottle on pitch black */}
+        <div className="relative bg-ink flex items-center justify-center min-h-[80vh] lg:min-h-screen overflow-hidden">
+          {/* Spotlight cone */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[50%] h-[65%] bg-[conic-gradient(from_180deg,transparent_36%,rgba(248,245,238,0.04)_48%,rgba(201,168,76,0.025)_50%,rgba(248,245,238,0.04)_52%,transparent_64%)]" />
+
+          {/* Kanji background */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
+            <span className="font-jp text-[clamp(200px,35vw,420px)] font-extralight text-off-white kanji-breathe">
+              {design.virtueJp}
+            </span>
+          </div>
+
+          {/* Bottle */}
+          <div className="reveal opus-float relative z-10" style={{ width: "clamp(260px, 42vw, 440px)", aspectRatio: "3/5" }}>
+            <Image
+              src={design.image}
+              alt={design.name}
+              fill
+              className="object-contain opus-shadow"
+              sizes="(max-width: 1024px) 80vw, 42vw"
+            />
+          </div>
+
+          {/* Floor glow */}
+          <div className="absolute bottom-[6%] left-1/2 -translate-x-1/2 w-[50%] h-[14%] bg-[radial-gradient(ellipse,rgba(201,168,76,0.07)_0%,transparent_70%)] blur-[10px] bottle-glow" />
+
+          {/* Rim lights */}
+          <div className="absolute left-[16%] top-[22%] w-px h-[36%] bg-gradient-to-b from-transparent via-gold/10 to-transparent" />
+          <div className="absolute right-[18%] top-[28%] w-px h-[30%] bg-gradient-to-b from-transparent via-off-white/6 to-transparent" />
+        </div>
+
+        {/* RIGHT — Details on dark */}
+        <div className="bg-ink2 flex flex-col justify-center px-[clamp(40px,6vw,100px)] py-[clamp(60px,6vw,100px)] lg:pr-[clamp(60px,8vw,140px)] border-l border-gold/6">
+          <div className="reveal">
+            <p className="text-[9px] tracking-[6px] uppercase text-gold/40 mb-3">
+              Design {design.letter}
+            </p>
+            <p className="text-[9px] tracking-[5px] uppercase text-off-white/25 mb-8">
+              300ml · {design.bottle}
+            </p>
+          </div>
+
+          <h2 className="reveal d1 font-serif text-[clamp(36px,5vw,64px)] font-light leading-[1.02] tracking-[-0.02em] mb-3">
+            {design.name.replace("\n", " ")}
+          </h2>
+
+          <div className="reveal d1 w-[32px] h-px bg-gold/25 my-7" />
+
+          <p className="reveal d2 font-serif text-[clamp(16px,2vw,22px)] italic text-gold-lt/50 mb-10 leading-[1.7]">
+            &ldquo;{design.subtitle}&rdquo;
+          </p>
+
+          <div className="reveal d2 flex items-center gap-5 mb-12">
+            <span className="font-jp text-[clamp(40px,5vw,56px)] font-extralight text-gold/50">
+              {design.virtueJp}
+            </span>
+            <div className="h-12 w-px bg-gold/10" />
+            <div>
+              <p className="text-[8px] tracking-[4px] uppercase text-off-white/25 mb-1">
+                Bushido Virtue
+              </p>
+              <p className="font-serif text-[clamp(17px,2vw,22px)] italic text-off-white/60">
+                {design.virtue}
+              </p>
+            </div>
+          </div>
+
+          {/* Tasting */}
+          <div className="reveal d3 border-t border-gold/8 pt-8 mb-10">
+            <p className="text-[8px] tracking-[4px] uppercase text-gold/30 mb-3">Tasting Notes</p>
+            <p className="font-serif text-[clamp(14px,1.5vw,17px)] italic text-off-white/45 leading-[1.9]">
+              {design.tastingNote}
+            </p>
+          </div>
+
+          {/* Specs */}
+          <div className="reveal d3 flex gap-10">
+            {[
+              ["Volume", "300ml"],
+              ["Cap Seal", design.capSeal],
+              ["Class", "純米大吟醸"],
+            ].map(([k, v]) => (
+              <div key={k}>
+                <p className="text-[7px] tracking-[3px] uppercase text-off-white/20 mb-1">{k}</p>
+                <p className="font-serif text-[12px] text-off-white/50">{v}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================
+          SECTION 3 — Full-bleed scene image with text overlay
+          ============================================================ */}
+      <section className="relative h-[70vh] lg:h-screen overflow-hidden">
+        <div className="absolute inset-[-10%]">
+          <Image
+            src={design.imageBg}
+            alt={`${design.name} label detail`}
+            fill
+            className="object-cover brightness-[0.25] saturate-[0.6]"
+            sizes="120vw"
+          />
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-ink via-transparent to-ink" />
+
+        <div className="relative z-10 flex flex-col justify-center items-center h-full text-center px-[clamp(32px,8vw,120px)]">
+          <p className="reveal text-[9px] tracking-[6px] uppercase text-gold/40 mb-6">The Story</p>
+          <div className="reveal d1 w-[32px] h-px bg-gold/25 mb-10" />
+          <p className="reveal d1 font-serif text-[clamp(18px,2.5vw,28px)] font-light leading-[2] text-off-white/55 max-w-[680px] italic">
+            {design.descriptionEn[0]}
+          </p>
+        </div>
+      </section>
+
+      {/* ============================================================
+          SECTION 4 — Story bilingual
+          ============================================================ */}
       <section className="border-t border-gold/6">
         <div className="max-w-[1100px] mx-auto px-[clamp(32px,5vw,80px)] py-[clamp(80px,10vw,140px)]">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-[clamp(48px,7vw,120px)]">
-            {/* English */}
             <div>
-              <p className="reveal text-[9px] tracking-[5px] uppercase text-gold/50 font-normal mb-6">
-                The Story
-              </p>
-              <div className="reveal d1 w-[32px] h-px bg-gold/30 mb-10" />
-              {design.descriptionEn.map((p, i) => (
-                <p
-                  key={i}
-                  className={`reveal ${i > 0 ? "d1" : ""} text-[clamp(15px,1.7vw,17px)] leading-[2.1] text-off-white/55 mb-7 font-serif`}
-                >
+              <p className="reveal text-[8px] tracking-[5px] uppercase text-gold/40 mb-6">The Story</p>
+              <div className="reveal d1 w-[24px] h-px bg-gold/20 mb-10" />
+              {design.descriptionEn.slice(1).map((p, i) => (
+                <p key={i} className={`reveal ${i > 0 ? "d1" : ""} text-[clamp(14px,1.6vw,16px)] leading-[2.1] text-off-white/50 mb-7 font-serif`}>
                   {p}
                 </p>
               ))}
             </div>
-
-            {/* Japanese */}
-            <div className="lg:border-l lg:border-gold/8 lg:pl-[clamp(36px,5vw,72px)]">
-              <p className="reveal text-[9px] tracking-[5px] uppercase text-gold/50 font-normal mb-6 font-jp">
-                物語
-              </p>
-              <div className="reveal d1 w-[32px] h-px bg-gold/30 mb-10" />
+            <div className="lg:border-l lg:border-gold/6 lg:pl-[clamp(36px,5vw,72px)]">
+              <p className="reveal text-[8px] tracking-[5px] uppercase text-gold/40 mb-6 font-jp">物語</p>
+              <div className="reveal d1 w-[24px] h-px bg-gold/20 mb-10" />
               {design.descriptionJp.map((p, i) => (
-                <p
-                  key={i}
-                  className={`reveal ${i > 0 ? "d1" : ""} text-[clamp(14px,1.5vw,16px)] leading-[2.3] text-off-white/45 mb-7 font-jp font-extralight`}
-                >
+                <p key={i} className={`reveal ${i > 0 ? "d1" : ""} text-[clamp(13px,1.4vw,15px)] leading-[2.3] text-off-white/40 mb-7 font-jp font-extralight`}>
                   {p}
                 </p>
               ))}
@@ -269,10 +303,12 @@ export default function BushidoDetailPage({
         </div>
       </section>
 
-      {/* ===== COLLECTION NAV ===== */}
-      <section className="border-t border-gold/6">
+      {/* ============================================================
+          SECTION 5 — Collection strip
+          ============================================================ */}
+      <section className="border-t border-gold/6 bg-ink2">
         <div className="max-w-[1240px] mx-auto px-[clamp(24px,5vw,60px)] py-[clamp(56px,7vw,90px)]">
-          <p className="reveal text-[9px] tracking-[5px] uppercase text-gold/40 font-normal mb-10 text-center">
+          <p className="reveal text-[8px] tracking-[6px] uppercase text-gold/30 mb-10 text-center">
             Explore the Collection
           </p>
           <div className="grid grid-cols-4 sm:grid-cols-7 gap-5">
@@ -280,10 +316,8 @@ export default function BushidoDetailPage({
               <Link
                 href={`/bushido/${d.slug}`}
                 key={d.letter}
-                className={`reveal group no-underline block transition-all duration-500 ${
-                  d.slug === slug
-                    ? "opacity-100"
-                    : "opacity-40 hover:opacity-90"
+                className={`reveal group no-underline block transition-all duration-700 ${
+                  d.slug === slug ? "opacity-100" : "opacity-30 hover:opacity-90"
                 }`}
               >
                 <div className="relative aspect-[3/5] overflow-hidden mb-2">
@@ -293,23 +327,19 @@ export default function BushidoDetailPage({
                     fill
                     className={`object-contain transition-all duration-700 ${
                       d.slug === slug
-                        ? "scale-100 opus-shadow"
-                        : "scale-[0.8] group-hover:scale-[0.95]"
+                        ? "scale-[0.95] opus-shadow"
+                        : "scale-[0.75] group-hover:scale-[0.9]"
                     }`}
-                    sizes="120px"
+                    sizes="100px"
                   />
                   {d.slug === slug && (
-                    <div className="absolute bottom-0 left-1/4 right-1/4 h-px bg-gold/50" />
+                    <div className="absolute bottom-0 left-1/4 right-1/4 h-px bg-gold/40" />
                   )}
                 </div>
-                <p
-                  className={`text-[7px] tracking-[2px] uppercase text-center ${
-                    d.slug === slug
-                      ? "text-gold/70"
-                      : "text-off-white/25 group-hover:text-off-white/50"
-                  } transition-colors duration-500`}
-                >
-                  {d.letter} · {d.name.replace("\n", " ")}
+                <p className={`text-[7px] tracking-[2px] uppercase text-center transition-colors duration-500 ${
+                  d.slug === slug ? "text-gold/60" : "text-off-white/20 group-hover:text-off-white/50"
+                }`}>
+                  {d.letter}
                 </p>
               </Link>
             ))}
@@ -317,49 +347,57 @@ export default function BushidoDetailPage({
         </div>
       </section>
 
-      {/* ===== PREV / NEXT ===== */}
+      {/* ============================================================
+          SECTION 6 — Prev / Next — Dom Perignon editorial style
+          ============================================================ */}
       <section className="border-t border-gold/6">
-        <div className="grid grid-cols-2">
-          <Link
-            href={`/bushido/${prevDesign.slug}`}
-            className="group no-underline relative overflow-hidden py-20 px-[clamp(32px,5vw,72px)] border-r border-gold/6 hover:bg-ink3/30 transition-colors duration-700"
-          >
-            <p className="text-[9px] tracking-[3px] uppercase text-off-white/25 mb-3">
-              ← Previous
-            </p>
-            <p className="font-serif text-[clamp(22px,3.5vw,36px)] font-light text-off-white/50 group-hover:text-gold/80 transition-colors duration-500">
-              {prevDesign.name.replace("\n", " ")}
-            </p>
-            <p className="text-[11px] text-off-white/20 mt-2 font-jp">
-              Design {prevDesign.letter} · {prevDesign.virtueJp}
-            </p>
-          </Link>
-          <Link
-            href={`/bushido/${nextDesign.slug}`}
-            className="group no-underline relative overflow-hidden py-20 px-[clamp(32px,5vw,72px)] text-right hover:bg-ink3/30 transition-colors duration-700"
-          >
-            <p className="text-[9px] tracking-[3px] uppercase text-off-white/25 mb-3">
-              Next →
-            </p>
-            <p className="font-serif text-[clamp(22px,3.5vw,36px)] font-light text-off-white/50 group-hover:text-gold/80 transition-colors duration-500">
-              {nextDesign.name.replace("\n", " ")}
-            </p>
-            <p className="text-[11px] text-off-white/20 mt-2 font-jp">
-              Design {nextDesign.letter} · {nextDesign.virtueJp}
-            </p>
-          </Link>
+        <div className="grid grid-cols-1 md:grid-cols-2">
+          {[
+            { d: prev, label: "Previous", dir: "←" },
+            { d: next, label: "Next", dir: "→" },
+          ].map(({ d, label, dir }) => (
+            <Link
+              key={d.slug}
+              href={`/bushido/${d.slug}`}
+              className="group no-underline relative overflow-hidden h-[40vh] md:h-[50vh] flex items-center justify-center border-b md:border-b-0 md:even:border-l border-gold/6"
+            >
+              {/* Background scene on hover */}
+              <div className="absolute inset-0">
+                <Image
+                  src={d.imageScene}
+                  alt={d.name}
+                  fill
+                  className="object-cover brightness-[0.12] group-hover:brightness-[0.25] saturate-[0.5] transition-all duration-1000 scale-110 group-hover:scale-100"
+                  sizes="50vw"
+                />
+              </div>
+              <div className="absolute inset-0 bg-ink/60 group-hover:bg-ink/30 transition-all duration-700" />
+
+              <div className="relative z-10 text-center">
+                <p className="text-[8px] tracking-[4px] uppercase text-off-white/20 mb-3">
+                  {dir} {label}
+                </p>
+                <p className="font-serif text-[clamp(24px,4vw,40px)] font-light text-off-white/40 group-hover:text-off-white/80 transition-colors duration-500">
+                  {d.name.replace("\n", " ")}
+                </p>
+                <p className="text-[10px] text-off-white/15 mt-2 font-jp group-hover:text-gold/40 transition-colors duration-500">
+                  Design {d.letter} · {d.virtueJp}
+                </p>
+              </div>
+            </Link>
+          ))}
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gold/6 py-12 text-center">
+      <footer className="border-t border-gold/4 py-14 text-center bg-ink">
         <Link
           href="/#bushido"
-          className="text-[9px] tracking-[4px] uppercase text-off-white/30 no-underline hover:text-gold/60 transition-colors"
+          className="text-[8px] tracking-[5px] uppercase text-off-white/20 no-underline hover:text-gold/50 transition-colors"
         >
-          ← Back to Full Collection
+          ← Back to Collection
         </Link>
-        <p className="text-[9px] text-off-white/15 mt-5 tracking-[3px]">
+        <p className="text-[8px] text-off-white/10 mt-6 tracking-[3px]">
           AMACHI HOSHISORA · Mt. Fuji Sake Project
         </p>
       </footer>

@@ -7,7 +7,9 @@
       "Bash(npx next:*)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/bushido/white-peak)",
-      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/bushido/black-snow)"
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/bushido/black-snow)",
+      "WebFetch(domain:www.domperignon.com)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/bushido/ninja-veil)"
     ]
   }
 }
