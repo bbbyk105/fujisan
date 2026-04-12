@@ -294,7 +294,7 @@ export default function BushidoDetailPage({
               <p className="reveal text-[9px] tracking-[5px] uppercase text-gold/50 mb-6 font-jp">物語</p>
               <div className="reveal d1 w-[24px] h-px bg-gold/25 mb-10" />
               {design.descriptionJp.map((p, i) => (
-                <p key={i} className={`reveal ${i > 0 ? "d1" : ""} text-[clamp(13px,1.4vw,15px)] leading-[2.3] text-off-white/55 mb-7 font-jp font-extralight`}>
+                <p key={i} className={`reveal ${i > 0 ? "d1" : ""} text-[clamp(13px,1.4vw,15px)] leading-[2.3] text-off-white/55 mb-7 font-jp font-extralight whitespace-pre-line`}>
                   {p}
                 </p>
               ))}
