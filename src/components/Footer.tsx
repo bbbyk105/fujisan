@@ -26,10 +26,10 @@ export default function Footer() {
           <p className="font-jp text-xs font-extralight tracking-[4px] text-silver mb-3">
             天地星空　·　Mt. Fuji Sake Project
           </p>
-          <p className="text-[13px] text-off-white/50 mb-5 tracking-[1px]">
+          <p className="text-[14px] text-off-white/55 mb-5 tracking-[1px]">
             By KONDO PHARMACY Co., Ltd.
           </p>
-          <p className="text-sm italic text-off-white/42 leading-[1.7] max-w-[280px]">
+          <p className="text-[15px] italic text-off-white/50 leading-[1.7] max-w-[280px]">
             Born of stars, brewed in silence — a sake of self-mastery and the timeless spirit of Mt. Fuji.
           </p>
         </div>
@@ -42,7 +42,7 @@ export default function Footer() {
           <ul className="list-none space-y-3">
             {collectionLinks.map((link) => (
               <li key={link.label}>
-                <a href={link.href} className="text-sm font-light text-off-white/50 no-underline hover:text-gold transition-colors duration-300">
+                <a href={link.href} className="text-[15px] font-light text-off-white/55 no-underline hover:text-gold transition-colors duration-300">
                   {link.label}
                 </a>
               </li>
@@ -58,7 +58,7 @@ export default function Footer() {
           <ul className="list-none space-y-3">
             {aboutLinks.map((link) => (
               <li key={link.label}>
-                <Link href={link.href} className="text-sm font-light text-off-white/50 no-underline hover:text-gold transition-colors duration-300">
+                <Link href={link.href} className="text-[15px] font-light text-off-white/55 no-underline hover:text-gold transition-colors duration-300">
                   {link.label}
                 </Link>
               </li>
@@ -70,14 +70,14 @@ export default function Footer() {
       {/* Bottom */}
       <div className="max-w-[1240px] mx-auto px-[clamp(24px,5vw,60px)] pt-7 flex justify-between items-center flex-wrap gap-3 max-sm:flex-col max-sm:text-center">
         <div>
-          <p className="text-[11px] text-off-white/35">
+          <p className="text-[12px] text-off-white/40">
             © 2025 Mt. Fuji Sake Project. All rights reserved.
           </p>
-          <p className="text-[11px] text-off-white/25 mt-1">
+          <p className="text-[12px] text-off-white/30 mt-1">
             KONDO PHARMACY Co., Ltd.
           </p>
         </div>
-        <p className="font-jp text-xs font-extralight tracking-[3px] text-off-white/28">
+        <p className="font-jp text-[14px] font-light tracking-[3px] text-off-white/35">
           富士市　静岡県　日本
         </p>
       </div>

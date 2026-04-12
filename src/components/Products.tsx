@@ -60,16 +60,16 @@ function ProductCard({
         className="object-cover brightness-[0.82] contrast-[1.08] transition-all duration-900 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-[1.06] group-hover:brightness-[0.72]"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-ink/92 via-ink/28 to-transparent flex flex-col justify-end p-[clamp(20px,3vw,40px)] transition-all duration-400 group-hover:from-ink/96 group-hover:via-ink/50">
-        <p className="text-[10px] tracking-[4px] uppercase text-gold font-normal mb-2">
+        <p className="text-[12px] tracking-[4px] uppercase text-gold font-normal mb-2">
           {product.edition}
         </p>
-        <h3 className="font-serif text-[clamp(22px,3vw,32px)] font-light leading-[1.1] mb-[6px] whitespace-pre-line">
+        <h3 className="font-serif text-[clamp(24px,3.5vw,36px)] font-light leading-[1.1] mb-[6px] whitespace-pre-line">
           {product.name}
         </h3>
-        <p className="font-jp text-xs font-extralight tracking-[4px] text-off-white/55 mb-4">
+        <p className="font-jp text-[14px] font-light tracking-[4px] text-off-white/60 mb-4">
           {product.nameJp}
         </p>
-        <div className="flex gap-4 flex-wrap text-[10px] tracking-[2px] uppercase text-off-white/45 border-t border-gold/25 pt-4">
+        <div className="flex gap-4 flex-wrap text-[11px] tracking-[2px] uppercase text-off-white/55 border-t border-gold/25 pt-4">
           {product.specs.map((spec) => (
             <span key={spec}>{spec}</span>
           ))}

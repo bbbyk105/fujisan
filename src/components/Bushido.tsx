@@ -88,25 +88,25 @@ export default function Bushido() {
 
         {/* Center content */}
         <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-8">
-          <p className="reveal text-[10px] tracking-[8px] uppercase text-gold/60 mb-6">
+          <p className="reveal text-[13px] tracking-[6px] uppercase text-gold/75 mb-6 font-normal">
             The Bushido Edition
           </p>
-          <h2 className="reveal d1 font-serif text-[clamp(40px,7vw,90px)] font-light leading-[1.0] mb-4 tracking-[-0.02em]">
-            The Spirit of<br />the <em className="italic text-gold-lt/80">Samurai</em>
+          <h2 className="reveal d1 font-serif text-[clamp(44px,7vw,96px)] font-light leading-[1.0] mb-4 tracking-[-0.02em]">
+            The Spirit of<br />the <em className="italic text-gold-lt">Samurai</em>
           </h2>
-          <div className="reveal d1 w-[48px] h-px bg-gold/30 mx-auto mb-6" />
-          <p className="reveal d2 text-[clamp(13px,1.6vw,16px)] leading-[1.9] text-off-white/50 max-w-[560px] font-light">
+          <div className="reveal d1 w-[48px] h-px bg-gold/40 mx-auto mb-6" />
+          <p className="reveal d2 text-[clamp(15px,1.8vw,18px)] leading-[1.9] text-off-white/65 max-w-[580px] font-light">
             Seven distinct expressions of Bushido — each bottle a different warrior archetype,
             a different chapter of Japan&apos;s timeless code of honor.
           </p>
-          <p className="reveal d3 text-[10px] tracking-[5px] uppercase text-gold/40 mt-8">
+          <p className="reveal d3 text-[12px] tracking-[5px] uppercase text-gold/55 mt-8">
             300ml · 7 Designs · 純米大吟醸
           </p>
         </div>
 
         {/* Scroll indicator */}
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3">
-          <p className="text-[8px] tracking-[4px] uppercase text-off-white/25">Scroll</p>
+          <p className="text-[10px] tracking-[4px] uppercase text-off-white/35">Scroll</p>
           <div className="w-px h-10 bg-gradient-to-b from-off-white/20 to-transparent animate-scroll-pulse" />
         </div>
       </div>
@@ -172,10 +172,10 @@ export default function Bushido() {
           <div className={`absolute bottom-8 left-0 right-0 text-center transition-all duration-700 ${
             phase === "crossfade" && hoveredDesign === null ? "opacity-0" : "opacity-100"
           }`}>
-            <p className="text-[9px] tracking-[5px] uppercase text-gold/40">
+            <p className="text-[11px] tracking-[5px] uppercase text-gold/55">
               Design {bushidoDesigns[activeDesign].letter}
             </p>
-            <p className="font-serif text-lg font-light text-off-white/60 mt-1">
+            <p className="font-serif text-xl font-light text-off-white/75 mt-1">
               {bushidoDesigns[activeDesign].name.replace("\n", " ")}
             </p>
           </div>
@@ -183,16 +183,16 @@ export default function Bushido() {
 
         {/* RIGHT — Text + Design grid */}
         <div className="bg-ink2 flex flex-col justify-center px-[clamp(40px,6vw,100px)] py-[clamp(60px,7vw,100px)] border-l border-gold/6">
-          <p className="reveal text-[9px] tracking-[6px] uppercase text-gold/50 mb-6">
+          <p className="reveal text-[12px] tracking-[5px] uppercase text-gold/65 mb-6 font-normal">
             The Collection
           </p>
-          <div className="reveal d1 w-[32px] h-px bg-gold/25 mb-8" />
+          <div className="reveal d1 w-[36px] h-px bg-gold/30 mb-8" />
 
-          <h3 className="reveal d1 font-serif text-[clamp(28px,3.5vw,44px)] font-light leading-[1.1] mb-6">
-            From <em className="italic text-gold-lt/70">White Peak</em><br />to Black Snow
+          <h3 className="reveal d1 font-serif text-[clamp(30px,3.5vw,48px)] font-light leading-[1.1] mb-6">
+            From <em className="italic text-gold-lt/80">White Peak</em><br />to Black Snow
           </h3>
 
-          <p className="reveal d2 text-[clamp(14px,1.6vw,16px)] leading-[1.95] text-off-white/45 max-w-[480px] mb-12">
+          <p className="reveal d2 text-[clamp(15px,1.7vw,18px)] leading-[1.95] text-off-white/60 max-w-[480px] mb-12">
             From the White Peak to the Black Snow, each design encapsulates a virtue.
             Seven warrior archetypes, seven chapters of Japan&apos;s timeless code.
           </p>
@@ -217,10 +217,10 @@ export default function Bushido() {
                   />
                 </div>
                 <div className="text-center">
-                  <p className="text-[8px] tracking-[3px] uppercase text-off-white/25 group-hover:text-gold/70 transition-colors duration-500">
+                  <p className="text-[10px] tracking-[3px] uppercase text-off-white/35 group-hover:text-gold/80 transition-colors duration-500">
                     {d.letter}
                   </p>
-                  <p className="text-[7px] tracking-[1px] uppercase text-off-white/20 group-hover:text-off-white/50 transition-colors duration-500 mt-0.5">
+                  <p className="text-[9px] tracking-[1px] uppercase text-off-white/25 group-hover:text-off-white/60 transition-colors duration-500 mt-0.5">
                     {d.name.replace("\n", " ")}
                   </p>
                 </div>
@@ -228,8 +228,8 @@ export default function Bushido() {
             ))}
             <div className="flex items-center justify-center">
               <div className="text-center">
-                <p className="font-jp text-sm font-extralight text-gold/30">武士道</p>
-                <p className="text-[7px] tracking-[2px] uppercase text-off-white/20 mt-1">Complete</p>
+                <p className="font-jp text-base font-light text-gold/40">武士道</p>
+                <p className="text-[9px] tracking-[2px] uppercase text-off-white/30 mt-1">Complete</p>
               </div>
             </div>
           </div>

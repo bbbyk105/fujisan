@@ -54,7 +54,7 @@ export default function Navbar() {
       >
         <a
           href="#"
-          className="font-serif text-xs tracking-[5px] uppercase text-gold no-underline shrink-0"
+          className="font-serif text-[13px] tracking-[5px] uppercase text-gold no-underline shrink-0"
         >
           Amachi Hoshisora
         </a>
@@ -64,7 +64,7 @@ export default function Navbar() {
             <li key={link.href}>
               <a
                 href={link.href}
-                className="text-[11px] tracking-[3px] uppercase text-off-white/70 no-underline hover:text-gold transition-colors duration-300"
+                className="text-[12px] tracking-[3px] uppercase text-off-white/75 no-underline hover:text-gold transition-colors duration-300"
               >
                 {link.label}
               </a>
