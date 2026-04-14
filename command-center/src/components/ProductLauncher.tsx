@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useStore } from '@/lib/store';
 import type { Product, ProductStatus } from '@/types';
+import { FlowCanvas } from './FlowCanvas';
 
 const iconMap: Record<string, LucideIcon> = {
   wine: Wine,
@@ -57,54 +58,41 @@ function ProductCard({ product, onOpen }: { product: Product; onOpen: () => void
     <button
       onClick={onOpen}
       className="group relative text-left rounded-2xl border border-white/5 bg-white/[0.03]
-                 hover:bg-white/[0.06] hover:border-white/10 transition-all p-5 overflow-hidden
-                 hover:-translate-y-0.5 hover:shadow-2xl"
+                 hover:bg-white/[0.06] hover:border-white/10 transition-all p-4 overflow-hidden"
     >
-      {/* Gradient header */}
-      <div
-        className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${product.gradient}`}
-      />
+      <div className={`absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r ${product.gradient}`} />
 
-      {/* Status pill */}
-      <div className="flex items-start justify-between mb-5">
+      <div className="flex items-start justify-between mb-3">
         <div
-          className={`flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br ${product.gradient} shadow-lg`}
+          className={`flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br ${product.gradient}`}
         >
-          <Icon size={22} className="text-white" />
+          <Icon size={18} className="text-white" />
         </div>
         <span
-          className={`inline-flex items-center gap-1.5 text-[10px] px-2 py-1 rounded-full border ${badge.className}`}
+          className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full border ${badge.className}`}
         >
-          <span className={`w-1.5 h-1.5 rounded-full ${badge.dot} animate-pulse`} />
+          <span className={`w-1 h-1 rounded-full ${badge.dot} animate-pulse`} />
           {badge.label}
         </span>
       </div>
 
-      <h3 className="text-base font-semibold text-ink-100 mb-1 flex items-center gap-1.5">
+      <h3 className="text-sm font-semibold text-ink-100 mb-0.5 flex items-center gap-1">
         {product.name}
         <ArrowUpRight
-          size={14}
+          size={12}
           className="text-ink-500 opacity-0 group-hover:opacity-100 transition-opacity"
         />
       </h3>
-      <p className="text-xs text-ink-400 leading-relaxed mb-4 line-clamp-2 min-h-[2.2em]">
+      <p className="text-[11px] text-ink-400 leading-snug line-clamp-2 min-h-[2.2em]">
         {product.description}
       </p>
 
-      <div className="flex items-center justify-between mt-auto pt-3 border-t border-white/5">
-        {product.stat && (
-          <div className="text-xs">
-            <span className="text-ink-400">{product.stat.label}</span>
-            <span className="ml-2 text-ink-100 font-semibold tabular-nums">
-              {product.stat.value}
-            </span>
-          </div>
-        )}
-        <div className="flex items-center gap-1 text-[11px] text-accent opacity-0 group-hover:opacity-100 transition-opacity">
-          <Play size={10} fill="currentColor" />
-          開く
+      {product.stat && (
+        <div className="flex items-center justify-between mt-3 pt-2 border-t border-white/5 text-[11px]">
+          <span className="text-ink-400">{product.stat.label}</span>
+          <span className="text-ink-100 font-semibold tabular-nums">{product.stat.value}</span>
         </div>
-      </div>
+      )}
     </button>
   );
 }
@@ -113,15 +101,12 @@ function AddProductCard({ onAdd }: { onAdd: () => void }) {
   return (
     <button
       onClick={onAdd}
-      className="group rounded-2xl border-2 border-dashed border-white/10 hover:border-accent/40
-                 hover:bg-accent/5 transition-all p-5 flex flex-col items-center justify-center
-                 min-h-[220px] text-ink-400 hover:text-accent"
+      className="group rounded-2xl border border-dashed border-white/10 hover:border-accent/40
+                 hover:bg-accent/5 transition-all p-4 flex flex-col items-center justify-center
+                 text-ink-400 hover:text-accent"
     >
-      <div className="w-12 h-12 rounded-xl border-2 border-dashed border-current flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-        <Plus size={22} />
-      </div>
-      <div className="text-sm font-semibold">プロダクトを追加</div>
-      <div className="text-xs mt-1 opacity-70">新しいツール・サービス</div>
+      <Plus size={16} className="mb-1" />
+      <div className="text-xs font-semibold">追加</div>
     </button>
   );
 }
@@ -131,10 +116,6 @@ export function ProductLauncher() {
 
   const handleOpen = (p: Product) => {
     setSelectedNode(`product:${p.id}`, 'product', p.id);
-    if (p.url) {
-      // In Electron the main process handles external URLs via shell.openExternal.
-      window.open(p.url, '_blank');
-    }
   };
 
   const handleAdd = () => {
@@ -160,39 +141,45 @@ export function ProductLauncher() {
   return (
     <section className="h-full flex flex-col overflow-hidden">
       {/* Hero header */}
-      <div className="flex-shrink-0 px-6 pt-6 pb-4">
-        <div className="flex items-end justify-between mb-1">
+      <div className="flex-shrink-0 px-6 pt-5 pb-3">
+        <div className="flex items-end justify-between">
           <div>
-            <div className="text-[11px] uppercase tracking-[0.2em] text-accent mb-1">
+            <div className="text-[11px] uppercase tracking-[0.2em] text-accent">
               Command Center
             </div>
-            <h1 className="text-3xl font-bold text-ink-100 tracking-tight">
-              プロダクト ハブ
-            </h1>
-            <p className="text-sm text-ink-400 mt-1">
-              すべてのツールをここから起動・管理
-            </p>
+            <h1 className="text-2xl font-bold text-ink-100 tracking-tight">プロダクト ハブ</h1>
           </div>
           <div className="flex items-center gap-4 text-xs">
             <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-400" />
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               <span className="text-ink-300">稼働 {counts.active}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-accent" />
+              <span className="w-1.5 h-1.5 rounded-full bg-accent" />
               <span className="text-ink-300">開発 {counts.development}</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-sky-400" />
+              <span className="w-1.5 h-1.5 rounded-full bg-sky-400" />
               <span className="text-ink-300">計画 {counts.planned}</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Grid */}
-      <div className="flex-1 overflow-y-auto px-6 pb-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      {/* Flow canvas (hero) */}
+      <div className="flex-shrink-0 mx-6 rounded-2xl border border-white/5 bg-ink-900/40 backdrop-blur-xl relative overflow-hidden" style={{ height: '52%' }}>
+        <FlowCanvas />
+      </div>
+
+      {/* Products grid */}
+      <div className="flex-1 overflow-y-auto px-6 pb-6 pt-4">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-ink-400">
+            全プロダクト
+          </h2>
+          <span className="text-[11px] text-ink-400">{products.length} 件</span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
           {products.map((p) => (
             <ProductCard key={p.id} product={p} onOpen={() => handleOpen(p)} />
           ))}
