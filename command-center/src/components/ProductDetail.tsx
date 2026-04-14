@@ -24,18 +24,18 @@ export function ProductDetail({ productId }: { productId: string }) {
         <div className="relative px-6 py-8">
           <button
             onClick={() => setSelectedNode('home', 'home')}
-            className="btn-ghost mb-4 text-ink-100/80 hover:text-ink-100"
+            className="btn-ghost mb-4 text-ink-300 hover:text-ink-100"
           >
             <ArrowLeft size={14} />
             プロダクト ハブへ戻る
           </button>
           <div className="flex items-start justify-between">
             <div>
-              <div className="text-[11px] uppercase tracking-[0.2em] text-white/70 mb-2">
+              <div className="text-[10px] uppercase tracking-[0.2em] text-ink-300 mb-2">
                 {product.category.toUpperCase()}
               </div>
-              <h1 className="text-3xl font-bold text-white mb-2">{product.name}</h1>
-              <p className="text-white/80 max-w-2xl">{product.description}</p>
+              <h1 className="text-3xl font-bold text-ink-100 mb-2">{product.name}</h1>
+              <p className="text-ink-300 max-w-2xl">{product.description}</p>
             </div>
             <div className="flex gap-2">
               {product.url && (
@@ -49,7 +49,7 @@ export function ProductDetail({ productId }: { productId: string }) {
                   開く
                 </a>
               )}
-              <button className="btn-ghost bg-white/10 text-white hover:bg-white/20">
+              <button className="btn-ghost bg-white/10 text-ink-100 hover:bg-white/20">
                 <Settings size={14} />
                 設定
               </button>
@@ -63,11 +63,11 @@ export function ProductDetail({ productId }: { productId: string }) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="panel p-5">
             <div className="text-xs text-ink-400 mb-1">ステータス</div>
-            <div className="text-lg font-semibold">{product.status}</div>
+            <div className="text-base font-semibold">{product.status}</div>
           </div>
           <div className="panel p-5">
             <div className="text-xs text-ink-400 mb-1">カテゴリ</div>
-            <div className="text-lg font-semibold">{product.category}</div>
+            <div className="text-base font-semibold">{product.category}</div>
           </div>
           {product.stat && (
             <div className="panel p-5">

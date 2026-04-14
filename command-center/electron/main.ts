@@ -1,5 +1,7 @@
 import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import path from 'node:path';
+import { registerClaudeIpc } from './claude-service.js';
+import { startOAuthCallbackServer } from './oauth-server.js';
 
 const isDev = !app.isPackaged;
 
@@ -36,7 +38,11 @@ async function createWindow() {
   });
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(async () => {
+  registerClaudeIpc();
+  await startOAuthCallbackServer();
+  await createWindow();
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();

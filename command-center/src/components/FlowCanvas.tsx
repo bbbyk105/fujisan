@@ -266,7 +266,7 @@ export function FlowCanvas() {
                   y="44"
                   textAnchor="middle"
                   fill="#eaeaee"
-                  fontSize="13"
+                  fontSize="12"
                   fontWeight="500"
                   style={{ pointerEvents: 'none' }}
                 >

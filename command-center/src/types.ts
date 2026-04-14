@@ -60,18 +60,36 @@ export interface Project {
   nextAction?: string;
 }
 
+export interface ChatStreamHandlers {
+  onDelta: (text: string) => void;
+  onDone: (final: {
+    text: string;
+    usage: { input: number; output: number; cacheRead: number; cacheCreate: number };
+  }) => void;
+  onError: (message: string) => void;
+}
+
 declare global {
   interface Window {
     api?: {
       google: {
         getAuthUrl: () => Promise<string>;
         exchangeCode: (code: string) => Promise<{ ok: boolean }>;
+        waitForCallbackCode: () => Promise<string>;
       };
       gmail: {
         list: (opts?: { maxResults?: number }) => Promise<MailMessage[]>;
       };
       calendar: {
         list: (opts?: { timeMin?: string; timeMax?: string }) => Promise<CalendarEvent[]>;
+      };
+      claude: {
+        available: () => Promise<boolean>;
+        chatStream: (
+          requestId: string,
+          messages: { role: 'user' | 'assistant'; content: string }[],
+          handlers: ChatStreamHandlers,
+        ) => () => void;
       };
     };
   }

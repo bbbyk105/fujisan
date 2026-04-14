@@ -31,7 +31,7 @@ const statusBadge: Record<ProductStatus, { label: string; className: string; dot
   active: {
     label: '稼働中',
     className: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20',
-    dot: 'bg-emerald-400',
+    dot: 'bg-emerald-400 animate-pulse',
   },
   development: {
     label: '開発中',
@@ -57,8 +57,8 @@ function ProductCard({ product, onOpen }: { product: Product; onOpen: () => void
   return (
     <button
       onClick={onOpen}
-      className="group relative text-left rounded-2xl border border-white/5 bg-white/[0.03]
-                 hover:bg-white/[0.06] hover:border-white/10 transition-all p-4 overflow-hidden"
+      className="group relative text-left rounded-[10px] border border-white/5 bg-white/[0.03]
+                 hover:bg-white/[0.06] hover:border-white/10 transition-colors duration-150 p-4 overflow-hidden"
     >
       <div className={`absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r ${product.gradient}`} />
 
@@ -66,17 +66,17 @@ function ProductCard({ product, onOpen }: { product: Product; onOpen: () => void
         <div
           className={`flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br ${product.gradient}`}
         >
-          <Icon size={18} className="text-white" />
+          <Icon size={18} className="text-ink-100" />
         </div>
         <span
           className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full border ${badge.className}`}
         >
-          <span className={`w-1 h-1 rounded-full ${badge.dot} animate-pulse`} />
+          <span className={`w-1 h-1 rounded-full ${badge.dot}`} />
           {badge.label}
         </span>
       </div>
 
-      <h3 className="text-sm font-semibold text-ink-100 mb-0.5 flex items-center gap-1">
+      <h3 className="text-sm font-semibold text-ink-100 mb-1 flex items-center gap-1">
         {product.name}
         <ArrowUpRight
           size={12}
@@ -101,8 +101,8 @@ function AddProductCard({ onAdd }: { onAdd: () => void }) {
   return (
     <button
       onClick={onAdd}
-      className="group rounded-2xl border border-dashed border-white/10 hover:border-accent/40
-                 hover:bg-accent/5 transition-all p-4 flex flex-col items-center justify-center
+      className="group rounded-[10px] border border-dashed border-white/10 hover:border-accent/40
+                 hover:bg-accent/5 transition-colors duration-150 p-4 flex flex-col items-center justify-center
                  text-ink-400 hover:text-accent"
     >
       <Plus size={16} className="mb-1" />

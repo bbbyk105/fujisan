@@ -6,6 +6,7 @@ import { ProjectsPanel } from './components/ProjectsPanel';
 import { NewItemMenu } from './components/NewItemMenu';
 import { ProductLauncher } from './components/ProductLauncher';
 import { ProductDetail } from './components/ProductDetail';
+import { AIAssistantPanel } from './components/AIAssistantPanel';
 import { useStore } from './lib/store';
 
 function DashboardView() {
@@ -38,7 +39,8 @@ export default function App() {
         <NewItemMenu />
 
         {view === 'home' && <ProductLauncher />}
-        {view === 'product' && activeProductId && (
+        {view === 'product' && activeProductId === 'ai-assistant' && <AIAssistantPanel />}
+        {view === 'product' && activeProductId && activeProductId !== 'ai-assistant' && (
           <ProductDetail productId={activeProductId} />
         )}
         {(view === 'inbox' || view === 'today') && <DashboardView />}
