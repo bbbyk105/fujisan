@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Fuji Command Center — Preview</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet" />
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        ink: {
+          950:'#0a0a0f',900:'#111118',800:'#1a1a24',700:'#24242f',
+          600:'#33333f',500:'#4a4a55',400:'#7a7a82',300:'#a8a8b0',
+          200:'#d0d0d5',100:'#eaeaee',
+        },
+        accent: { DEFAULT:'#c9a96a', hover:'#dbbe85', muted:'#8a7048' },
+      },
+      fontFamily: { sans: ['Inter','"Noto Sans JP"','system-ui','sans-serif'] },
+    }
+  }
+};
+</script>
+<style>
+  html,body,#root{height:100%;margin:0}
+  body{font-family:'Inter','Noto Sans JP',sans-serif;background:linear-gradient(135deg,#0a0a0f 0%,#111118 50%,#0a0a0f 100%);color:#eaeaee;overflow:hidden}
+  .panel{border-radius:1rem;border:1px solid rgba(255,255,255,.05);background:rgba(26,26,36,.72);backdrop-filter:blur(24px);box-shadow:0 25px 50px -12px rgba(0,0,0,.5)}
+  .panel-header{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1.25rem;border-bottom:1px solid rgba(255,255,255,.05)}
+  .tree-item{display:flex;align-items:center;gap:.5rem;padding:.375rem .5rem;border-radius:.375rem;font-size:.875rem;color:#a8a8b0;cursor:pointer;transition:all .15s}
+  .tree-item:hover{background:rgba(255,255,255,.05);color:#eaeaee}
+  .tree-item.active{background:rgba(201,169,106,.1);color:#c9a96a}
+  .btn-primary{display:inline-flex;align-items:center;gap:.5rem;background:#c9a96a;color:#0a0a0f;padding:.375rem .75rem;border-radius:.5rem;font-size:.875rem;font-weight:500;cursor:pointer;border:none;transition:.15s}
+  .btn-primary:hover{background:#dbbe85}
+  .btn-ghost{display:inline-flex;align-items:center;padding:.375rem .5rem;color:#a8a8b0;border-radius:.5rem;cursor:pointer;transition:.15s;background:transparent;border:none}
+  .btn-ghost:hover{color:#eaeaee;background:rgba(255,255,255,.05)}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:6px}
+  ::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.16)}
+  .progress-bar{height:4px;background:rgba(255,255,255,.05);border-radius:9999px;overflow:hidden}
+  .progress-bar>div{height:100%;background:#c9a96a;border-radius:9999px;transition:width .3s}
+  .status-active{background:rgba(16,185,129,.15);color:#34d399}
+  .status-paused{background:rgba(74,74,85,.15);color:#a8a8b0}
+  .status-review{background:rgba(201,169,106,.15);color:#c9a96a}
+  .badge-tag{font-size:10px;padding:2px 6px;border-radius:4px;background:rgba(255,255,255,.05);color:#a8a8b0}
+  .icon{width:14px;height:14px;display:inline-block;vertical-align:middle}
+  [data-menu]{display:none}
+  [data-menu].open{display:block}
+  .animate-fade{animation:fade .25s ease-out}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<div class="flex h-screen w-screen">
+
+  <!-- ╔══════════ SIDEBAR ══════════╗ -->
+  <aside class="w-64 flex-shrink-0 border-r border-white/5 bg-ink-900/60 backdrop-blur-xl flex flex-col">
+    <div class="h-10 flex items-center px-4">
+      <div class="flex items-center gap-2">
+        <div class="w-6 h-6 rounded bg-gradient-to-br from-accent to-accent-muted flex items-center justify-center text-xs font-bold text-ink-950">富</div>
+        <span class="text-sm font-semibold">Command Center</span>
+      </div>
+    </div>
+    <nav class="flex-1 overflow-y-auto px-2 py-3 space-y-1">
+      <div class="tree-item active" style="padding-left:8px">
+        <span class="w-3"></span>📥 <span class="flex-1">インボックス</span><span class="text-xs text-ink-400">12</span>
+      </div>
+      <div class="tree-item" style="padding-left:8px">
+        <span class="w-3"></span>📅 <span class="flex-1">今日</span><span class="text-xs text-ink-400">4</span>
+      </div>
+      <div class="tree-item" style="padding-left:8px">
+        <span>▼</span>📂 <span class="flex-1">プロジェクト</span>
+      </div>
+      <div class="tree-item" style="padding-left:20px">
+        <span class="w-3"></span>⬚ <span class="flex-1">FUJI-SAKE-PREMIUM</span><span class="text-xs text-ink-400">8</span>
+      </div>
+      <div class="tree-item" style="padding-left:20px">
+        <span class="w-3"></span>⬚ <span class="flex-1">Gmail 自動管理</span><span class="text-xs text-ink-400">3</span>
+      </div>
+      <div class="tree-item" style="padding-left:20px">
+        <span class="w-3"></span>⬚ <span class="flex-1">カレンダー同期</span><span class="text-xs text-ink-400">2</span>
+      </div>
+      <div class="tree-item" style="padding-left:8px">
+        <span>▼</span>🏷 <span class="flex-1">タグ</span>
+      </div>
+      <div class="tree-item" style="padding-left:20px">
+        <span class="w-3"></span><span style="color:#e56b6f">●</span><span class="flex-1">緊急</span>
+      </div>
+      <div class="tree-item" style="padding-left:20px">
+        <span class="w-3"></span><span style="color:#c9a96a">●</span><span class="flex-1">クライアント</span>
+      </div>
+      <div class="tree-item" style="padding-left:20px">
+        <span class="w-3"></span><span style="color:#6aa4c9">●</span><span class="flex-1">アイデア</span>
+      </div>
+      <div class="tree-item" style="padding-left:8px">
+        <span class="w-3"></span>📚 <span class="flex-1">アーカイブ</span>
+      </div>
+    </nav>
+    <div class="px-3 py-3 border-t border-white/5 text-[11px] text-ink-400 flex justify-between">
+      <span>同期済み</span>
+      <span id="sync-time">—</span>
+    </div>
+  </aside>
+
+  <!-- ╔══════════ MAIN ══════════╗ -->
+  <div class="flex-1 flex flex-col min-w-0 relative">
+
+    <!-- TopBar -->
+    <header class="h-12 flex items-center border-b border-white/5 bg-ink-900/40 backdrop-blur-xl px-4 gap-3">
+      <div class="flex-1 flex items-center gap-2 max-w-xl px-3 py-1.5 bg-white/5 rounded-lg text-sm text-ink-300">
+        <span>🔍</span>
+        <input class="flex-1 bg-transparent outline-none placeholder:text-ink-400" placeholder="メール・イベント・プロジェクトを検索…" />
+        <kbd class="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-ink-400">⌘K</kbd>
+      </div>
+      <div class="flex items-center gap-2">
+        <button class="btn-primary" onclick="document.getElementById('new-menu').classList.toggle('open')">
+          <span>＋</span>新規
+        </button>
+        <button class="btn-ghost">🔔</button>
+        <button class="btn-ghost">⚙</button>
+      </div>
+    </header>
+
+    <!-- New Item Menu (hidden by default) -->
+    <div id="new-menu" data-menu class="animate-fade absolute right-4 top-14 z-50 w-64 panel py-2">
+      <div class="px-3 py-2 text-xs text-ink-400 uppercase tracking-wider">新規作成</div>
+      <button class="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-white/5 text-left">
+        <span class="text-accent">✉</span><span class="flex-1">メール下書き</span><span class="text-xs text-ink-400">Gmail</span>
+      </button>
+      <button class="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-white/5 text-left">
+        <span class="text-accent">📅</span><span class="flex-1">予定を追加</span><span class="text-xs text-ink-400">Calendar</span>
+      </button>
+      <button class="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-white/5 text-left">
+        <span class="text-accent">📂</span><span class="flex-1">プロジェクト</span><span class="text-xs text-ink-400">新規作成</span>
+      </button>
+      <button class="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-white/5 text-left">
+        <span class="text-accent">✓</span><span class="flex-1">タスク</span><span class="text-xs text-ink-400">Todo</span>
+      </button>
+      <button class="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-white/5 text-left">
+        <span class="text-accent">⚡</span><span class="flex-1">自動化ルール</span><span class="text-xs text-ink-400">If / Then</span>
+      </button>
+    </div>
+
+    <!-- Content Grid -->
+    <main class="flex-1 p-4 overflow-hidden">
+      <div class="grid grid-cols-12 grid-rows-2 gap-4 h-full">
+
+        <!-- ═══ MAIL PANEL (left, 2 rows) ═══ -->
+        <section class="col-span-4 row-span-2 panel flex flex-col overflow-hidden">
+          <div class="panel-header">
+            <div class="flex items-center gap-2">
+              <span class="text-accent">✉</span>
+              <h2 class="text-sm font-semibold">メール</h2>
+              <span class="text-xs px-1.5 py-0.5 rounded bg-accent/20 text-accent">2 件未読</span>
+            </div>
+            <button class="btn-ghost">🔄</button>
+          </div>
+          <div class="flex-1 overflow-y-auto divide-y divide-white/5">
+
+            <div class="px-4 py-3 hover:bg-white/[0.04] cursor-pointer">
+              <div class="flex items-start gap-2">
+                <span class="mt-1.5 w-2 h-2 rounded-full bg-accent flex-shrink-0"></span>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-baseline justify-between gap-2">
+                    <span class="text-sm font-semibold truncate">山田</span>
+                    <span class="text-xs text-ink-400">30分前</span>
+                  </div>
+                  <div class="text-sm truncate">【重要】FUJI-SAKE サンプル納品の件</div>
+                  <div class="text-xs text-ink-400 truncate mt-0.5">お世話になっております。来週月曜日にサンプルを発送予定です…</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="px-4 py-3 hover:bg-white/[0.04] cursor-pointer">
+              <div class="flex items-start gap-2">
+                <span class="mt-1.5 w-2 h-2 rounded-full bg-accent flex-shrink-0"></span>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-baseline justify-between gap-2">
+                    <span class="text-sm font-semibold truncate">Vercel</span>
+                    <span class="text-xs text-ink-400">2時間前</span>
+                  </div>
+                  <div class="text-sm truncate">Deployment succeeded</div>
+                  <div class="text-xs text-ink-400 truncate mt-0.5">Your deployment of fuji-sake-premium is live at…</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="px-4 py-3 hover:bg-white/[0.04] cursor-pointer">
+              <div class="flex items-start gap-2">
+                <span class="mt-1.5 w-2 flex-shrink-0"></span>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-baseline justify-between gap-2">
+                    <span class="text-sm text-ink-300 truncate">佐藤</span>
+                    <span class="text-xs text-ink-400">6時間前</span>
+                  </div>
+                  <div class="text-sm text-ink-300 truncate">蔵元見学のご案内</div>
+                  <div class="text-xs text-ink-400 truncate mt-0.5">先日はありがとうございました。ご希望の日程は…</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="px-4 py-3 hover:bg-white/[0.04] cursor-pointer">
+              <div class="flex items-start gap-2">
+                <span class="mt-1.5 w-2 flex-shrink-0"></span>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-baseline justify-between gap-2">
+                    <span class="text-sm text-ink-300 truncate">GitHub</span>
+                    <span class="text-xs text-ink-400">1日前</span>
+                  </div>
+                  <div class="text-sm text-ink-300 truncate">[hirozo454/FUJI-SAKE-PREMIUM] PR #3</div>
+                  <div class="text-xs text-ink-400 truncate mt-0.5">A new pull request has been opened on your repository…</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="px-4 py-3 hover:bg-white/[0.04] cursor-pointer">
+              <div class="flex items-start gap-2">
+                <span class="mt-1.5 w-2 flex-shrink-0"></span>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-baseline justify-between gap-2">
+                    <span class="text-sm text-ink-300 truncate">design@studio.jp</span>
+                    <span class="text-xs text-ink-400">1日前</span>
+                  </div>
+                  <div class="text-sm text-ink-300 truncate">ラベルデザイン第2案</div>
+                  <div class="text-xs text-ink-400 truncate mt-0.5">添付のとおり、修正版をお送りします。ご確認ください。</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ═══ CALENDAR PANEL (top-right) ═══ -->
+        <section class="col-span-8 row-span-1 panel flex flex-col overflow-hidden">
+          <div class="panel-header">
+            <div class="flex items-center gap-2">
+              <span class="text-accent">📅</span>
+              <h2 class="text-sm font-semibold">カレンダー</h2>
+              <span class="text-xs text-ink-400">4 件の予定</span>
+            </div>
+            <button class="btn-ghost">🔄</button>
+          </div>
+          <div class="flex-1 overflow-y-auto p-3 space-y-3">
+
+            <div>
+              <div class="text-[11px] uppercase tracking-wider text-ink-400 mb-2 px-1">今日</div>
+              <div class="space-y-1.5">
+                <div class="rounded-lg p-3 bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 cursor-pointer">
+                  <div class="flex items-baseline justify-between gap-2">
+                    <div class="text-sm font-medium">蔵元ミーティング</div>
+                    <div class="text-xs tabular-nums text-ink-300">14:00 – 15:00</div>
+                  </div>
+                  <div class="mt-1.5 flex items-center gap-3 text-xs text-ink-400">
+                    <span>📍 Zoom</span>
+                    <span>👥 2</span>
+                  </div>
+                </div>
+                <div class="rounded-lg p-3 bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 cursor-pointer">
+                  <div class="flex items-baseline justify-between gap-2">
+                    <div class="text-sm font-medium">デザインレビュー</div>
+                    <div class="text-xs tabular-nums text-ink-300">17:00 – 18:00</div>
+                  </div>
+                  <div class="mt-1.5 flex items-center gap-3 text-xs text-ink-400">
+                    <span>📍 社内 A 会議室</span>
+                    <span>👥 1</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="text-[11px] uppercase tracking-wider text-ink-400 mb-2 px-1">明日</div>
+              <div class="space-y-1.5">
+                <div class="rounded-lg p-3 bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 cursor-pointer">
+                  <div class="flex items-baseline justify-between gap-2">
+                    <div class="text-sm font-medium">ボトル撮影</div>
+                    <div class="text-xs tabular-nums text-ink-300">10:00 – 14:00</div>
+                  </div>
+                  <div class="mt-1.5 flex items-center gap-3 text-xs text-ink-400">
+                    <span>📍 スタジオ 青山</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="text-[11px] uppercase tracking-wider text-ink-400 mb-2 px-1">4月16日 (水)</div>
+              <div class="space-y-1.5">
+                <div class="rounded-lg p-3 bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 cursor-pointer">
+                  <div class="flex items-baseline justify-between gap-2">
+                    <div class="text-sm font-medium">週次レビュー</div>
+                    <div class="text-xs tabular-nums text-ink-300">09:00 – 10:00</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ═══ PROJECTS PANEL (bottom-right) ═══ -->
+        <section class="col-span-8 row-span-1 panel flex flex-col overflow-hidden">
+          <div class="panel-header">
+            <div class="flex items-center gap-2">
+              <span class="text-accent">📦</span>
+              <h2 class="text-sm font-semibold">進行中のプロジェクト</h2>
+              <span class="text-xs text-ink-400">4 件</span>
+            </div>
+          </div>
+          <div class="flex-1 overflow-y-auto p-3 grid grid-cols-2 gap-2.5 auto-rows-min content-start">
+
+            <div class="rounded-xl border border-white/5 bg-white/[0.03] hover:bg-white/[0.06] p-4 cursor-pointer">
+              <div class="flex items-start justify-between gap-2 mb-2">
+                <h3 class="text-sm font-semibold leading-snug flex-1">FUJI-SAKE-PREMIUM サイト</h3>
+                <span class="text-[10px] px-2 py-0.5 rounded-full status-active">進行中</span>
+              </div>
+              <div class="flex items-center gap-1.5 text-xs text-ink-300 mb-3">
+                <span class="text-accent">→</span><span>Opus One スタイルのボトル撮影</span>
+              </div>
+              <div class="mb-2">
+                <div class="flex items-center justify-between text-[11px] text-ink-400 mb-1">
+                  <span>進捗</span><span class="tabular-nums">65%</span>
+                </div>
+                <div class="progress-bar"><div style="width:65%"></div></div>
+              </div>
+              <div class="flex items-center justify-between mt-2">
+                <div class="flex gap-1">
+                  <span class="badge-tag">#web</span>
+                  <span class="badge-tag">#next.js</span>
+                </div>
+                <div class="text-[11px] text-ink-400">🕐 あと18日</div>
+              </div>
+            </div>
+
+            <div class="rounded-xl border border-white/5 bg-white/[0.03] hover:bg-white/[0.06] p-4 cursor-pointer">
+              <div class="flex items-start justify-between gap-2 mb-2">
+                <h3 class="text-sm font-semibold leading-snug flex-1">Gmail 自動返信ボット</h3>
+                <span class="text-[10px] px-2 py-0.5 rounded-full status-review">レビュー</span>
+              </div>
+              <div class="flex items-center gap-1.5 text-xs text-ink-300 mb-3">
+                <span class="text-accent">→</span><span>レスポンステンプレートのレビュー</span>
+              </div>
+              <div class="mb-2">
+                <div class="flex items-center justify-between text-[11px] text-ink-400 mb-1">
+                  <span>進捗</span><span class="tabular-nums">82%</span>
+                </div>
+                <div class="progress-bar"><div style="width:82%"></div></div>
+              </div>
+              <div class="flex items-center justify-between mt-2">
+                <div class="flex gap-1">
+                  <span class="badge-tag">#gmail</span>
+                  <span class="badge-tag">#ai</span>
+                </div>
+                <div class="text-[11px] text-red-400">🕐 あと6日</div>
+              </div>
+            </div>
+
+            <div class="rounded-xl border border-white/5 bg-white/[0.03] hover:bg-white/[0.06] p-4 cursor-pointer">
+              <div class="flex items-start justify-between gap-2 mb-2">
+                <h3 class="text-sm font-semibold leading-snug flex-1">カレンダー週次サマリー</h3>
+                <span class="text-[10px] px-2 py-0.5 rounded-full status-active">進行中</span>
+              </div>
+              <div class="flex items-center gap-1.5 text-xs text-ink-300 mb-3">
+                <span class="text-accent">→</span><span>Slack 通知の統合</span>
+              </div>
+              <div class="mb-2">
+                <div class="flex items-center justify-between text-[11px] text-ink-400 mb-1">
+                  <span>進捗</span><span class="tabular-nums">30%</span>
+                </div>
+                <div class="progress-bar"><div style="width:30%"></div></div>
+              </div>
+              <div class="flex items-center justify-between mt-2">
+                <div class="flex gap-1">
+                  <span class="badge-tag">#calendar</span>
+                  <span class="badge-tag">#automation</span>
+                </div>
+                <div class="text-[11px] text-ink-400">🕐 あと11日</div>
+              </div>
+            </div>
+
+            <div class="rounded-xl border border-white/5 bg-white/[0.03] hover:bg-white/[0.06] p-4 cursor-pointer">
+              <div class="flex items-start justify-between gap-2 mb-2">
+                <h3 class="text-sm font-semibold leading-snug flex-1">ドメイン購入 & DNS</h3>
+                <span class="text-[10px] px-2 py-0.5 rounded-full status-paused">保留</span>
+              </div>
+              <div class="flex items-center gap-1.5 text-xs text-ink-300 mb-3">
+                <span class="text-accent">→</span><span>Vercel 設定の確認</span>
+              </div>
+              <div class="mb-2">
+                <div class="flex items-center justify-between text-[11px] text-ink-400 mb-1">
+                  <span>進捗</span><span class="tabular-nums">10%</span>
+                </div>
+                <div class="progress-bar"><div style="width:10%"></div></div>
+              </div>
+              <div class="flex items-center justify-between mt-2">
+                <div class="flex gap-1">
+                  <span class="badge-tag">#infra</span>
+                </div>
+                <div class="text-[11px] text-ink-400">—</div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+  document.getElementById('sync-time').textContent =
+    new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+  document.addEventListener('mousedown', (e) => {
+    const menu = document.getElementById('new-menu');
+    if (menu.classList.contains('open') && !menu.contains(e.target) &&
+        !e.target.closest('button')?.textContent.includes('新規')) {
+      menu.classList.remove('open');
+    }
+  });
+</script>
+
+</body>
+</html>
