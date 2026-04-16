@@ -2,53 +2,69 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useReveal } from "@/hooks/useReveal";
 import { bushidoDesigns } from "@/data/bushido-data";
-
-function useScrollY() {
-  const [scrollY, setScrollY] = useState(0);
-  useEffect(() => {
-    const onScroll = () => setScrollY(window.scrollY);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-  return scrollY;
-}
 
 export default function Bushido() {
   const ref = useReveal<HTMLElement>();
   const heroRef = useRef<HTMLDivElement>(null);
-  const scrollY = useScrollY();
+  const parallaxRef = useRef<HTMLDivElement>(null);
   const [currentImage, setCurrentImage] = useState(0);
   const [nextImage, setNextImage] = useState(1);
   const [phase, setPhase] = useState<"show" | "crossfade">("show");
   const [hoveredDesign, setHoveredDesign] = useState<number | null>(null);
 
-  const cycleImage = useCallback(() => {
-    if (hoveredDesign !== null) return;
-    setPhase("crossfade");
-    let next: number;
-    do {
-      next = Math.floor(Math.random() * bushidoDesigns.length);
-    } while (next === currentImage);
-    setNextImage(next);
-    setTimeout(() => {
-      setCurrentImage(next);
-      setPhase("show");
-    }, 1200);
-  }, [currentImage, hoveredDesign]);
+  // Refs mirror state so the cycle interval stays stable across renders.
+  const currentImageRef = useRef(0);
+  currentImageRef.current = currentImage;
+  const hoveredRef = useRef<number | null>(null);
+  hoveredRef.current = hoveredDesign;
 
+  // rAF-throttled parallax — writes transform directly to DOM, no re-renders on scroll.
   useEffect(() => {
-    const interval = setInterval(cycleImage, 6000);
+    let scheduled = false;
+    const update = () => {
+      scheduled = false;
+      const hero = heroRef.current;
+      const target = parallaxRef.current;
+      if (!hero || !target) return;
+      const offset = (window.scrollY - hero.offsetTop) * 0.12;
+      target.style.transform = `scale(${1.1 + Math.abs(offset) * 0.002}) translateY(${offset}px)`;
+    };
+    const onScroll = () => {
+      if (scheduled) return;
+      scheduled = true;
+      requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", update, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", update);
+    };
+  }, []);
+
+  // Stable image cycle — deps-free, uses refs to peek current state.
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (hoveredRef.current !== null) return;
+      setPhase("crossfade");
+      let next: number;
+      do {
+        next = Math.floor(Math.random() * bushidoDesigns.length);
+      } while (next === currentImageRef.current);
+      setNextImage(next);
+      setTimeout(() => {
+        setCurrentImage(next);
+        setPhase("show");
+      }, 1200);
+    }, 6000);
     return () => clearInterval(interval);
-  }, [cycleImage]);
+  }, []);
 
   const activeDesign = hoveredDesign !== null ? hoveredDesign : currentImage;
-
-  // Parallax for the hero image section
-  const heroTop = heroRef.current?.offsetTop ?? 0;
-  const parallaxOffset = (scrollY - heroTop) * 0.12;
 
   return (
     <section id="bushido" ref={ref}>
@@ -56,10 +72,9 @@ export default function Bushido() {
       <div ref={heroRef} className="relative h-screen overflow-hidden bg-ink">
         {/* Full-screen scene image with parallax zoom */}
         <div
-          className="absolute inset-0 transition-transform duration-100 ease-linear"
-          style={{
-            transform: `scale(${1.1 + Math.abs(parallaxOffset) * 0.002}) translateY(${parallaxOffset}px)`,
-          }}
+          ref={parallaxRef}
+          className="absolute inset-0 will-change-transform"
+          style={{ transform: "scale(1.1) translateY(0px)" }}
         >
           <Image
             src={bushidoDesigns[activeDesign].imageScene}
