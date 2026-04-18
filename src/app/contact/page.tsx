@@ -1,10 +1,9 @@
 "use client";
 
-import Link from "next/link";
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
+import { Reveal, revealDelays } from "@/components/Reveal";
 
 export default function ContactPage() {
-  const formRef = useRef<HTMLElement>(null);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -14,23 +13,6 @@ export default function ContactPage() {
   });
   const [submitted, setSubmitted] = useState(false);
   const [sending, setSending] = useState(false);
-
-  useEffect(() => {
-    const el = formRef.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      (entries) =>
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            e.target.classList.add("visible");
-            obs.unobserve(e.target);
-          }
-        }),
-      { threshold: 0.08 }
-    );
-    el.querySelectorAll(".reveal").forEach((c) => obs.observe(c));
-    return () => obs.disconnect();
-  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,15 +39,15 @@ export default function ContactPage() {
     "text-[10px] tracking-[4px] uppercase text-off-white/40 mb-2 block";
 
   return (
-    <main ref={formRef} className="bg-ink min-h-screen">
+    <main className="bg-ink min-h-screen">
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-10 py-5 bg-ink/90 backdrop-blur-[16px] border-b border-gold/8">
-        <Link
+        <a
           href="/"
           className="font-serif text-[13px] tracking-[4px] uppercase text-gold no-underline hover:text-gold-lt transition-colors"
         >
           Amachi Hoshisora
-        </Link>
+        </a>
         <Link
           href="/#bushido"
           className="text-[11px] tracking-[3px] uppercase text-off-white/50 no-underline hover:text-gold transition-colors"
@@ -76,23 +58,23 @@ export default function ContactPage() {
 
       {/* Hero */}
       <section className="pt-32 pb-16 px-8 text-center">
-        <p className="reveal text-[11px] tracking-[6px] uppercase text-gold/60 mb-6">
+        <Reveal as="p" className="text-[11px] tracking-[6px] uppercase text-gold/60 mb-6">
           Contact
-        </p>
-        <h1 className="reveal d1 font-serif text-[clamp(36px,6vw,64px)] font-light leading-[1.05] mb-4">
+        </Reveal>
+        <Reveal as="h1" className="font-serif text-[clamp(36px,6vw,64px)] font-light leading-[1.05] mb-4" delay={revealDelays.d1}>
           Get in Touch
-        </h1>
-        <div className="reveal d1 w-[40px] h-px bg-gold/30 mx-auto mb-6" />
-        <p className="reveal d2 text-[clamp(14px,1.6vw,17px)] text-off-white/55 font-light max-w-[520px] mx-auto leading-[1.8]">
+        </Reveal>
+        <Reveal className="w-[40px] h-px bg-gold/30 mx-auto mb-6" delay={revealDelays.d1} />
+        <Reveal as="p" className="text-[clamp(14px,1.6vw,17px)] text-off-white/55 font-light max-w-[520px] mx-auto leading-[1.8]" delay={revealDelays.d2}>
           For inquiries about our Bushido Edition, wholesale, or collaborations,
           please reach out to us below.
-        </p>
+        </Reveal>
       </section>
 
       {/* Form */}
       <section className="max-w-[640px] mx-auto px-[clamp(24px,5vw,60px)] pb-[clamp(80px,10vw,140px)]">
         {submitted ? (
-          <div className="reveal text-center py-20">
+          <Reveal className="text-center py-20">
             <p className="font-jp text-4xl text-gold/60 mb-6">感謝</p>
             <h2 className="font-serif text-[clamp(24px,3vw,36px)] font-light mb-4">
               Thank You
@@ -101,16 +83,16 @@ export default function ContactPage() {
               Your email client should have opened with a pre-filled message.<br />
               We will respond within 2 business days.
             </p>
-            <Link
+            <a
               href="/"
               className="inline-block text-[11px] tracking-[4px] uppercase text-gold/60 border border-gold/25 px-8 py-3 no-underline hover:bg-gold/10 hover:border-gold/50 transition-all duration-500"
             >
               Return Home
-            </Link>
-          </div>
+            </a>
+          </Reveal>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-10">
-            <div className="reveal grid grid-cols-1 sm:grid-cols-2 gap-8">
+            <Reveal className="grid grid-cols-1 sm:grid-cols-2 gap-8">
               <div>
                 <label className={labelClass}>
                   Name <span className="text-crimson/60">*</span>
@@ -141,9 +123,9 @@ export default function ContactPage() {
                   className={inputClass}
                 />
               </div>
-            </div>
+            </Reveal>
 
-            <div className="reveal d1 grid grid-cols-1 sm:grid-cols-2 gap-8">
+            <Reveal className="grid grid-cols-1 sm:grid-cols-2 gap-8" delay={revealDelays.d1}>
               <div>
                 <label className={labelClass}>Company</label>
                 <input
@@ -168,9 +150,9 @@ export default function ContactPage() {
                   className={inputClass}
                 />
               </div>
-            </div>
+            </Reveal>
 
-            <div className="reveal d2">
+            <Reveal delay={revealDelays.d2}>
               <label className={labelClass}>
                 Message <span className="text-crimson/60">*</span>
               </label>
@@ -184,9 +166,9 @@ export default function ContactPage() {
                 }
                 className={`${inputClass} resize-none border border-off-white/10 focus:border-gold/30 px-4 pt-4`}
               />
-            </div>
+            </Reveal>
 
-            <div className="reveal d3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pt-4">
+            <Reveal className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pt-4" delay={revealDelays.d3}>
               <button
                 type="submit"
                 disabled={sending}
@@ -203,7 +185,7 @@ export default function ContactPage() {
                   mtfujipharmacy@gmail.com
                 </a>
               </p>
-            </div>
+            </Reveal>
           </form>
         )}
       </section>

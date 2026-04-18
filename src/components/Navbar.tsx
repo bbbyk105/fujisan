@@ -31,6 +31,12 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
 
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
+
   const closeDrawer = () => {
     setDrawerOpen(false);
     document.body.style.overflow = "";
@@ -98,7 +104,7 @@ export default function Navbar() {
             }`}>
               <div className="p-1">
                 <a
-                  href="#"
+                  href="/login/btob"
                   className="flex items-center gap-3 px-5 py-3.5 no-underline text-off-white/70 hover:text-gold hover:bg-gold/5 transition-all duration-300"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -112,7 +118,7 @@ export default function Navbar() {
                 </a>
                 <div className="h-px bg-gold/8 mx-4" />
                 <a
-                  href="#"
+                  href="/login/member"
                   className="flex items-center gap-3 px-5 py-3.5 no-underline text-off-white/70 hover:text-gold hover:bg-gold/5 transition-all duration-300"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -171,14 +177,14 @@ export default function Navbar() {
         <div className="w-[40px] h-px bg-gold/20 my-2" />
 
         <a
-          href="#"
+          href="/login/btob"
           onClick={closeDrawer}
           className="text-[13px] tracking-[4px] uppercase text-gold/60 no-underline hover:text-gold transition-colors"
         >
           BtoB Login
         </a>
         <a
-          href="#"
+          href="/login/member"
           onClick={closeDrawer}
           className="text-[13px] tracking-[4px] uppercase text-off-white/50 no-underline hover:text-gold transition-colors"
         >

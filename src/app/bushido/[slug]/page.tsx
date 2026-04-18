@@ -2,9 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { use, useEffect, useRef, useState } from "react";
+import { use, useEffect, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { bushidoDesigns } from "@/data/bushido-data";
+import { Reveal, revealDelays, revealEase } from "@/components/Reveal";
 import { notFound } from "next/navigation";
+
+const MotionLink = motion(Link);
 
 function useScrollY() {
   const [y, setY] = useState(0);
@@ -23,31 +27,15 @@ export default function BushidoDetailPage({
 }) {
   const { slug } = use(params);
   const design = bushidoDesigns.find((d) => d.slug === slug);
-  const mainRef = useRef<HTMLElement>(null);
   const [loaded, setLoaded] = useState(false);
   const scrollY = useScrollY();
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
+    setLoaded(false);
     const t = setTimeout(() => setLoaded(true), 80);
     return () => clearTimeout(t);
-  }, []);
-
-  useEffect(() => {
-    const el = mainRef.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      (entries) =>
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            e.target.classList.add("visible");
-            obs.unobserve(e.target);
-          }
-        }),
-      { threshold: 0.08 }
-    );
-    el.querySelectorAll(".reveal").forEach((c) => obs.observe(c));
-    return () => obs.disconnect();
-  }, []);
+  }, [slug]);
 
   if (!design) notFound();
 
@@ -60,7 +48,7 @@ export default function BushidoDetailPage({
   const heroOpacity = Math.max(0, 1 - scrollY / 700);
 
   return (
-    <main ref={mainRef} className="bg-ink min-h-screen">
+    <main className="bg-ink min-h-screen">
       {/* Nav */}
       <nav
         className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-10 py-5 transition-all duration-700 ${
@@ -69,12 +57,12 @@ export default function BushidoDetailPage({
             : "bg-transparent"
         }`}
       >
-        <Link
+        <a
           href="/#bushido"
           className="font-serif text-[13px] tracking-[4px] uppercase text-gold no-underline hover:text-gold-lt transition-colors"
         >
           Amachi Hoshisora
-        </Link>
+        </a>
         <div className="flex gap-8 items-center">
           <Link
             href={`/bushido/${prev.slug}`}
@@ -165,7 +153,10 @@ export default function BushidoDetailPage({
             </span>
           </div>
 
-          <div className="reveal opus-float relative z-10" style={{ width: "clamp(260px, 42vw, 440px)", aspectRatio: "3/5" }}>
+          <Reveal
+            className="opus-float relative z-10"
+            style={{ width: "clamp(260px, 42vw, 440px)", aspectRatio: "3/5" }}
+          >
             <Image
               src={design.image}
               alt={design.name}
@@ -173,7 +164,7 @@ export default function BushidoDetailPage({
               className="object-contain opus-shadow"
               sizes="(max-width: 1024px) 80vw, 42vw"
             />
-          </div>
+          </Reveal>
 
           <div className="absolute bottom-[6%] left-1/2 -translate-x-1/2 w-[50%] h-[14%] bg-[radial-gradient(ellipse,rgba(201,168,76,0.07)_0%,transparent_70%)] blur-[10px] bottle-glow" />
           <div className="absolute left-[16%] top-[22%] w-px h-[36%] bg-gradient-to-b from-transparent via-gold/10 to-transparent" />
@@ -182,26 +173,26 @@ export default function BushidoDetailPage({
 
         {/* RIGHT — Details */}
         <div className="bg-ink2 flex flex-col justify-center px-[clamp(40px,6vw,100px)] py-[clamp(60px,6vw,100px)] lg:pr-[clamp(60px,8vw,140px)] border-l border-gold/8">
-          <div className="reveal">
+          <Reveal>
             <p className="text-[11px] tracking-[5px] uppercase text-gold/70 mb-2 font-normal">
               Design {design.letter}
             </p>
             <p className="text-[12px] tracking-[4px] uppercase text-off-white/50 mb-8">
               300ml · {design.bottle}
             </p>
-          </div>
+          </Reveal>
 
-          <h2 className="reveal d1 font-serif text-[clamp(38px,5vw,68px)] font-light leading-[1.05] tracking-[-0.02em] mb-4">
+          <Reveal as="h2" className="font-serif text-[clamp(38px,5vw,68px)] font-light leading-[1.05] tracking-[-0.02em] mb-4" delay={revealDelays.d1}>
             {design.name.replace("\n", " ")}
-          </h2>
+          </Reveal>
 
-          <div className="reveal d1 w-[36px] h-px bg-gold/30 my-7" />
+          <Reveal className="w-[36px] h-px bg-gold/30 my-7" delay={revealDelays.d1} />
 
-          <p className="reveal d2 font-serif text-[clamp(18px,2.2vw,24px)] italic text-gold-lt/70 mb-10 leading-[1.7]">
+          <Reveal as="p" className="font-serif text-[clamp(18px,2.2vw,24px)] italic text-gold-lt/70 mb-10 leading-[1.7]" delay={revealDelays.d2}>
             &ldquo;{design.subtitle}&rdquo;
-          </p>
+          </Reveal>
 
-          <div className="reveal d2 flex items-center gap-6 mb-12">
+          <Reveal className="flex items-center gap-6 mb-12" delay={revealDelays.d2}>
             <span className="font-jp text-[clamp(42px,5vw,58px)] font-extralight text-gold/70">
               {design.virtueJp}
             </span>
@@ -214,18 +205,18 @@ export default function BushidoDetailPage({
                 {design.virtue}
               </p>
             </div>
-          </div>
+          </Reveal>
 
           {/* Tasting */}
-          <div className="reveal d3 border-t border-gold/12 pt-8 mb-10">
+          <Reveal className="border-t border-gold/12 pt-8 mb-10" delay={revealDelays.d3}>
             <p className="text-[10px] tracking-[4px] uppercase text-gold/50 mb-3 font-normal">Tasting Notes</p>
             <p className="font-serif text-[clamp(16px,1.7vw,19px)] italic text-off-white/70 leading-[1.9]">
               {design.tastingNote}
             </p>
-          </div>
+          </Reveal>
 
           {/* Specs */}
-          <div className="reveal d3 flex gap-12">
+          <Reveal className="flex gap-12" delay={revealDelays.d3}>
             {[
               ["Volume", "300ml"],
               ["Cap Seal", design.capSeal],
@@ -236,7 +227,7 @@ export default function BushidoDetailPage({
                 <p className="font-serif text-[15px] text-off-white/75">{v}</p>
               </div>
             ))}
-          </div>
+          </Reveal>
         </div>
       </section>
 
@@ -256,11 +247,13 @@ export default function BushidoDetailPage({
         <div className="absolute inset-0 bg-gradient-to-b from-ink via-transparent to-ink" />
 
         <div className="relative z-10 flex flex-col justify-center items-center h-full text-center px-[clamp(32px,8vw,120px)]">
-          <p className="reveal text-[11px] tracking-[6px] uppercase text-gold/60 mb-6 font-normal">The Story</p>
-          <div className="reveal d1 w-[36px] h-px bg-gold/35 mb-10" />
-          <p className="reveal d1 font-serif text-[clamp(20px,2.8vw,32px)] font-light leading-[2] text-off-white/80 max-w-[720px] italic">
+          <Reveal as="p" className="text-[11px] tracking-[6px] uppercase text-gold/60 mb-6 font-normal">
+            The Story
+          </Reveal>
+          <Reveal className="w-[36px] h-px bg-gold/35 mb-10" delay={revealDelays.d1} />
+          <Reveal as="p" className="font-serif text-[clamp(20px,2.8vw,32px)] font-light leading-[2] text-off-white/80 max-w-[720px] italic" delay={revealDelays.d1}>
             {design.descriptionEn[0]}
-          </p>
+          </Reveal>
         </div>
       </section>
 
@@ -271,21 +264,35 @@ export default function BushidoDetailPage({
         <div className="max-w-[1100px] mx-auto px-[clamp(32px,5vw,80px)] py-[clamp(80px,10vw,140px)]">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-[clamp(48px,7vw,120px)]">
             <div>
-              <p className="reveal text-[11px] tracking-[5px] uppercase text-gold/60 mb-6 font-normal">The Story</p>
-              <div className="reveal d1 w-[28px] h-px bg-gold/30 mb-10" />
+              <Reveal as="p" className="text-[11px] tracking-[5px] uppercase text-gold/60 mb-6 font-normal">
+                The Story
+              </Reveal>
+              <Reveal className="w-[28px] h-px bg-gold/30 mb-10" delay={revealDelays.d1} />
               {design.descriptionEn.slice(1).map((p, i) => (
-                <p key={i} className={`reveal ${i > 0 ? "d1" : ""} text-[clamp(15px,1.7vw,18px)] leading-[2] text-off-white/75 mb-7 font-serif font-light`}>
+                <Reveal
+                  key={i}
+                  as="p"
+                  className="text-[clamp(15px,1.7vw,18px)] leading-[2] text-off-white/75 mb-7 font-serif font-light"
+                  delay={i > 0 ? revealDelays.d1 : 0}
+                >
                   {p}
-                </p>
+                </Reveal>
               ))}
             </div>
             <div className="lg:border-l lg:border-gold/8 lg:pl-[clamp(36px,5vw,72px)]">
-              <p className="reveal text-[11px] tracking-[5px] uppercase text-gold/60 mb-6 font-jp">物語</p>
-              <div className="reveal d1 w-[28px] h-px bg-gold/30 mb-10" />
+              <Reveal as="p" className="text-[11px] tracking-[5px] uppercase text-gold/60 mb-6 font-jp">
+                物語
+              </Reveal>
+              <Reveal className="w-[28px] h-px bg-gold/30 mb-10" delay={revealDelays.d1} />
               {design.descriptionJp.map((p, i) => (
-                <p key={i} className={`reveal ${i > 0 ? "d1" : ""} text-[clamp(14px,1.5vw,17px)] leading-[2.2] text-off-white/70 mb-8 font-jp font-light whitespace-pre-line`}>
+                <Reveal
+                  key={i}
+                  as="p"
+                  className="text-[clamp(14px,1.5vw,17px)] leading-[2.2] text-off-white/70 mb-8 font-jp font-light whitespace-pre-line"
+                  delay={i > 0 ? revealDelays.d1 : 0}
+                >
                   {p}
-                </p>
+                </Reveal>
               ))}
             </div>
           </div>
@@ -297,51 +304,74 @@ export default function BushidoDetailPage({
           ============================================================ */}
       <section className="border-t border-gold/8 bg-ink2">
         <div className="max-w-[1400px] mx-auto px-[clamp(24px,4vw,48px)] py-[clamp(64px,8vw,110px)]">
-          <p className="reveal text-[11px] tracking-[5px] uppercase text-gold/55 mb-12 text-center font-normal">
+          <Reveal as="p" className="text-[11px] tracking-[5px] uppercase text-gold/55 mb-12 text-center font-normal">
             Explore the Collection
-          </p>
+          </Reveal>
           <div className="grid grid-cols-4 sm:grid-cols-7 gap-3 sm:gap-5">
-            {bushidoDesigns.map((d) => (
-              <Link
-                href={`/bushido/${d.slug}`}
-                key={d.letter}
-                className={`reveal group no-underline block transition-all duration-700 ${
-                  d.slug === slug ? "opacity-100" : "opacity-45 hover:opacity-100"
-                }`}
-              >
-                <div className="relative aspect-[2/5] overflow-hidden mb-3">
-                  {d.slug === slug && (
-                    <div className="absolute bottom-[10%] left-1/2 -translate-x-1/2 w-[70%] h-[20%] bg-gold/8 rounded-full blur-[12px]" />
-                  )}
-                  <Image
-                    src={d.image}
-                    alt={d.name}
-                    fill
-                    className={`object-contain transition-all duration-700 ${
-                      d.slug === slug
-                        ? "scale-100 opus-shadow"
-                        : "scale-[0.85] group-hover:scale-[1.0] group-hover:opus-shadow"
+            {bushidoDesigns.map((d) => {
+              const strip = (
+                <>
+                  <div className="relative aspect-[2/5] overflow-hidden mb-3">
+                    {d.slug === slug && (
+                      <div className="absolute bottom-[10%] left-1/2 -translate-x-1/2 w-[70%] h-[20%] bg-gold/8 rounded-full blur-[12px]" />
+                    )}
+                    <Image
+                      src={d.image}
+                      alt={d.name}
+                      fill
+                      className={`object-contain transition-all duration-700 ${
+                        d.slug === slug
+                          ? "scale-100 opus-shadow"
+                          : "scale-[0.85] group-hover:scale-[1.0] group-hover:opus-shadow"
+                      }`}
+                      sizes="180px"
+                    />
+                    {d.slug === slug && (
+                      <div className="absolute bottom-0 left-[20%] right-[20%] h-px bg-gold/50" />
+                    )}
+                  </div>
+                  <div className="text-center">
+                    <p className={`text-[11px] tracking-[3px] uppercase font-normal transition-colors duration-500 ${
+                      d.slug === slug ? "text-gold/80" : "text-off-white/35 group-hover:text-gold/70"
+                    }`}>
+                      {d.letter}
+                    </p>
+                    <p className={`text-[9px] tracking-[1px] uppercase mt-1 transition-colors duration-500 ${
+                      d.slug === slug ? "text-off-white/60" : "text-off-white/20 group-hover:text-off-white/50"
+                    }`}>
+                      {d.name.replace("\n", " ")}
+                    </p>
+                  </div>
+                </>
+              );
+              if (reduceMotion) {
+                return (
+                  <Link
+                    href={`/bushido/${d.slug}`}
+                    key={d.letter}
+                    className={`group no-underline block transition-all duration-700 ${
+                      d.slug === slug ? "opacity-100" : "opacity-45 hover:opacity-100"
                     }`}
-                    sizes="180px"
-                  />
-                  {d.slug === slug && (
-                    <div className="absolute bottom-0 left-[20%] right-[20%] h-px bg-gold/50" />
-                  )}
-                </div>
-                <div className="text-center">
-                  <p className={`text-[11px] tracking-[3px] uppercase font-normal transition-colors duration-500 ${
-                    d.slug === slug ? "text-gold/80" : "text-off-white/35 group-hover:text-gold/70"
-                  }`}>
-                    {d.letter}
-                  </p>
-                  <p className={`text-[9px] tracking-[1px] uppercase mt-1 transition-colors duration-500 ${
-                    d.slug === slug ? "text-off-white/60" : "text-off-white/20 group-hover:text-off-white/50"
-                  }`}>
-                    {d.name.replace("\n", " ")}
-                  </p>
-                </div>
-              </Link>
-            ))}
+                  >
+                    {strip}
+                  </Link>
+                );
+              }
+              return (
+                <MotionLink
+                  href={`/bushido/${d.slug}`}
+                  key={d.letter}
+                  initial={{ opacity: 0, y: 28 }}
+                  whileInView={{ opacity: d.slug === slug ? 1 : 0.45, y: 0 }}
+                  whileHover={{ opacity: 1 }}
+                  viewport={{ once: true, amount: 0.08 }}
+                  transition={{ duration: 0.9, ease: revealEase }}
+                  className="group no-underline block transition-all duration-700"
+                >
+                  {strip}
+                </MotionLink>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -389,12 +419,12 @@ export default function BushidoDetailPage({
 
       {/* Footer */}
       <footer className="border-t border-gold/6 py-14 text-center bg-ink">
-        <Link
+        <a
           href="/#bushido"
           className="text-[11px] tracking-[4px] uppercase text-off-white/35 no-underline hover:text-gold/60 transition-colors"
         >
           ← Back to Collection
-        </Link>
+        </a>
         <div className="mt-8">
           <p className="text-[12px] text-off-white/30 tracking-[2px]">
             Mt. Fuji Sake Project

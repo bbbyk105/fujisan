@@ -3,11 +3,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
-import { useReveal } from "@/hooks/useReveal";
+import { Reveal, revealDelays } from "@/components/Reveal";
 import { bushidoDesigns } from "@/data/bushido-data";
 
 export default function Bushido() {
-  const ref = useReveal<HTMLElement>();
   const heroRef = useRef<HTMLDivElement>(null);
   const parallaxRef = useRef<HTMLDivElement>(null);
   const [currentImage, setCurrentImage] = useState(0);
@@ -66,8 +65,12 @@ export default function Bushido() {
 
   const activeDesign = hoveredDesign !== null ? hoveredDesign : currentImage;
 
+  // Keep last hovered image mounted during fade-out so transition is smooth
+  const lastHoveredRef = useRef<number>(0);
+  if (hoveredDesign !== null) lastHoveredRef.current = hoveredDesign;
+
   return (
-    <section id="bushido" ref={ref}>
+    <section id="bushido">
       {/* ===== FULL BLEED HERO — Dom Perignon style ===== */}
       <div ref={heroRef} className="relative h-screen overflow-hidden bg-ink">
         {/* Full-screen scene image with parallax zoom */}
@@ -103,20 +106,20 @@ export default function Bushido() {
 
         {/* Center content */}
         <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-8">
-          <p className="reveal text-[13px] tracking-[6px] uppercase text-gold/75 mb-6 font-normal">
+          <Reveal as="p" className="text-[13px] tracking-[6px] uppercase text-gold/75 mb-6 font-normal">
             The Bushido Edition
-          </p>
-          <h2 className="reveal d1 font-serif text-[clamp(44px,7vw,96px)] font-light leading-[1.0] mb-4 tracking-[-0.02em]">
+          </Reveal>
+          <Reveal as="h2" className="font-serif text-[clamp(44px,7vw,96px)] font-light leading-[1.0] mb-4 tracking-[-0.02em]" delay={revealDelays.d1}>
             The Spirit of<br />the <em className="italic text-gold-lt">Samurai</em>
-          </h2>
-          <div className="reveal d1 w-[48px] h-px bg-gold/40 mx-auto mb-6" />
-          <p className="reveal d2 text-[clamp(15px,1.8vw,18px)] leading-[1.9] text-off-white/65 max-w-[580px] font-light">
+          </Reveal>
+          <Reveal className="w-[48px] h-px bg-gold/40 mx-auto mb-6" delay={revealDelays.d1} />
+          <Reveal as="p" className="text-[clamp(15px,1.8vw,18px)] leading-[1.9] text-off-white/65 max-w-[580px] font-light" delay={revealDelays.d2}>
             Seven distinct expressions of Bushido — each bottle a different warrior archetype,
             a different chapter of Japan&apos;s timeless code of honor.
-          </p>
-          <p className="reveal d3 text-[12px] tracking-[5px] uppercase text-gold/55 mt-8">
+          </Reveal>
+          <Reveal as="p" className="text-[12px] tracking-[5px] uppercase text-gold/55 mt-8" delay={revealDelays.d3}>
             300ml · 7 Designs · 純米大吟醸
-          </p>
+          </Reveal>
         </div>
 
         {/* Scroll indicator */}
@@ -165,20 +168,20 @@ export default function Bushido() {
             </div>
           </div>
 
-          {/* Hovered bottle */}
-          {hoveredDesign !== null && (
-            <div className="absolute inset-0 flex items-center justify-center z-10 animate-[bottleReveal_0.6s_ease-out_both]">
-              <div className="opus-float relative w-[75%] max-w-[380px] aspect-[3/5]">
-                <Image
-                  src={bushidoDesigns[hoveredDesign].image}
-                  alt={bushidoDesigns[hoveredDesign].name}
-                  fill
-                  className="object-contain opus-shadow"
-                  sizes="(max-width: 1024px) 75vw, 38vw"
-                />
-              </div>
+          {/* Hovered bottle — always mounted for smooth fade in/out */}
+          <div className={`absolute inset-0 flex items-center justify-center z-10 transition-opacity duration-500 ease-in-out ${
+            hoveredDesign !== null ? "opacity-100" : "opacity-0 pointer-events-none"
+          }`}>
+            <div className="opus-float relative w-[75%] max-w-[380px] aspect-3/5">
+              <Image
+                src={bushidoDesigns[lastHoveredRef.current].image}
+                alt={bushidoDesigns[lastHoveredRef.current].name}
+                fill
+                className="object-contain opus-shadow"
+                sizes="(max-width: 1024px) 75vw, 38vw"
+              />
             </div>
-          )}
+          </div>
 
           {/* Floor reflection */}
           <div className="absolute bottom-[6%] left-1/2 -translate-x-1/2 w-[45%] h-[12%] bg-[radial-gradient(ellipse,rgba(201,168,76,0.08)_0%,transparent_70%)] blur-[8px] bottle-glow" />
@@ -198,22 +201,22 @@ export default function Bushido() {
 
         {/* RIGHT — Text + Design grid */}
         <div className="bg-ink2 flex flex-col justify-center px-[clamp(40px,6vw,100px)] py-[clamp(60px,7vw,100px)] border-l border-gold/6">
-          <p className="reveal text-[12px] tracking-[5px] uppercase text-gold/65 mb-6 font-normal">
+          <Reveal as="p" className="text-[12px] tracking-[5px] uppercase text-gold/65 mb-6 font-normal">
             The Collection
-          </p>
-          <div className="reveal d1 w-[36px] h-px bg-gold/30 mb-8" />
+          </Reveal>
+          <Reveal className="w-[36px] h-px bg-gold/30 mb-8" delay={revealDelays.d1} />
 
-          <h3 className="reveal d1 font-serif text-[clamp(30px,3.5vw,48px)] font-light leading-[1.1] mb-6">
+          <Reveal as="h3" className="font-serif text-[clamp(30px,3.5vw,48px)] font-light leading-[1.1] mb-6" delay={revealDelays.d1}>
             From <em className="italic text-gold-lt/80">White Peak</em><br />to Black Snow
-          </h3>
+          </Reveal>
 
-          <p className="reveal d2 text-[clamp(15px,1.7vw,18px)] leading-[1.95] text-off-white/60 max-w-[480px] mb-12">
+          <Reveal as="p" className="text-[clamp(15px,1.7vw,18px)] leading-[1.95] text-off-white/60 max-w-[480px] mb-12" delay={revealDelays.d2}>
             From the White Peak to the Black Snow, each design encapsulates a virtue.
             Seven warrior archetypes, seven chapters of Japan&apos;s timeless code.
-          </p>
+          </Reveal>
 
           {/* Design Grid — Dom Perignon editorial grid */}
-          <div className="reveal d3 grid grid-cols-4 gap-4">
+          <Reveal className="grid grid-cols-4 gap-4" delay={revealDelays.d3}>
             {bushidoDesigns.map((d, i) => (
               <Link
                 href={`/bushido/${d.slug}`}
@@ -247,7 +250,7 @@ export default function Bushido() {
                 <p className="text-[9px] tracking-[2px] uppercase text-off-white/30 mt-1">Complete</p>
               </div>
             </div>
-          </div>
+          </Reveal>
         </div>
       </div>
     </section>

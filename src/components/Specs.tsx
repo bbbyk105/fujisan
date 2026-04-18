@@ -1,6 +1,6 @@
 "use client";
 
-import { useReveal } from "@/hooks/useReveal";
+import { Reveal, revealDelays } from "@/components/Reveal";
 
 const specs = [
   { key: "Classification", val: "Junmai Daiginjo 純米大吟醸" },
@@ -14,27 +14,25 @@ const specs = [
 ];
 
 export default function Specs() {
-  const ref = useReveal<HTMLElement>();
-
   return (
-    <section className="bg-off-white py-[clamp(64px,8vw,100px)]" id="terroir" ref={ref}>
+    <section className="bg-off-white py-[clamp(64px,8vw,100px)]" id="terroir">
       <div className="max-w-[1240px] mx-auto px-[clamp(24px,5vw,60px)]">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-[clamp(48px,7vw,100px)] items-start">
           <div>
-            <p className="reveal text-[12px] tracking-[5px] uppercase text-gold-dark font-normal mb-[18px]">
+            <Reveal as="p" className="text-[12px] tracking-[5px] uppercase text-gold-dark font-normal mb-[18px]">
               Specifications
-            </p>
-            <div className="reveal d1 w-[52px] h-px bg-gold-dark mb-9" />
-            <h2 className="reveal d1 font-serif text-[clamp(34px,4vw,52px)] font-light leading-[1.05] mb-7 text-ink">
+            </Reveal>
+            <Reveal className="w-[52px] h-px bg-gold-dark mb-9" delay={revealDelays.d1} />
+            <Reveal as="h2" className="font-serif text-[clamp(34px,4vw,52px)] font-light leading-[1.05] mb-7 text-ink" delay={revealDelays.d1}>
               <em className="italic text-gold-dark">Craft</em> &amp;<br />Detail
-            </h2>
-            <p className="reveal d2 text-[clamp(16px,2vw,18px)] leading-[1.85] text-ink/65 max-w-[540px]">
+            </Reveal>
+            <Reveal as="p" className="text-[clamp(16px,2vw,18px)] leading-[1.85] text-ink/65 max-w-[540px]" delay={revealDelays.d2}>
               Every element — from the rice polishing ratio to the bottle silhouette —
               is chosen with obsessive attention. The result is sake that speaks for itself.
-            </p>
+            </Reveal>
           </div>
 
-          <div className="reveal d2">
+          <Reveal className="w-full" delay={revealDelays.d2}>
             <table className="w-full border-collapse">
               <tbody>
                 {specs.map((spec, i) => (
@@ -52,7 +50,7 @@ export default function Specs() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </Reveal>
         </div>
       </div>
     </section>

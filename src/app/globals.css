@@ -28,19 +28,21 @@ body {
   overflow-x: hidden;
 }
 
-/* Reveal animation */
-.reveal {
-  opacity: 0;
-  transform: translateY(28px);
-  transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+/* WebKit autofill: keep typed text readable on dark UI (login / forms) */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--color-off-white);
+  caret-color: var(--color-off-white);
+  box-shadow: 0 0 0 1000px var(--color-ink) inset;
+  transition: background-color 9999s ease-out;
 }
-.reveal.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-.d1 { transition-delay: 0.1s; }
-.d2 { transition-delay: 0.22s; }
-.d3 { transition-delay: 0.36s; }
 
 /* Scroll line animation */
 @keyframes scroll-pulse {

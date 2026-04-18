@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { useReveal } from "@/hooks/useReveal";
+import { Reveal, revealDelays } from "@/components/Reveal";
 
 const products = [
   {
@@ -46,17 +46,22 @@ function ProductCard({
     }
   };
 
+  const staggerDelay =
+    index === 0 ? 0 : index === 1 ? revealDelays.d1 : revealDelays.d2;
+
   return (
-    <div
+    <Reveal
       onClick={handleClick}
-      className={`reveal ${index === 1 ? "d1" : index === 2 ? "d2" : ""} relative overflow-hidden aspect-[3/4] group ${
+      className={`relative overflow-hidden aspect-[3/4] group ${
         product.soldOut ? "cursor-pointer" : "cursor-default"
       } ${index === 2 ? "sm:max-lg:col-span-2 sm:max-lg:aspect-video" : ""}`}
+      delay={staggerDelay}
     >
       <Image
         src={product.image}
         alt={product.edition}
         fill
+        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         className="object-cover brightness-[0.82] contrast-[1.08] transition-all duration-900 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-[1.06] group-hover:brightness-[0.72]"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-ink/92 via-ink/28 to-transparent flex flex-col justify-end p-[clamp(20px,3vw,40px)] transition-all duration-400 group-hover:from-ink/96 group-hover:via-ink/50">
@@ -103,32 +108,30 @@ function ProductCard({
           </div>
         </div>
       )}
-    </div>
+    </Reveal>
   );
 }
 
 export default function Products() {
-  const ref = useReveal<HTMLElement>();
-
   return (
-    <section className="bg-cream py-[clamp(80px,10vw,140px)]" id="collection" ref={ref}>
+    <section className="bg-cream py-[clamp(80px,10vw,140px)]" id="collection">
       <div className="max-w-[1240px] mx-auto px-[clamp(24px,5vw,60px)]">
         {/* Header */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-[clamp(32px,6vw,80px)] items-end mb-[clamp(48px,6vw,80px)]">
           <div>
-            <p className="reveal text-[10px] tracking-[5px] uppercase text-gold-dark font-normal mb-[18px]">
+            <Reveal as="p" className="text-[10px] tracking-[5px] uppercase text-gold-dark font-normal mb-[18px]">
               Collection
-            </p>
-            <div className="reveal d1 w-[52px] h-px bg-gold-dark mb-9" />
-            <h2 className="reveal d1 font-serif text-[clamp(36px,6vw,72px)] font-light leading-[1.05] mb-7 text-ink">
+            </Reveal>
+            <Reveal className="w-[52px] h-px bg-gold-dark mb-9" delay={revealDelays.d1} />
+            <Reveal as="h2" className="font-serif text-[clamp(36px,6vw,72px)] font-light leading-[1.05] mb-7 text-ink" delay={revealDelays.d1}>
               The <em className="italic text-gold-dark">Hoshisora</em><br />Collection
-            </h2>
+            </Reveal>
           </div>
-          <p className="reveal d2 text-[clamp(14px,1.8vw,16px)] leading-[1.85] text-ink/62">
+          <Reveal as="p" className="text-[clamp(14px,1.8vw,16px)] leading-[1.85] text-ink/62" delay={revealDelays.d2}>
             Three expressions of Mt. Fuji&apos;s spirit — the golden warmth of sunrise,
             the blue clarity of alpine twilight, and a limited reserve that captures
             the mountain&apos;s rarest moment.
-          </p>
+          </Reveal>
         </div>
       </div>
 
