@@ -2,72 +2,202 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useEffect, useRef } from "react";
+import {
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+  type MouseEventHandler,
+} from "react";
 import { Reveal, revealDelays } from "@/components/Reveal";
-import { bushidoDesigns } from "@/data/bushido-data";
+import { bushidoDesigns, type BushidoDesign } from "@/data/bushido-data";
+
+const IMAGE_CYCLE_INTERVAL_MS = 6000;
+const CROSSFADE_DURATION_MS = 1200;
+const INITIAL_PARALLAX_TRANSFORM = "scale(1.1) translateY(0px)";
+const BOTTLE_IMAGE_SIZES = "(max-width: 1024px) 75vw, 38vw";
+const SCENE_IMAGE_CLASS =
+  "object-cover transition-opacity duration-[1.5s] ease-in-out brightness-[0.35] saturate-[0.8]";
+const BOTTLE_LAYER_CLASS =
+  "absolute inset-0 flex items-center justify-center transition-all duration-[1.4s] ease-in-out";
+
+type TransitionPhase = "show" | "crossfade";
+
+function formatDesignName(name: string) {
+  return name.replace(/\n/g, " ");
+}
+
+function getRandomDesignIndex(exclude: number) {
+  let next = exclude;
+
+  while (next === exclude) {
+    next = Math.floor(Math.random() * bushidoDesigns.length);
+  }
+
+  return next;
+}
+
+function getParallaxTransform(offset: number) {
+  return `scale(${1.1 + Math.abs(offset) * 0.002}) translateY(${offset}px)`;
+}
+
+type BottleImageProps = {
+  design: BushidoDesign;
+  priority?: boolean;
+};
+
+function BottleImage({ design, priority = false }: BottleImageProps) {
+  return (
+    <div className="opus-float relative w-[75%] max-w-[380px] aspect-[3/5]">
+      <Image
+        src={design.image}
+        alt={design.name}
+        fill
+        className="object-contain opus-shadow"
+        sizes={BOTTLE_IMAGE_SIZES}
+        priority={priority}
+      />
+    </div>
+  );
+}
+
+function AmbientParticles() {
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {Array.from({ length: 5 }, (_, index) => (
+        <div key={index} className={`particle particle-${index + 1}`} />
+      ))}
+    </div>
+  );
+}
+
+type DesignCardProps = {
+  design: BushidoDesign;
+  onMouseEnter: MouseEventHandler<HTMLAnchorElement>;
+  onMouseLeave: MouseEventHandler<HTMLAnchorElement>;
+};
+
+function DesignCard({ design, onMouseEnter, onMouseLeave }: DesignCardProps) {
+  return (
+    <Link
+      href={`/bushido/${design.slug}`}
+      className="group no-underline block"
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
+      <div className="relative aspect-[3/5] overflow-hidden mb-2">
+        <Image
+          src={design.image}
+          alt={design.name}
+          fill
+          className="object-contain scale-[0.8] group-hover:scale-[0.95] transition-all duration-700 opacity-50 group-hover:opacity-100"
+          sizes="100px"
+        />
+      </div>
+      <div className="text-center">
+        <p className="text-[10px] tracking-[3px] uppercase text-off-white/35 group-hover:text-gold/80 transition-colors duration-500">
+          {design.letter}
+        </p>
+        <p className="text-[9px] tracking-[1px] uppercase text-off-white/25 group-hover:text-off-white/60 transition-colors duration-500 mt-0.5">
+          {formatDesignName(design.name)}
+        </p>
+      </div>
+    </Link>
+  );
+}
 
 export default function Bushido() {
   const heroRef = useRef<HTMLDivElement>(null);
   const parallaxRef = useRef<HTMLDivElement>(null);
+  const transitionTimeoutRef = useRef<number | null>(null);
+
   const [currentImage, setCurrentImage] = useState(0);
   const [nextImage, setNextImage] = useState(1);
-  const [phase, setPhase] = useState<"show" | "crossfade">("show");
+  const [phase, setPhase] = useState<TransitionPhase>("show");
   const [hoveredDesign, setHoveredDesign] = useState<number | null>(null);
+  const [displayedHoveredDesign, setDisplayedHoveredDesign] = useState<number | null>(
+    null,
+  );
 
-  // Refs mirror state so the cycle interval stays stable across renders.
-  const currentImageRef = useRef(0);
-  currentImageRef.current = currentImage;
-  const hoveredRef = useRef<number | null>(null);
-  hoveredRef.current = hoveredDesign;
+  const currentDesign = bushidoDesigns[currentImage];
+  const nextDesign = bushidoDesigns[nextImage];
+  const activeDesign = bushidoDesigns[hoveredDesign ?? currentImage];
+  const hoveredPreviewDesign =
+    displayedHoveredDesign === null ? null : bushidoDesigns[displayedHoveredDesign];
 
   // rAF-throttled parallax — writes transform directly to DOM, no re-renders on scroll.
   useEffect(() => {
+    let frameId = 0;
     let scheduled = false;
+
     const update = () => {
       scheduled = false;
+
       const hero = heroRef.current;
       const target = parallaxRef.current;
-      if (!hero || !target) return;
+
+      if (!hero || !target) {
+        return;
+      }
+
       const offset = (window.scrollY - hero.offsetTop) * 0.12;
-      target.style.transform = `scale(${1.1 + Math.abs(offset) * 0.002}) translateY(${offset}px)`;
+      target.style.transform = getParallaxTransform(offset);
     };
-    const onScroll = () => {
-      if (scheduled) return;
+
+    const queueUpdate = () => {
+      if (scheduled) {
+        return;
+      }
+
       scheduled = true;
-      requestAnimationFrame(update);
+      frameId = window.requestAnimationFrame(update);
     };
+
     update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", update, { passive: true });
+    window.addEventListener("scroll", queueUpdate, { passive: true });
+    window.addEventListener("resize", queueUpdate, { passive: true });
+
     return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", update);
+      if (frameId) {
+        window.cancelAnimationFrame(frameId);
+      }
+
+      window.removeEventListener("scroll", queueUpdate);
+      window.removeEventListener("resize", queueUpdate);
     };
   }, []);
 
-  // Stable image cycle — deps-free, uses refs to peek current state.
+  const startImageCycle = useEffectEvent(() => {
+    if (hoveredDesign !== null) {
+      return;
+    }
+
+    const nextIndex = getRandomDesignIndex(currentImage);
+    setNextImage(nextIndex);
+    setPhase("crossfade");
+
+    if (transitionTimeoutRef.current !== null) {
+      window.clearTimeout(transitionTimeoutRef.current);
+    }
+
+    transitionTimeoutRef.current = window.setTimeout(() => {
+      setCurrentImage(nextIndex);
+      setPhase("show");
+      transitionTimeoutRef.current = null;
+    }, CROSSFADE_DURATION_MS);
+  });
+
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (hoveredRef.current !== null) return;
-      setPhase("crossfade");
-      let next: number;
-      do {
-        next = Math.floor(Math.random() * bushidoDesigns.length);
-      } while (next === currentImageRef.current);
-      setNextImage(next);
-      setTimeout(() => {
-        setCurrentImage(next);
-        setPhase("show");
-      }, 1200);
-    }, 6000);
-    return () => clearInterval(interval);
+    const intervalId = window.setInterval(startImageCycle, IMAGE_CYCLE_INTERVAL_MS);
+
+    return () => {
+      window.clearInterval(intervalId);
+
+      if (transitionTimeoutRef.current !== null) {
+        window.clearTimeout(transitionTimeoutRef.current);
+      }
+    };
   }, []);
-
-  const activeDesign = hoveredDesign !== null ? hoveredDesign : currentImage;
-
-  // Keep last hovered image mounted during fade-out so transition is smooth
-  const lastHoveredRef = useRef<number>(0);
-  if (hoveredDesign !== null) lastHoveredRef.current = hoveredDesign;
 
   return (
     <section id="bushido">
@@ -77,23 +207,23 @@ export default function Bushido() {
         <div
           ref={parallaxRef}
           className="absolute inset-0 will-change-transform"
-          style={{ transform: "scale(1.1) translateY(0px)" }}
+          style={{ transform: INITIAL_PARALLAX_TRANSFORM }}
         >
           <Image
-            src={bushidoDesigns[activeDesign].imageScene}
+            src={activeDesign.imageScene}
             alt="Bushido atmosphere"
             fill
-            className={`object-cover transition-opacity duration-[1.5s] ease-in-out brightness-[0.35] saturate-[0.8] ${
+            className={`${SCENE_IMAGE_CLASS} ${
               phase === "crossfade" ? "opacity-0" : "opacity-100"
             }`}
             sizes="100vw"
             priority
           />
           <Image
-            src={bushidoDesigns[nextImage].imageScene}
+            src={nextDesign.imageScene}
             alt="Bushido atmosphere next"
             fill
-            className={`object-cover transition-opacity duration-[1.5s] ease-in-out brightness-[0.35] saturate-[0.8] ${
+            className={`${SCENE_IMAGE_CLASS} ${
               phase === "crossfade" ? "opacity-100" : "opacity-0"
             }`}
             sizes="100vw"
@@ -103,151 +233,145 @@ export default function Bushido() {
         {/* Dark vignette overlay */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_45%,transparent_20%,rgba(14,12,10,0.7)_100%)]" />
         <div className="absolute inset-0 bg-gradient-to-b from-ink/60 via-transparent to-ink" />
+        <AmbientParticles />
+
+        {/* Glow behind center */}
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[400px] bg-[radial-gradient(ellipse,rgba(201,168,76,0.1)_0%,transparent_65%)] blur-[50px] bottle-glow pointer-events-none" />
 
         {/* Center content */}
-        <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-8">
-          <Reveal as="p" className="text-[13px] tracking-[6px] uppercase text-gold/75 mb-6 font-normal">
+        <div className="relative z-10 flex h-full flex-col items-center justify-center px-8 text-center">
+          <Reveal as="p" className="mb-6 text-[13px] uppercase tracking-[6px] text-gold/75 font-normal">
             The Bushido Edition
           </Reveal>
-          <Reveal as="h2" className="font-serif text-[clamp(44px,7vw,96px)] font-light leading-[1.0] mb-4 tracking-[-0.02em]" delay={revealDelays.d1}>
-            The Spirit of<br />the <em className="italic text-gold-lt">Samurai</em>
+          <Reveal
+            as="h2"
+            className="mb-4 font-serif text-[clamp(44px,7vw,96px)] font-light leading-[1.0] tracking-[-0.02em]"
+            delay={revealDelays.d1}
+          >
+            The Spirit of
+            <br />
+            the <em className="italic text-gold-lt">Samurai</em>
           </Reveal>
-          <Reveal className="w-[48px] h-px bg-gold/40 mx-auto mb-6" delay={revealDelays.d1} />
-          <Reveal as="p" className="text-[clamp(15px,1.8vw,18px)] leading-[1.9] text-off-white/65 max-w-[580px] font-light" delay={revealDelays.d2}>
-            Seven distinct expressions of Bushido — each bottle a different warrior archetype,
-            a different chapter of Japan&apos;s timeless code of honor.
+          <Reveal className="mx-auto mb-6 h-px w-[48px] bg-gold/40" delay={revealDelays.d1} />
+          <Reveal
+            as="p"
+            className="max-w-[580px] text-[clamp(15px,1.8vw,18px)] font-light leading-[1.9] text-off-white/65"
+            delay={revealDelays.d2}
+          >
+            Seven distinct expressions of Bushido — each bottle a different warrior
+            archetype, a different chapter of Japan&apos;s timeless code of honor.
           </Reveal>
-          <Reveal as="p" className="text-[12px] tracking-[5px] uppercase text-gold/55 mt-8" delay={revealDelays.d3}>
+          <Reveal
+            as="p"
+            className="mt-8 text-[12px] uppercase tracking-[5px] text-gold/55"
+            delay={revealDelays.d3}
+          >
             300ml · 7 Designs · 純米大吟醸
           </Reveal>
         </div>
 
         {/* Scroll indicator */}
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3">
-          <p className="text-[10px] tracking-[4px] uppercase text-off-white/35">Scroll</p>
-          <div className="w-px h-10 bg-gradient-to-b from-off-white/20 to-transparent animate-scroll-pulse" />
+        <div className="absolute bottom-10 left-1/2 flex -translate-x-1/2 flex-col items-center gap-3">
+          <p className="text-[10px] uppercase tracking-[4px] text-off-white/35">Scroll</p>
+          <div className="h-10 w-px bg-gradient-to-b from-off-white/20 to-transparent animate-scroll-pulse" />
         </div>
       </div>
 
       {/* ===== SPLIT SCREEN — Bottle + Grid ===== */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 min-h-screen">
-
+      <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
         {/* LEFT — Cinematic bottle on black */}
-        <div className="relative bg-ink flex items-center justify-center min-h-[70vh] lg:min-h-screen overflow-hidden">
+        <div className="relative flex min-h-[70vh] items-center justify-center overflow-hidden bg-ink lg:min-h-screen">
           {/* Spotlight */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[50%] h-[60%] bg-[conic-gradient(from_180deg,transparent_36%,rgba(248,245,238,0.04)_48%,rgba(201,168,76,0.03)_50%,rgba(248,245,238,0.04)_52%,transparent_64%)]" />
+          <div className="absolute top-0 left-1/2 h-[60%] w-[50%] -translate-x-1/2 bg-[conic-gradient(from_180deg,transparent_36%,rgba(248,245,238,0.04)_48%,rgba(201,168,76,0.03)_50%,rgba(248,245,238,0.04)_52%,transparent_64%)]" />
 
-          {/* Current bottle */}
-          <div className={`absolute inset-0 flex items-center justify-center transition-all duration-[1.4s] ease-in-out ${
-            phase === "crossfade" ? "opacity-0 scale-[0.97]" : "opacity-100 scale-100"
-          }`}>
-            <div className="opus-float relative w-[75%] max-w-[380px] aspect-[3/5]">
-              <Image
-                src={bushidoDesigns[currentImage].image}
-                alt={bushidoDesigns[currentImage].name}
-                fill
-                className="object-contain opus-shadow"
-                sizes="(max-width: 1024px) 75vw, 38vw"
-                priority
-              />
-            </div>
+          <div
+            className={`${BOTTLE_LAYER_CLASS} ${
+              phase === "crossfade" ? "opacity-0 scale-[0.97]" : "opacity-100 scale-100"
+            }`}
+          >
+            <BottleImage design={currentDesign} priority />
           </div>
 
-          {/* Next bottle */}
-          <div className={`absolute inset-0 flex items-center justify-center transition-all duration-[1.4s] ease-in-out ${
-            phase === "crossfade" ? "opacity-100 scale-100" : "opacity-0 scale-[0.97]"
-          }`}>
-            <div className="opus-float relative w-[75%] max-w-[380px] aspect-[3/5]">
-              <Image
-                src={bushidoDesigns[nextImage].image}
-                alt={bushidoDesigns[nextImage].name}
-                fill
-                className="object-contain opus-shadow"
-                sizes="(max-width: 1024px) 75vw, 38vw"
-              />
-            </div>
+          <div
+            className={`${BOTTLE_LAYER_CLASS} ${
+              phase === "crossfade" ? "opacity-100 scale-100" : "opacity-0 scale-[0.97]"
+            }`}
+          >
+            <BottleImage design={nextDesign} />
           </div>
 
           {/* Hovered bottle — always mounted for smooth fade in/out */}
-          <div className={`absolute inset-0 flex items-center justify-center z-10 transition-opacity duration-500 ease-in-out ${
-            hoveredDesign !== null ? "opacity-100" : "opacity-0 pointer-events-none"
-          }`}>
-            <div className="opus-float relative w-[75%] max-w-[380px] aspect-3/5">
-              <Image
-                src={bushidoDesigns[lastHoveredRef.current].image}
-                alt={bushidoDesigns[lastHoveredRef.current].name}
-                fill
-                className="object-contain opus-shadow"
-                sizes="(max-width: 1024px) 75vw, 38vw"
-              />
-            </div>
+          <div
+            className={`${BOTTLE_LAYER_CLASS} z-10 transition-opacity duration-500 ${
+              hoveredPreviewDesign ? "opacity-100" : "pointer-events-none opacity-0"
+            }`}
+          >
+            {hoveredPreviewDesign ? <BottleImage design={hoveredPreviewDesign} /> : null}
           </div>
 
           {/* Floor reflection */}
-          <div className="absolute bottom-[6%] left-1/2 -translate-x-1/2 w-[45%] h-[12%] bg-[radial-gradient(ellipse,rgba(201,168,76,0.08)_0%,transparent_70%)] blur-[8px] bottle-glow" />
+          <div className="absolute bottom-[6%] left-1/2 h-[12%] w-[45%] -translate-x-1/2 bg-[radial-gradient(ellipse,rgba(201,168,76,0.08)_0%,transparent_70%)] blur-[8px] bottle-glow" />
 
           {/* Active design label */}
-          <div className={`absolute bottom-8 left-0 right-0 text-center transition-all duration-700 ${
-            phase === "crossfade" && hoveredDesign === null ? "opacity-0" : "opacity-100"
-          }`}>
-            <p className="text-[11px] tracking-[5px] uppercase text-gold/55">
-              Design {bushidoDesigns[activeDesign].letter}
+          <div
+            className={`absolute right-0 bottom-8 left-0 text-center transition-all duration-700 ${
+              phase === "crossfade" && hoveredDesign === null ? "opacity-0" : "opacity-100"
+            }`}
+          >
+            <p className="text-[11px] uppercase tracking-[5px] text-gold/55">
+              Design {activeDesign.letter}
             </p>
-            <p className="font-serif text-xl font-light text-off-white/75 mt-1">
-              {bushidoDesigns[activeDesign].name.replace("\n", " ")}
+            <p className="mt-1 font-serif text-xl font-light text-off-white/75">
+              {formatDesignName(activeDesign.name)}
             </p>
           </div>
         </div>
 
         {/* RIGHT — Text + Design grid */}
-        <div className="bg-ink2 flex flex-col justify-center px-[clamp(40px,6vw,100px)] py-[clamp(60px,7vw,100px)] border-l border-gold/6">
-          <Reveal as="p" className="text-[12px] tracking-[5px] uppercase text-gold/65 mb-6 font-normal">
+        <div className="flex flex-col justify-center border-l border-gold/6 bg-ink2 px-[clamp(40px,6vw,100px)] py-[clamp(60px,7vw,100px)]">
+          <Reveal as="p" className="mb-6 text-[12px] uppercase tracking-[5px] text-gold/65 font-normal">
             The Collection
           </Reveal>
-          <Reveal className="w-[36px] h-px bg-gold/30 mb-8" delay={revealDelays.d1} />
+          <Reveal className="mb-8 h-px w-[36px] bg-gold/30" delay={revealDelays.d1} />
 
-          <Reveal as="h3" className="font-serif text-[clamp(30px,3.5vw,48px)] font-light leading-[1.1] mb-6" delay={revealDelays.d1}>
-            From <em className="italic text-gold-lt/80">White Peak</em><br />to Black Snow
+          <Reveal
+            as="h3"
+            className="mb-6 font-serif text-[clamp(30px,3.5vw,48px)] font-light leading-[1.1]"
+            delay={revealDelays.d1}
+          >
+            From <em className="italic text-gold-lt/80">White Peak</em>
+            <br />
+            to Black Snow
           </Reveal>
 
-          <Reveal as="p" className="text-[clamp(15px,1.7vw,18px)] leading-[1.95] text-off-white/60 max-w-[480px] mb-12" delay={revealDelays.d2}>
+          <Reveal
+            as="p"
+            className="mb-12 max-w-[480px] text-[clamp(15px,1.7vw,18px)] leading-[1.95] text-off-white/60"
+            delay={revealDelays.d2}
+          >
             From the White Peak to the Black Snow, each design encapsulates a virtue.
             Seven warrior archetypes, seven chapters of Japan&apos;s timeless code.
           </Reveal>
 
           {/* Design Grid — Dom Perignon editorial grid */}
           <Reveal className="grid grid-cols-4 gap-4" delay={revealDelays.d3}>
-            {bushidoDesigns.map((d, i) => (
-              <Link
-                href={`/bushido/${d.slug}`}
-                key={d.letter}
-                className="group no-underline block"
-                onMouseEnter={() => setHoveredDesign(i)}
+            {bushidoDesigns.map((design, index) => (
+              <DesignCard
+                key={design.letter}
+                design={design}
+                onMouseEnter={() => {
+                  setDisplayedHoveredDesign(index);
+                  setHoveredDesign(index);
+                }}
                 onMouseLeave={() => setHoveredDesign(null)}
-              >
-                <div className="relative aspect-[3/5] overflow-hidden mb-2">
-                  <Image
-                    src={d.image}
-                    alt={d.name}
-                    fill
-                    className="object-contain scale-[0.8] group-hover:scale-[0.95] transition-all duration-700 opacity-50 group-hover:opacity-100"
-                    sizes="100px"
-                  />
-                </div>
-                <div className="text-center">
-                  <p className="text-[10px] tracking-[3px] uppercase text-off-white/35 group-hover:text-gold/80 transition-colors duration-500">
-                    {d.letter}
-                  </p>
-                  <p className="text-[9px] tracking-[1px] uppercase text-off-white/25 group-hover:text-off-white/60 transition-colors duration-500 mt-0.5">
-                    {d.name.replace("\n", " ")}
-                  </p>
-                </div>
-              </Link>
+              />
             ))}
             <div className="flex items-center justify-center">
               <div className="text-center">
                 <p className="font-jp text-base font-light text-gold/40">武士道</p>
-                <p className="text-[9px] tracking-[2px] uppercase text-off-white/30 mt-1">Complete</p>
+                <p className="mt-1 text-[9px] uppercase tracking-[2px] text-off-white/30">
+                  Complete
+                </p>
               </div>
             </div>
           </Reveal>
