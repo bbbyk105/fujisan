@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { Reveal, revealDelays } from "@/components/Reveal";
 
