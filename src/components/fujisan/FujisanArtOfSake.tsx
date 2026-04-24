@@ -7,30 +7,48 @@ const pillars = [
   { label: "PASSION &", sub: "DEDICATION", Icon: IconDrop },
 ];
 
+const craftPhotos = [
+  {
+    src: "/images/site/sake.png",
+    alt: "Clear brewing water pouring into a wooden vessel",
+    position: "object-[42%_50%]",
+  },
+  {
+    src: "/images/site/rice.png",
+    alt: "Steaming Japanese rice for sake brewing",
+    position: "object-[50%_50%]",
+  },
+  {
+    src: "/images/site/ochoko.png",
+    alt: "Sake poured into an ochoko cup",
+    position: "object-[63%_50%]",
+  },
+];
+
 export default function FujisanArtOfSake() {
   return (
-    <section id="art" className="relative bg-[#142236] text-[#EAD9B5]">
-      <div className="grid grid-cols-1 md:grid-cols-[1.05fr_1fr]">
-        <div className="px-8 md:px-16 py-14 md:py-20 flex flex-col justify-between gap-10">
+    <section id="art" className="relative scroll-mt-[86px] bg-[#122337] text-[#EAD9B5]">
+      <div className="grid grid-cols-1 lg:grid-cols-[49%_51%]">
+        <div className="fujisan-dark-panel flex min-h-[300px] flex-col justify-between gap-6 px-8 py-8 sm:px-10 md:px-14 lg:min-h-[210px] lg:px-[4vw] lg:py-5">
           <div>
-            <h2 className="font-serif text-[#D7B46A] text-[clamp(24px,3vw,34px)] tracking-[0.18em]">
+            <h2 className="font-serif text-[clamp(22px,2.1vw,27px)] font-semibold tracking-[0.14em] text-[#D7B46A]">
               THE ART OF SAKE
             </h2>
-            <p className="mt-5 text-[14px] md:text-[15px] text-[#EAD9B5]/85 leading-[1.8] max-w-[440px]">
+            <p className="mt-2 max-w-[520px] text-[14px] leading-[1.5] text-[#F2E4C7]/90 md:text-[14.5px]">
               Brewed with pristine water from Mt. Fuji and
-              <br className="hidden md:block" /> traditional techniques passed down for generations.
+              <br className="hidden sm:block" /> traditional techniques passed down for generations.
             </p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-4 pt-2">
+          <div className="grid grid-cols-2 gap-x-5 gap-y-5 sm:grid-cols-4 md:gap-x-6 lg:gap-x-3">
             {pillars.map(({ label, sub, Icon }) => (
-              <div key={label} className="flex flex-col items-start gap-3">
-                <Icon className="w-9 h-9 text-[#D7B46A]" />
+              <div key={label} className="flex flex-col items-center gap-2 text-center sm:items-start sm:text-left">
+                <Icon className="h-8 w-8 text-[#D7B46A]" />
                 <div>
-                  <p className="text-[10px] tracking-[0.22em] font-medium text-[#EAD9B5]">
+                  <p className="whitespace-nowrap text-[9px] font-semibold tracking-[0.06em] text-[#F2E4C7] md:text-[9.5px]">
                     {label}
                   </p>
-                  <p className="text-[10px] tracking-[0.22em] font-medium text-[#EAD9B5]">
+                  <p className="whitespace-nowrap text-[9px] font-semibold tracking-[0.06em] text-[#F2E4C7] md:text-[9.5px]">
                     {sub}
                   </p>
                 </div>
@@ -39,14 +57,18 @@ export default function FujisanArtOfSake() {
           </div>
         </div>
 
-        <div className="relative min-h-[320px] md:min-h-full aspect-2/1 md:aspect-auto">
-          <Image
-            src="/images/site/sake.png"
-            alt="The art of sake — water, rice, and pouring"
-            fill
-            sizes="(min-width: 768px) 50vw, 100vw"
-            className="object-cover"
-          />
+        <div className="grid min-h-[720px] grid-cols-1 sm:min-h-[520px] sm:grid-cols-3 lg:min-h-[210px]">
+          {craftPhotos.map((photo) => (
+            <div key={photo.src} className="relative min-h-[240px] overflow-hidden border-t border-[#F2E4C7]/20 sm:border-l sm:border-t-0">
+              <Image
+                src={photo.src}
+                alt={photo.alt}
+                fill
+                sizes="(min-width: 1024px) 17vw, (min-width: 640px) 34vw, 100vw"
+                className={`object-cover ${photo.position}`}
+              />
+            </div>
+          ))}
         </div>
       </div>
     </section>
