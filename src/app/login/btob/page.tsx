@@ -57,12 +57,12 @@ export default function BtoBLoginPage() {
             backgroundSize: "40px 40px",
           }}
         />
-        <a
+        <Link
           href="/"
           className="relative font-serif text-[13px] tracking-[5px] uppercase text-gold no-underline hover:text-gold-lt transition-colors duration-300"
         >
           Amachi Hoshisora
-        </a>
+        </Link>
 
         <div className="relative py-16">
           <p className="text-[10px] tracking-[6px] uppercase text-gold/50 mb-8">
@@ -100,12 +100,12 @@ export default function BtoBLoginPage() {
       {/* Right Panel — Form */}
       <div className="flex-1 flex flex-col justify-center px-[clamp(32px,6vw,100px)] py-[clamp(60px,8vw,100px)]">
         <div className="flex items-center justify-end mb-12">
-          <a
+          <Link
             href="/"
             className="text-[11px] tracking-[3px] uppercase text-off-white/35 no-underline hover:text-gold transition-colors duration-300"
           >
             ← Back to site
-          </a>
+          </Link>
         </div>
 
         <div className="max-w-[420px] w-full mx-auto lg:mx-0">

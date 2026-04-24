@@ -35,23 +35,23 @@ export default function ContactPage() {
   };
 
   const inputClass =
-    "w-full bg-transparent border-b border-off-white/15 focus:border-gold/50 outline-none py-3 px-0 text-[15px] text-off-white/80 font-serif font-light placeholder:text-off-white/20 transition-colors duration-500";
+    "w-full bg-transparent border-b border-off-white/15 focus:border-gold/50 outline-none py-3 px-0 text-[15px] text-off-white/82 font-normal placeholder:text-off-white/24 transition-colors duration-500";
   const labelClass =
-    "text-[10px] tracking-[4px] uppercase text-off-white/40 mb-2 block";
+    "text-[10px] tracking-[0.26em] uppercase text-off-white/44 mb-2 block";
 
   return (
     <main className="bg-ink min-h-screen">
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-10 py-5 bg-ink/90 backdrop-blur-[16px] border-b border-gold/8">
-        <a
+        <Link
           href="/"
-          className="font-serif text-[13px] tracking-[4px] uppercase text-gold no-underline hover:text-gold-lt transition-colors"
+          className="font-serif text-[13px] tracking-[0.28em] uppercase text-gold no-underline hover:text-gold-lt transition-colors"
         >
           Amachi Hoshisora
-        </a>
+        </Link>
         <Link
           href="/#bushido"
-          className="text-[11px] tracking-[3px] uppercase text-off-white/50 no-underline hover:text-gold transition-colors"
+          className="text-[11px] tracking-[0.22em] uppercase text-off-white/50 no-underline hover:text-gold transition-colors"
         >
           ← Back
         </Link>
@@ -59,14 +59,14 @@ export default function ContactPage() {
 
       {/* Hero */}
       <section className="pt-32 pb-16 px-8 text-center">
-        <Reveal as="p" className="text-[11px] tracking-[6px] uppercase text-gold/60 mb-6">
+        <Reveal as="p" className="text-[11px] tracking-[0.3em] uppercase text-gold/60 mb-6">
           Contact
         </Reveal>
-        <Reveal as="h1" className="font-serif text-[clamp(36px,6vw,64px)] font-light leading-[1.05] mb-4" delay={revealDelays.d1}>
+        <Reveal as="h1" className="font-serif text-[clamp(36px,6vw,64px)] font-normal leading-[1.12] mb-4" delay={revealDelays.d1}>
           Get in Touch
         </Reveal>
         <Reveal className="w-[40px] h-px bg-gold/30 mx-auto mb-6" delay={revealDelays.d1} />
-        <Reveal as="p" className="text-[clamp(14px,1.6vw,17px)] text-off-white/55 font-light max-w-[520px] mx-auto leading-[1.8]" delay={revealDelays.d2}>
+        <Reveal as="p" className="text-[clamp(14px,1.6vw,17px)] text-off-white/62 font-normal max-w-[520px] mx-auto leading-[1.9]" delay={revealDelays.d2}>
           For inquiries about our Bushido Edition, wholesale, or collaborations,
           please reach out to us below.
         </Reveal>
@@ -77,19 +77,19 @@ export default function ContactPage() {
         {submitted ? (
           <Reveal className="text-center py-20">
             <p className="font-jp text-4xl text-gold/60 mb-6">感謝</p>
-            <h2 className="font-serif text-[clamp(24px,3vw,36px)] font-light mb-4">
+            <h2 className="font-serif text-[clamp(24px,3vw,36px)] font-normal mb-4">
               Thank You
             </h2>
-            <p className="text-[15px] text-off-white/55 font-light leading-[1.8] mb-8">
+            <p className="text-[15px] text-off-white/62 font-normal leading-[1.9] mb-8">
               Your email client should have opened with a pre-filled message.<br />
               We will respond within 2 business days.
             </p>
-            <a
+            <Link
               href="/"
-              className="inline-block text-[11px] tracking-[4px] uppercase text-gold/60 border border-gold/25 px-8 py-3 no-underline hover:bg-gold/10 hover:border-gold/50 transition-all duration-500"
+              className="inline-block text-[11px] tracking-[0.26em] uppercase text-gold/60 border border-gold/25 px-8 py-3 no-underline hover:bg-gold/10 hover:border-gold/50 transition-all duration-500"
             >
               Return Home
-            </a>
+            </Link>
           </Reveal>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-10">
@@ -173,7 +173,7 @@ export default function ContactPage() {
               <button
                 type="submit"
                 disabled={sending}
-                className="text-[12px] tracking-[4px] uppercase text-gold border border-gold/30 px-10 py-3.5 bg-transparent hover:bg-gold/10 hover:border-gold/60 transition-all duration-500 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                className="text-[12px] tracking-[0.26em] uppercase text-gold border border-gold/30 px-10 py-3.5 bg-transparent hover:bg-gold/10 hover:border-gold/60 transition-all duration-500 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
               >
                 {sending ? "Sending..." : "Send Message"}
               </button>

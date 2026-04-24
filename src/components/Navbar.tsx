@@ -81,7 +81,7 @@ export default function Navbar() {
       >
         <Link
           href="/"
-          className="font-serif text-[13px] tracking-[5px] uppercase text-gold no-underline shrink-0"
+          className="font-serif text-[13px] tracking-[0.28em] uppercase text-gold no-underline shrink-0"
         >
           Amachi Hoshisora
         </Link>
@@ -92,7 +92,7 @@ export default function Navbar() {
               <Link
                 href={link.href}
                 onClick={closeMenus}
-                className={`text-[12px] tracking-[3px] uppercase no-underline transition-colors duration-300 ${
+                className={`text-[12px] tracking-[0.22em] uppercase no-underline transition-colors duration-300 ${
                   isActiveLink(link.href)
                     ? "text-gold"
                     : "text-off-white/75 hover:text-gold"
@@ -109,7 +109,7 @@ export default function Navbar() {
               type="button"
               onClick={() => setLoginOpen((v) => !v)}
               aria-expanded={loginOpen}
-              className="flex items-center gap-2 text-[11px] tracking-[3px] uppercase text-off-white/70 hover:text-gold transition-colors duration-300 bg-transparent border-none cursor-pointer"
+              className="flex items-center gap-2 text-[11px] tracking-[0.22em] uppercase text-off-white/70 hover:text-gold transition-colors duration-300 bg-transparent border-none cursor-pointer"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
@@ -198,7 +198,7 @@ export default function Navbar() {
             key={link.href}
             href={link.href}
             onClick={closeMenus}
-            className={`font-serif text-2xl tracking-[6px] uppercase no-underline transition-colors ${
+            className={`font-serif text-2xl tracking-[0.24em] uppercase no-underline transition-colors ${
               isActiveLink(link.href)
                 ? "text-gold"
                 : "text-off-white/70 hover:text-gold"

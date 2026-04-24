@@ -17,14 +17,14 @@ export default function PageHero({
       <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-gold/20 to-transparent" />
 
       <div className="relative mx-auto max-w-[980px] text-center">
-        <p className="mb-6 text-[11px] uppercase tracking-[6px] text-gold/70">
+        <p className="mb-6 text-[11px] uppercase tracking-[0.3em] text-gold/70">
           {eyebrow}
         </p>
-        <h1 className="mb-6 font-serif text-[clamp(42px,7vw,88px)] font-light leading-[0.98] tracking-[-0.03em]">
+        <h1 className="mb-6 font-serif text-[clamp(42px,7vw,88px)] font-normal leading-[1.08]">
           {title}
         </h1>
         <div className="mx-auto mb-8 h-px w-[56px] bg-gold/35" />
-        <p className="mx-auto max-w-[680px] text-[clamp(15px,2vw,18px)] font-light leading-[1.9] text-off-white/62">
+        <p className="mx-auto max-w-[680px] text-[clamp(15px,2vw,18px)] font-normal leading-[1.95] text-off-white/68">
           {description}
         </p>
       </div>

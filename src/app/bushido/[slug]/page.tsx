@@ -32,7 +32,6 @@ export default function BushidoDetailPage({
   const reduceMotion = useReducedMotion();
 
   useEffect(() => {
-    setLoaded(false);
     const t = setTimeout(() => setLoaded(true), 80);
     return () => clearTimeout(t);
   }, [slug]);
@@ -57,12 +56,12 @@ export default function BushidoDetailPage({
             : "bg-transparent"
         }`}
       >
-        <a
+        <Link
           href="/#bushido"
           className="font-serif text-[13px] tracking-[4px] uppercase text-gold no-underline hover:text-gold-lt transition-colors"
         >
           Amachi Hoshisora
-        </a>
+        </Link>
         <div className="flex gap-8 items-center">
           <Link
             href={`/bushido/${prev.slug}`}
@@ -109,13 +108,13 @@ export default function BushidoDetailPage({
           className="relative z-10 flex flex-col items-center justify-center h-full text-center px-8"
           style={{ opacity: heroOpacity, transform: `translateY(${scrollY * 0.15}px)` }}
         >
-          <p className={`text-[12px] tracking-[6px] uppercase text-gold/70 mb-8 font-normal transition-all duration-[1.5s] ${
+          <p className={`text-[12px] tracking-[0.3em] uppercase text-gold/70 mb-8 font-medium transition-all duration-[1.5s] ${
             loaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
           }`}>
             Design {design.letter} · The Bushido Edition
           </p>
 
-          <h1 className={`font-serif text-[clamp(52px,9vw,120px)] font-light leading-[0.95] tracking-[-0.03em] mb-5 transition-all duration-[2s] delay-200 ${
+          <h1 className={`font-serif text-[clamp(52px,9vw,120px)] font-normal leading-[1.08] mb-5 transition-all duration-[2s] delay-200 ${
             loaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
           }`}>
             {design.name.replace("\n", " ")}
@@ -125,7 +124,7 @@ export default function BushidoDetailPage({
             loaded ? "opacity-100 scale-x-100" : "opacity-0 scale-x-0"
           }`} />
 
-          <p className={`font-serif text-[clamp(18px,2.5vw,26px)] italic text-gold-lt/70 transition-all duration-[2s] delay-700 ${
+          <p className={`font-serif text-[clamp(18px,2.5vw,26px)] italic leading-[1.7] text-gold-lt/74 transition-all duration-[2s] delay-700 ${
             loaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
           }`}>
             &ldquo;{design.subtitle}&rdquo;
@@ -148,7 +147,7 @@ export default function BushidoDetailPage({
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[50%] h-[65%] bg-[conic-gradient(from_180deg,transparent_36%,rgba(248,245,238,0.04)_48%,rgba(201,168,76,0.025)_50%,rgba(248,245,238,0.04)_52%,transparent_64%)]" />
 
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
-            <span className="font-jp text-[clamp(200px,35vw,420px)] font-extralight text-off-white kanji-breathe">
+            <span className="font-jp text-[clamp(200px,35vw,420px)] font-light text-off-white kanji-breathe">
               {design.virtueJp}
             </span>
           </div>
@@ -174,7 +173,7 @@ export default function BushidoDetailPage({
         {/* RIGHT — Details */}
         <div className="bg-ink2 flex flex-col justify-center px-[clamp(40px,6vw,100px)] py-[clamp(60px,6vw,100px)] lg:pr-[clamp(60px,8vw,140px)] border-l border-gold/8">
           <Reveal>
-            <p className="text-[11px] tracking-[5px] uppercase text-gold/70 mb-2 font-normal">
+            <p className="text-[11px] tracking-[0.28em] uppercase text-gold/70 mb-2 font-medium">
               Design {design.letter}
             </p>
             <p className="text-[12px] tracking-[4px] uppercase text-off-white/50 mb-8">
@@ -182,18 +181,18 @@ export default function BushidoDetailPage({
             </p>
           </Reveal>
 
-          <Reveal as="h2" className="font-serif text-[clamp(38px,5vw,68px)] font-light leading-[1.05] tracking-[-0.02em] mb-4" delay={revealDelays.d1}>
+          <Reveal as="h2" className="font-serif text-[clamp(38px,5vw,68px)] font-normal leading-[1.14] mb-4" delay={revealDelays.d1}>
             {design.name.replace("\n", " ")}
           </Reveal>
 
           <Reveal className="w-[36px] h-px bg-gold/30 my-7" delay={revealDelays.d1} />
 
-          <Reveal as="p" className="font-serif text-[clamp(18px,2.2vw,24px)] italic text-gold-lt/70 mb-10 leading-[1.7]" delay={revealDelays.d2}>
+          <Reveal as="p" className="font-serif text-[clamp(18px,2.2vw,24px)] italic text-gold-lt/74 mb-10 leading-[1.75]" delay={revealDelays.d2}>
             &ldquo;{design.subtitle}&rdquo;
           </Reveal>
 
           <Reveal className="flex items-center gap-6 mb-12" delay={revealDelays.d2}>
-            <span className="font-jp text-[clamp(42px,5vw,58px)] font-extralight text-gold/70">
+            <span className="font-jp text-[clamp(42px,5vw,58px)] font-light text-gold/72">
               {design.virtueJp}
             </span>
             <div className="h-12 w-px bg-gold/20" />
@@ -419,12 +418,12 @@ export default function BushidoDetailPage({
 
       {/* Footer */}
       <footer className="border-t border-gold/6 py-14 text-center bg-ink">
-        <a
+        <Link
           href="/#bushido"
           className="text-[11px] tracking-[4px] uppercase text-off-white/35 no-underline hover:text-gold/60 transition-colors"
         >
           ← Back to Collection
-        </a>
+        </Link>
         <div className="mt-8">
           <p className="text-[12px] text-off-white/30 tracking-[2px]">
             Mt. Fuji Sake Project

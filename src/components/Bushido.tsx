@@ -240,12 +240,12 @@ export default function Bushido() {
 
         {/* Center content */}
         <div className="relative z-10 flex h-full flex-col items-center justify-center px-8 text-center">
-          <Reveal as="p" className="mb-6 text-[13px] uppercase tracking-[6px] text-gold/75 font-normal">
+          <Reveal as="p" className="mb-6 text-[13px] uppercase tracking-[0.3em] text-gold/75 font-medium">
             The Bushido Edition
           </Reveal>
           <Reveal
             as="h2"
-            className="mb-4 font-serif text-[clamp(44px,7vw,96px)] font-light leading-[1.0] tracking-[-0.02em]"
+            className="mb-4 font-serif text-[clamp(44px,7vw,96px)] font-normal leading-[1.08]"
             delay={revealDelays.d1}
           >
             The Spirit of
@@ -255,7 +255,7 @@ export default function Bushido() {
           <Reveal className="mx-auto mb-6 h-px w-[48px] bg-gold/40" delay={revealDelays.d1} />
           <Reveal
             as="p"
-            className="max-w-[580px] text-[clamp(15px,1.8vw,18px)] font-light leading-[1.9] text-off-white/65"
+            className="max-w-[580px] text-[clamp(15px,1.8vw,18px)] font-normal leading-[1.95] text-off-white/68"
             delay={revealDelays.d2}
           >
             Seven distinct expressions of Bushido — each bottle a different warrior
@@ -263,7 +263,7 @@ export default function Bushido() {
           </Reveal>
           <Reveal
             as="p"
-            className="mt-8 text-[12px] uppercase tracking-[5px] text-gold/55"
+            className="mt-8 text-[12px] uppercase tracking-[0.28em] text-gold/58"
             delay={revealDelays.d3}
           >
             300ml · 7 Designs · 純米大吟醸
@@ -272,7 +272,7 @@ export default function Bushido() {
 
         {/* Scroll indicator */}
         <div className="absolute bottom-10 left-1/2 flex -translate-x-1/2 flex-col items-center gap-3">
-          <p className="text-[10px] uppercase tracking-[4px] text-off-white/35">Scroll</p>
+          <p className="text-[10px] uppercase tracking-[0.28em] text-off-white/38">Scroll</p>
           <div className="h-10 w-px bg-gradient-to-b from-off-white/20 to-transparent animate-scroll-pulse" />
         </div>
       </div>
@@ -329,14 +329,14 @@ export default function Bushido() {
 
         {/* RIGHT — Text + Design grid */}
         <div className="flex flex-col justify-center border-l border-gold/6 bg-ink2 px-[clamp(40px,6vw,100px)] py-[clamp(60px,7vw,100px)]">
-          <Reveal as="p" className="mb-6 text-[12px] uppercase tracking-[5px] text-gold/65 font-normal">
+          <Reveal as="p" className="mb-6 text-[12px] uppercase tracking-[0.3em] text-gold/65 font-medium">
             The Collection
           </Reveal>
           <Reveal className="mb-8 h-px w-[36px] bg-gold/30" delay={revealDelays.d1} />
 
           <Reveal
             as="h3"
-            className="mb-6 font-serif text-[clamp(30px,3.5vw,48px)] font-light leading-[1.1]"
+            className="mb-6 font-serif text-[clamp(30px,3.5vw,48px)] font-normal leading-[1.16]"
             delay={revealDelays.d1}
           >
             From <em className="italic text-gold-lt/80">White Peak</em>
@@ -346,7 +346,7 @@ export default function Bushido() {
 
           <Reveal
             as="p"
-            className="mb-12 max-w-[480px] text-[clamp(15px,1.7vw,18px)] leading-[1.95] text-off-white/60"
+            className="mb-12 max-w-[480px] text-[clamp(15px,1.7vw,18px)] leading-[2] text-off-white/66"
             delay={revealDelays.d2}
           >
             From the White Peak to the Black Snow, each design encapsulates a virtue.
@@ -368,7 +368,7 @@ export default function Bushido() {
             ))}
             <div className="flex items-center justify-center">
               <div className="text-center">
-                <p className="font-jp text-base font-light text-gold/40">武士道</p>
+                <p className="font-jp text-base font-normal text-gold/46">武士道</p>
                 <p className="mt-1 text-[9px] uppercase tracking-[2px] text-off-white/30">
                   Complete
                 </p>
