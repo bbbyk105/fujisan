@@ -1,23 +1,15 @@
-import Navbar from "@/components/Navbar";
-import Hero from "@/components/Hero";
-import Story from "@/components/Story";
-import Products from "@/components/Products";
-import Philosophy from "@/components/Philosophy";
-import Bushido from "@/components/Bushido";
-import Specs from "@/components/Specs";
-import Footer from "@/components/Footer";
+import FujisanNav from "@/components/fujisan/FujisanNav";
+import FujisanHero from "@/components/fujisan/FujisanHero";
+import FujisanArtOfSake from "@/components/fujisan/FujisanArtOfSake";
+import FujisanExperience from "@/components/fujisan/FujisanExperience";
 
 export default function Home() {
   return (
-    <>
-      <Navbar />
-      <Hero />
-      <Story />
-      <Products />
-      <Philosophy />
-      <Bushido />
-      <Specs />
-      <Footer />
-    </>
+    <main className="bg-[#FAF5E8] text-ink min-h-screen">
+      <FujisanNav />
+      <FujisanHero />
+      <FujisanArtOfSake />
+      <FujisanExperience />
+    </main>
   );
 }

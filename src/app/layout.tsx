@@ -22,8 +22,9 @@ const shipporiMincho = Shippori_Mincho({
 });
 
 export const metadata: Metadata = {
-  title: "AMACHI HOSHISORA — Mt. Fuji Sake Project",
-  description: "Born of Stars. Brewed in Silence. A Junmai Daiginjo from the sacred shores of Mt. Fuji.",
+  title: "FUJISAN — Japan Premium Sake",
+  description:
+    "The spirit of Japan, crafted at the foot of Fujisan. A premium sake collection born from Mt. Fuji's pristine snowmelt and traditional brewing methods.",
 };
 
 export default function RootLayout({
