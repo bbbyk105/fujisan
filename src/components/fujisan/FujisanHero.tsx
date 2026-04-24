@@ -11,7 +11,7 @@ export default function FujisanHero() {
     >
       <div className="absolute inset-x-0 top-[72px] z-0 h-[620px] overflow-hidden md:top-[86px] md:h-[650px] lg:h-[675px]">
         <Image
-          src="/images/site/mtfuji.png"
+          src="/images/fujisan/hero/mtfuji.png"
           alt="Mt. Fuji at sunrise"
           fill
           priority
@@ -76,7 +76,7 @@ export default function FujisanHero() {
               style={{ zIndex: 20 - i }}
             >
               <div
-                className="absolute bottom-[4px] left-1/2 h-[116%] w-[330%] -translate-x-1/2 transition-transform duration-500 group-hover:-translate-y-[6px] sm:w-[315%] md:h-[114%] md:w-[302%] lg:h-[112%]"
+                className="pointer-events-none absolute bottom-[4px] left-1/2 h-[116%] w-[330%] -translate-x-1/2 transition-transform duration-500 group-hover:-translate-y-[6px] sm:w-[315%] md:h-[114%] md:w-[302%] lg:h-[112%]"
                 aria-hidden
               >
                 <div

@@ -1,6 +1,7 @@
 import FujisanNav from "@/components/fujisan/FujisanNav";
 import FujisanHero from "@/components/fujisan/FujisanHero";
 import FujisanArtOfSake from "@/components/fujisan/FujisanArtOfSake";
+import FujisanDiscover from "@/components/fujisan/FujisanDiscover";
 import FujisanExperience from "@/components/fujisan/FujisanExperience";
 
 export default function Home() {
@@ -9,6 +10,7 @@ export default function Home() {
       <FujisanNav />
       <FujisanHero />
       <FujisanArtOfSake />
+      <FujisanDiscover />
       <FujisanExperience />
     </main>
   );

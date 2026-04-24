@@ -51,7 +51,7 @@ export default async function ProductDetailPage({
       <section className="fujisan-paper relative isolate scroll-mt-[86px] overflow-hidden bg-[#FAF5E8] pt-[86px]">
         <div className="absolute inset-x-0 top-[86px] z-0 h-[520px] overflow-hidden md:h-[600px]">
           <Image
-            src="/images/site/mtfuji.png"
+            src="/images/fujisan/hero/mtfuji.png"
             alt=""
             fill
             priority
@@ -244,7 +244,7 @@ export default async function ProductDetailPage({
                 className="group no-underline outline-none focus-visible:ring-2 focus-visible:ring-[#C9A84C]/60"
               >
                 <div className="relative mx-auto flex h-[220px] w-full items-end justify-center overflow-visible md:h-[280px]">
-                  <div className="fujisan-bottle relative h-[114%] w-[128%] transition-transform duration-500 group-hover:-translate-y-[6px]">
+                  <div className="fujisan-bottle relative h-[114%] w-[128%] animate-none transition-transform duration-500 group-hover:-translate-y-[6px]">
                     <ViewTransition name={`bottle-${p.slug}`} share="morph">
                       <Image
                         src={p.img}
