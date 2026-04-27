@@ -22,9 +22,9 @@ const shipporiMincho = Shippori_Mincho({
 });
 
 export const metadata: Metadata = {
-  title: "FUJISAN — Japan Premium Sake",
+  title: "Amachi Hoshisora — Mt. Fuji Sake Project",
   description:
-    "The spirit of Japan, crafted at the foot of Fujisan. A premium sake collection born from Mt. Fuji's pristine snowmelt and traditional brewing methods.",
+    "Born of stars, brewed in silence — a sake of self-mastery and the timeless spirit of Mt. Fuji.",
 };
 
 export default function RootLayout({
