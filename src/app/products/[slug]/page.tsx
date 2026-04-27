@@ -1,8 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ViewTransition } from "react";
 import { notFound } from "next/navigation";
 import FujisanNav from "@/components/fujisan/FujisanNav";
+import { ProductCollectionBottles } from "@/components/fujisan/ProductCollectionBottles";
+import { ProductHeroBottle } from "@/components/fujisan/ProductHeroBottle";
 import {
   fujisanProducts,
   getFujisanProductBySlug,
@@ -55,6 +56,8 @@ export default async function ProductDetailPage({
             alt=""
             fill
             priority
+            loading="eager"
+            fetchPriority="high"
             sizes="100vw"
             className="scale-[1.04] object-cover object-[50%_44%]"
           />
@@ -118,18 +121,11 @@ export default async function ProductDetailPage({
             >
               富士
             </span>
-            <div className="fujisan-bottle relative h-[100%] w-[92%]">
-              <ViewTransition name={`bottle-${product.slug}`} share="morph">
-                <Image
-                  src={product.img}
-                  alt={`${product.name} ${product.variantLine}`}
-                  fill
-                  priority
-                  sizes="(min-width: 1024px) 38vw, (min-width: 768px) 50vw, 92vw"
-                  className="object-contain object-bottom"
-                />
-              </ViewTransition>
-            </div>
+            <ProductHeroBottle
+              slug={product.slug}
+              src={product.img}
+              alt={`${product.name} ${product.variantLine}`}
+            />
             <span className="absolute bottom-6 left-1/2 h-6 w-[58%] -translate-x-1/2 rounded-[50%] bg-[#0B1A2E]/22 blur-[14px]" />
           </div>
         </div>
@@ -236,36 +232,7 @@ export default async function ProductDetailPage({
             </Link>
           </div>
 
-          <div className="mt-10 grid grid-cols-3 gap-x-3 gap-y-10 md:grid-cols-5 md:gap-x-5">
-            {others.map((p) => (
-              <Link
-                key={p.slug}
-                href={`/products/${p.slug}`}
-                className="group no-underline outline-none focus-visible:ring-2 focus-visible:ring-[#C9A84C]/60"
-              >
-                <div className="relative mx-auto flex h-[220px] w-full items-end justify-center overflow-visible md:h-[280px]">
-                  <div className="fujisan-bottle relative h-[114%] w-[128%] animate-none transition-transform duration-500 group-hover:-translate-y-[6px]">
-                    <ViewTransition name={`bottle-${p.slug}`} share="morph">
-                      <Image
-                        src={p.img}
-                        alt={`${p.name} ${p.variantLine}`}
-                        fill
-                        sizes="(min-width: 768px) 20vw, 33vw"
-                        className="object-contain object-bottom"
-                      />
-                    </ViewTransition>
-                  </div>
-                  <span className="absolute bottom-0 left-1/2 h-4 w-[52%] -translate-x-1/2 rounded-[50%] bg-[#0B1A2E]/16 blur-[9px]" />
-                </div>
-                <p className="mt-3 text-center font-serif text-[11px] font-semibold tracking-[0.18em] text-[#0B1A2E] transition-colors group-hover:text-[#C9A84C] md:text-[13px]">
-                  {p.name}
-                </p>
-                <p className="mt-1 whitespace-pre-line text-center text-[9px] font-semibold leading-[1.35] tracking-[0.14em] text-[#0B1A2E]/70 md:text-[10px]">
-                  {p.variant}
-                </p>
-              </Link>
-            ))}
-          </div>
+          <ProductCollectionBottles products={others} />
         </div>
       </section>
 

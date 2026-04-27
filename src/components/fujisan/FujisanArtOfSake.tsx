@@ -1,5 +1,6 @@
 import Image from "next/image";
-import { Reveal, revealDelays } from "@/components/Reveal";
+import { Reveal } from "@/components/reveal/Reveal";
+import { revealDelays } from "@/components/reveal/constants";
 
 const pillars = [
   { num: "01", label: "PURE WATER", sub: "FROM MT. FUJI", Icon: IconFuji },
