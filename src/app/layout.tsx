@@ -7,18 +7,24 @@ const notoSerif = Noto_Serif({
   weight: ["400", "500", "600"],
   style: ["normal", "italic"],
   variable: "--font-noto-serif",
+  adjustFontFallback: true,
+  preload: true,
 });
 
 const notoSerifJp = Noto_Serif_JP({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600"],
   variable: "--font-noto-serif-jp",
+  adjustFontFallback: true,
+  preload: false,
 });
 
 const shipporiMincho = Shippori_Mincho({
   subsets: ["latin"],
   weight: ["400", "500", "600"],
   variable: "--font-shippori-mincho",
+  adjustFontFallback: true,
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -35,6 +41,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      data-scroll-behavior="smooth"
       className={`${notoSerif.variable} ${notoSerifJp.variable} ${shipporiMincho.variable} h-full antialiased`}
     >
       <body>{children}</body>

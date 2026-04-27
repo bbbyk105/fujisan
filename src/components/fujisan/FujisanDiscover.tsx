@@ -1,5 +1,7 @@
 import Image from "next/image";
-import { Reveal, revealDelays } from "@/components/Reveal";
+import Link from "next/link";
+import { Reveal } from "@/components/reveal/Reveal";
+import { revealDelays } from "@/components/reveal/constants";
 
 const features = [
   {
@@ -10,6 +12,7 @@ const features = [
     desc: "Our sake begins with crystal-clear snowmelt, naturally filtered through ancient volcanic rock.",
     image: "/images/fujisan/features/water.png",
     alt: "Pure water from Mt. Fuji",
+    href: "/craft/water",
   },
   {
     num: "02",
@@ -19,6 +22,7 @@ const features = [
     desc: "We select only the finest rice, polished to perfection for a clean and refined taste.",
     image: "/images/fujisan/features/ricebox.png",
     alt: "Premium Japanese rice",
+    href: "/craft/rice",
   },
   {
     num: "03",
@@ -28,6 +32,7 @@ const features = [
     desc: "Craftsmanship and time-honored techniques create sake of exceptional quality and character.",
     image: "/images/fujisan/art-of-sake/ochoko.png",
     alt: "Traditional sake brewing",
+    href: "/craft/brewing",
   },
 ];
 
@@ -131,8 +136,8 @@ export default function FujisanDiscover() {
                   {f.desc}
                 </p>
 
-                <a
-                  href="#"
+                <Link
+                  href={f.href}
                   className="group/link mt-10 inline-flex items-center gap-3 text-[10.5px] font-semibold tracking-[0.34em] text-[#0B1A2E] no-underline"
                 >
                   <span className="relative pb-1">
@@ -145,7 +150,7 @@ export default function FujisanDiscover() {
                   >
                     →
                   </span>
-                </a>
+                </Link>
               </div>
 
               <span
@@ -207,8 +212,8 @@ export default function FujisanDiscover() {
               traditions that live on in every drop.
             </Reveal>
 
-            <a
-              href="#"
+            <Link
+              href="/stories"
               className="group/link relative mt-10 inline-flex items-center gap-3 self-start text-[10.5px] font-semibold tracking-[0.34em] text-[#0B1A2E] no-underline"
             >
               <span className="relative pb-1">
@@ -221,7 +226,7 @@ export default function FujisanDiscover() {
               >
                 →
               </span>
-            </a>
+            </Link>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3">
@@ -291,8 +296,8 @@ export default function FujisanDiscover() {
               Enhance every moment with the perfect match for your sake.
             </Reveal>
 
-            <a
-              href="#"
+            <Link
+              href="/pairings"
               className="group/link mt-12 inline-flex items-center gap-3 text-[10.5px] font-semibold tracking-[0.34em] text-[#F2E4C7] no-underline"
             >
               <span className="relative pb-1">
@@ -305,7 +310,7 @@ export default function FujisanDiscover() {
               >
                 →
               </span>
-            </a>
+            </Link>
           </div>
 
           <div className="grid grid-cols-2 gap-x-6 gap-y-12 sm:grid-cols-4 md:gap-x-7">

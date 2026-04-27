@@ -2,13 +2,9 @@
 
 import * as React from "react";
 
-export const revealEase = [0.22, 1, 0.36, 1] as [number, number, number, number];
-export const revealDelays = { d1: 0.12, d2: 0.26, d3: 0.42 } as const;
-
-type As = "div" | "p" | "h1" | "h2" | "h3" | "span";
-
 export type RevealProps = {
-  as?: As;
+  as?: "div" | "p" | "h1" | "h2" | "h3" | "span";
+  id?: string;
   className?: string;
   children?: React.ReactNode;
   delay?: number;
@@ -18,6 +14,7 @@ export type RevealProps = {
 
 export function Reveal({
   as = "div",
+  id,
   className,
   children,
   style,
@@ -31,7 +28,7 @@ export function Reveal({
     if (!node) return;
 
     const prefersReduced = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
+      "(prefers-reduced-motion: reduce)",
     ).matches;
     if (prefersReduced) {
       setShown(true);
@@ -48,7 +45,7 @@ export function Reveal({
           }
         }
       },
-      { threshold: 0.12, rootMargin: "0px 0px -8% 0px" }
+      { threshold: 0.12, rootMargin: "0px 0px -8% 0px" },
     );
 
     io.observe(node);
@@ -68,9 +65,12 @@ export function Reveal({
     .filter(Boolean)
     .join(" ");
 
-  return React.createElement(
-    as,
-    { ref: setNode, className: combinedClassName, style: combinedStyle, onClick },
-    children
-  );
+  return React.createElement(as, {
+    ref: setNode,
+    id,
+    className: combinedClassName,
+    style: combinedStyle,
+    onClick,
+    children,
+  });
 }
