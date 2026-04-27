@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Reveal, revealDelays } from "@/components/Reveal";
 
 const pillars = [
   { num: "01", label: "PURE WATER", sub: "FROM MT. FUJI", Icon: IconFuji },
@@ -44,13 +45,13 @@ export default function FujisanArtOfSake() {
         <div className="fujisan-dark-panel relative flex flex-col justify-between gap-10 px-8 py-14 sm:px-10 md:px-16 md:py-16 lg:gap-9 lg:px-[4.2vw] lg:py-12">
           <span
             aria-hidden
-            className="pointer-events-none absolute right-6 top-4 select-none font-jp text-[160px] leading-none tracking-[0] text-[#D7B46A]/[0.055] md:text-[200px] lg:right-10 lg:top-6 lg:text-[230px]"
+            className="fujisan-breathe pointer-events-none absolute right-6 top-4 origin-center select-none font-jp text-[160px] leading-none tracking-[0] text-[#D7B46A]/[0.055] md:text-[200px] lg:right-10 lg:top-6 lg:text-[230px]"
           >
             酒
           </span>
 
           <div className="relative">
-            <div className="flex items-center gap-4">
+            <Reveal className="flex items-center gap-4">
               <span className="font-serif text-[11px] font-medium tracking-[0.36em] text-[#D7B46A]">
                 Ⅰ
               </span>
@@ -58,20 +59,32 @@ export default function FujisanArtOfSake() {
               <span className="text-[10px] font-semibold uppercase tracking-[0.38em] text-[#D7B46A]/85">
                 The Craft
               </span>
-            </div>
+            </Reveal>
 
-            <h2 className="mt-5 font-serif text-[clamp(26px,2.6vw,38px)] font-medium leading-[1.12] tracking-[0.08em] text-[#F2E4C7]">
+            <Reveal
+              as="h2"
+              className="mt-5 font-serif text-[clamp(26px,2.6vw,38px)] font-medium leading-[1.12] tracking-[0.08em] text-[#F2E4C7]"
+              delay={revealDelays.d1}
+            >
               THE ART OF SAKE
-            </h2>
-            <p className="mt-2 font-jp text-[13px] tracking-[0.26em] text-[#D7B46A]/80 md:text-[13.5px]">
+            </Reveal>
+            <Reveal
+              as="p"
+              className="mt-2 font-jp text-[13px] tracking-[0.26em] text-[#D7B46A]/80 md:text-[13.5px]"
+              delay={revealDelays.d2}
+            >
               ― 匠の技、一滴に宿る ―
-            </p>
+            </Reveal>
 
-            <p className="mt-6 max-w-[520px] text-[13.5px] font-light leading-[1.75] text-[#F2E4C7]/78 md:text-[14.5px]">
+            <Reveal
+              as="p"
+              className="mt-6 max-w-[520px] text-[13.5px] font-light leading-[1.75] text-[#F2E4C7]/78 md:text-[14.5px]"
+              delay={revealDelays.d3}
+            >
               Brewed with pristine snowmelt from Mt. Fuji and techniques
               safeguarded across generations — every bottle carries the
               stillness of the mountain and the hand of the master brewer.
-            </p>
+            </Reveal>
           </div>
 
           <div className="relative">
@@ -80,10 +93,11 @@ export default function FujisanArtOfSake() {
               className="mb-9 h-px w-full bg-linear-to-r from-transparent via-[#D7B46A]/35 to-transparent"
             />
             <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-4 md:gap-x-7 lg:gap-x-5">
-              {pillars.map(({ num, label, sub, Icon }) => (
-                <div
+              {pillars.map(({ num, label, sub, Icon }, i) => (
+                <Reveal
                   key={label}
                   className="group flex flex-col items-start gap-3 text-left"
+                  delay={0.12 + i * 0.1}
                 >
                   <div className="flex items-center gap-2">
                     <span className="font-serif text-[10.5px] font-medium tracking-[0.32em] text-[#D7B46A]">
@@ -100,7 +114,7 @@ export default function FujisanArtOfSake() {
                       {sub}
                     </p>
                   </div>
-                </div>
+                </Reveal>
               ))}
             </div>
           </div>
@@ -117,7 +131,7 @@ export default function FujisanArtOfSake() {
                 alt={photo.alt}
                 fill
                 sizes="(min-width: 1024px) 17vw, (min-width: 640px) 34vw, 100vw"
-                className={`object-cover transition-transform duration-[1400ms] ease-out hover:scale-[1.04] ${photo.position}`}
+                className={`object-cover ${photo.position}`}
               />
               <div
                 aria-hidden

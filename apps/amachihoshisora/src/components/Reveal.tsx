@@ -30,14 +30,6 @@ export function Reveal({
   React.useEffect(() => {
     if (!node) return;
 
-    const prefersReduced = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
-    if (prefersReduced) {
-      setShown(true);
-      return;
-    }
-
     const io = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {

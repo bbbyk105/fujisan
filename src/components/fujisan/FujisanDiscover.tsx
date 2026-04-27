@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Reveal, revealDelays } from "@/components/Reveal";
 
 const features = [
   {
@@ -90,8 +91,10 @@ export default function FujisanDiscover() {
         />
         <div className="grid grid-cols-1 md:grid-cols-3">
           {features.map((f, i) => (
-            <article
+            <Reveal
               key={f.title}
+              as="div"
+              delay={i * 0.14}
               className="group relative min-h-[380px] overflow-hidden border-t border-[#0B1A2E]/10 md:min-h-[440px] md:border-l md:border-t-0 md:first:border-l-0"
             >
               <Image
@@ -99,7 +102,7 @@ export default function FujisanDiscover() {
                 alt={f.alt}
                 fill
                 sizes="(min-width: 768px) 33vw, 100vw"
-                className="object-cover transition-transform duration-[1600ms] ease-out group-hover:scale-[1.04]"
+                className="object-cover"
               />
               <div
                 aria-hidden
@@ -151,7 +154,7 @@ export default function FujisanDiscover() {
               >
                 {f.jp.charAt(0)}
               </span>
-            </article>
+            </Reveal>
           ))}
         </div>
       </section>
@@ -162,12 +165,13 @@ export default function FujisanDiscover() {
           <div className="relative flex flex-col justify-center overflow-hidden bg-[#F1E6CB] px-10 py-14 md:px-12 md:py-16">
             <span
               aria-hidden
-              className="pointer-events-none absolute -right-4 -top-2 select-none font-jp text-[140px] leading-none text-[#0B1A2E]/[0.045] md:text-[180px]"
+              className="fujisan-breathe pointer-events-none absolute -right-4 -top-2 select-none font-jp text-[140px] leading-none text-[#0B1A2E]/[0.045] md:text-[180px]"
+              style={{ animationDelay: "2s" }}
             >
               物語
             </span>
 
-            <div className="relative flex items-center gap-3">
+            <Reveal className="relative flex items-center gap-3">
               <span className="font-serif text-[11px] font-medium tracking-[0.34em] text-[#C9A84C]">
                 Ⅱ
               </span>
@@ -175,21 +179,33 @@ export default function FujisanDiscover() {
               <span className="text-[10px] font-semibold uppercase tracking-[0.36em] text-[#C9A84C]">
                 Heritage
               </span>
-            </div>
+            </Reveal>
 
-            <h2 className="relative mt-6 font-serif text-[clamp(24px,2.4vw,34px)] font-semibold leading-[1.12] tracking-[0.08em] text-[#0B1A2E]">
+            <Reveal
+              as="h2"
+              className="relative mt-6 font-serif text-[clamp(24px,2.4vw,34px)] font-semibold leading-[1.12] tracking-[0.08em] text-[#0B1A2E]"
+              delay={revealDelays.d1}
+            >
               STORIES OF
               <br />
               FUJISAN SAKE
-            </h2>
-            <p className="relative mt-3 font-jp text-[12.5px] tracking-[0.26em] text-[#C9A84C]/85">
+            </Reveal>
+            <Reveal
+              as="p"
+              className="relative mt-3 font-jp text-[12.5px] tracking-[0.26em] text-[#C9A84C]/85"
+              delay={revealDelays.d2}
+            >
               富士山酒物語
-            </p>
+            </Reveal>
 
-            <p className="relative mt-6 max-w-[340px] text-[13px] font-light leading-[1.75] text-[#2B2419]/78 md:text-[13.5px]">
+            <Reveal
+              as="p"
+              className="relative mt-6 max-w-[340px] text-[13px] font-light leading-[1.75] text-[#2B2419]/78 md:text-[13.5px]"
+              delay={revealDelays.d3}
+            >
               Each bottle carries a story — of the land, the people, and the
               traditions that live on in every drop.
-            </p>
+            </Reveal>
 
             <a
               href="#"
@@ -209,9 +225,10 @@ export default function FujisanDiscover() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3">
-            {storyPhotos.map((p) => (
-              <div
+            {storyPhotos.map((p, i) => (
+              <Reveal
                 key={p.src}
+                delay={i * 0.14}
                 className="group relative min-h-[260px] overflow-hidden border-t border-[#0B1A2E]/10 sm:border-l sm:border-t-0 md:min-h-[300px]"
               >
                 <Image
@@ -219,13 +236,13 @@ export default function FujisanDiscover() {
                   alt={p.alt}
                   fill
                   sizes="(min-width: 768px) 24vw, 100vw"
-                  className={`object-cover transition-transform duration-[1600ms] ease-out group-hover:scale-[1.05] ${p.position}`}
+                  className={`object-cover ${p.position}`}
                 />
                 <div
                   aria-hidden
                   className="pointer-events-none absolute inset-0 bg-linear-to-t from-[#0B1A2E]/25 via-transparent to-transparent"
                 />
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -239,7 +256,7 @@ export default function FujisanDiscover() {
         />
         <div className="mx-auto grid max-w-[1480px] grid-cols-1 items-start gap-12 px-8 py-20 md:grid-cols-[0.85fr_3fr] md:gap-10 md:px-14 md:py-24">
           <div className="relative">
-            <div className="flex items-center gap-3">
+            <Reveal className="flex items-center gap-3">
               <span className="font-serif text-[11px] font-medium tracking-[0.34em] text-[#D7B46A]">
                 Ⅲ
               </span>
@@ -247,20 +264,32 @@ export default function FujisanDiscover() {
               <span className="text-[10px] font-semibold uppercase tracking-[0.36em] text-[#D7B46A]/85">
                 Harmony
               </span>
-            </div>
+            </Reveal>
 
-            <h2 className="mt-6 font-serif text-[clamp(24px,2.4vw,34px)] font-semibold leading-[1.12] tracking-[0.1em] text-[#F2E4C7]">
+            <Reveal
+              as="h2"
+              className="mt-6 font-serif text-[clamp(24px,2.4vw,34px)] font-semibold leading-[1.12] tracking-[0.1em] text-[#F2E4C7]"
+              delay={revealDelays.d1}
+            >
               PERFECT
               <br />
               PAIRINGS
-            </h2>
-            <p className="mt-3 font-jp text-[12.5px] tracking-[0.26em] text-[#D7B46A]/85">
+            </Reveal>
+            <Reveal
+              as="p"
+              className="mt-3 font-jp text-[12.5px] tracking-[0.26em] text-[#D7B46A]/85"
+              delay={revealDelays.d2}
+            >
               ― 食卓の調和 ―
-            </p>
+            </Reveal>
 
-            <p className="mt-6 max-w-[260px] text-[13px] font-light leading-[1.75] text-[#F2E4C7]/75 md:text-[13.5px]">
+            <Reveal
+              as="p"
+              className="mt-6 max-w-[260px] text-[13px] font-light leading-[1.75] text-[#F2E4C7]/75 md:text-[13.5px]"
+              delay={revealDelays.d3}
+            >
               Enhance every moment with the perfect match for your sake.
-            </p>
+            </Reveal>
 
             <a
               href="#"
@@ -280,15 +309,19 @@ export default function FujisanDiscover() {
           </div>
 
           <div className="grid grid-cols-2 gap-x-6 gap-y-12 sm:grid-cols-4 md:gap-x-7">
-            {pairings.map((p) => (
-              <figure key={p.name} className="group flex flex-col">
+            {pairings.map((p, i) => (
+              <Reveal
+                key={p.name}
+                delay={0.1 + i * 0.12}
+                className="group flex flex-col"
+              >
                 <div className="relative aspect-[4/3.4] overflow-hidden">
                   <Image
                     src={p.image}
                     alt={p.name.toLowerCase()}
                     fill
                     sizes="(min-width: 768px) 18vw, 45vw"
-                    className="object-cover transition-transform duration-[1600ms] ease-out group-hover:scale-[1.06]"
+                    className="object-cover"
                   />
                   <div
                     aria-hidden
@@ -313,7 +346,7 @@ export default function FujisanDiscover() {
                     {p.desc}
                   </p>
                 </figcaption>
-              </figure>
+              </Reveal>
             ))}
           </div>
         </div>

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { Reveal, revealDelays } from "@/components/Reveal";
 
 const footerLinks = [
   "PRIVACY POLICY",
@@ -29,28 +30,36 @@ export default function FujisanExperience() {
         />
 
         <div className="flex flex-col items-center text-center">
-          <div className="flex items-center gap-3">
+          <Reveal className="flex items-center gap-3">
             <span className="h-px w-10 bg-[#C9A84C]/55" />
             <span className="font-jp text-[12px] tracking-[0.38em] text-[#C9A84C]">
               富士山酒
             </span>
             <span className="h-px w-10 bg-[#C9A84C]/55" />
-          </div>
+          </Reveal>
 
-          <h3 className="mt-7 font-serif text-[clamp(22px,2.6vw,34px)] font-semibold leading-[1.15] tracking-[0.16em] text-[#0B1A2E]">
+          <Reveal
+            as="h3"
+            className="mt-7 font-serif text-[clamp(22px,2.6vw,34px)] font-semibold leading-[1.15] tracking-[0.16em] text-[#0B1A2E]"
+            delay={revealDelays.d1}
+          >
             EXPERIENCE JAPAN
             <br className="hidden sm:block" />
             <span className="sm:hidden"> </span>
             IN EVERY SIP
-          </h3>
+          </Reveal>
 
-          <p className="mt-6 max-w-[560px] text-[14px] font-light leading-[1.8] text-[#2B2419]/75 md:text-[15px]">
+          <Reveal
+            as="p"
+            className="mt-6 max-w-[560px] text-[14px] font-light leading-[1.8] text-[#2B2419]/75 md:text-[15px]"
+            delay={revealDelays.d2}
+          >
             Each bottle tells a story of the land, the people, and the
             timeless art of sake brewing. Enjoy it chilled, and savor the
             true essence of Japan.
-          </p>
+          </Reveal>
 
-          <div className="mt-10 flex items-center gap-3">
+          <Reveal className="mt-10 flex items-center gap-3" delay={revealDelays.d3}>
             <span className="h-px w-12 bg-[#C9A84C]/55" />
             <svg
               viewBox="0 0 64 44"
@@ -75,7 +84,7 @@ export default function FujisanExperience() {
               />
             </svg>
             <span className="h-px w-12 bg-[#C9A84C]/55" />
-          </div>
+          </Reveal>
         </div>
 
         <div className="mt-16 grid grid-cols-1 items-center gap-10 md:grid-cols-[1fr_1fr_1fr] md:gap-8">
