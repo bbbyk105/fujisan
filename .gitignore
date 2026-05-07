@@ -43,3 +43,8 @@ next-env.d.ts
 
 # claude local settings
 .claude/settings.local.json
+
+# cloudflare
+.open-next
+.wrangler
+cloudflare-env.d.ts

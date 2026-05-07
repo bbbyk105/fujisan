@@ -8,6 +8,7 @@ import type {
   FujisanNavChild,
   FujisanNavLinkItem,
 } from "./fujisan-nav-links";
+import { LocaleSwitch } from "@/i18n/LocaleSwitch";
 
 type Props = {
   links: FujisanNavLinkItem[];
@@ -257,9 +258,7 @@ export function FujisanNavClient({ links }: Props) {
               </div>
             );
           })}
-          <span className="text-[12px] font-medium tracking-[0.08em] text-[#0F1F36]/80 select-none">
-            JP <span className="text-[#0F1F36]/40">|</span> EN
-          </span>
+          <LocaleSwitch />
         </nav>
 
         {/* Mobile toggle */}
@@ -363,9 +362,9 @@ export function FujisanNavClient({ links }: Props) {
             })}
           </ul>
 
-          <span className="mt-8 text-[12px] tracking-[0.18em] text-[#0F1F36]/62">
-            JP | EN
-          </span>
+          <div className="mt-8">
+            <LocaleSwitch />
+          </div>
           <div className="relative mt-auto h-28 w-28 opacity-20">
             <Image
               src="/images/logo/logo-fuji.png"

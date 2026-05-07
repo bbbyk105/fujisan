@@ -22,6 +22,8 @@ const sections: InfoSection[] = [
     heading: "Age & jurisdiction",
     jp: "年齢・販売地域",
     body: [
+      "20歳未満の者の飲酒は法律で禁止されています。20歳未満の者には酒類を販売いたしません。",
+      "日本国内のお客様は満20歳以上であること、海外のお客様は居住国・地域における法定飲酒年齢以上であることを確認のうえ、ご注文・閲覧をお願いいたします。当社は配送時に年齢確認を行う場合があります。",
       "Sake is an alcoholic beverage. You must be of legal drinking age in your country to view product detail pages or place an order. We may verify age at delivery.",
       "We currently ship to addresses where the import of alcoholic beverages is permitted. Where local law restricts sale, the order will be cancelled and refunded.",
     ],
@@ -39,7 +41,8 @@ const sections: InfoSection[] = [
     heading: "Pricing & payment",
     jp: "価格・お支払い",
     body: [
-      "All prices are shown in JPY unless otherwise stated and may be adjusted to reflect taxes, duties, or shipping. We reserve the right to correct pricing errors and cancel orders affected by them, in which case we will refund any charges in full.",
+      "商品ページに表示している販売価格はすべて日本円・消費税10%込みの税込価格です。送料・代引手数料等は別途お客様のご負担となります。詳しい販売条件は「特定商取引法に基づく表示」をご確認ください。",
+      "All prices are shown in JPY (consumption tax included) unless otherwise stated and may be adjusted to reflect duties or shipping. We reserve the right to correct pricing errors and cancel orders affected by them, in which case we will refund any charges in full.",
     ],
   },
   {

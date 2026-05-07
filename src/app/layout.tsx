@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Noto_Serif, Noto_Serif_JP, Shippori_Mincho } from "next/font/google";
 import "./globals.css";
+import AgeGate from "@/components/fujisan/AgeGate";
+import { LocaleBoot } from "@/i18n/LocaleBoot";
 
 const notoSerif = Noto_Serif({
   subsets: ["latin"],
@@ -40,11 +42,20 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="ja"
+      data-locale="ja"
       data-scroll-behavior="smooth"
+      // LocaleBoot がハイドレーション前に lang/data-locale を上書きするため
+      suppressHydrationWarning
       className={`${notoSerif.variable} ${notoSerifJp.variable} ${shipporiMincho.variable} h-full antialiased`}
     >
-      <body>{children}</body>
+      <head>
+        <LocaleBoot />
+      </head>
+      <body>
+        {children}
+        <AgeGate />
+      </body>
     </html>
   );
 }

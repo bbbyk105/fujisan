@@ -14,11 +14,12 @@ const sections: InfoSection[] = [
     heading: "Where we ship",
     jp: "配送地域",
     body: [
+      "国内全域および一部の海外地域へお届けいたします。配送可否は各国・地域の酒類輸入規制に従います。",
       "We ship the Fujisan collection across Japan and to selected international destinations. Availability depends on local import regulations for alcoholic beverages.",
-      "If your country is not listed at checkout, please write to us — we will check whether a route is possible.",
     ],
     bullets: [
-      "Japan — nationwide, including remote islands (with surcharge)",
+      "国内: 全国（北海道・沖縄・離島は別途追加送料が発生する場合があります）",
+      "送料: 全国一律 1,100円（税込） · クール便指定時 +330円（税込）",
       "Asia — Hong Kong, Singapore, Taiwan",
       "EU & UK — selected countries via licenced importers",
       "United States — California, New York, Illinois",
@@ -38,10 +39,11 @@ const sections: InfoSection[] = [
     heading: "Lead times & tracking",
     jp: "発送と追跡",
     body: [
+      "ご注文確認後（銀行振込の場合は入金確認後）、原則2営業日以内に発送いたします。発送後、追跡番号付きの配送通知メールをお送りします。",
       "Orders are typically dispatched within two business days. You will receive a tracking link by email when your parcel leaves the brewhouse.",
     ],
     bullets: [
-      "Domestic Japan · 1–3 business days",
+      "国内: 発送から1〜3営業日でお届け",
       "Asia · 3–5 business days",
       "EU / UK · 5–8 business days",
       "United States · 5–9 business days",
@@ -52,6 +54,8 @@ const sections: InfoSection[] = [
     heading: "Receiving your order",
     jp: "お受け取り",
     body: [
+      "20歳未満の者の飲酒は法律で禁止されています。20歳未満の者には酒類を販売いたしません。",
+      "お受け取りの際は満20歳以上の方が必ずご署名・ご捺印をお願いいたします。配送業者が年齢確認を行う場合があります。ご不在の場合は不在票によりお預かり後、速やかに再配達依頼をお願いいたします。",
       "An adult of legal drinking age must sign for delivery. If no one is available, the carrier will leave a card; please re-deliver as soon as possible to keep the sake out of warm storage.",
     ],
   },
@@ -68,6 +72,7 @@ const sections: InfoSection[] = [
     heading: "Returns",
     jp: "返品について",
     body: [
+      "酒類は性質上、開栓後・お客様都合（イメージ違い等）による返品・交換はお受けできません。配送中の破損・誤配送・不良品については、商品到着後7日以内にメールにてご連絡ください。当社の負担にて速やかに代替品の発送または返金の対応をいたします。",
       "Because sake is a perishable, temperature-sensitive product, we do not accept returns of opened bottles or of unopened bottles for change of mind. Where the law guarantees a right of return, we will of course honour it.",
     ],
   },

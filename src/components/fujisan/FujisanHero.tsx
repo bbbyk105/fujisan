@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { fujisanProducts } from "@/data/fujisan-products";
 import { FujisanHeroShowcase } from "./FujisanHeroShowcase";
+import { L } from "@/i18n/Localized";
 
 export default function FujisanHero() {
   return (
@@ -28,18 +29,40 @@ export default function FujisanHero() {
         <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,730px)_1fr] xl:grid-cols-[minmax(0,820px)_1fr]">
           <div className="max-w-[820px]">
             <h1 className="font-serif leading-[1.08] tracking-[0.02em] text-[#0B1A2E]">
-              <span
-                className="fujisan-rise block text-[clamp(24px,3vw,42px)] font-medium tracking-[0.07em] xl:whitespace-nowrap"
-                style={{ animationDelay: "120ms" }}
-              >
-                THE SPIRIT OF JAPAN,
-              </span>
-              <span
-                className="fujisan-rise mt-2 block text-[clamp(24px,3vw,42px)] font-medium tracking-[0.07em] xl:whitespace-nowrap"
-                style={{ animationDelay: "260ms" }}
-              >
-                CRAFTED AT THE FOOT OF
-              </span>
+              <L
+                en={
+                  <>
+                    <span
+                      className="fujisan-rise block text-[clamp(24px,3vw,42px)] font-medium tracking-[0.07em] xl:whitespace-nowrap"
+                      style={{ animationDelay: "120ms" }}
+                    >
+                      THE SPIRIT OF JAPAN,
+                    </span>
+                    <span
+                      className="fujisan-rise mt-2 block text-[clamp(24px,3vw,42px)] font-medium tracking-[0.07em] xl:whitespace-nowrap"
+                      style={{ animationDelay: "260ms" }}
+                    >
+                      CRAFTED AT THE FOOT OF
+                    </span>
+                  </>
+                }
+                ja={
+                  <>
+                    <span
+                      className="fujisan-rise block font-jp text-[clamp(22px,2.6vw,36px)] font-medium tracking-[0.18em] xl:whitespace-nowrap"
+                      style={{ animationDelay: "120ms" }}
+                    >
+                      日本の精神、
+                    </span>
+                    <span
+                      className="fujisan-rise mt-2 block font-jp text-[clamp(22px,2.6vw,36px)] font-medium tracking-[0.18em] xl:whitespace-nowrap"
+                      style={{ animationDelay: "260ms" }}
+                    >
+                      富士の麓で醸す。
+                    </span>
+                  </>
+                }
+              />
               <span
                 className="fujisan-rise-slow mt-4 block font-serif text-[clamp(66px,10vw,150px)] font-semibold leading-[0.9] tracking-[0.04em]"
                 style={{ animationDelay: "420ms" }}
@@ -56,16 +79,33 @@ export default function FujisanHero() {
             </p>
 
             <p
-              className="fujisan-rise mt-5 max-w-[380px] text-[15px] leading-[1.62] text-[#2B2419]/86 md:text-[16px] md:leading-[1.58]"
+              className="fujisan-rise mt-5 max-w-[420px] text-[15px] leading-[1.62] text-[#2B2419]/86 md:text-[16px] md:leading-[1.58]"
               style={{ animationDelay: "980ms" }}
             >
-              From the pure snowmelt of Mt. Fuji
-              <br />
-              to masterful brewing, discover a sake
-              <br />
-              collection that embodies Japan&apos;s
-              <br />
-              heritage and natural beauty.
+              <L
+                en={
+                  <>
+                    From the pure snowmelt of Mt. Fuji
+                    <br />
+                    to masterful brewing, discover a sake
+                    <br />
+                    collection that embodies Japan&apos;s
+                    <br />
+                    heritage and natural beauty.
+                  </>
+                }
+                ja={
+                  <>
+                    富士山の雪解け水と
+                    <br />
+                    熟達した蔵人の技が織りなす一献。
+                    <br />
+                    日本の伝統と自然の美しさを宿した、
+                    <br />
+                    ひとつのサケ・コレクション。
+                  </>
+                }
+              />
             </p>
           </div>
 

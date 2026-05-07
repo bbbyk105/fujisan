@@ -2,14 +2,36 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import FujisanNav from "@/components/fujisan/FujisanNav";
+import FujisanFooter from "@/components/fujisan/FujisanFooter";
+import ProductPurchaseBlock from "@/components/fujisan/ProductPurchaseBlock";
 import { ProductCollectionBottles } from "@/components/fujisan/ProductCollectionBottles";
 import { ProductHeroBottle } from "@/components/fujisan/ProductHeroBottle";
 import {
   fujisanProducts,
   getFujisanProductBySlug,
 } from "@/data/fujisan-products";
+import { FUJISAN_LEGAL } from "@/data/fujisan-legal";
+import { L } from "@/i18n/Localized";
 
 type Params = { slug: string };
+
+const SPEC_LABEL_JP: Record<string, string> = {
+  Class: "種別",
+  Rice: "原料米",
+  Polish: "精米歩合",
+  ABV: "アルコール度数",
+  SMV: "日本酒度",
+  Acidity: "酸度",
+  Volume: "容量",
+};
+
+function specLabelJp(label: string) {
+  return SPEC_LABEL_JP[label] ?? label;
+}
+
+// 静的に全商品ページを書き出して Worker の CPU 制限（1102）を踏まないようにする
+export const dynamic = "force-static";
+export const dynamicParams = false;
 
 export function generateStaticParams(): Params[] {
   return fujisanProducts.map((p) => ({ slug: p.slug }));
@@ -72,11 +94,15 @@ export default async function ProductDetailPage({
               href="/#showcase"
               className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.24em] text-[#0B1A2E]/70 no-underline transition-colors hover:text-[#C9A84C]"
             >
-              <span aria-hidden>←</span> OUR SAKE
+              <span aria-hidden>←</span>{" "}
+              <L en="OUR SAKE" ja="サケ一覧へ" />
             </Link>
 
             <p className="mt-5 font-serif text-[12px] font-semibold tracking-[0.28em] text-[#C9A84C]">
-              {product.variantLine.toUpperCase()}
+              <L
+                en={product.variantLine.toUpperCase()}
+                ja={product.variantLineJp}
+              />
             </p>
 
             <h1 className="mt-3 font-serif leading-[0.95] tracking-[0.02em] text-[#0B1A2E]">
@@ -84,7 +110,7 @@ export default async function ProductDetailPage({
                 {product.name}
               </span>
               <span className="mt-2 block whitespace-pre-line text-[clamp(20px,2.4vw,30px)] font-medium tracking-[0.1em] text-[#1D2432]/90">
-                {product.variant}
+                <L en={product.variant} ja={product.variantLineJp} />
               </span>
             </h1>
 
@@ -97,16 +123,19 @@ export default async function ProductDetailPage({
                 {product.smv}
               </span>
               <span className="border border-[#0B1A2E]/30 bg-white/64 px-3 py-1 text-[10px] font-semibold tracking-[0.18em] text-[#0B1A2E]">
-                {product.grade.toUpperCase()}
+                <L
+                  en={product.grade.toUpperCase()}
+                  ja={product.gradeJp}
+                />
               </span>
             </div>
 
             <p className="mt-7 max-w-[460px] whitespace-pre-line font-serif text-[clamp(18px,1.8vw,24px)] italic leading-[1.55] text-[#0B1A2E]/88">
-              {product.hero}
+              <L en={product.hero} ja={product.heroJp} />
             </p>
 
             <p className="mt-5 max-w-[460px] whitespace-pre-line text-[15px] leading-[1.65] text-[#2B2419]/78 md:text-[16px]">
-              {product.desc}
+              <L en={product.desc} ja={product.descJp} />
             </p>
           </div>
 
@@ -133,8 +162,9 @@ export default async function ProductDetailPage({
 
       {/* ===== Story (dark panel) ===== */}
       <section className="fujisan-dark-panel relative bg-[#122337] text-[#EAD9B5]">
-        <div className="mx-auto grid max-w-[1280px] grid-cols-1 gap-12 px-7 py-16 md:grid-cols-2 md:gap-16 md:px-12 md:py-24">
-          <div>
+        <div className="mx-auto max-w-[760px] px-7 py-16 md:px-12 md:py-24">
+          {/* EN locale */}
+          <div className="i18n-en">
             <p className="font-serif text-[11px] font-semibold tracking-[0.3em] text-[#D7B46A]">
               THE STORY
             </p>
@@ -148,7 +178,8 @@ export default async function ProductDetailPage({
               </p>
             ))}
           </div>
-          <div className="md:border-l md:border-[#F2E4C7]/12 md:pl-12">
+          {/* JA locale */}
+          <div className="i18n-ja">
             <p className="font-jp text-[11px] font-semibold tracking-[0.3em] text-[#D7B46A]">
               物語
             </p>
@@ -165,19 +196,30 @@ export default async function ProductDetailPage({
         </div>
       </section>
 
+      {/* ===== Purchase block (price · 年齢確認 · 未成年防止表示) ===== */}
+      <ProductPurchaseBlock
+        productName={product.name}
+        variantLine={product.variantLine}
+        priceJpy={product.priceJpy}
+        shippingNote={FUJISAN_LEGAL.shippingFeeNote}
+      />
+
       {/* ===== Specs + Pairing ===== */}
       <section className="bg-[#FAF5E8]">
         <div className="mx-auto grid max-w-[1280px] grid-cols-1 gap-12 px-7 py-16 md:grid-cols-[1.1fr_1fr] md:gap-14 md:px-12 md:py-20">
           <div>
             <p className="font-serif text-[11px] font-semibold tracking-[0.3em] text-[#0B1A2E]/66">
-              SPECIFICATIONS
+              <L en="SPECIFICATIONS" ja="商品仕様" />
             </p>
             <div className="mt-4 h-px w-8 bg-[#0B1A2E]/30" />
             <dl className="mt-7 grid grid-cols-2 gap-x-8 gap-y-5 sm:grid-cols-3">
               {product.specs.map((s) => (
                 <div key={s.label}>
                   <dt className="text-[10px] font-semibold tracking-[0.2em] text-[#0B1A2E]/56">
-                    {s.label.toUpperCase()}
+                    <L
+                      en={s.label.toUpperCase()}
+                      ja={specLabelJp(s.label)}
+                    />
                   </dt>
                   <dd className="mt-1.5 font-serif text-[17px] text-[#0B1A2E]">
                     {s.value}
@@ -188,23 +230,23 @@ export default async function ProductDetailPage({
           </div>
           <div className="md:border-l md:border-[#0B1A2E]/12 md:pl-14">
             <p className="font-serif text-[11px] font-semibold tracking-[0.3em] text-[#0B1A2E]/66">
-              SERVE &amp; PAIR
+              <L en="SERVE & PAIR" ja="温度と相性" />
             </p>
             <div className="mt-4 h-px w-8 bg-[#0B1A2E]/30" />
             <p className="mt-7 text-[10px] font-semibold tracking-[0.2em] text-[#0B1A2E]/56">
-              SUGGESTED TEMPERATURE
+              <L en="SUGGESTED TEMPERATURE" ja="おすすめ温度" />
             </p>
             <p className="mt-2 font-serif text-[18px] text-[#0B1A2E]">
-              {product.serveTemp}
+              <L en={product.serveTemp} ja={product.serveTempJp} />
             </p>
             <p className="mt-7 text-[10px] font-semibold tracking-[0.2em] text-[#0B1A2E]/56">
-              PAIRING
+              <L en="PAIRING" ja="ペアリング" />
             </p>
             <ul className="mt-3 space-y-2 font-serif text-[16px] text-[#0B1A2E]/90">
-              {product.pairing.map((p) => (
+              {product.pairing.map((p, i) => (
                 <li key={p} className="flex items-center gap-3">
                   <span aria-hidden className="h-px w-4 bg-[#C9A84C]" />
-                  {p}
+                  <L en={p} ja={product.pairingJp[i] ?? p} />
                 </li>
               ))}
             </ul>
@@ -218,17 +260,20 @@ export default async function ProductDetailPage({
           <div className="flex items-end justify-between gap-6">
             <div>
               <p className="font-serif text-[11px] font-semibold tracking-[0.3em] text-[#0B1A2E]/66">
-                THE COLLECTION
+                <L en="THE COLLECTION" ja="ザ・コレクション" />
               </p>
               <h2 className="mt-3 font-serif text-[clamp(22px,2.4vw,30px)] font-semibold tracking-[0.06em] text-[#0B1A2E]">
-                Explore other Fujisan
+                <L
+                  en="Explore other Fujisan"
+                  ja="他の富士山シリーズを見る"
+                />
               </h2>
             </div>
             <Link
               href="/#showcase"
               className="text-[11px] font-semibold tracking-[0.22em] text-[#0B1A2E]/66 no-underline transition-colors hover:text-[#C9A84C]"
             >
-              VIEW ALL →
+              <L en="VIEW ALL →" ja="一覧を見る →" />
             </Link>
           </div>
 
@@ -240,9 +285,21 @@ export default async function ProductDetailPage({
       <section className="border-t border-[#0B1A2E]/10 bg-[#F4ECD9]">
         <div className="mx-auto grid max-w-[1280px] grid-cols-1 md:grid-cols-2">
           {[
-            { p: prev, label: "PREVIOUS", arrow: "←", align: "left" as const },
-            { p: next, label: "NEXT", arrow: "→", align: "right" as const },
-          ].map(({ p, label, arrow, align }) => (
+            {
+              p: prev,
+              labelEn: "PREVIOUS",
+              labelJa: "前の銘柄",
+              arrow: "←",
+              align: "left" as const,
+            },
+            {
+              p: next,
+              labelEn: "NEXT",
+              labelJa: "次の銘柄",
+              arrow: "→",
+              align: "right" as const,
+            },
+          ].map(({ p, labelEn, labelJa, arrow, align }) => (
             <Link
               key={p.slug}
               href={`/products/${p.slug}`}
@@ -253,33 +310,32 @@ export default async function ProductDetailPage({
               }`}
             >
               <span className="text-[10px] font-semibold tracking-[0.28em] text-[#0B1A2E]/60">
-                {align === "left" ? `${arrow} ${label}` : `${label} ${arrow}`}
+                <L
+                  en={
+                    align === "left"
+                      ? `${arrow} ${labelEn}`
+                      : `${labelEn} ${arrow}`
+                  }
+                  ja={
+                    align === "left"
+                      ? `${arrow} ${labelJa}`
+                      : `${labelJa} ${arrow}`
+                  }
+                />
               </span>
               <span className="font-serif text-[clamp(22px,2.4vw,30px)] font-semibold tracking-[0.04em] text-[#0B1A2E] group-hover:text-[#C9A84C]">
                 {p.name}
               </span>
               <span className="whitespace-pre-line text-[11px] font-semibold tracking-[0.16em] text-[#0B1A2E]/72">
-                {p.variant}
+                <L en={p.variant} ja={p.variantLineJp} />
               </span>
             </Link>
           ))}
         </div>
       </section>
 
-      {/* ===== Footer ===== */}
-      <footer className="bg-[#132337]">
-        <div className="mx-auto flex max-w-[1360px] flex-col items-center justify-between gap-4 px-7 py-5 text-[11px] text-[#F4EBD5]/88 md:flex-row md:px-12">
-          <p className="tracking-[0.08em]">
-            © 2024 FUJISAN SAKE. All Rights Reserved.
-          </p>
-          <Link
-            href="/#top"
-            className="text-[#F4EBD5]/84 no-underline tracking-[0.18em] transition-colors hover:text-white"
-          >
-            BACK TO HOME
-          </Link>
-        </div>
-      </footer>
+      {/* ===== Footer (shared · 未成年防止表示 + 酒類販売管理者標識を含む) ===== */}
+      <FujisanFooter />
     </main>
   );
 }

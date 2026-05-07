@@ -46,6 +46,24 @@ em {
 }
 
 /* ========================================
+   i18n — locale-controlled visibility
+   <html data-locale="ja|en"> を切替で
+   .i18n-ja / .i18n-en のどちらかを隠す。
+   .i18n-fragment は <span> の包みを
+   レイアウト的に透過させる（display: contents）。
+   ======================================== */
+.i18n-fragment {
+  display: contents;
+}
+html[data-locale="en"] .i18n-ja {
+  display: none !important;
+}
+html[data-locale="ja"] .i18n-en {
+  display: none !important;
+}
+/* data-locale 未設定時は両方表示（SSR フォールバック） */
+
+/* ========================================
    Reveal — scroll-triggered fade + rise
    ======================================== */
 .reveal {

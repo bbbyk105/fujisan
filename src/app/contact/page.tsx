@@ -177,6 +177,9 @@ export default function ContactPage() {
               src="/images/fujisan/hero/mtfuji.png"
               alt="Mt. Fuji at the foot of the brewery"
               fill
+              priority
+              loading="eager"
+              fetchPriority="high"
               sizes="(min-width: 1024px) 50vw, 100vw"
               className="object-cover object-[50%_46%]"
             />
