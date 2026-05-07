@@ -70,7 +70,7 @@ const sections: InfoSection[] = [
     heading: "How do I reach a real person?",
     jp: "お問い合わせ",
     body: [
-      "Email care@fujisan-sake.com. Our small team is in Yamanashi and replies in Japanese or English, usually within one business day.",
+      "Email care@fujisan-sake.com. Our small team is in Shizuoka and replies in Japanese or English, usually within one business day.",
     ],
   },
 ];

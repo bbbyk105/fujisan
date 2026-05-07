@@ -52,7 +52,7 @@ export default function FujisanHero() {
                       className="fujisan-rise block font-jp text-[clamp(22px,2.6vw,36px)] font-medium tracking-[0.18em] xl:whitespace-nowrap"
                       style={{ animationDelay: "120ms" }}
                     >
-                      日本の精神、
+                      日本のこころを、
                     </span>
                     <span
                       className="fujisan-rise mt-2 block font-jp text-[clamp(22px,2.6vw,36px)] font-medium tracking-[0.18em] xl:whitespace-nowrap"
@@ -96,13 +96,13 @@ export default function FujisanHero() {
                 }
                 ja={
                   <>
-                    富士山の雪解け水と
+                    富士山の雪解け水と、
                     <br />
-                    熟達した蔵人の技が織りなす一献。
+                    蔵人の手技が織りなす一献。
                     <br />
-                    日本の伝統と自然の美しさを宿した、
+                    日本の伝統と自然の美しさを宿す、
                     <br />
-                    ひとつのサケ・コレクション。
+                    珠玉の日本酒コレクション。
                   </>
                 }
               />

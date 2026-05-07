@@ -23,6 +23,9 @@ const SPEC_LABEL_JP: Record<string, string> = {
   SMV: "日本酒度",
   Acidity: "酸度",
   Volume: "容量",
+  Ingredients: "原材料",
+  "Amino Acid": "アミノ酸度",
+  Yeast: "酵母",
 };
 
 function specLabelJp(label: string) {

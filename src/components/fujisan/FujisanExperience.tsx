@@ -28,7 +28,7 @@ export default function FujisanExperience() {
           <Reveal className="flex items-center gap-3">
             <span className="h-px w-10 bg-[#C9A84C]/55" />
             <span className="font-jp text-[12px] tracking-[0.38em] text-[#C9A84C]">
-              富士山酒
+              富士の酒
             </span>
             <span className="h-px w-10 bg-[#C9A84C]/55" />
           </Reveal>

@@ -14,7 +14,7 @@ const features = [
     jp: "富士の水",
     desc: "Our sake begins with crystal-clear snowmelt, naturally filtered through ancient volcanic rock.",
     descJp:
-      "私たちの酒は、太古の溶岩層に自然に濾された、澄み切った富士の雪解け水から始まります。",
+      "太古の溶岩層をくぐり、自然にろ過された澄み切った雪解け水。私たちの酒造りは、ここから始まります。",
     image: "/images/fujisan/features/water.png",
     alt: "Pure water from Mt. Fuji",
     href: "/craft/water",
@@ -28,7 +28,7 @@ const features = [
     jp: "厳選米",
     desc: "We select only the finest rice, polished to perfection for a clean and refined taste.",
     descJp:
-      "厳選した酒造好適米を、澄んだ味わいのために丹念に磨き上げています。",
+      "澄んだ味わいを引き出すため、厳選した酒造好適米を丹念に磨き上げます。",
     image: "/images/fujisan/features/ricebox.png",
     alt: "Premium Japanese rice",
     href: "/craft/rice",
@@ -42,7 +42,7 @@ const features = [
     jp: "伝統醸造",
     desc: "Craftsmanship and time-honored techniques create sake of exceptional quality and character.",
     descJp:
-      "蔵人の手仕事と、長く受け継がれてきた技が、唯一無二の品格ある一献を醸し出します。",
+      "蔵人の手仕事と、長く受け継がれた技が、唯一無二の品格を宿す一献を醸し出します。",
     image: "/images/fujisan/art-of-sake/ochoko.png",
     alt: "Traditional sake brewing",
     href: "/craft/brewing",
@@ -81,7 +81,7 @@ const pairings = [
     name: "TEMPURA",
     jp: "天ぷら",
     desc: "Crisp and light harmony.",
-    descJp: "軽やかでさくりとした調和。",
+    descJp: "軽やかでさっくりとした調和。",
     image: "/images/fujisan/pairings/tempra.png",
   },
   {
@@ -218,7 +218,7 @@ export default function FujisanDiscover() {
                 }
                 ja={
                   <>
-                    富士山酒の
+                    富士の酒の
                     <br />
                     物語
                   </>
@@ -230,7 +230,7 @@ export default function FujisanDiscover() {
               className="relative mt-3 font-jp text-[12.5px] tracking-[0.26em] text-[#C9A84C]/85"
               delay={revealDelays.d2}
             >
-              富士山酒物語
+              富士の酒、その物語
             </Reveal>
 
             <Reveal
@@ -240,7 +240,7 @@ export default function FujisanDiscover() {
             >
               <L
                 en="Each bottle carries a story — of the land, the people, and the traditions that live on in every drop."
-                ja="一本一本の酒に、土地と人々と、一滴に息づく伝統の物語が宿ります。"
+                ja="一本一本に、土地と人、そして一滴に息づく伝統の物語が宿ります。"
               />
             </Reveal>
 
@@ -346,7 +346,7 @@ export default function FujisanDiscover() {
             >
               <L
                 en="Enhance every moment with the perfect match for your sake."
-                ja="一献ごとに、最高のひとときを。サケと食の調和を楽しむ。"
+                ja="一献ごとに、最高のひとときを。酒と食の調和を、心ゆくまで。"
               />
             </Reveal>
 

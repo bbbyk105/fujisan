@@ -10,7 +10,7 @@ import { revealDelays } from "@/components/reveal/constants";
 export const metadata = {
   title: "Contact — FUJISAN SAKE",
   description:
-    "Reach our small team in Yamanashi for general enquiries, trade and wholesale, brewery visits, or press requests.",
+    "Reach our small team in Shizuoka for general enquiries, trade and wholesale, brewery visits, or press requests.",
 };
 
 const channels = [
@@ -60,7 +60,7 @@ export default function ContactPage() {
         chapter="Ⅷ"
         title="GET IN TOUCH"
         jp="― 一献の便り、お預かりします ―"
-        lead="Whether you have a question about a bottle, are considering Fujisan for your restaurant, or simply want to visit the kura — write to us. Our small team in Yamanashi reads every message by hand."
+        lead="Whether you have a question about a bottle, are considering Fujisan for your restaurant, or simply want to visit the kura — write to us. Our small team in Shizuoka reads every message by hand."
         crumbs={[
           { label: "HOME", href: "/#top" },
           { label: "CONTACT", href: "/contact" },
@@ -235,14 +235,12 @@ export default function ContactPage() {
                 ADDRESS
               </p>
               <p className="mt-3 font-serif text-[15px] leading-[1.78] text-[#F2E4C7]">
-                〒401-0301
+                〒417-0051
                 <br />
-                山梨県南都留郡富士河口湖町
-                <br />
-                船津 12-3-4
+                静岡県富士市吉原 2-8-21
               </p>
               <p className="mt-3 text-[12.5px] font-light leading-[1.6] text-[#F2E4C7]/68">
-                12-3-4 Funatsu, Fujikawaguchiko, Minamitsuru, Yamanashi 401-0301, Japan
+                2-8-21 Yoshiwara, Fuji, Shizuoka 417-0051, Japan
               </p>
             </Reveal>
 

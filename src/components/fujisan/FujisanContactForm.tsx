@@ -39,7 +39,7 @@ export function FujisanContactForm() {
           Thank you, {name || "friend of Fujisan"}.
         </h3>
         <p className="mt-5 max-w-[460px] text-[14px] font-light leading-[1.85] text-[#1D2432]/82">
-          Your message has reached our small team in Yamanashi. We read every
+          Your message has reached our small team in Shizuoka. We read every
           enquiry by hand and will reply, in Japanese or English, usually within
           one business day.
         </p>
