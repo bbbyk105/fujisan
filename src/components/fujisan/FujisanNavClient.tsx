@@ -24,6 +24,16 @@ export function FujisanNavClient({ links }: Props) {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const closeTimer = useRef<number | null>(null);
 
+  // Close mobile menu and any desktop dropdown when the route changes.
+  // Storing the previous pathname in state (React's documented pattern) lets us
+  // reset during render instead of in an effect, avoiding a cascading re-render.
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
+    setOpen(false);
+    setOpenMenu(null);
+  }
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
     onScroll();
@@ -46,18 +56,9 @@ export function FujisanNavClient({ links }: Props) {
     };
   }, [open]);
 
-  // Close mobile menu and any desktop dropdown when route changes
-  useEffect(() => {
-    setOpen(false);
-    setOpenMenu(null);
-  }, [pathname]);
-
   // Track which homepage section is in view (anchor active state)
   useEffect(() => {
-    if (!isHome) {
-      setHashSection("");
-      return;
-    }
+    if (!isHome) return;
     const ids = links
       .map((l) =>
         l.href.startsWith("/#") ? l.href.split("#")[1] ?? "" : "",

@@ -1,14 +1,29 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 
 type Locale = "ja" | "en";
 const STORAGE_KEY = "fujisan-locale";
 
-function readLocale(): Locale {
-  if (typeof document === "undefined") return "ja";
-  const v = document.documentElement.getAttribute("data-locale");
-  return v === "en" ? "en" : "ja";
+// <html data-locale> を外部ストアとして購読する。
+// これで全 LocaleSwitch インスタンスが常に同期し、effect 内 setState を避けられる。
+function subscribe(onChange: () => void) {
+  const observer = new MutationObserver(onChange);
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["data-locale"],
+  });
+  return () => observer.disconnect();
+}
+
+function getSnapshot(): Locale {
+  return document.documentElement.getAttribute("data-locale") === "en"
+    ? "en"
+    : "ja";
+}
+
+function getServerSnapshot(): Locale {
+  return "ja";
 }
 
 export function LocaleSwitch({
@@ -18,11 +33,11 @@ export function LocaleSwitch({
   className?: string;
   variant?: "inline" | "stacked";
 }) {
-  const [locale, setLocale] = useState<Locale>("ja");
-
-  useEffect(() => {
-    setLocale(readLocale());
-  }, []);
+  const locale = useSyncExternalStore(
+    subscribe,
+    getSnapshot,
+    getServerSnapshot,
+  );
 
   const switchTo = (l: Locale) => {
     if (l === locale) return;
@@ -34,7 +49,8 @@ export function LocaleSwitch({
     } catch {
       /* ignore */
     }
-    setLocale(l);
+    // 言語を切り替えたら、そのページの先頭へ
+    window.scrollTo({ top: 0, left: 0 });
   };
 
   const isInline = variant === "inline";

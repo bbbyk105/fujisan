@@ -65,7 +65,9 @@ export default async function ProductDetailPage({
 
   const idx = fujisanProducts.findIndex((p) => p.slug === slug);
   const prev =
-    fujisanProducts[(idx - 1 + fujisanProducts.length) % fujisanProducts.length];
+    fujisanProducts[
+      (idx - 1 + fujisanProducts.length) % fujisanProducts.length
+    ];
   const next = fujisanProducts[(idx + 1) % fujisanProducts.length];
   const others = fujisanProducts.filter((p) => p.slug !== slug);
 
@@ -97,8 +99,7 @@ export default async function ProductDetailPage({
               href="/#showcase"
               className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.24em] text-[#0B1A2E]/70 no-underline transition-colors hover:text-[#C9A84C]"
             >
-              <span aria-hidden>←</span>{" "}
-              <L en="OUR SAKE" ja="サケ一覧へ" />
+              <span aria-hidden>←</span> <L en="OUR SAKE" ja="日本酒一覧へ" />
             </Link>
 
             <p className="mt-5 font-serif text-[12px] font-semibold tracking-[0.28em] text-[#C9A84C]">
@@ -126,10 +127,7 @@ export default async function ProductDetailPage({
                 {product.smv}
               </span>
               <span className="border border-[#0B1A2E]/30 bg-white/64 px-3 py-1 text-[10px] font-semibold tracking-[0.18em] text-[#0B1A2E]">
-                <L
-                  en={product.grade.toUpperCase()}
-                  ja={product.gradeJp}
-                />
+                <L en={product.grade.toUpperCase()} ja={product.gradeJp} />
               </span>
             </div>
 
@@ -205,6 +203,7 @@ export default async function ProductDetailPage({
         variantLine={product.variantLine}
         priceJpy={product.priceJpy}
         shippingNote={FUJISAN_LEGAL.shippingFeeNote}
+        shippingNoteEn={FUJISAN_LEGAL.shippingFeeNoteEn}
       />
 
       {/* ===== Specs + Pairing ===== */}
@@ -219,10 +218,7 @@ export default async function ProductDetailPage({
               {product.specs.map((s) => (
                 <div key={s.label}>
                   <dt className="text-[10px] font-semibold tracking-[0.2em] text-[#0B1A2E]/56">
-                    <L
-                      en={s.label.toUpperCase()}
-                      ja={specLabelJp(s.label)}
-                    />
+                    <L en={s.label.toUpperCase()} ja={specLabelJp(s.label)} />
                   </dt>
                   <dd className="mt-1.5 font-serif text-[17px] text-[#0B1A2E]">
                     {s.value}
@@ -266,10 +262,7 @@ export default async function ProductDetailPage({
                 <L en="THE COLLECTION" ja="ザ・コレクション" />
               </p>
               <h2 className="mt-3 font-serif text-[clamp(22px,2.4vw,30px)] font-semibold tracking-[0.06em] text-[#0B1A2E]">
-                <L
-                  en="Explore other Fujisan"
-                  ja="他の富士山シリーズを見る"
-                />
+                <L en="Explore other Fujisan" ja="他の富士山シリーズを見る" />
               </h2>
             </div>
             <Link

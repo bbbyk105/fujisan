@@ -1,6 +1,7 @@
 import FujisanInfoPage, {
   type InfoSection,
 } from "@/components/fujisan/FujisanInfoPage";
+import { SHIPPING_FEE } from "@/data/fujisan-legal";
 
 export const metadata = {
   title: "Shipping & Returns — FUJISAN SAKE",
@@ -18,8 +19,8 @@ const sections: InfoSection[] = [
       "We ship the Fujisan collection across Japan and to selected international destinations. Availability depends on local import regulations for alcoholic beverages.",
     ],
     bullets: [
-      "国内: 全国（北海道・沖縄・離島は別途追加送料が発生する場合があります）",
-      "送料: 全国一律 1,100円（税込） · クール便指定時 +330円（税込）",
+      `国内: 全国（${SHIPPING_FEE.remote}）`,
+      `送料: ${SHIPPING_FEE.flat} ／ ${SHIPPING_FEE.cool}`,
       "Asia — Hong Kong, Singapore, Taiwan",
       "EU & UK — selected countries via licenced importers",
       "United States — California, New York, Illinois",

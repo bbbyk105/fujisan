@@ -1,24 +1,35 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { UNDERAGE_NOTICE_JP } from "@/data/fujisan-legal";
 
 const STORAGE_KEY = "fujisan-age-confirmed";
 const REJECT_REDIRECT =
   "https://www.kenkou-kazoku.metro.tokyo.lg.jp/seishounen/inshu.html";
 
-export default function AgeGate() {
-  // SSR では常に false → モーダルなし。マウント後に localStorage を確認して開く。
-  const [open, setOpen] = useState(false);
+// localStorage を外部ストアとして読む（一度きりの読み取り。購読は不要）。
+// SSR では「確認済み」とみなしてモーダルを出さず、ハイドレーション不整合を避ける。
+const subscribeNoop = () => () => {};
+function getConfirmedSnapshot(): boolean {
+  try {
+    return window.localStorage.getItem(STORAGE_KEY) === "yes";
+  } catch {
+    return false;
+  }
+}
+function getConfirmedServerSnapshot(): boolean {
+  return true;
+}
 
-  useEffect(() => {
-    try {
-      const ok = window.localStorage.getItem(STORAGE_KEY) === "yes";
-      if (!ok) setOpen(true);
-    } catch {
-      setOpen(true);
-    }
-  }, []);
+export default function AgeGate() {
+  const confirmed = useSyncExternalStore(
+    subscribeNoop,
+    getConfirmedSnapshot,
+    getConfirmedServerSnapshot,
+  );
+  // 当セッション中に「はい」を押して閉じた状態
+  const [dismissed, setDismissed] = useState(false);
+  const open = !confirmed && !dismissed;
 
   useEffect(() => {
     if (!open) return;
@@ -37,7 +48,7 @@ export default function AgeGate() {
     } catch {
       /* ignore */
     }
-    setOpen(false);
+    setDismissed(true);
   };
 
   const onNo = () => {

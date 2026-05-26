@@ -9,7 +9,10 @@ type Props = {
   productName: string;
   variantLine: string;
   priceJpy: number;
+  /** 日本語の送料表記 */
   shippingNote: string;
+  /** 英語ロケール表示用の送料表記 */
+  shippingNoteEn: string;
 };
 
 const yen = new Intl.NumberFormat("ja-JP");
@@ -19,6 +22,7 @@ export default function ProductPurchaseBlock({
   variantLine,
   priceJpy,
   shippingNote,
+  shippingNoteEn,
 }: Props) {
   const [confirmed, setConfirmed] = useState(false);
   const [qty, setQty] = useState(1);
@@ -67,7 +71,8 @@ export default function ProductPurchaseBlock({
             </li>
             <li>
               ·{" "}
-              <L en="Shipping" ja="送料" />: {shippingNote}
+              <L en="Shipping" ja="送料" />:{" "}
+              <L en={shippingNoteEn} ja={shippingNote} />
             </li>
             <li>
               ·{" "}
