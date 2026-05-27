@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { UNDERAGE_NOTICE_JP } from "@/data/fujisan-legal";
+import { UNDERAGE_NOTICE_EN, UNDERAGE_NOTICE_JP } from "@/data/fujisan-legal";
 import { L } from "@/i18n/Localized";
 
 type Props = {
@@ -157,11 +157,28 @@ export default function ProductPurchaseBlock({
           <div
             role="note"
             aria-label="未成年飲酒防止のお知らせ"
-            className="mt-7 border border-[#C9A84C]/35 bg-[#F4ECD9]/80 px-5 py-4 text-[12px] leading-[1.75] text-[#1D2432]/86"
+            className="mt-7 border border-[#C9A84C]/35 bg-[#F4ECD9]/80 px-5 py-5 text-[clamp(18px,2vw,22px)] font-medium leading-[1.55] text-[#1D2432]/86"
           >
-            {UNDERAGE_NOTICE_JP.map((line) => (
-              <p key={line}>{line}</p>
-            ))}
+            <L
+              ja={
+                <>
+                  {UNDERAGE_NOTICE_JP.map((line) => (
+                    <span key={line} className="block">
+                      {line}
+                    </span>
+                  ))}
+                </>
+              }
+              en={
+                <>
+                  {UNDERAGE_NOTICE_EN.map((line) => (
+                    <span key={line} className="block">
+                      {line}
+                    </span>
+                  ))}
+                </>
+              }
+            />
           </div>
 
           <label className="mt-6 flex cursor-pointer items-start gap-3 text-[13px] leading-[1.6] text-[#0B1A2E]/85 select-none">

@@ -8,6 +8,12 @@ export const UNDERAGE_NOTICE_JP = [
   "20歳未満の者には酒類を販売いたしません。",
 ] as const;
 
+/** 英語ロケール表示用の未成年飲酒防止表示（日本語表記は常に DOM 内に保持） */
+export const UNDERAGE_NOTICE_EN = [
+  "Drinking by anyone under the age of 20 is prohibited by law.",
+  "We do not sell alcoholic beverages to anyone under the age of 20.",
+] as const;
+
 /**
  * 送料表記の唯一の出どころ。全ページ・特商法表示はこのトークンを参照し、
  * 「全国一律 1,100円（税込）」「クール便指定時 +330円（税込）」の表記を統一する。

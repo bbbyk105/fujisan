@@ -23,8 +23,8 @@ const benefits = [
   {
     num: "Ⅱ",
     eyebrow: { en: "BREWER SUPPORT", ja: "蔵元のサポート" },
-    en: "Tasting notes, food-pairing decks, and an on-site staff training session at major rollouts.",
-    ja: "テイスティングノート、ペアリングの資料、本格導入時の店舗研修まで、蔵元がお手伝いします。",
+    en: "Tasting notes, serving guides, and an on-site staff training session at major rollouts.",
+    ja: "テイスティングノート、提供時の資料、本格導入時の店舗研修まで、蔵元がお手伝いします。",
   },
   {
     num: "Ⅲ",

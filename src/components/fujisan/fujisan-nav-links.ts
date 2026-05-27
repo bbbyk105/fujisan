@@ -44,7 +44,6 @@ export const FUJISAN_NAV_LINKS: FujisanNavLinkItem[] = [
       },
     ],
   },
-  { href: "/pairings", label: "PAIRINGS", match: "/pairings" },
   { href: "/stories", label: "STORIES", match: "/stories" },
   {
     href: "/shop",

@@ -24,8 +24,8 @@ const stories = [
       "Each winter Toji-san walks the cold cedar floor before sunrise, listening for the breath of the moromi. He has done this for fifty-two seasons.",
     excerptJp:
       "冬になると杜氏は、夜明け前の冷えた杉の床を歩き、もろみの息づかいに耳を澄ます。五十二度の冬を、そうして越えてきました。",
-    image: "/images/fujisan/stories/izakaya.png",
-    position: "object-[50%_55%]",
+    image: "/images/fujisan/toji.png",
+    position: "object-[50%_28%]",
   },
   {
     chapter: "Ⅱ",

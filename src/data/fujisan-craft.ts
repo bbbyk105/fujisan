@@ -251,9 +251,9 @@ export const fujisanCraftPillars: CraftPillar[] = [
       "麹は四十時間、麹室で育てられ、手と目で温度と湿度を確かめます。酒母は無理をせず、酵母が静かに増えるよう導きます。本仕込みは三〜四週間、低温で進めながら、毎日の変化を一手に記録します。",
       "搾りはやさしく。最も繊細な銘柄には、袋に詰めて雫を集める袋吊りも。酒は蔵の闇でしばらく休み、自分自身になっていきます。",
     ],
-    heroImage: "/images/fujisan/art-of-sake/ochoko.png",
-    heroPosition: "object-[55%_50%]",
-    detailImage: "/images/fujisan/stories/izakaya.png",
+    heroImage: "/images/fujisan/toji.png",
+    heroPosition: "object-[50%_28%]",
+    detailImage: "/images/fujisan/toji.png",
     stats: [
       {
         label: "BREW SEASON",

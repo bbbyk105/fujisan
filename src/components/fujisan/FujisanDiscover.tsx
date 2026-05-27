@@ -56,49 +56,14 @@ const storyPhotos = [
     position: "object-[50%_50%]",
   },
   {
-    src: "/images/fujisan/stories/izakaya.png",
-    alt: "Traditional Japanese village street",
-    position: "object-[50%_55%]",
+    src: "/images/fujisan/toji.png",
+    alt: "杜氏 — 蔵の仕込みを見守る",
+    position: "object-[50%_28%]",
   },
   {
     src: "/images/fujisan/art-of-sake/ochoko.png",
     alt: "Hand holding a ceramic ochoko cup",
     position: "object-[55%_50%]",
-  },
-];
-
-const pairings = [
-  {
-    roman: "Ⅰ",
-    name: "SASHIMI",
-    jp: "刺身",
-    desc: "Clean and delicate flavors.",
-    descJp: "澄んだ繊細な味わい。",
-    image: "/images/fujisan/pairings/sashimi.png",
-  },
-  {
-    roman: "Ⅱ",
-    name: "TEMPURA",
-    jp: "天ぷら",
-    desc: "Crisp and light harmony.",
-    descJp: "軽やかでさっくりとした調和。",
-    image: "/images/fujisan/pairings/tempra.png",
-  },
-  {
-    roman: "Ⅲ",
-    name: "YAKITORI",
-    jp: "焼き鳥",
-    desc: "Rich and savory balance.",
-    descJp: "コクと旨味のバランス。",
-    image: "/images/fujisan/pairings/yakitori.png",
-  },
-  {
-    roman: "Ⅳ",
-    name: "CHEESE",
-    jp: "チーズ",
-    desc: "Surprising and delightful.",
-    descJp: "意外で楽しい組み合わせ。",
-    image: "/images/fujisan/pairings/cheese.png",
   },
 ];
 
@@ -291,125 +256,6 @@ export default function FujisanDiscover() {
         </div>
       </section>
 
-      {/* ===== Pairings ===== */}
-      <section className="relative bg-[#0F1D30] text-[#EAD9B5]">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-[#D7B46A]/35 to-transparent"
-        />
-        <div className="mx-auto grid max-w-[1480px] grid-cols-1 items-start gap-12 px-8 py-20 md:grid-cols-[0.85fr_3fr] md:gap-10 md:px-14 md:py-24">
-          <div className="relative">
-            <Reveal className="flex items-center gap-3">
-              <span className="font-serif text-[11px] font-medium tracking-[0.34em] text-[#D7B46A]">
-                Ⅲ
-              </span>
-              <span className="h-px w-10 bg-[#D7B46A]/55" />
-              <span className="text-[10px] font-semibold uppercase tracking-[0.36em] text-[#D7B46A]/85">
-                <L en="Harmony" ja="調和" />
-              </span>
-            </Reveal>
-
-            <Reveal
-              as="h2"
-              className="mt-6 font-serif text-[clamp(24px,2.4vw,34px)] font-semibold leading-[1.12] tracking-[0.1em] text-[#F2E4C7]"
-              delay={revealDelays.d1}
-            >
-              <L
-                en={
-                  <>
-                    PERFECT
-                    <br />
-                    PAIRINGS
-                  </>
-                }
-                ja={
-                  <>
-                    完璧な
-                    <br />
-                    ペアリング
-                  </>
-                }
-              />
-            </Reveal>
-            <Reveal
-              as="p"
-              className="mt-3 font-jp text-[12.5px] tracking-[0.26em] text-[#D7B46A]/85"
-              delay={revealDelays.d2}
-            >
-              ― 食卓の調和 ―
-            </Reveal>
-
-            <Reveal
-              as="p"
-              className="mt-6 max-w-[260px] text-[13px] font-light leading-[1.75] text-[#F2E4C7]/75 md:text-[13.5px]"
-              delay={revealDelays.d3}
-            >
-              <L
-                en="Enhance every moment with the perfect match for your sake."
-                ja="一献ごとに、最高のひとときを。酒と食の調和を、心ゆくまで。"
-              />
-            </Reveal>
-
-            <Link
-              href="/pairings"
-              className="group/link mt-12 inline-flex items-center gap-3 text-[10.5px] font-semibold tracking-[0.34em] text-[#F2E4C7] no-underline"
-            >
-              <span className="relative pb-1">
-                <L en="VIEW PAIRINGS" ja="ペアリングを見る" />
-                <span className="absolute inset-x-0 -bottom-0 h-px bg-[#F2E4C7]/50 transition-all duration-500 group-hover/link:bg-[#D7B46A]" />
-              </span>
-              <span
-                aria-hidden
-                className="transition-transform duration-500 group-hover/link:translate-x-1 group-hover/link:text-[#D7B46A]"
-              >
-                →
-              </span>
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-2 gap-x-6 gap-y-12 sm:grid-cols-4 md:gap-x-7">
-            {pairings.map((p, i) => (
-              <Reveal
-                key={p.name}
-                delay={0.1 + i * 0.12}
-                className="group flex flex-col"
-              >
-                <div className="relative aspect-[4/3.4] overflow-hidden">
-                  <Image
-                    src={p.image}
-                    alt={p.name.toLowerCase()}
-                    fill
-                    sizes="(min-width: 768px) 18vw, 45vw"
-                    className="object-cover"
-                  />
-                  <div
-                    aria-hidden
-                    className="pointer-events-none absolute inset-0 bg-linear-to-t from-[#0F1D30]/35 via-transparent to-transparent"
-                  />
-                  <span className="absolute left-3 top-3 font-serif text-[11px] font-medium tracking-[0.3em] text-[#F2E4C7]/90">
-                    {p.roman}
-                  </span>
-                </div>
-                <figcaption className="mt-5">
-                  <h3 className="font-serif text-[12.5px] font-semibold tracking-[0.3em] text-[#D7B46A]">
-                    <L en={p.name} ja={p.jp} />
-                  </h3>
-                  <p className="mt-1 font-jp text-[11px] tracking-[0.22em] text-[#F2E4C7]/60">
-                    {p.jp}
-                  </p>
-                  <span
-                    aria-hidden
-                    className="mt-3 block h-px w-8 bg-[#D7B46A]/45 transition-all duration-500 group-hover:w-14 group-hover:bg-[#D7B46A]"
-                  />
-                  <p className="mt-3 text-[12px] font-light leading-[1.6] text-[#F2E4C7]/72">
-                    <L en={p.desc} ja={p.descJp} />
-                  </p>
-                </figcaption>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
     </>
   );
 }

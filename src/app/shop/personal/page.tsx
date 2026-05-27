@@ -23,8 +23,8 @@ const steps = [
     en: "Choose your bottle",
     ja: "一本を選ぶ",
     desc: {
-      en: "Browse six expressions of Fujisan and open the bottle that calls to you. Each detail page shows its temperature, pairings, and brewer notes.",
-      ja: "六種の銘柄から、気になる一本をお選びください。各商品ページに、おすすめの温度・ペアリング・蔵元の言葉を記しています。",
+      en: "Browse six expressions of Fujisan and open the bottle that calls to you. Each detail page shows its temperature and brewer notes.",
+      ja: "六種の銘柄から、気になる一本をお選びください。各商品ページに、おすすめの温度・蔵元の言葉を記しています。",
     },
   },
   {
@@ -173,23 +173,6 @@ export default function ShopPersonalPage() {
                 />
               </Reveal>
             </div>
-            <Reveal delay={revealDelays.d2}>
-              <Link
-                href="/pairings"
-                className="group/link inline-flex items-center gap-3 text-[10.5px] font-semibold tracking-[0.34em] text-[#0B1A2E] no-underline"
-              >
-                <span className="relative pb-1">
-                  <L en="OR SEE OUR PAIRINGS" ja="ペアリングから選ぶ" />
-                  <span className="absolute inset-x-0 -bottom-0 h-px bg-[#0B1A2E]/40 transition-all duration-500 group-hover/link:bg-[#C9A84C]" />
-                </span>
-                <span
-                  aria-hidden
-                  className="transition-transform duration-500 group-hover/link:translate-x-1 group-hover/link:text-[#C9A84C]"
-                >
-                  →
-                </span>
-              </Link>
-            </Reveal>
           </div>
 
           <ProductCollectionBottles products={fujisanProducts} columns={6} />

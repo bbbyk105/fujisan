@@ -229,7 +229,7 @@ export default async function ProductDetailPage({
           </div>
           <div className="md:border-l md:border-[#0B1A2E]/12 md:pl-14">
             <p className="font-serif text-[11px] font-semibold tracking-[0.3em] text-[#0B1A2E]/66">
-              <L en="SERVE & PAIR" ja="温度と相性" />
+              <L en="SERVING" ja="飲み方" />
             </p>
             <div className="mt-4 h-px w-8 bg-[#0B1A2E]/30" />
             <p className="mt-7 text-[10px] font-semibold tracking-[0.2em] text-[#0B1A2E]/56">
@@ -238,17 +238,6 @@ export default async function ProductDetailPage({
             <p className="mt-2 font-serif text-[18px] text-[#0B1A2E]">
               <L en={product.serveTemp} ja={product.serveTempJp} />
             </p>
-            <p className="mt-7 text-[10px] font-semibold tracking-[0.2em] text-[#0B1A2E]/56">
-              <L en="PAIRING" ja="ペアリング" />
-            </p>
-            <ul className="mt-3 space-y-2 font-serif text-[16px] text-[#0B1A2E]/90">
-              {product.pairing.map((p, i) => (
-                <li key={p} className="flex items-center gap-3">
-                  <span aria-hidden className="h-px w-4 bg-[#C9A84C]" />
-                  <L en={p} ja={product.pairingJp[i] ?? p} />
-                </li>
-              ))}
-            </ul>
           </div>
         </div>
       </section>
