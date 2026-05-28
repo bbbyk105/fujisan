@@ -58,6 +58,15 @@ export const wholesaleSchema = z.object({
   licenseConfirmed: z.boolean().refine((v) => v === true, "agree"),
 });
 
+export const checkoutSchema = z.object({
+  name: requiredString,
+  email: emailString,
+  postalCode: requiredString,
+  address: requiredString,
+  phone: requiredString,
+  ageConfirmed: z.boolean().refine((v) => v === true, "agree"),
+});
+
 /**
  * スキーマで検証し、`{ フィールド名: エラーキー }` を返す純関数。
  * 1 フィールドにつき最初のエラーのみ採用する。エラーが無ければ空オブジェクト。

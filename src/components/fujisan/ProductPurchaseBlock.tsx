@@ -3,9 +3,12 @@
 import Link from "next/link";
 import { useState } from "react";
 import { UNDERAGE_NOTICE_EN, UNDERAGE_NOTICE_JP } from "@/data/fujisan-legal";
+import { useCart } from "@/lib/cart/useCart";
 import { L } from "@/i18n/Localized";
 
 type Props = {
+  /** カートに追加する商品の slug */
+  slug: string;
   productName: string;
   variantLine: string;
   priceJpy: number;
@@ -18,18 +21,21 @@ type Props = {
 const yen = new Intl.NumberFormat("ja-JP");
 
 export default function ProductPurchaseBlock({
+  slug,
   productName,
   variantLine,
   priceJpy,
   shippingNote,
   shippingNoteEn,
 }: Props) {
+  const { add } = useCart();
   const [confirmed, setConfirmed] = useState(false);
   const [qty, setQty] = useState(1);
   const [submitted, setSubmitted] = useState(false);
 
   const onAddToCart = () => {
     if (!confirmed) return;
+    add(slug, qty);
     setSubmitted(true);
     window.setTimeout(() => setSubmitted(false), 3500);
   };
@@ -237,6 +243,24 @@ export default function ProductPurchaseBlock({
             )}
             <span aria-hidden>→</span>
           </button>
+
+          {submitted ? (
+            <Link
+              href="/cart"
+              className="group/cart mt-4 inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.24em] text-[#0B1A2E] no-underline"
+            >
+              <span className="relative pb-1">
+                <L en="VIEW CART" ja="カートを見る" />
+                <span className="absolute inset-x-0 -bottom-0 h-px bg-[#0B1A2E]/45 transition-all duration-500 group-hover/cart:bg-[#C9A84C]" />
+              </span>
+              <span
+                aria-hidden
+                className="transition-transform duration-500 group-hover/cart:translate-x-1 group-hover/cart:text-[#C9A84C]"
+              >
+                →
+              </span>
+            </Link>
+          ) : null}
 
           <p className="mt-4 text-[10.5px] leading-[1.7] text-[#0B1A2E]/55">
             <L

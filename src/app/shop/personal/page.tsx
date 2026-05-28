@@ -2,7 +2,7 @@ import Link from "next/link";
 import FujisanNav from "@/components/fujisan/FujisanNav";
 import FujisanFooter from "@/components/fujisan/FujisanFooter";
 import { FujisanInnerHero } from "@/components/fujisan/FujisanInnerHero";
-import { ProductCollectionBottles } from "@/components/fujisan/ProductCollectionBottles";
+import { ShopCollectionGrid } from "@/components/fujisan/ShopCollectionGrid";
 import { Reveal } from "@/components/reveal/Reveal";
 import { revealDelays } from "@/components/reveal/constants";
 import { fujisanProducts } from "@/data/fujisan-products";
@@ -166,7 +166,7 @@ export default function ShopPersonalPage() {
                 <L
                   en={`Each label is 720 ml. Prices range from ¥${yen.format(
                     priceMin,
-                  )} to ¥${yen.format(priceMax)} (tax incl.). Tap a bottle to read the brewer notes and complete your order.`}
+                  )} to ¥${yen.format(priceMax)} (tax incl.). Add a bottle to your cart, or tap it to read the brewer notes first.`}
                   ja={
                     <>
                       <span className="inline-block">いずれも 720ml。</span>
@@ -175,7 +175,7 @@ export default function ShopPersonalPage() {
                         {yen.format(priceMax)}（税込）。
                       </span>
                       <span className="inline-block">
-                        気になる一本をタップして、ご注文へ。
+                        そのままカートへ、または一本をタップして詳細から。
                       </span>
                     </>
                   }
@@ -184,7 +184,7 @@ export default function ShopPersonalPage() {
             </div>
           </div>
 
-          <ProductCollectionBottles products={fujisanProducts} columns={6} />
+          <ShopCollectionGrid products={fujisanProducts} />
         </div>
       </section>
 

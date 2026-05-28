@@ -199,6 +199,7 @@ export default async function ProductDetailPage({
 
       {/* ===== Purchase block (price · 年齢確認 · 未成年防止表示) ===== */}
       <ProductPurchaseBlock
+        slug={product.slug}
         productName={product.name}
         variantLine={product.variantLine}
         priceJpy={product.priceJpy}
