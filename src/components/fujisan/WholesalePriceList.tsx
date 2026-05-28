@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { fujisanProducts } from "@/data/fujisan-products";
-import { getSession } from "@/lib/session";
+import { getSessionSafe } from "@/lib/session";
 import { L } from "@/i18n/Localized";
 
 const yen = (n: number) => `¥${n.toLocaleString("ja-JP")}`;
 
 export async function WholesalePriceList() {
-  const session = await getSession();
+  const session = await getSessionSafe();
   const isBusiness =
     (session?.user as { role?: string } | undefined)?.role === "business";
 

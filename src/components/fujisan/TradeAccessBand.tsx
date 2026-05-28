@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { getSession } from "@/lib/session";
+import { getSessionSafe } from "@/lib/session";
 import { L } from "@/i18n/Localized";
 
 /** /shop/business 上部の取扱店アクセス帯。ログイン状態で表示を出し分ける。 */
 export async function TradeAccessBand() {
-  const session = await getSession();
+  const session = await getSessionSafe();
   const user = session?.user as
     | { role?: string; companyName?: string | null; name?: string }
     | undefined;
