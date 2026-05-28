@@ -256,10 +256,19 @@ export default async function ProductDetailPage({
               </h2>
             </div>
             <Link
-              href="/#showcase"
-              className="text-[11px] font-semibold tracking-[0.22em] text-[#0B1A2E]/66 no-underline transition-colors hover:text-[#C9A84C]"
+              href="/shop/personal"
+              className="group/all inline-flex shrink-0 items-center gap-2.5 text-[11px] font-semibold tracking-[0.22em] text-[#0B1A2E]/70 no-underline"
             >
-              <L en="VIEW ALL →" ja="一覧を見る →" />
+              <span className="relative pb-1">
+                <L en="VIEW ALL" ja="一覧を見る" />
+                <span className="absolute inset-x-0 bottom-0 h-px bg-[#0B1A2E]/35 transition-colors duration-500 group-hover/all:bg-[#C9A84C]" />
+              </span>
+              <span
+                aria-hidden
+                className="transition-transform duration-500 group-hover/all:translate-x-1 group-hover/all:text-[#C9A84C]"
+              >
+                →
+              </span>
             </Link>
           </div>
 
