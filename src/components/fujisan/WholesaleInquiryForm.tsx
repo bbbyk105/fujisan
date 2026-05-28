@@ -167,7 +167,7 @@ export function WholesaleInquiryForm() {
             }}
             className={inputCls}
             placeholder={
-              locale === "ja" ? "鮨 青山 株式会社" : "Sushi Aoyama Co., Ltd."
+              locale === "ja" ? "株式会社〇〇商店" : "Sample Trading Co., Ltd."
             }
           />
           <FieldError error={fieldErrors.company} />

@@ -123,7 +123,7 @@ export function RegisterBusinessForm() {
             clearError("companyName");
           }}
           className={inputCls}
-          placeholder="鮨 青山 株式会社"
+          placeholder="株式会社〇〇商店"
         />
         <FieldError error={fieldErrors.companyName} />
       </Field>
@@ -183,7 +183,7 @@ export function RegisterBusinessForm() {
           value={address}
           onChange={(e) => setAddress(e.target.value)}
           className={inputCls}
-          placeholder="東京都港区青山 1-2-3"
+          placeholder="東京都〇〇区〇〇 1-2-3"
         />
       </Field>
 
