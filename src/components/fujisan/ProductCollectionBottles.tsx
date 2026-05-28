@@ -7,11 +7,21 @@ import type { FujisanProduct } from "@/data/fujisan-products";
 
 type Props = {
   products: FujisanProduct[];
+  /** Desktop column count. Defaults to 5 (used on product detail pages). */
+  columns?: 5 | 6;
 };
 
-export function ProductCollectionBottles({ products }: Props) {
+// 商品数で割り切れる列構成にし、最終行に1本だけ取り残されないようにする
+const COLUMN_CLASS: Record<5 | 6, string> = {
+  5: "md:grid-cols-5",
+  6: "md:grid-cols-3 lg:grid-cols-6",
+};
+
+export function ProductCollectionBottles({ products, columns = 5 }: Props) {
   return (
-    <div className="mt-10 grid grid-cols-3 gap-x-3 gap-y-10 md:grid-cols-5 md:gap-x-5">
+    <div
+      className={`mt-10 grid grid-cols-3 gap-x-3 gap-y-10 md:gap-x-5 ${COLUMN_CLASS[columns]}`}
+    >
       {products.map((p) => (
         <Link
           key={p.slug}

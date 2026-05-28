@@ -1,21 +1,22 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { Reveal } from "@/components/reveal/Reveal";
 import { revealDelays } from "@/components/reveal/constants";
 
-type Crumb = { label: string; href: string };
+type Crumb = { label: ReactNode; href: string };
 
 type Props = {
-  /** Latin / English overline text */
-  eyebrow: string;
+  /** Overline text (use <L> for bilingual) */
+  eyebrow: ReactNode;
   /** Roman numeral or chapter mark, e.g. "Ⅰ" */
   chapter?: string;
-  /** Main title (English) */
-  title: string;
-  /** Japanese sub-title under the title */
-  jp?: string;
-  /** Lead paragraph */
-  lead?: string;
+  /** Main title (use <L> for bilingual) */
+  title: ReactNode;
+  /** Sub-title under the title */
+  jp?: ReactNode;
+  /** Lead paragraph (use <L> for bilingual) */
+  lead?: ReactNode;
   /** Breadcrumb links shown above the eyebrow */
   crumbs?: Crumb[];
   /** Hero background image. Defaults to Mt. Fuji silhouette. */

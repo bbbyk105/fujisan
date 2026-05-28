@@ -2,6 +2,7 @@ import Image from "next/image";
 import { Reveal } from "@/components/reveal/Reveal";
 import { revealDelays } from "@/components/reveal/constants";
 import FujisanFooter from "./FujisanFooter";
+import { L } from "@/i18n/Localized";
 
 export default function FujisanExperience() {
   return (
@@ -38,10 +39,17 @@ export default function FujisanExperience() {
             className="mt-7 font-serif text-[clamp(22px,2.6vw,34px)] font-semibold leading-[1.15] tracking-[0.16em] text-[#0B1A2E]"
             delay={revealDelays.d1}
           >
-            EXPERIENCE JAPAN
-            <br className="hidden sm:block" />
-            <span className="sm:hidden"> </span>
-            IN EVERY SIP
+            <L
+              en={
+                <>
+                  EXPERIENCE JAPAN
+                  <br className="hidden sm:block" />
+                  <span className="sm:hidden"> </span>
+                  IN EVERY SIP
+                </>
+              }
+              ja={<>一献に、日本を味わう。</>}
+            />
           </Reveal>
 
           <Reveal
@@ -49,9 +57,10 @@ export default function FujisanExperience() {
             className="mt-6 max-w-[560px] text-[14px] font-light leading-[1.8] text-[#2B2419]/75 md:text-[15px]"
             delay={revealDelays.d2}
           >
-            Each bottle tells a story of the land, the people, and the
-            timeless art of sake brewing. Enjoy it chilled, and savor the
-            true essence of Japan.
+            <L
+              en="Each bottle tells a story of the land, the people, and the timeless art of sake brewing. Enjoy it chilled, and savor the true essence of Japan."
+              ja="一本一本に、土地と人、そして時を超えて受け継がれる酒造りの物語が息づいています。よく冷やして、日本の真髄をお楽しみください。"
+            />
           </Reveal>
 
           <Reveal className="mt-10 flex items-center gap-3" delay={revealDelays.d3}>

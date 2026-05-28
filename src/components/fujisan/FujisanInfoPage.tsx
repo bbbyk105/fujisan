@@ -1,24 +1,26 @@
+import type { ReactNode } from "react";
 import FujisanNav from "@/components/fujisan/FujisanNav";
 import FujisanFooter from "@/components/fujisan/FujisanFooter";
 import { FujisanInnerHero } from "@/components/fujisan/FujisanInnerHero";
 import { Reveal } from "@/components/reveal/Reveal";
 import { revealDelays } from "@/components/reveal/constants";
+import { L } from "@/i18n/Localized";
 
 export type InfoSection = {
   num?: string;
-  heading: string;
-  jp?: string;
-  body: string[];
-  bullets?: string[];
+  heading: ReactNode;
+  jp?: ReactNode;
+  body: ReactNode[];
+  bullets?: ReactNode[];
 };
 
 type Props = {
-  eyebrow: string;
+  eyebrow: ReactNode;
   chapter: string;
-  title: string;
-  jp: string;
-  lead: string;
-  crumb: { label: string; href: string };
+  title: ReactNode;
+  jp: ReactNode;
+  lead: ReactNode;
+  crumb: { label: ReactNode; href: string };
   updated?: string;
   sections: InfoSection[];
 };
@@ -60,13 +62,13 @@ export default function FujisanInfoPage({
           <aside className="md:sticky md:top-[110px] md:self-start">
             {updated && (
               <p className="text-[10px] font-semibold tracking-[0.28em] text-[#0B1A2E]/55">
-                LAST UPDATED · {updated.toUpperCase()}
+                <L en={`LAST UPDATED · ${updated}`} ja={`最終更新 · ${updated}`} />
               </p>
             )}
             <div className="mt-4 h-px w-10 bg-[#C9A84C]/55" />
             <ul className="mt-7 hidden space-y-3 md:block">
               {sections.map((s, i) => (
-                <li key={s.heading}>
+                <li key={i}>
                   <a
                     href={`#section-${i + 1}`}
                     className="group inline-flex items-baseline gap-2 text-[11px] font-semibold tracking-[0.18em] text-[#0B1A2E]/72 no-underline transition-colors hover:text-[#C9A84C]"
@@ -85,7 +87,7 @@ export default function FujisanInfoPage({
           <div className="max-w-[760px]">
             {sections.map((s, i) => (
               <Reveal
-                key={s.heading}
+                key={i}
                 as="div"
                 delay={revealDelays.d1}
                 id={`section-${i + 1}`}

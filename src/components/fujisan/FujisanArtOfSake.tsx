@@ -1,12 +1,41 @@
 import Image from "next/image";
 import { Reveal } from "@/components/reveal/Reveal";
 import { revealDelays } from "@/components/reveal/constants";
+import { L } from "@/i18n/Localized";
 
 const pillars = [
-  { num: "01", label: "PURE WATER", sub: "FROM MT. FUJI", Icon: IconFuji },
-  { num: "02", label: "PREMIUM", sub: "JAPANESE RICE", Icon: IconRice },
-  { num: "03", label: "TRADITIONAL", sub: "BREWING METHODS", Icon: IconBottle },
-  { num: "04", label: "PASSION &", sub: "DEDICATION", Icon: IconDrop },
+  {
+    num: "01",
+    label: "PURE WATER",
+    labelJp: "清らかな水",
+    sub: "FROM MT. FUJI",
+    subJp: "富士の伏流水",
+    Icon: IconFuji,
+  },
+  {
+    num: "02",
+    label: "PREMIUM",
+    labelJp: "厳選の酒米",
+    sub: "JAPANESE RICE",
+    subJp: "丹念な精米",
+    Icon: IconRice,
+  },
+  {
+    num: "03",
+    label: "TRADITIONAL",
+    labelJp: "伝統の醸造",
+    sub: "BREWING METHODS",
+    subJp: "受け継ぐ技",
+    Icon: IconBottle,
+  },
+  {
+    num: "04",
+    label: "PASSION &",
+    labelJp: "情熱と真心",
+    sub: "DEDICATION",
+    subJp: "蔵人の手仕事",
+    Icon: IconDrop,
+  },
 ];
 
 const craftPhotos = [
@@ -58,7 +87,7 @@ export default function FujisanArtOfSake() {
               </span>
               <span className="h-px w-10 bg-[#D7B46A]/55" />
               <span className="text-[10px] font-semibold uppercase tracking-[0.38em] text-[#D7B46A]/85">
-                The Craft
+                <L en="The Craft" ja="酒造り" />
               </span>
             </Reveal>
 
@@ -67,7 +96,7 @@ export default function FujisanArtOfSake() {
               className="mt-5 font-serif text-[clamp(26px,2.6vw,38px)] font-medium leading-[1.12] tracking-[0.08em] text-[#F2E4C7]"
               delay={revealDelays.d1}
             >
-              THE ART OF SAKE
+              <L en="THE ART OF SAKE" ja="酒造りの美学" />
             </Reveal>
             <Reveal
               as="p"
@@ -82,9 +111,10 @@ export default function FujisanArtOfSake() {
               className="mt-6 max-w-[520px] text-[13.5px] font-light leading-[1.75] text-[#F2E4C7]/78 md:text-[14.5px]"
               delay={revealDelays.d3}
             >
-              Brewed with pristine snowmelt from Mt. Fuji and techniques
-              safeguarded across generations — every bottle carries the
-              stillness of the mountain and the hand of the master brewer.
+              <L
+                en="Brewed with pristine snowmelt from Mt. Fuji and techniques safeguarded across generations — every bottle carries the stillness of the mountain and the hand of the master brewer."
+                ja="富士山の清らかな雪解け水と、代々受け継がれてきた技で醸す一献。その一本一本に、山の静けさと杜氏の手仕事が宿ります。"
+              />
             </Reveal>
           </div>
 
@@ -94,7 +124,7 @@ export default function FujisanArtOfSake() {
               className="mb-9 h-px w-full bg-linear-to-r from-transparent via-[#D7B46A]/35 to-transparent"
             />
             <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-4 md:gap-x-7 lg:gap-x-5">
-              {pillars.map(({ num, label, sub, Icon }, i) => (
+              {pillars.map(({ num, label, labelJp, sub, subJp, Icon }, i) => (
                 <Reveal
                   key={label}
                   className="group flex flex-col items-start gap-3 text-left"
@@ -109,10 +139,10 @@ export default function FujisanArtOfSake() {
                   <Icon className="h-8 w-8 text-[#D7B46A]/90 transition-colors duration-500 group-hover:text-[#D7B46A]" />
                   <div>
                     <p className="whitespace-nowrap font-serif text-[10.5px] font-semibold tracking-[0.22em] text-[#F2E4C7] md:text-[11px]">
-                      {label}
+                      <L en={label} ja={labelJp} />
                     </p>
                     <p className="mt-1 whitespace-nowrap text-[9.5px] font-light tracking-[0.22em] text-[#F2E4C7]/65 md:text-[10px]">
-                      {sub}
+                      <L en={sub} ja={subJp} />
                     </p>
                   </div>
                 </Reveal>

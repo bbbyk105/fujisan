@@ -2,32 +2,48 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { UNDERAGE_NOTICE_JP } from "@/data/fujisan-legal";
+import { UNDERAGE_NOTICE_EN, UNDERAGE_NOTICE_JP } from "@/data/fujisan-legal";
+import { useCart } from "@/lib/cart/useCart";
+import { pushToast } from "@/lib/cart/toast-store";
 import { L } from "@/i18n/Localized";
 
 type Props = {
+  /** カートに追加する商品の slug */
+  slug: string;
   productName: string;
   variantLine: string;
   priceJpy: number;
+  /** 日本語の送料表記 */
   shippingNote: string;
+  /** 英語ロケール表示用の送料表記 */
+  shippingNoteEn: string;
 };
 
 const yen = new Intl.NumberFormat("ja-JP");
 
 export default function ProductPurchaseBlock({
+  slug,
   productName,
   variantLine,
   priceJpy,
   shippingNote,
+  shippingNoteEn,
 }: Props) {
+  const { add } = useCart();
   const [confirmed, setConfirmed] = useState(false);
   const [qty, setQty] = useState(1);
   const [submitted, setSubmitted] = useState(false);
 
   const onAddToCart = () => {
     if (!confirmed) return;
+    add(slug, qty);
     setSubmitted(true);
     window.setTimeout(() => setSubmitted(false), 3500);
+    pushToast({
+      ja: `${productName}を${qty}本カートに追加しました`,
+      en: `${productName} ×${qty} added to your cart`,
+      action: { href: "/cart", ja: "カートを見る", en: "VIEW CART" },
+    });
   };
 
   return (
@@ -67,7 +83,8 @@ export default function ProductPurchaseBlock({
             </li>
             <li>
               ·{" "}
-              <L en="Shipping" ja="送料" />: {shippingNote}
+              <L en="Shipping" ja="送料" />:{" "}
+              <L en={shippingNoteEn} ja={shippingNote} />
             </li>
             <li>
               ·{" "}
@@ -102,38 +119,33 @@ export default function ProductPurchaseBlock({
           </ul>
 
           <div className="mt-7 flex items-center gap-4">
-            <label
-              htmlFor="qty"
+            <span
               className="text-[10.5px] font-semibold tracking-[0.28em] text-[#0B1A2E]/70"
             >
               <L en="QTY" ja="数量" />
-            </label>
-            <div className="inline-flex items-center border border-[#0B1A2E]/25 bg-white/70">
+            </span>
+            <div className="inline-flex items-center gap-1">
               <button
                 type="button"
                 aria-label="数量を減らす"
                 onClick={() => setQty((q) => Math.max(1, q - 1))}
-                className="cursor-pointer px-3 py-2 text-[14px] text-[#0B1A2E] transition-colors hover:bg-[#F1E6CB]/60"
+                className="flex h-11 w-11 cursor-pointer items-center justify-center text-[18px] font-light text-[#0B1A2E]/45 transition-colors hover:text-[#0B1A2E]"
               >
                 −
               </button>
-              <input
+              <span
                 id="qty"
-                type="number"
-                inputMode="numeric"
-                min={1}
-                max={12}
-                value={qty}
-                onChange={(e) =>
-                  setQty(Math.max(1, Math.min(12, Number(e.target.value) || 1)))
-                }
-                className="w-12 border-x border-[#0B1A2E]/15 bg-transparent py-2 text-center text-[13px] font-semibold tracking-[0.1em] text-[#0B1A2E] outline-none"
-              />
+                aria-live="polite"
+                aria-label={`数量 ${qty}`}
+                className="w-9 border-b border-[#0B1A2E]/30 pb-0.5 text-center text-[13px] font-semibold tracking-[0.1em] text-[#0B1A2E]"
+              >
+                {qty}
+              </span>
               <button
                 type="button"
                 aria-label="数量を増やす"
                 onClick={() => setQty((q) => Math.min(12, q + 1))}
-                className="cursor-pointer px-3 py-2 text-[14px] text-[#0B1A2E] transition-colors hover:bg-[#F1E6CB]/60"
+                className="flex h-11 w-11 cursor-pointer items-center justify-center text-[18px] font-light text-[#0B1A2E]/45 transition-colors hover:text-[#0B1A2E]"
               >
                 ＋
               </button>
@@ -152,11 +164,28 @@ export default function ProductPurchaseBlock({
           <div
             role="note"
             aria-label="未成年飲酒防止のお知らせ"
-            className="mt-7 border border-[#C9A84C]/35 bg-[#F4ECD9]/80 px-5 py-4 text-[12px] leading-[1.75] text-[#1D2432]/86"
+            className="mt-7 border border-[#C9A84C]/35 bg-[#F4ECD9]/80 px-5 py-5 text-[clamp(18px,2vw,22px)] font-medium leading-[1.55] text-[#1D2432]/86"
           >
-            {UNDERAGE_NOTICE_JP.map((line) => (
-              <p key={line}>{line}</p>
-            ))}
+            <L
+              ja={
+                <>
+                  {UNDERAGE_NOTICE_JP.map((line) => (
+                    <span key={line} className="block">
+                      {line}
+                    </span>
+                  ))}
+                </>
+              }
+              en={
+                <>
+                  {UNDERAGE_NOTICE_EN.map((line) => (
+                    <span key={line} className="block">
+                      {line}
+                    </span>
+                  ))}
+                </>
+              }
+            />
           </div>
 
           <label className="mt-6 flex cursor-pointer items-start gap-3 text-[13px] leading-[1.6] text-[#0B1A2E]/85 select-none">

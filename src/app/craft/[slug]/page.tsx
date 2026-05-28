@@ -10,6 +10,7 @@ import {
   fujisanCraftPillars,
   getCraftPillarBySlug,
 } from "@/data/fujisan-craft";
+import { L } from "@/i18n/Localized";
 
 type Params = { slug: string };
 
@@ -56,23 +57,24 @@ export default async function CraftPage({
         chapter={pillar.chapter}
         title={pillar.title}
         jp={`― ${pillar.catchJp} ―`}
-        lead={pillar.lead}
+        lead={<L en={pillar.lead} ja={pillar.leadJp} />}
         crumbs={[
           { label: "HOME", href: "/#top" },
-          { label: "THE CRAFT", href: "/#art" },
+          { label: "THE CRAFT", href: "/craft" },
           { label: pillar.eyebrow, href: `/craft/${pillar.slug}` },
         ]}
         bgPosition={pillar.heroPosition}
       />
 
-      {/* ===== Story ===== */}
+      {/* ===== Story (locale-aware single column) ===== */}
       <section className="relative bg-[#FAF5E8]">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-[#0B1A2E]/15 to-transparent"
         />
-        <div className="mx-auto grid max-w-[1280px] grid-cols-1 gap-12 px-7 py-20 md:grid-cols-[1.1fr_1fr] md:gap-16 md:px-12 md:py-24">
-          <div>
+        <div className="mx-auto max-w-[840px] px-7 py-20 md:px-12 md:py-24">
+          {/* EN locale */}
+          <div className="i18n-en">
             <Reveal className="flex items-center gap-3">
               <span className="font-serif text-[11px] font-medium tracking-[0.32em] text-[#C9A84C]">
                 {pillar.chapter}
@@ -88,14 +90,14 @@ export default async function CraftPage({
                 as="p"
                 key={i}
                 delay={revealDelays.d1 + i * 0.08}
-                className="mt-7 max-w-[560px] font-serif text-[clamp(15px,1.4vw,17px)] leading-[1.85] text-[#1D2432]/88"
+                className="mt-7 max-w-[640px] font-serif text-[clamp(15px,1.4vw,17px)] leading-[1.85] text-[#1D2432]/88"
               >
                 {para}
               </Reveal>
             ))}
 
             <Reveal
-              className="mt-12 max-w-[520px] border-l-2 border-[#C9A84C]/60 pl-6"
+              className="mt-12 max-w-[560px] border-l-2 border-[#C9A84C]/60 pl-6"
               delay={revealDelays.d3}
             >
               <p className="font-serif text-[clamp(18px,1.7vw,22px)] italic leading-[1.55] text-[#0B1A2E]/85">
@@ -104,22 +106,45 @@ export default async function CraftPage({
             </Reveal>
           </div>
 
-          <div className="md:border-l md:border-[#0B1A2E]/12 md:pl-14">
-            <Reveal as="p" className="font-jp text-[12px] font-semibold tracking-[0.3em] text-[#C9A84C]">
+          {/* JA locale */}
+          <div className="i18n-ja">
+            <Reveal className="flex items-center gap-3">
+              <span className="font-serif text-[11px] font-medium tracking-[0.32em] text-[#C9A84C]">
+                {pillar.chapter}
+              </span>
+              <span className="h-px w-10 bg-[#C9A84C]/55" />
+              <span className="font-jp text-[11px] font-semibold tracking-[0.3em] text-[#0B1A2E]/70">
+                {pillar.storyTitleJp}
+              </span>
+            </Reveal>
+
+            <Reveal
+              as="p"
+              delay={revealDelays.d1}
+              className="mt-6 font-jp text-[12px] font-semibold tracking-[0.3em] text-[#C9A84C]"
+            >
               {pillar.jp}
             </Reveal>
-            <Reveal className="mt-4 h-px w-8 bg-[#0B1A2E]/30" />
 
             {pillar.storyJp.map((para, i) => (
               <Reveal
                 as="p"
                 key={i}
                 delay={revealDelays.d2 + i * 0.08}
-                className="mt-7 whitespace-pre-line font-jp text-[clamp(13.5px,1.2vw,15px)] leading-[2] text-[#1D2432]/82"
+                className="mt-7 max-w-[640px] whitespace-pre-line font-jp text-[clamp(13.5px,1.2vw,15px)] leading-[2] text-[#1D2432]/82"
               >
                 {para}
               </Reveal>
             ))}
+
+            <Reveal
+              className="mt-12 max-w-[560px] border-l-2 border-[#C9A84C]/60 pl-6"
+              delay={revealDelays.d3}
+            >
+              <p className="font-jp text-[clamp(15px,1.5vw,18px)] leading-[1.8] text-[#0B1A2E]/85">
+                {pillar.pullQuoteJp}
+              </p>
+            </Reveal>
           </div>
         </div>
       </section>
@@ -159,7 +184,7 @@ export default async function CraftPage({
               </span>
               <span className="h-px w-10 bg-[#D7B46A]/55" />
               <span className="text-[10px] font-semibold uppercase tracking-[0.36em] text-[#D7B46A]/85">
-                Numbers
+                <L en="Numbers" ja="数値で見る" />
               </span>
             </Reveal>
 
@@ -168,7 +193,10 @@ export default async function CraftPage({
               className="mt-5 font-serif text-[clamp(22px,2.2vw,30px)] font-semibold leading-[1.15] tracking-[0.08em] text-[#F2E4C7]"
               delay={revealDelays.d1}
             >
-              The mountain, in measurements
+              <L
+                en="The mountain, in measurements"
+                ja="数値で辿る、山のかたち"
+              />
             </Reveal>
 
             <dl className="mt-10 grid grid-cols-2 gap-x-6 gap-y-9">
@@ -180,14 +208,14 @@ export default async function CraftPage({
                   className="flex flex-col"
                 >
                   <dt className="text-[10px] font-semibold tracking-[0.26em] text-[#D7B46A]/85">
-                    {s.label}
+                    <L en={s.label} ja={s.labelJp} />
                   </dt>
                   <dd className="mt-2 font-serif text-[clamp(22px,2.4vw,30px)] font-semibold tracking-[0.04em] text-[#F2E4C7]">
-                    {s.value}
+                    <L en={s.value} ja={s.valueJp} />
                   </dd>
                   {s.caption && (
                     <p className="mt-1 text-[11px] leading-[1.5] text-[#F2E4C7]/65">
-                      {s.caption}
+                      <L en={s.caption} ja={s.captionJp ?? s.caption} />
                     </p>
                   )}
                 </Reveal>
@@ -206,7 +234,7 @@ export default async function CraftPage({
             </span>
             <span className="h-px w-10 bg-[#C9A84C]/55" />
             <span className="text-[10px] font-semibold uppercase tracking-[0.36em] text-[#0B1A2E]/65">
-              The Process
+              <L en="The Process" ja="醸しの工程" />
             </span>
           </Reveal>
 
@@ -215,7 +243,10 @@ export default async function CraftPage({
             className="mt-5 max-w-[680px] font-serif text-[clamp(24px,2.6vw,34px)] font-semibold leading-[1.15] tracking-[0.06em] text-[#0B1A2E]"
             delay={revealDelays.d1}
           >
-            Four movements, one quiet hand.
+            <L
+              en="Four movements, one quiet hand."
+              ja="四つの所作、ひとつの静かな手。"
+            />
           </Reveal>
 
           <div className="mt-14 grid grid-cols-1 gap-y-10 sm:grid-cols-2 sm:gap-x-10 lg:grid-cols-4 lg:gap-x-8">
@@ -234,14 +265,14 @@ export default async function CraftPage({
                 </span>
                 <div>
                   <h3 className="font-serif text-[15px] font-semibold tracking-[0.18em] text-[#0B1A2E]">
-                    {step.en.toUpperCase()}
+                    <L en={step.en.toUpperCase()} ja={step.jp} />
                   </h3>
-                  <p className="mt-1 font-jp text-[11px] tracking-[0.24em] text-[#C9A84C]/85">
+                  <p className="i18n-en mt-1 font-jp text-[11px] tracking-[0.24em] text-[#C9A84C]/85">
                     {step.jp}
                   </p>
                 </div>
                 <p className="text-[13px] font-light leading-[1.75] text-[#1D2432]/78">
-                  {step.desc}
+                  <L en={step.desc} ja={step.descJp} />
                 </p>
               </Reveal>
             ))}
@@ -253,9 +284,21 @@ export default async function CraftPage({
       <section className="border-t border-[#0B1A2E]/10 bg-[#F4ECD9]">
         <div className="mx-auto grid max-w-[1280px] grid-cols-1 md:grid-cols-2">
           {[
-            { p: prev, label: "PREVIOUS PILLAR", arrow: "←", align: "left" as const },
-            { p: next, label: "NEXT PILLAR", arrow: "→", align: "right" as const },
-          ].map(({ p, label, arrow, align }) => (
+            {
+              p: prev,
+              labelEn: "PREVIOUS PILLAR",
+              labelJa: "前の章",
+              arrow: "←",
+              align: "left" as const,
+            },
+            {
+              p: next,
+              labelEn: "NEXT PILLAR",
+              labelJa: "次の章",
+              arrow: "→",
+              align: "right" as const,
+            },
+          ].map(({ p, labelEn, labelJa, arrow, align }) => (
             <Link
               key={p.slug}
               href={`/craft/${p.slug}`}
@@ -266,7 +309,18 @@ export default async function CraftPage({
               }`}
             >
               <span className="text-[10px] font-semibold tracking-[0.28em] text-[#0B1A2E]/60">
-                {align === "left" ? `${arrow} ${label}` : `${label} ${arrow}`}
+                <L
+                  en={
+                    align === "left"
+                      ? `${arrow} ${labelEn}`
+                      : `${labelEn} ${arrow}`
+                  }
+                  ja={
+                    align === "left"
+                      ? `${arrow} ${labelJa}`
+                      : `${labelJa} ${arrow}`
+                  }
+                />
               </span>
               <span className="font-serif text-[clamp(22px,2.4vw,30px)] font-semibold tracking-[0.04em] text-[#0B1A2E] group-hover:text-[#C9A84C]">
                 {p.title}

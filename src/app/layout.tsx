@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Noto_Serif, Noto_Serif_JP, Shippori_Mincho } from "next/font/google";
 import "./globals.css";
 import AgeGate from "@/components/fujisan/AgeGate";
+import { Toaster } from "@/components/fujisan/Toaster";
 import { LocaleBoot } from "@/i18n/LocaleBoot";
 
 const notoSerif = Noto_Serif({
@@ -55,6 +56,7 @@ export default function RootLayout({
       <body>
         {children}
         <AgeGate />
+        <Toaster />
       </body>
     </html>
   );

@@ -19,9 +19,8 @@ export type FujisanNavLinkItem = {
 
 export const FUJISAN_NAV_LINKS: FujisanNavLinkItem[] = [
   { href: "/#top", label: "HOME", match: "#top" },
-  { href: "/#showcase", label: "OUR SAKE", match: "#showcase" },
   {
-    href: "/#art",
+    href: "/craft",
     label: "THE CRAFT",
     match: "/craft",
     children: [
@@ -45,7 +44,25 @@ export const FUJISAN_NAV_LINKS: FujisanNavLinkItem[] = [
       },
     ],
   },
-  { href: "/pairings", label: "PAIRINGS", match: "/pairings" },
   { href: "/stories", label: "STORIES", match: "/stories" },
+  {
+    href: "/shop",
+    label: "PURCHASE",
+    match: "/shop",
+    children: [
+      {
+        label: "FOR YOUR TABLE",
+        jp: "個人のお客様",
+        href: "/shop/personal",
+        desc: "Single bottles to your door, with care.",
+      },
+      {
+        label: "FOR YOUR PROGRAMME",
+        jp: "法人・卸 / 取扱店",
+        href: "/shop/business",
+        desc: "Restaurants, bars, retailers, hospitality.",
+      },
+    ],
+  },
   { href: "/contact", label: "CONTACT", match: "/contact" },
 ];

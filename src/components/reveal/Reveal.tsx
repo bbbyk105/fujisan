@@ -3,7 +3,17 @@
 import * as React from "react";
 
 export type RevealProps = {
-  as?: "div" | "p" | "h1" | "h2" | "h3" | "span";
+  as?:
+    | "div"
+    | "p"
+    | "h1"
+    | "h2"
+    | "h3"
+    | "span"
+    | "li"
+    | "article"
+    | "section"
+    | "aside";
   id?: string;
   className?: string;
   children?: React.ReactNode;
@@ -65,12 +75,15 @@ export function Reveal({
     .filter(Boolean)
     .join(" ");
 
-  return React.createElement(as, {
-    ref: setNode,
-    id,
-    className: combinedClassName,
-    style: combinedStyle,
-    onClick,
+  return React.createElement(
+    as,
+    {
+      ref: setNode,
+      id,
+      className: combinedClassName,
+      style: combinedStyle,
+      onClick,
+    },
     children,
-  });
+  );
 }

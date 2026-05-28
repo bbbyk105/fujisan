@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Cloudflare / OpenNext build output & local state (generated, do not lint):
+    ".open-next/**",
+    ".wrangler/**",
+    "drizzle/**",
+    "cloudflare-env.d.ts",
     // Sibling projects outside the Next.js app:
     "command-center/**",
     "apps/**",

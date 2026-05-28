@@ -5,77 +5,92 @@ import FujisanFooter from "@/components/fujisan/FujisanFooter";
 import { FujisanInnerHero } from "@/components/fujisan/FujisanInnerHero";
 import { Reveal } from "@/components/reveal/Reveal";
 import { revealDelays } from "@/components/reveal/constants";
+import { L } from "@/i18n/Localized";
 
 export const metadata = {
   title: "Stories of Fujisan — FUJISAN SAKE",
   description:
-    "Stories of the land, the people, and the traditions that live on in every drop of Fujisan sake.",
+    "A few honest notes on what's in the glass — the water and rice behind Fujisan, the cold months it is brewed in, and some easy ways to pour it.",
 };
+
+const KANJI = ["一", "二", "三", "四", "五", "六"];
 
 const stories = [
   {
-    chapter: "Ⅰ",
-    eyebrow: "THE TOJI",
-    title: "A hundred winters at the brewhouse",
-    jp: "蔵の冬、百日の沈黙",
+    eyebrow: "WINTER WORK",
+    eyebrowJp: "杜氏",
+    title: "Brewed in the cold",
+    jp: "寒造り",
     excerpt:
-      "Each winter Toji-san walks the cold cedar floor before sunrise, listening for the breath of the moromi. He has done this for fifty-two seasons.",
-    image: "/images/fujisan/stories/izakaya.png",
-    position: "object-[50%_55%]",
+      "Fujisan is a winter sake. Cold air keeps fermentation slow and clean, so brewing runs from late autumn into the coldest weeks of the year. The mornings start early, and a lot of the work is judged by smell and touch.",
+    excerptJp:
+      "富士山は冬の酒です。冷たい空気が発酵をゆっくり、澄んだものに保つので、仕込みは晩秋から一年で最も寒い時期にかけて行います。朝は早く、多くは香りと手ざわりで見極めます。",
+    image: "/images/fujisan/toji.png",
+    position: "object-[50%_28%]",
   },
   {
-    chapter: "Ⅱ",
-    eyebrow: "THE FARMER",
-    title: "The terrace that remembers",
-    jp: "棚田の記憶",
+    eyebrow: "THE RICE",
+    eyebrowJp: "米",
+    title: "How far the rice is polished",
+    jp: "米を磨く",
     excerpt:
-      "Three generations of the Suzuki family have grown Yamadanishiki on the south face of Fuji. Their rice is the silence at the heart of our Daiginjo.",
+      "The daiginjo leans on Yamadanishiki, blended with Homarefuji, a sake rice bred here in Shizuoka. Polish away the outer grain and mostly the starchy heart is left. That is where the clean, quiet sweetness comes from.",
+    excerptJp:
+      "大吟醸の軸は山田錦。静岡で生まれた酒米、誉富士を合わせます。米の外側を削ると、でんぷん質の中心が残る。澄んだ静かな甘みは、そこから生まれます。",
     image: "/images/fujisan/features/ricebox.png",
     position: "object-[50%_46%]",
   },
   {
-    chapter: "Ⅲ",
     eyebrow: "THE WATER",
-    title: "Snow that fell before the war",
-    jp: "戦前の雪、今日の酒",
+    eyebrowJp: "水",
+    title: "Soft water off the mountain",
+    jp: "富士の水",
     excerpt:
-      "The water in tonight’s bottle began as snow on Mt. Fuji’s upper slopes nearly half a century ago. We are simply its messenger.",
+      "The brewing water is Mt. Fuji snowmelt that has spent decades working down through volcanic rock. It comes out soft and low in iron — the kind of water that keeps a sake delicate rather than heavy.",
+    excerptJp:
+      "仕込み水は、何十年もかけて溶岩の層を下ってきた富士山の雪解け水。やわらかく鉄分が少ないので、酒は重くならず、繊細に仕上がります。",
     image: "/images/fujisan/features/water.png",
     position: "object-[50%_42%]",
   },
   {
-    chapter: "Ⅳ",
-    eyebrow: "THE TABLE",
-    title: "An evening at the kappo counter",
-    jp: "割烹の夜",
+    eyebrow: "AT THE TABLE",
+    eyebrowJp: "食卓",
+    title: "Warm it at the counter",
+    jp: "燗の一杯",
     excerpt:
-      "A small kappo on a quiet street in Shimbashi pours our Tokubetsu Junmai by the warmed flask. The conversations rise quietly around it.",
-    image: "/images/fujisan/art-of-sake/ochoko.png",
+      "Not every sake likes heat, but the junmai styles do. Warmed gently in a tin chirori to around body temperature, they turn rounder and softer — good company for a slow meal and a longer conversation.",
+    excerptJp:
+      "どんな酒でも燗が合うわけではありませんが、純米系はよく映えます。ちろりで人肌ほどにそっと温めると、丸くやわらかに。ゆっくりした食事と、長い話の相手にどうぞ。",
+    image: "/images/kappou.png",
     position: "object-[55%_50%]",
   },
   {
-    chapter: "Ⅴ",
-    eyebrow: "THE SEASONS",
-    title: "Four temperatures, four moods",
-    jp: "四季の温度",
+    eyebrow: "TEMPERATURE",
+    eyebrowJp: "温度",
+    title: "Cold or warm, your call",
+    jp: "温度で遊ぶ",
     excerpt:
-      "Chilled in summer, warmed in winter — the same bottle reveals a different voice in every season. Here is how our brewers serve theirs.",
+      "One bottle, two drinks. Well chilled it is sharp and refreshing; with a little warmth the body and sweetness come forward. Pour a glass each way and taste the difference yourself.",
+    excerptJp:
+      "一本で、二通り。よく冷やせばシャープで爽やか、少し温めればふくらみと甘みが前に出ます。両方注いで、その違いを確かめてみてください。",
     image: "/images/fujisan/art-of-sake/sake.png",
     position: "object-[42%_50%]",
   },
   {
-    chapter: "Ⅵ",
-    eyebrow: "THE ART",
-    title: "Cups of clay, cups of glass",
+    eyebrow: "THE CUP",
+    eyebrowJp: "うつわ",
+    title: "The cup counts too",
     jp: "器のはなし",
     excerpt:
-      "The vessel changes the sake. We sat down with three Japanese ceramicists to ask what they look for when they shape an ochoko.",
-    image: "/images/fujisan/pairings/cheese.png",
+      "The cup shapes the aroma as much as the sake does. A small ochoko keeps it tight and focused; a wine glass lifts the fruit and flowers. It is worth keeping a few shapes within reach.",
+    excerptJp:
+      "香りは、酒と同じくらい器で決まります。小さなおちょこは香りをまとめ、ワイングラスは果実や花の香りをひらく。形違いをいくつか手元に置いておくと楽しめます。",
+    image: "/images/fujisan/shuki.png",
     position: "object-[50%_50%]",
   },
 ];
 
-const featured = stories[0];
+const opening = stories[0];
 
 export default function StoriesPage() {
   const rest = stories.slice(1);
@@ -89,7 +104,12 @@ export default function StoriesPage() {
         chapter="Ⅱ"
         title="STORIES OF FUJISAN"
         jp="― 富士山酒物語 ―"
-        lead="Each bottle carries a story — of the land, the people, and the traditions that live on in every drop. These are some of the voices we have gathered around our brewhouse."
+        lead={
+          <L
+            en="A few honest notes on what is actually in the glass — the water and rice behind Fujisan, the cold months it is brewed in, and some easy ways to pour it."
+            ja="グラスの中身についての、正直な覚え書きを少しだけ。富士山の水と米のこと、仕込みの冬のこと、そして気軽な注ぎ方を。"
+          />
+        }
         crumbs={[
           { label: "HOME", href: "/#top" },
           { label: "STORIES", href: "/stories" },
@@ -97,164 +117,170 @@ export default function StoriesPage() {
         bgPosition="object-[50%_50%]"
       />
 
-      {/* ===== Featured ===== */}
+      {/* ===== Opening note ===== */}
       <section className="relative bg-[#FAF5E8]">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-[#0B1A2E]/15 to-transparent"
         />
-        <div className="mx-auto grid max-w-[1360px] grid-cols-1 items-stretch lg:grid-cols-[1.05fr_1fr]">
-          <div className="relative min-h-[320px] overflow-hidden md:min-h-[500px]">
+        <div className="mx-auto grid max-w-[1360px] grid-cols-1 items-stretch lg:grid-cols-[1.08fr_1fr]">
+          <div className="relative min-h-[340px] overflow-hidden md:min-h-[540px]">
             <Image
-              src={featured.image}
-              alt={featured.title}
+              src={opening.image}
+              alt=""
               fill
               priority
-              sizes="(min-width: 1024px) 50vw, 100vw"
-              className={`object-cover ${featured.position}`}
+              sizes="(min-width: 1024px) 52vw, 100vw"
+              className={`object-cover ${opening.position}`}
             />
             <div
               aria-hidden
-              className="pointer-events-none absolute inset-0 bg-linear-to-r from-transparent via-transparent to-[#0B1A2E]/22"
+              className="pointer-events-none absolute inset-0 bg-linear-to-t from-[#0B1A2E]/35 via-transparent to-transparent"
             />
-            <span className="absolute left-6 top-6 font-serif text-[12px] font-medium tracking-[0.34em] text-[#FAF5E8]">
-              {featured.chapter}
+            <span className="absolute left-7 top-7 font-serif text-[34px] leading-none text-[#FAF5E8]/85">
+              {KANJI[0]}
             </span>
           </div>
 
           <div className="flex flex-col justify-center bg-[#F1E6CB] px-7 py-16 sm:px-10 md:px-14 md:py-20">
             <Reveal className="flex items-center gap-3">
-              <span className="font-serif text-[11px] font-medium tracking-[0.32em] text-[#C9A84C]">
-                FEATURED
+              <span className="font-serif text-[14px] leading-none text-[#C9A84C]">
+                {KANJI[0]}
               </span>
-              <span className="h-px w-10 bg-[#C9A84C]/55" />
+              <span className="h-px w-9 bg-[#C9A84C]/55" />
               <span className="text-[10px] font-semibold uppercase tracking-[0.34em] text-[#0B1A2E]/65">
-                {featured.eyebrow}
+                <L en={opening.eyebrow} ja={opening.eyebrowJp} />
               </span>
             </Reveal>
 
             <Reveal
               as="h2"
-              className="mt-6 font-serif text-[clamp(28px,3.4vw,44px)] font-semibold leading-[1.12] tracking-[0.04em] text-[#0B1A2E]"
+              className="mt-6 font-serif text-[clamp(28px,3.4vw,44px)] font-semibold leading-[1.14] tracking-[0.03em] text-[#0B1A2E]"
               delay={revealDelays.d1}
             >
-              {featured.title}
+              <L en={opening.title} ja={opening.jp} />
             </Reveal>
 
             <Reveal
               as="p"
-              className="mt-3 font-jp text-[12.5px] tracking-[0.26em] text-[#C9A84C]/85"
+              className="i18n-en mt-3 font-jp text-[12.5px] tracking-[0.26em] text-[#C9A84C]/85"
               delay={revealDelays.d2}
             >
-              {featured.jp}
+              {opening.jp}
             </Reveal>
 
             <Reveal
               as="p"
-              className="mt-7 max-w-[520px] text-[14px] font-light leading-[1.85] text-[#2B2419]/82 md:text-[15px]"
+              className="mt-7 max-w-[520px] text-[14px] leading-[1.9] text-[#2B2419]/82 md:text-[15px]"
               delay={revealDelays.d3}
             >
-              {featured.excerpt}
-            </Reveal>
-
-            <Reveal className="mt-10" delay={revealDelays.d3 + 0.1}>
-              <span className="group/link inline-flex items-center gap-3 text-[10.5px] font-semibold tracking-[0.34em] text-[#0B1A2E]">
-                <span className="relative pb-1">
-                  COMING SOON
-                  <span className="absolute inset-x-0 -bottom-0 h-px bg-[#0B1A2E]/40" />
-                </span>
-                <span aria-hidden>→</span>
-              </span>
+              <L en={opening.excerpt} ja={opening.excerptJp} />
             </Reveal>
           </div>
         </div>
       </section>
 
-      {/* ===== Story grid ===== */}
+      {/* ===== Alternating notes ===== */}
       <section className="relative bg-[#FAF5E8]">
-        <div className="mx-auto max-w-[1360px] px-7 pb-24 pt-20 md:px-12 md:pb-28">
+        <div className="mx-auto max-w-[1180px] px-7 pb-24 pt-20 md:px-12 md:pb-28 md:pt-24">
           <Reveal className="flex items-center gap-3">
-            <span className="font-serif text-[11px] font-medium tracking-[0.32em] text-[#C9A84C]">
-              Ⅱ.II
+            <span className="font-serif text-[11px] tracking-[0.3em] text-[#C9A84C]">
+              覚え書き
             </span>
             <span className="h-px w-10 bg-[#C9A84C]/55" />
-            <span className="text-[10px] font-semibold uppercase tracking-[0.36em] text-[#0B1A2E]/65">
-              The Archive
+            <span className="text-[10px] font-semibold uppercase tracking-[0.36em] text-[#0B1A2E]/60">
+              MORE NOTES
             </span>
           </Reveal>
 
           <Reveal
             as="h2"
-            className="mt-5 max-w-[680px] font-serif text-[clamp(24px,2.6vw,34px)] font-semibold leading-[1.15] tracking-[0.06em] text-[#0B1A2E]"
+            className="mt-5 max-w-[640px] font-serif text-[clamp(23px,2.5vw,32px)] font-semibold leading-[1.18] tracking-[0.05em] text-[#0B1A2E]"
             delay={revealDelays.d1}
           >
-            More voices around the brewhouse
+            <L en="A few more, from around the kura" ja="蔵のまわりから、もう少し" />
           </Reveal>
 
-          <div className="mt-14 grid grid-cols-1 gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-10">
-            {rest.map((story, i) => (
-              <Reveal
-                key={story.title}
-                delay={0.1 + i * 0.1}
-                className="group flex flex-col"
-              >
-                <div className="relative aspect-[4/3] overflow-hidden">
-                  <Image
-                    src={story.image}
-                    alt={story.title}
-                    fill
-                    sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 92vw"
-                    className={`object-cover transition-transform duration-700 group-hover:scale-[1.04] ${story.position}`}
-                  />
+          <div className="mt-16 flex flex-col gap-16 md:mt-20 md:gap-24">
+            {rest.map((story, i) => {
+              const imageRight = i % 2 === 1;
+              const kanji = KANJI[i + 1];
+              return (
+                <Reveal
+                  as="article"
+                  key={story.title}
+                  delay={0.05}
+                  className="group grid grid-cols-1 items-center gap-7 lg:grid-cols-2 lg:gap-14"
+                >
                   <div
-                    aria-hidden
-                    className="pointer-events-none absolute inset-0 bg-linear-to-t from-[#0B1A2E]/30 via-transparent to-transparent"
-                  />
-                  <span className="absolute left-3 top-3 font-serif text-[11px] font-medium tracking-[0.3em] text-[#FAF5E8]">
-                    {story.chapter}
-                  </span>
-                </div>
-                <div className="mt-6">
-                  <p className="text-[10px] font-semibold tracking-[0.34em] text-[#C9A84C]">
-                    {story.eyebrow}
-                  </p>
-                  <h3 className="mt-3 font-serif text-[clamp(18px,1.6vw,22px)] font-semibold leading-[1.28] tracking-[0.04em] text-[#0B1A2E] transition-colors duration-500 group-hover:text-[#C9A84C]">
-                    {story.title}
-                  </h3>
-                  <p className="mt-2 font-jp text-[11px] tracking-[0.24em] text-[#0B1A2E]/60">
-                    {story.jp}
-                  </p>
-                  <span
-                    aria-hidden
-                    className="mt-4 block h-px w-8 bg-[#C9A84C]/45 transition-all duration-500 group-hover:w-14 group-hover:bg-[#C9A84C]"
-                  />
-                  <p className="mt-4 text-[13px] font-light leading-[1.75] text-[#1D2432]/78">
-                    {story.excerpt}
-                  </p>
-                </div>
-              </Reveal>
-            ))}
+                    className={`relative aspect-[5/4] overflow-hidden ${
+                      imageRight ? "lg:order-2" : ""
+                    }`}
+                  >
+                    <Image
+                      src={story.image}
+                      alt=""
+                      fill
+                      sizes="(min-width: 1024px) 46vw, 92vw"
+                      className={`object-cover transition-transform duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] ${story.position}`}
+                    />
+                    <div
+                      aria-hidden
+                      className="pointer-events-none absolute inset-0 bg-linear-to-t from-[#0B1A2E]/28 via-transparent to-transparent"
+                    />
+                    <span className="absolute left-5 top-4 font-serif text-[26px] leading-none text-[#FAF5E8]/85">
+                      {kanji}
+                    </span>
+                  </div>
+
+                  <div className={imageRight ? "lg:order-1 lg:pr-8" : "lg:pl-8"}>
+                    <div className="flex items-center gap-3">
+                      <span className="font-serif text-[13px] leading-none text-[#C9A84C]">
+                        {kanji}
+                      </span>
+                      <span className="h-px w-7 bg-[#C9A84C]/50" />
+                      <span className="text-[10px] font-semibold uppercase tracking-[0.32em] text-[#0B1A2E]/55">
+                        <L en={story.eyebrow} ja={story.eyebrowJp} />
+                      </span>
+                    </div>
+
+                    <h3 className="mt-5 font-serif text-[clamp(21px,2vw,28px)] font-semibold leading-[1.22] tracking-[0.03em] text-[#0B1A2E]">
+                      <L en={story.title} ja={story.jp} />
+                    </h3>
+                    <p className="i18n-en mt-2 font-jp text-[11.5px] tracking-[0.24em] text-[#C9A84C]/80">
+                      {story.jp}
+                    </p>
+
+                    <p className="mt-5 max-w-[480px] text-[14px] leading-[1.9] text-[#1D2432]/80">
+                      <L en={story.excerpt} ja={story.excerptJp} />
+                    </p>
+                  </div>
+                </Reveal>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* ===== CTA strip ===== */}
+      {/* ===== Closing CTA ===== */}
       <section className="relative bg-[#0F1D30] text-[#F2E4C7]">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-[#D7B46A]/40 to-transparent"
         />
         <div className="mx-auto flex max-w-[1280px] flex-col items-start justify-between gap-8 px-7 py-16 md:flex-row md:items-center md:px-12 md:py-20">
-          <div className="max-w-[520px]">
+          <div className="max-w-[540px]">
             <p className="font-jp text-[12px] tracking-[0.3em] text-[#D7B46A]/85">
-              ― 一献の物語 ―
+              ― 今宵の一本 ―
             </p>
             <h2 className="mt-4 font-serif text-[clamp(22px,2.4vw,30px)] font-semibold leading-[1.18] tracking-[0.06em] text-[#F2E4C7]">
-              Begin your own story with Fujisan.
+              <L en="Find the bottle for tonight." ja="今宵の一本を、選ぶ。" />
             </h2>
-            <p className="mt-4 text-[13.5px] font-light leading-[1.78] text-[#F2E4C7]/78">
-              Each bottle in the collection is its own opening line. Choose the one
-              that speaks to your evening.
+            <p className="mt-4 text-[13.5px] leading-[1.85] text-[#F2E4C7]/78">
+              <L
+                en="Six labels, each with its own character — from crisp and dry to round and rich. Pick the one that fits the evening."
+                ja="六つの銘柄、それぞれに個性があります。きりりと辛口のものから、丸くコクのあるものまで。今宵に合う一本をどうぞ。"
+              />
             </p>
           </div>
 
@@ -263,7 +289,7 @@ export default function StoriesPage() {
             className="group/link inline-flex items-center gap-3 text-[10.5px] font-semibold tracking-[0.34em] text-[#F2E4C7] no-underline"
           >
             <span className="relative pb-1">
-              VIEW THE COLLECTION
+              <L en="VIEW THE COLLECTION" ja="コレクションを見る" />
               <span className="absolute inset-x-0 -bottom-0 h-px bg-[#F2E4C7]/50 transition-all duration-500 group-hover/link:bg-[#D7B46A]" />
             </span>
             <span

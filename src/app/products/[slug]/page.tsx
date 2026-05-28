@@ -65,7 +65,9 @@ export default async function ProductDetailPage({
 
   const idx = fujisanProducts.findIndex((p) => p.slug === slug);
   const prev =
-    fujisanProducts[(idx - 1 + fujisanProducts.length) % fujisanProducts.length];
+    fujisanProducts[
+      (idx - 1 + fujisanProducts.length) % fujisanProducts.length
+    ];
   const next = fujisanProducts[(idx + 1) % fujisanProducts.length];
   const others = fujisanProducts.filter((p) => p.slug !== slug);
 
@@ -97,8 +99,7 @@ export default async function ProductDetailPage({
               href="/#showcase"
               className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.24em] text-[#0B1A2E]/70 no-underline transition-colors hover:text-[#C9A84C]"
             >
-              <span aria-hidden>←</span>{" "}
-              <L en="OUR SAKE" ja="サケ一覧へ" />
+              <span aria-hidden>←</span> <L en="OUR SAKE" ja="日本酒一覧へ" />
             </Link>
 
             <p className="mt-5 font-serif text-[12px] font-semibold tracking-[0.28em] text-[#C9A84C]">
@@ -126,10 +127,7 @@ export default async function ProductDetailPage({
                 {product.smv}
               </span>
               <span className="border border-[#0B1A2E]/30 bg-white/64 px-3 py-1 text-[10px] font-semibold tracking-[0.18em] text-[#0B1A2E]">
-                <L
-                  en={product.grade.toUpperCase()}
-                  ja={product.gradeJp}
-                />
+                <L en={product.grade.toUpperCase()} ja={product.gradeJp} />
               </span>
             </div>
 
@@ -201,10 +199,12 @@ export default async function ProductDetailPage({
 
       {/* ===== Purchase block (price · 年齢確認 · 未成年防止表示) ===== */}
       <ProductPurchaseBlock
+        slug={product.slug}
         productName={product.name}
         variantLine={product.variantLine}
         priceJpy={product.priceJpy}
         shippingNote={FUJISAN_LEGAL.shippingFeeNote}
+        shippingNoteEn={FUJISAN_LEGAL.shippingFeeNoteEn}
       />
 
       {/* ===== Specs + Pairing ===== */}
@@ -219,10 +219,7 @@ export default async function ProductDetailPage({
               {product.specs.map((s) => (
                 <div key={s.label}>
                   <dt className="text-[10px] font-semibold tracking-[0.2em] text-[#0B1A2E]/56">
-                    <L
-                      en={s.label.toUpperCase()}
-                      ja={specLabelJp(s.label)}
-                    />
+                    <L en={s.label.toUpperCase()} ja={specLabelJp(s.label)} />
                   </dt>
                   <dd className="mt-1.5 font-serif text-[17px] text-[#0B1A2E]">
                     {s.value}
@@ -233,7 +230,7 @@ export default async function ProductDetailPage({
           </div>
           <div className="md:border-l md:border-[#0B1A2E]/12 md:pl-14">
             <p className="font-serif text-[11px] font-semibold tracking-[0.3em] text-[#0B1A2E]/66">
-              <L en="SERVE & PAIR" ja="温度と相性" />
+              <L en="SERVING" ja="飲み方" />
             </p>
             <div className="mt-4 h-px w-8 bg-[#0B1A2E]/30" />
             <p className="mt-7 text-[10px] font-semibold tracking-[0.2em] text-[#0B1A2E]/56">
@@ -242,17 +239,6 @@ export default async function ProductDetailPage({
             <p className="mt-2 font-serif text-[18px] text-[#0B1A2E]">
               <L en={product.serveTemp} ja={product.serveTempJp} />
             </p>
-            <p className="mt-7 text-[10px] font-semibold tracking-[0.2em] text-[#0B1A2E]/56">
-              <L en="PAIRING" ja="ペアリング" />
-            </p>
-            <ul className="mt-3 space-y-2 font-serif text-[16px] text-[#0B1A2E]/90">
-              {product.pairing.map((p, i) => (
-                <li key={p} className="flex items-center gap-3">
-                  <span aria-hidden className="h-px w-4 bg-[#C9A84C]" />
-                  <L en={p} ja={product.pairingJp[i] ?? p} />
-                </li>
-              ))}
-            </ul>
           </div>
         </div>
       </section>
@@ -266,17 +252,23 @@ export default async function ProductDetailPage({
                 <L en="THE COLLECTION" ja="ザ・コレクション" />
               </p>
               <h2 className="mt-3 font-serif text-[clamp(22px,2.4vw,30px)] font-semibold tracking-[0.06em] text-[#0B1A2E]">
-                <L
-                  en="Explore other Fujisan"
-                  ja="他の富士山シリーズを見る"
-                />
+                <L en="Explore other Fujisan" ja="他の富士山シリーズを見る" />
               </h2>
             </div>
             <Link
-              href="/#showcase"
-              className="text-[11px] font-semibold tracking-[0.22em] text-[#0B1A2E]/66 no-underline transition-colors hover:text-[#C9A84C]"
+              href="/shop/personal"
+              className="group/all inline-flex shrink-0 items-center gap-2.5 text-[11px] font-semibold tracking-[0.22em] text-[#0B1A2E]/70 no-underline"
             >
-              <L en="VIEW ALL →" ja="一覧を見る →" />
+              <span className="relative pb-1">
+                <L en="VIEW ALL" ja="一覧を見る" />
+                <span className="absolute inset-x-0 bottom-0 h-px bg-[#0B1A2E]/35 transition-colors duration-500 group-hover/all:bg-[#C9A84C]" />
+              </span>
+              <span
+                aria-hidden
+                className="transition-transform duration-500 group-hover/all:translate-x-1 group-hover/all:text-[#C9A84C]"
+              >
+                →
+              </span>
             </Link>
           </div>
 

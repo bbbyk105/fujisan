@@ -8,6 +8,32 @@ export const UNDERAGE_NOTICE_JP = [
   "20歳未満の者には酒類を販売いたしません。",
 ] as const;
 
+/** 英語ロケール表示用の未成年飲酒防止表示（日本語表記は常に DOM 内に保持） */
+export const UNDERAGE_NOTICE_EN = [
+  "Drinking by anyone under the age of 20 is prohibited by law.",
+  "We do not sell alcoholic beverages to anyone under the age of 20.",
+] as const;
+
+/**
+ * 送料表記の唯一の出どころ。全ページ・特商法表示はこのトークンを参照し、
+ * 「全国一律 1,100円（税込）」「クール便指定時 +330円（税込）」の表記を統一する。
+ */
+export const SHIPPING_FEE = {
+  /** 全国一律送料（税込・円）。カート/チェックアウトの合計計算はこの数値を唯一の出どころとする。 */
+  flatJpy: 1100,
+  /** この税込小計（円）以上で送料無料。0 で無効化。 */
+  freeThresholdJpy: 15000,
+  flat: "全国一律 1,100円（税込）",
+  cool: "クール便指定時 +330円（税込）",
+  remote: "北海道・沖縄・離島は別途追加料金がかかる場合があります",
+  free: "15,000円（税込）以上のご購入で送料無料",
+  flatEn: "Flat ¥1,100 nationwide (tax incl.)",
+  coolEn: "Cool-chain delivery +¥330 (tax incl.)",
+  remoteEn:
+    "Surcharges may apply for Hokkaido, Okinawa, and remote islands",
+  freeEn: "Free shipping on orders of ¥15,000 (tax incl.) or more",
+} as const;
+
 /** ご注意: [要確認] が残っている項目は本番公開前に必ず差し替えてください */
 export const FUJISAN_LEGAL = {
   // 特商法
@@ -22,14 +48,22 @@ export const FUJISAN_LEGAL = {
   // 価格・支払・引渡
   priceNote:
     "各商品ページに表示の金額（消費税10%込）。表示価格以外に送料・代引手数料等が必要となる場合があります。",
-  shippingFeeNote:
-    "全国一律 1,100円（税込）。北海道・沖縄・離島は別途追加料金がかかる場合があります。クール便指定時は +330円（税込）。",
+  shipping: SHIPPING_FEE,
+  shippingFeeNote: `${SHIPPING_FEE.flat}。${SHIPPING_FEE.remote}。${SHIPPING_FEE.cool}。`,
+  // 英語ロケール表示用（特商法ページは日本語のまま。EC 説明部分のみ英語へ切替）
+  shippingFeeNoteEn: `${SHIPPING_FEE.flatEn}. ${SHIPPING_FEE.remoteEn}. ${SHIPPING_FEE.coolEn}.`,
   paymentMethods:
     "クレジットカード（VISA / Mastercard / JCB / AMEX / Diners）、銀行振込",
+  paymentMethodsEn:
+    "Credit card (VISA / Mastercard / JCB / AMEX / Diners) and bank transfer.",
   paymentTiming:
     "クレジットカード: ご注文時に確定。銀行振込: ご注文後7日以内にお振込をお願いいたします。",
+  paymentTimingEn:
+    "Credit card: charged at order. Bank transfer: please remit within 7 days of ordering.",
   deliveryTiming:
     "ご注文確認後（銀行振込の場合は入金確認後）、原則2営業日以内に発送いたします。",
+  deliveryTimingEn:
+    "Dispatched within two business days of order confirmation (payment confirmation for bank transfers).",
   returnsPolicy:
     "酒類は性質上、開栓後・お客様都合での返品交換はお受けできません。配送中の破損・誤配送・不良品については商品到着後7日以内にメールにてご連絡ください。",
   otherFees:

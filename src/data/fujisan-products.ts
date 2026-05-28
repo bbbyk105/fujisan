@@ -31,6 +31,10 @@ export type FujisanProduct = {
   gradeJp: string;
   /** 税込み小売価格（円） */
   priceJpy: number;
+  /** 卸価格（税抜・1本あたり、円）。ログイン済みの取扱店のみに表示する。 */
+  wholesalePriceJpy: number;
+  /** 卸の最小ケース本数 */
+  caseSize: number;
 };
 
 export const fujisanProducts: FujisanProduct[] = [
@@ -76,6 +80,8 @@ export const fujisanProducts: FujisanProduct[] = [
     grade: "Crisp, Dry",
     gradeJp: "辛口・キレ",
     priceJpy: 3300,
+    wholesalePriceJpy: 1980,
+    caseSize: 6,
   },
   {
     slug: "junmai",
@@ -119,6 +125,8 @@ export const fujisanProducts: FujisanProduct[] = [
     grade: "Smooth, Round",
     gradeJp: "まろやか・円熟",
     priceJpy: 3850,
+    wholesalePriceJpy: 2310,
+    caseSize: 6,
   },
   {
     slug: "daiginjo-aroma",
@@ -162,6 +170,8 @@ export const fujisanProducts: FujisanProduct[] = [
     grade: "Aromatic, Silky",
     gradeJp: "芳醇・絹のごとく",
     priceJpy: 7700,
+    wholesalePriceJpy: 4620,
+    caseSize: 6,
   },
   {
     slug: "daiginjo-rich",
@@ -205,6 +215,8 @@ export const fujisanProducts: FujisanProduct[] = [
     grade: "Rich, Full-bodied",
     gradeJp: "豊潤・コク",
     priceJpy: 8800,
+    wholesalePriceJpy: 5280,
+    caseSize: 6,
   },
   {
     slug: "junmai-bold",
@@ -248,6 +260,8 @@ export const fujisanProducts: FujisanProduct[] = [
     grade: "Dry, Vibrant",
     gradeJp: "辛口・溌剌",
     priceJpy: 4180,
+    wholesalePriceJpy: 2500,
+    caseSize: 6,
   },
   {
     slug: "junmai-ginjo",
@@ -290,6 +304,8 @@ export const fujisanProducts: FujisanProduct[] = [
     grade: "Light, Floral",
     gradeJp: "軽やか・花香",
     priceJpy: 4620,
+    wholesalePriceJpy: 2770,
+    caseSize: 6,
   },
 ];
 
