@@ -6,6 +6,7 @@ import { FujisanInnerHero } from "@/components/fujisan/FujisanInnerHero";
 import { FujisanContactForm } from "@/components/fujisan/FujisanContactForm";
 import { Reveal } from "@/components/reveal/Reveal";
 import { revealDelays } from "@/components/reveal/constants";
+import { L } from "@/i18n/Localized";
 
 export const metadata = {
   title: "Contact — FUJISAN SAKE",
@@ -20,6 +21,7 @@ const channels = [
     jp: "一般のお問い合わせ",
     address: "care@fujisan-sake.com",
     desc: "Orders, deliveries, gifting, and anything we can help with around your bottle.",
+    descJa: "ご注文・配送・ギフトのご相談など、一本にまつわることなら何でも。",
   },
   {
     num: "Ⅱ",
@@ -27,6 +29,7 @@ const channels = [
     jp: "卸・取扱店",
     address: "trade@fujisan-sake.com",
     desc: "For restaurants, bars, and retailers considering Fujisan for their programme.",
+    descJa: "飲食店・バー・小売店で、富士山の採用をご検討の方へ。",
   },
   {
     num: "Ⅲ",
@@ -34,6 +37,7 @@ const channels = [
     jp: "蔵見学",
     address: "visit@fujisan-sake.com",
     desc: "Small group visits to the kura, by appointment, between November and March.",
+    descJa: "11月〜3月、ご予約制での少人数の蔵見学を承ります。",
   },
   {
     num: "Ⅳ",
@@ -41,13 +45,14 @@ const channels = [
     jp: "取材・メディア",
     address: "press@fujisan-sake.com",
     desc: "Editorial features, photography requests, and review samples.",
+    descJa: "記事掲載・撮影のご依頼、レビュー用サンプルについて。",
   },
 ];
 
 const hours = [
-  { day: "MON — FRI", value: "09:00 — 17:00 JST" },
-  { day: "SATURDAY", value: "10:00 — 15:00 JST" },
-  { day: "SUNDAY · HOLIDAYS", value: "Closed" },
+  { day: "MON — FRI", dayJa: "月 — 金", value: "09:00 — 17:00 JST", valueJa: "09:00 — 17:00 JST" },
+  { day: "SATURDAY", dayJa: "土曜", value: "10:00 — 15:00 JST", valueJa: "10:00 — 15:00 JST" },
+  { day: "SUNDAY · HOLIDAYS", dayJa: "日曜・祝日", value: "Closed", valueJa: "休業" },
 ];
 
 export default function ContactPage() {
@@ -60,7 +65,12 @@ export default function ContactPage() {
         chapter="Ⅷ"
         title="GET IN TOUCH"
         jp="― 一献の便り、お預かりします ―"
-        lead="Whether you have a question about a bottle, are considering Fujisan for your restaurant, or simply want to visit the kura — write to us. Our small team in Shizuoka reads every message by hand."
+        lead={
+          <L
+            en="Whether you have a question about a bottle, are considering Fujisan for your restaurant, or simply want to visit the kura — write to us. Our small team in Shizuoka reads every message by hand."
+            ja="一本についてのご質問も、お店での採用のご相談も、蔵見学のお問い合わせも。どうぞお気軽にご連絡ください。静岡の小さなチームが、いただいたお便りにひとつずつ目を通します。"
+          />
+        }
         crumbs={[
           { label: "HOME", href: "/#top" },
           { label: "CONTACT", href: "/contact" },
@@ -83,7 +93,7 @@ export default function ContactPage() {
               </span>
               <span className="h-px w-10 bg-[#C9A84C]/55" />
               <span className="text-[10px] font-semibold uppercase tracking-[0.36em] text-[#0B1A2E]/65">
-                Send a message
+                <L en="Send a message" ja="メッセージを送る" />
               </span>
             </Reveal>
 
@@ -92,11 +102,14 @@ export default function ContactPage() {
               className="mt-5 max-w-[560px] font-serif text-[clamp(24px,2.6vw,34px)] font-semibold leading-[1.18] tracking-[0.06em] text-[#0B1A2E]"
               delay={revealDelays.d1}
             >
-              Write to the brewhouse.
+              <L en="Write to the brewhouse." ja="蔵元へ、お便りを。" />
             </Reveal>
 
             <Reveal as="p" className="mt-4 max-w-[520px] text-[14px] font-light leading-[1.78] text-[#1D2432]/82" delay={revealDelays.d2}>
-              We reply, in Japanese or English, usually within one business day.
+              <L
+                en="We reply, in Japanese or English, usually within one business day."
+                ja="日本語・英語のどちらでも、通常1営業日以内にご返信します。"
+              />
             </Reveal>
 
             <Reveal className="mt-10" delay={revealDelays.d3}>
@@ -112,7 +125,7 @@ export default function ContactPage() {
               </span>
               <span className="h-px w-10 bg-[#C9A84C]/55" />
               <span className="text-[10px] font-semibold uppercase tracking-[0.36em] text-[#0B1A2E]/65">
-                Direct
+                <L en="Direct" ja="直接のご連絡" />
               </span>
             </Reveal>
 
@@ -121,7 +134,7 @@ export default function ContactPage() {
               className="mt-5 font-serif text-[clamp(22px,2.2vw,28px)] font-semibold leading-[1.2] tracking-[0.06em] text-[#0B1A2E]"
               delay={revealDelays.d1}
             >
-              Or write to the right desk.
+              <L en="Or write to the right desk." ja="担当窓口へ、直接どうぞ。" />
             </Reveal>
 
             <ul className="mt-10 flex flex-col gap-9">
@@ -156,7 +169,7 @@ export default function ContactPage() {
                     </span>
                   </a>
                   <p className="mt-3 max-w-[360px] text-[12.5px] font-light leading-[1.7] text-[#1D2432]/76">
-                    {c.desc}
+                    <L en={c.desc} ja={c.descJa} />
                   </p>
                 </Reveal>
               ))}
@@ -218,7 +231,7 @@ export default function ContactPage() {
               </span>
               <span className="h-px w-10 bg-[#D7B46A]/55" />
               <span className="text-[10px] font-semibold uppercase tracking-[0.36em] text-[#D7B46A]/85">
-                Visit · Hours
+                <L en="Visit · Hours" ja="ご来訪・営業時間" />
               </span>
             </Reveal>
 
@@ -227,12 +240,12 @@ export default function ContactPage() {
               className="mt-5 font-serif text-[clamp(22px,2.2vw,28px)] font-semibold leading-[1.2] tracking-[0.06em] text-[#F2E4C7]"
               delay={revealDelays.d1}
             >
-              At the foot of Fujisan.
+              <L en="At the foot of Fujisan." ja="富士山の麓で。" />
             </Reveal>
 
             <Reveal as="div" className="mt-9" delay={revealDelays.d2}>
               <p className="text-[10px] font-semibold tracking-[0.32em] text-[#D7B46A]/85">
-                ADDRESS
+                <L en="ADDRESS" ja="所在地" />
               </p>
               <p className="mt-3 font-serif text-[15px] leading-[1.78] text-[#F2E4C7]">
                 〒417-0051
@@ -255,10 +268,10 @@ export default function ContactPage() {
                     className="flex items-baseline justify-between gap-4 border-b border-[#F2E4C7]/12 pb-3 text-[12.5px]"
                   >
                     <dt className="font-semibold tracking-[0.24em] text-[#F2E4C7]/70">
-                      {h.day}
+                      <L en={h.day} ja={h.dayJa} />
                     </dt>
                     <dd className="font-serif text-[14px] text-[#F2E4C7]">
-                      {h.value}
+                      <L en={h.value} ja={h.valueJa} />
                     </dd>
                   </div>
                 ))}
@@ -271,7 +284,7 @@ export default function ContactPage() {
                 className="group/link inline-flex items-center gap-3 text-[10.5px] font-semibold tracking-[0.34em] text-[#F2E4C7] no-underline"
               >
                 <span className="relative pb-1">
-                  READ THE FAQ FIRST
+                  <L en="READ THE FAQ FIRST" ja="まず FAQ をご覧ください" />
                   <span className="absolute inset-x-0 -bottom-0 h-px bg-[#F2E4C7]/50 transition-all duration-500 group-hover/link:bg-[#D7B46A]" />
                 </span>
                 <span

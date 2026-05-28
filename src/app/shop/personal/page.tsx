@@ -6,7 +6,11 @@ import { ProductCollectionBottles } from "@/components/fujisan/ProductCollection
 import { Reveal } from "@/components/reveal/Reveal";
 import { revealDelays } from "@/components/reveal/constants";
 import { fujisanProducts } from "@/data/fujisan-products";
-import { FUJISAN_LEGAL, UNDERAGE_NOTICE_JP } from "@/data/fujisan-legal";
+import {
+  FUJISAN_LEGAL,
+  UNDERAGE_NOTICE_JP,
+  UNDERAGE_NOTICE_EN,
+} from "@/data/fujisan-legal";
 import { L } from "@/i18n/Localized";
 
 export const metadata = {
@@ -60,7 +64,12 @@ export default function ShopPersonalPage() {
         chapter="Ⅸ.Ⅰ"
         title="A BOTTLE, BY THE BOTTLE."
         jp="― 一本から、家へ ―"
-        lead="Single 720 ml bottles, gift-ready, shipped from our small brewhouse in Shizuoka. We hand-check every order — and verify age at order and at delivery."
+        lead={
+          <L
+            en="Single 720 ml bottles, gift-ready, shipped from our small brewhouse in Shizuoka. We hand-check every order — and verify age at order and at delivery."
+            ja="720ml の単品を、贈り物にも。静岡の小さな蔵から、ひとつずつ検品してお届けします。ご注文時とお届け時に、年齢を確認します。"
+          />
+        }
         crumbs={[
           { label: "HOME", href: "/#top" },
           { label: "PURCHASE", href: "/shop" },
@@ -266,12 +275,28 @@ export default function ShopPersonalPage() {
             className="mt-14 border border-[#C9A84C]/35 bg-[#F4ECD9]/80 px-6 py-5 text-[12.5px] leading-[1.8] text-[#1D2432]/86"
           >
             <p className="font-serif text-[10px] font-medium tracking-[0.32em] text-[#C9A84C]">
-              AGE 20+ · 未成年飲酒防止
+              <L
+                ja="AGE 20+ · 未成年飲酒防止"
+                en="AGE 20+ · UNDERAGE DRINKING PREVENTION"
+              />
             </p>
             <div className="mt-3 space-y-1">
-              {UNDERAGE_NOTICE_JP.map((line) => (
-                <p key={line}>{line}</p>
-              ))}
+              <L
+                ja={
+                  <>
+                    {UNDERAGE_NOTICE_JP.map((line) => (
+                      <p key={line}>{line}</p>
+                    ))}
+                  </>
+                }
+                en={
+                  <>
+                    {UNDERAGE_NOTICE_EN.map((line) => (
+                      <p key={line}>{line}</p>
+                    ))}
+                  </>
+                }
+              />
             </div>
           </div>
 

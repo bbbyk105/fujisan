@@ -2,6 +2,8 @@
 
 import { useState, type FormEvent, type ReactNode } from "react";
 import { fujisanProducts } from "@/data/fujisan-products";
+import { L } from "@/i18n/Localized";
+import { useLocale } from "@/i18n/useLocale";
 
 type Status = "idle" | "submitting" | "sent";
 
@@ -45,6 +47,7 @@ export function WholesaleInquiryForm() {
   const [interested, setInterested] = useState<string[]>([]);
   const [message, setMessage] = useState("");
   const [licenseConfirmed, setLicenseConfirmed] = useState(false);
+  const locale = useLocale();
 
   const toggleSlug = (slug: string) =>
     setInterested((s) =>
@@ -69,13 +72,16 @@ export function WholesaleInquiryForm() {
           ― お問い合わせを受領いたしました ―
         </span>
         <h3 className="mt-5 font-serif text-[clamp(22px,2.4vw,30px)] font-semibold leading-[1.18] tracking-[0.06em] text-[#0B1A2E]">
-          Thank you, {contactName || company || "partner of Fujisan"}.
+          <L
+            en={`Thank you, ${contactName || company || "partner of Fujisan"}.`}
+            ja={`${contactName || company || "ご担当者"}さま、ありがとうございます。`}
+          />
         </h3>
         <p className="mt-5 max-w-[520px] text-[14px] font-light leading-[1.85] text-[#1D2432]/82">
-          Your wholesale enquiry has reached our trade desk in Shizuoka. Our
-          export team will respond — in Japanese or English — within two
-          business days, with pricing, lead times, and a sample plan tailored
-          to your programme.
+          <L
+            en="Your wholesale enquiry has reached our trade desk in Shizuoka. Our export team will respond — in Japanese or English — within two business days, with pricing, lead times, and a sample plan tailored to your programme."
+            ja="卸のお問い合わせは、静岡のトレードデスクに届きました。担当チームより、2営業日以内に日本語または英語で、価格・納期・貴店に合わせたサンプルのご提案をお送りします。"
+          />
         </p>
         <button
           type="button"
@@ -97,7 +103,7 @@ export function WholesaleInquiryForm() {
           className="group/link mt-10 inline-flex items-center gap-3 cursor-pointer border-0 bg-transparent p-0 text-[10.5px] font-semibold tracking-[0.34em] text-[#0B1A2E]"
         >
           <span className="relative pb-1">
-            SUBMIT ANOTHER ENQUIRY
+            <L en="SUBMIT ANOTHER ENQUIRY" ja="別の内容で問い合わせる" />
             <span className="absolute inset-x-0 -bottom-0 h-px bg-[#0B1A2E]/50 transition-all duration-500 group-hover/link:bg-[#C9A84C]" />
           </span>
           <span
@@ -125,7 +131,7 @@ export function WholesaleInquiryForm() {
             value={company}
             onChange={(e) => setCompany(e.target.value)}
             className={inputCls}
-            placeholder="Sushi Aoyama Co., Ltd."
+            placeholder={locale === "ja" ? "鮨 青山 株式会社" : "Sushi Aoyama Co., Ltd."}
           />
         </Field>
         <Field id="wh-contact" label="CONTACT NAME" jp="ご担当者名">
@@ -137,7 +143,7 @@ export function WholesaleInquiryForm() {
             value={contactName}
             onChange={(e) => setContactName(e.target.value)}
             className={inputCls}
-            placeholder="Sasaki Yuko"
+            placeholder={locale === "ja" ? "佐々木 優子" : "Sasaki Yuko"}
           />
         </Field>
       </div>
@@ -194,7 +200,7 @@ export function WholesaleInquiryForm() {
             value={country}
             onChange={(e) => setCountry(e.target.value)}
             className={inputCls}
-            placeholder="Japan / Singapore / United Kingdom"
+            placeholder={locale === "ja" ? "日本 / シンガポール / イギリス" : "Japan / Singapore / United Kingdom"}
           />
         </Field>
       </div>
@@ -246,11 +252,11 @@ export function WholesaleInquiryForm() {
       </div>
 
       <fieldset className="flex flex-col gap-3">
-        <legend className="flex items-baseline gap-3 text-[10px] font-semibold tracking-[0.32em] text-[#0F1F36]/65">
-          <span>INTERESTED LABELS</span>
-          <span className="font-jp tracking-[0.24em] text-[#C9A84C]/85">
-            気になる銘柄（任意・複数選択可）
-          </span>
+        <legend className="text-[12px] font-semibold tracking-[0.16em] text-[#0B1A2E]/75">
+          <L
+            en="INTERESTED LABELS (optional)"
+            ja="気になる銘柄（任意・複数選択可）"
+          />
         </legend>
         <div className="mt-1 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {fujisanProducts.map((p) => {
@@ -290,8 +296,12 @@ export function WholesaleInquiryForm() {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           rows={5}
-          className="w-full resize-none border-b border-[#0F1F36]/22 bg-transparent py-3 text-[15px] leading-[1.7] text-[#0F1F36] outline-none transition-colors placeholder:text-[#0F1F36]/35 focus:border-[#C9A84C]"
-          placeholder="Programme concept, price range, target launch date, anything else we should know…"
+          className="w-full resize-none border-b border-[#0F1F36]/30 bg-transparent py-3 text-[15px] leading-[1.7] text-[#0F1F36] outline-none transition-colors placeholder:text-[#0F1F36]/40 focus:border-[#C9A84C]"
+          placeholder={
+            locale === "ja"
+              ? "ご構想・ご希望の価格帯・開始時期など、お気軽にお書きください…"
+              : "Programme concept, price range, target launch date, anything else we should know…"
+          }
         />
       </Field>
 
@@ -303,25 +313,40 @@ export function WholesaleInquiryForm() {
           className="mt-[3px] h-4 w-4 cursor-pointer accent-[#0B1A2E]"
         />
         <span>
-          I confirm that my business holds (or is in the process of obtaining)
-          the necessary licences to handle alcoholic beverages in its country
-          and region.
-          <br />
-          <span className="font-jp text-[11.5px] tracking-[0.04em] text-[#0F1F36]/65">
-            ※ 当社（店舗）が、酒類を取り扱うために必要な免許・許可を保有している、または取得の手続き中であることを確認しました。
-          </span>
+          <L
+            en="I confirm that my business holds (or is in the process of obtaining) the necessary licences to handle alcoholic beverages in its country and region."
+            ja="当社（店舗）が、酒類を取り扱うために必要な免許・許可を保有している、または取得の手続き中であることを確認しました。"
+          />
         </span>
       </label>
 
       <p className="text-[11px] leading-[1.65] text-[#0F1F36]/55">
-        By submitting, you acknowledge our{" "}
-        <a
-          href="/privacy"
-          className="underline underline-offset-2 transition-colors hover:text-[#C9A84C]"
-        >
-          privacy policy
-        </a>
-        . Trade pricing is shared only with verified business partners.
+        <L
+          en={
+            <>
+              By submitting, you acknowledge our{" "}
+              <a
+                href="/privacy"
+                className="underline underline-offset-2 transition-colors hover:text-[#C9A84C]"
+              >
+                privacy policy
+              </a>
+              . Trade pricing is shared only with verified business partners.
+            </>
+          }
+          ja={
+            <>
+              送信をもって、当社の
+              <a
+                href="/privacy"
+                className="underline underline-offset-2 transition-colors hover:text-[#C9A84C]"
+              >
+                プライバシーポリシー
+              </a>
+              に同意したものとみなします。卸価格は、確認のとれた取引先のみにお伝えしています。
+            </>
+          }
+        />
       </p>
 
       <div className="mt-2 flex items-center justify-between gap-6">
@@ -331,7 +356,11 @@ export function WholesaleInquiryForm() {
           className="group/btn inline-flex cursor-pointer items-center gap-3 border-0 bg-transparent p-0 text-[10.5px] font-semibold tracking-[0.34em] text-[#0F1F36] disabled:cursor-not-allowed disabled:opacity-50"
         >
           <span className="relative pb-1">
-            {submitting ? "SENDING…" : "REQUEST A QUOTE"}
+            {submitting ? (
+              <L en="SENDING…" ja="送信中…" />
+            ) : (
+              <L en="REQUEST A QUOTE" ja="お見積りを依頼" />
+            )}
             <span className="absolute inset-x-0 -bottom-0 h-px bg-[#0F1F36]/50 transition-all duration-500 group-hover/btn:bg-[#C9A84C]" />
           </span>
           <span
@@ -351,10 +380,10 @@ export function WholesaleInquiryForm() {
 }
 
 const inputCls =
-  "w-full border-b border-[#0F1F36]/22 bg-transparent py-3 text-[15px] text-[#0F1F36] outline-none transition-colors placeholder:text-[#0F1F36]/35 focus:border-[#C9A84C]";
+  "w-full border-b border-[#0F1F36]/30 bg-transparent py-3 text-[15px] text-[#0F1F36] outline-none transition-colors placeholder:text-[#0F1F36]/40 focus:border-[#C9A84C]";
 
 const selectCls =
-  "w-full appearance-none border-b border-[#0F1F36]/22 bg-transparent py-3 pr-8 text-[15px] text-[#0F1F36] outline-none transition-colors focus:border-[#C9A84C]";
+  "w-full appearance-none border-b border-[#0F1F36]/30 bg-transparent py-3 pr-8 text-[15px] text-[#0F1F36] outline-none transition-colors focus:border-[#C9A84C]";
 
 function Field({
   id,
@@ -368,15 +397,12 @@ function Field({
   children: ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-2.5">
+    <div className="flex flex-col gap-2">
       <label
         htmlFor={id}
-        className="flex items-baseline gap-3 text-[10px] font-semibold tracking-[0.32em] text-[#0F1F36]/65"
+        className="text-[12px] font-semibold tracking-[0.16em] text-[#0B1A2E]/75"
       >
-        <span>{label}</span>
-        <span className="font-jp tracking-[0.24em] text-[#C9A84C]/85">
-          {jp}
-        </span>
+        <L ja={jp} en={label} />
       </label>
       {children}
     </div>

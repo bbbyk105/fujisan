@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { UNDERAGE_NOTICE_JP } from "@/data/fujisan-legal";
+import { UNDERAGE_NOTICE_JP, UNDERAGE_NOTICE_EN } from "@/data/fujisan-legal";
+import { L } from "@/i18n/Localized";
 
 const STORAGE_KEY = "fujisan-age-confirmed";
 const REJECT_REDIRECT =
@@ -83,9 +84,22 @@ export default function AgeGate() {
           id="age-gate-desc"
           className="mt-7 space-y-1.5 text-[11.5px] leading-[1.7] text-[#1D2432]/80"
         >
-          {UNDERAGE_NOTICE_JP.map((line) => (
-            <p key={line}>{line}</p>
-          ))}
+          <L
+            ja={
+              <>
+                {UNDERAGE_NOTICE_JP.map((line) => (
+                  <p key={line}>{line}</p>
+                ))}
+              </>
+            }
+            en={
+              <>
+                {UNDERAGE_NOTICE_EN.map((line) => (
+                  <p key={line}>{line}</p>
+                ))}
+              </>
+            }
+          />
         </div>
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">

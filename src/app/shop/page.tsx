@@ -65,7 +65,12 @@ export default function ShopHubPage() {
         chapter="Ⅸ"
         title="TWO PATHS, ONE BOTTLE."
         jp="― 一本のための、二つの道 ―"
-        lead="Whether the bottle ends on your dinner table or on the back bar of a quiet izakaya, we tend to each order by hand. Choose the path that matches your need."
+        lead={
+          <L
+            en="Whether the bottle ends on your dinner table or on the back bar of a quiet izakaya, we tend to each order by hand. Choose the path that matches your need."
+            ja="ご家庭の食卓へも、静かな居酒屋のカウンターへも。どのご注文も、ひとつずつ手で確かめてお届けします。ご用途に合う方をお選びください。"
+          />
+        }
         crumbs={[
           { label: "HOME", href: "/#top" },
           { label: "PURCHASE", href: "/shop" },

@@ -3,6 +3,8 @@ import FujisanNav from "@/components/fujisan/FujisanNav";
 import FujisanFooter from "@/components/fujisan/FujisanFooter";
 import { FujisanInnerHero } from "@/components/fujisan/FujisanInnerHero";
 import { WholesaleInquiryForm } from "@/components/fujisan/WholesaleInquiryForm";
+import { WholesalePriceList } from "@/components/fujisan/WholesalePriceList";
+import { TradeAccessBand } from "@/components/fujisan/TradeAccessBand";
 import { Reveal } from "@/components/reveal/Reveal";
 import { revealDelays } from "@/components/reveal/constants";
 import { L } from "@/i18n/Localized";
@@ -132,7 +134,12 @@ export default function ShopBusinessPage() {
         chapter="Ⅸ.Ⅱ"
         title="FOR YOUR PROGRAMME."
         jp="― 飲食店・小売・ホスピタリティ ―"
-        lead="Fujisan is poured in quiet izakayas, listed on tasting menus, and shelved in considered retailers from Shizuoka to Singapore. Open a trade account — we'll meet you bottle in hand."
+        lead={
+          <L
+            en="Fujisan is poured in quiet izakayas, listed on tasting menus, and shelved in considered retailers from Shizuoka to Singapore. Open a trade account — we'll meet you bottle in hand."
+            ja="富士山の酒は、静かな居酒屋で供され、テイスティングメニューに並び、静岡からシンガポールまで、選び抜かれた小売店の棚に置かれています。取扱口座の開設はこちらから。一本を携えて、ご相談に伺います。"
+          />
+        }
         crumbs={[
           { label: "HOME", href: "/#top" },
           { label: "PURCHASE", href: "/shop" },
@@ -140,6 +147,8 @@ export default function ShopBusinessPage() {
         ]}
         bgPosition="object-[50%_44%]"
       />
+
+      <TradeAccessBand />
 
       {/* ===== Benefits ===== */}
       <section className="relative bg-[#FAF5E8]">
@@ -242,6 +251,40 @@ export default function ShopBusinessPage() {
         </div>
       </section>
 
+      {/* ===== Trade price list (role-gated) ===== */}
+      <section className="relative bg-[#FAF5E8]">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-[#0B1A2E]/15 to-transparent"
+        />
+        <div className="mx-auto max-w-[1080px] px-7 py-20 md:px-12 md:py-24">
+          <Reveal className="flex items-center gap-3">
+            <span className="font-serif text-[11px] font-medium tracking-[0.32em] text-[#C9A84C]">
+              Ⅸ.Ⅱ.iii
+            </span>
+            <span className="h-px w-10 bg-[#C9A84C]/55" />
+            <span className="text-[10px] font-semibold uppercase tracking-[0.36em] text-[#0B1A2E]/65">
+              TRADE PRICE LIST · 卸価格表
+            </span>
+          </Reveal>
+
+          <Reveal
+            as="h2"
+            delay={revealDelays.d1}
+            className="mt-6 max-w-[620px] font-serif text-[clamp(24px,2.6vw,32px)] font-semibold leading-[1.18] tracking-[0.06em] text-[#0B1A2E]"
+          >
+            <L
+              en="Wholesale pricing, for our partners."
+              ja="取扱店さまへの、卸価格。"
+            />
+          </Reveal>
+
+          <Reveal className="mt-12" delay={revealDelays.d2}>
+            <WholesalePriceList />
+          </Reveal>
+        </div>
+      </section>
+
       {/* ===== Inquiry form ===== */}
       <section className="relative bg-[#FAF5E8]">
         <div
@@ -252,7 +295,7 @@ export default function ShopBusinessPage() {
           <div>
             <Reveal className="flex items-center gap-3">
               <span className="font-serif text-[11px] font-medium tracking-[0.32em] text-[#C9A84C]">
-                Ⅸ.Ⅱ.iii
+                Ⅸ.Ⅱ.iv
               </span>
               <span className="h-px w-10 bg-[#C9A84C]/55" />
               <span className="text-[10px] font-semibold uppercase tracking-[0.36em] text-[#0B1A2E]/65">
@@ -357,7 +400,7 @@ export default function ShopBusinessPage() {
         <div className="mx-auto max-w-[1180px] px-7 py-20 md:px-12 md:py-24">
           <Reveal className="flex items-center gap-3">
             <span className="font-serif text-[11px] font-medium tracking-[0.32em] text-[#C9A84C]">
-              Ⅸ.Ⅱ.iv
+              Ⅸ.Ⅱ.v
             </span>
             <span className="h-px w-10 bg-[#C9A84C]/55" />
             <span className="text-[10px] font-semibold uppercase tracking-[0.36em] text-[#0B1A2E]/65">

@@ -7,5 +7,13 @@
 	"assets": {
 		"directory": ".open-next/assets",
 		"binding": "ASSETS"
-	}
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "fujisan-db",
+			"database_id": "bbf2da87-f1d3-4eeb-ad4e-308b7ea3522b",
+			"migrations_dir": "drizzle"
+		}
+	]
 }

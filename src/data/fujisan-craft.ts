@@ -30,6 +30,8 @@ export type CraftPillar = {
   jp: string;
   catchJp: string;
   lead: string;
+  /** 日本語のリード */
+  leadJp: string;
   storyTitle: string;
   /** 日本語のストーリー見出し */
   storyTitleJp: string;
@@ -55,6 +57,7 @@ export const fujisanCraftPillars: CraftPillar[] = [
     jp: "富士の水",
     catchJp: "山が静かに、水を磨く。",
     lead: "Snowmelt that has slept inside Mt. Fuji for half a century reaches our brewhouse soft, pure, and almost weightless on the tongue.",
+    leadJp: "半世紀のあいだ富士山の内に眠った雪解け水が、やわらかく澄んで、舌の上で重さを感じさせないほど軽やかに蔵へと届きます。",
     storyTitle: "A river that began in the snow",
     storyTitleJp: "雪から始まる、一筋の水",
     storyEn: [
@@ -146,6 +149,7 @@ export const fujisanCraftPillars: CraftPillar[] = [
     jp: "厳選米",
     catchJp: "粒の中心に、酒の真ん中がある。",
     lead: "Yamadanishiki and Homarefuji — heirloom sakamai grown by partner farms whose families have polished their craft alongside ours for generations.",
+    leadJp: "山田錦と誉富士。代々にわたり蔵とともに技を磨いてきた契約農家が育てる、由緒ある酒造好適米です。",
     storyTitle: "Rice grown for sake, not for the table",
     storyTitleJp: "食べるためでなく、醸すための米",
     storyEn: [
@@ -239,6 +243,7 @@ export const fujisanCraftPillars: CraftPillar[] = [
     jp: "伝統醸造",
     catchJp: "蔵人の手、季節の声。",
     lead: "Across a hundred winter days the toji and his kurabito coax water, rice, and koji into a sake that carries Mt. Fuji’s stillness.",
+    leadJp: "百日に及ぶ冬のあいだ、杜氏と蔵人が水と米と麹に寄り添い、富士山の静けさを宿す一献へと導きます。",
     storyTitle: "A hundred days of winter",
     storyTitleJp: "冬の、百日",
     storyEn: [

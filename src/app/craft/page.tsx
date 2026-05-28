@@ -5,22 +5,13 @@ import FujisanFooter from "@/components/fujisan/FujisanFooter";
 import { FujisanInnerHero } from "@/components/fujisan/FujisanInnerHero";
 import { Reveal } from "@/components/reveal/Reveal";
 import { revealDelays } from "@/components/reveal/constants";
-import { fujisanCraftPillars, type CraftSlug } from "@/data/fujisan-craft";
+import { fujisanCraftPillars } from "@/data/fujisan-craft";
 import { L } from "@/i18n/Localized";
 
 export const metadata = {
   title: "The Craft — FUJISAN SAKE",
   description:
     "Three elements, one mountain — pure water, premium rice, and a hundred days in the hand of the toji. The craft behind every bottle of Fujisan sake.",
-};
-
-// 各柱の英語 lead に対応する日本語リード（データには短い和文リードが無いため、ここで対訳を持つ）
-const LEAD_JP: Record<CraftSlug, string> = {
-  water:
-    "半世紀のあいだ富士山の内に眠った雪解け水が、やわらかく、澄んで、舌の上で重さを感じさせないほど軽やかに、蔵へと辿り着きます。",
-  rice: "山田錦と誉富士。私たちと同じ歳月をかけて技を磨いてきた契約農家が育てる、由緒ある酒米です。",
-  brewing:
-    "百日に及ぶ冬のあいだ、杜氏と蔵人が水と米と麹に寄り添い、富士山の静けさを宿す酒へと導きます。",
 };
 
 export default function CraftIndexPage() {
@@ -33,7 +24,12 @@ export default function CraftIndexPage() {
         chapter="序"
         title="THE CRAFT"
         jp="― 水・米・人の手 ―"
-        lead="Three elements, one mountain. Pure water, premium rice, and a hundred days in the hand of the toji — this is how Fujisan becomes Fujisan."
+        lead={
+          <L
+            en="Three elements, one mountain. Pure water, premium rice, and a hundred days in the hand of the toji — this is how Fujisan becomes Fujisan."
+            ja="三つの要素と、ひとつの山。澄んだ水、選び抜いた米、そして杜氏の手による百日。富士山が富士山になるまでの物語です。"
+          />
+        }
         crumbs={[
           { label: "HOME", href: "/#top" },
           { label: "THE CRAFT", href: "/craft" },
@@ -135,7 +131,7 @@ export default function CraftIndexPage() {
                     </p>
 
                     <p className="mt-7 max-w-[520px] text-[14px] font-light leading-[1.85] text-[#1D2432]/82 md:text-[15px]">
-                      <L en={pillar.lead} ja={LEAD_JP[pillar.slug]} />
+                      <L en={pillar.lead} ja={pillar.leadJp} />
                     </p>
 
                     <Link

@@ -57,7 +57,7 @@ export default async function CraftPage({
         chapter={pillar.chapter}
         title={pillar.title}
         jp={`― ${pillar.catchJp} ―`}
-        lead={pillar.lead}
+        lead={<L en={pillar.lead} ja={pillar.leadJp} />}
         crumbs={[
           { label: "HOME", href: "/#top" },
           { label: "THE CRAFT", href: "/craft" },

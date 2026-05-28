@@ -9,6 +9,7 @@ import type {
   FujisanNavLinkItem,
 } from "./fujisan-nav-links";
 import { LocaleSwitch } from "@/i18n/LocaleSwitch";
+import { AccountNavLink } from "./auth/AccountNavLink";
 
 type Props = {
   links: FujisanNavLinkItem[];
@@ -259,6 +260,7 @@ export function FujisanNavClient({ links }: Props) {
               </div>
             );
           })}
+          <AccountNavLink />
           <LocaleSwitch />
         </nav>
 
@@ -362,6 +364,8 @@ export function FujisanNavClient({ links }: Props) {
               );
             })}
           </ul>
+
+          <AccountNavLink mobile />
 
           <div className="mt-8">
             <LocaleSwitch />
