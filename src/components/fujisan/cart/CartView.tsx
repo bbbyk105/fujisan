@@ -17,12 +17,12 @@ function QtyStepper({
   onChange: (next: number) => void;
 }) {
   return (
-    <div className="inline-flex items-center border border-[#0B1A2E]/25 bg-white/70">
+    <div className="inline-flex items-center gap-2">
       <button
         type="button"
         aria-label="数量を減らす"
         onClick={() => onChange(qty - 1)}
-        className="cursor-pointer px-3 py-1.5 text-[14px] text-[#0B1A2E] transition-colors hover:bg-[#F1E6CB]/60"
+        className="cursor-pointer px-1 text-[16px] font-light text-[#0B1A2E]/45 transition-colors hover:text-[#0B1A2E]"
       >
         −
       </button>
@@ -34,13 +34,13 @@ function QtyStepper({
         value={qty}
         onChange={(e) => onChange(Number(e.target.value) || 1)}
         aria-label="数量"
-        className="w-11 border-x border-[#0B1A2E]/15 bg-transparent py-1.5 text-center text-[13px] font-semibold tracking-[0.08em] text-[#0B1A2E] outline-none"
+        className="w-9 border-b border-[#0B1A2E]/30 bg-transparent pb-0.5 text-center text-[13px] font-semibold tracking-[0.08em] text-[#0B1A2E] outline-none"
       />
       <button
         type="button"
         aria-label="数量を増やす"
         onClick={() => onChange(qty + 1)}
-        className="cursor-pointer px-3 py-1.5 text-[14px] text-[#0B1A2E] transition-colors hover:bg-[#F1E6CB]/60"
+        className="cursor-pointer px-1 text-[16px] font-light text-[#0B1A2E]/45 transition-colors hover:text-[#0B1A2E]"
       >
         ＋
       </button>
@@ -70,13 +70,13 @@ export function CartView() {
           <h2 className="mt-5 font-serif text-[clamp(22px,2.4vw,30px)] font-semibold tracking-[0.04em] text-[#0B1A2E]">
             <L
               en="No bottles yet."
-              ja="まだ一本も入っていません。"
+              ja="まだ、何も入っていません。"
             />
           </h2>
           <p className="mx-auto mt-4 max-w-[440px] text-[13.5px] leading-[1.78] text-[#1D2432]/76">
             <L
               en="Browse the collection and add the bottle that calls to you."
-              ja="コレクションから、気になる一本を選んでみてください。"
+              ja="コレクションから、一本お選びください。"
             />
           </p>
           <Link

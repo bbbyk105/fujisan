@@ -113,38 +113,33 @@ export default function ProductPurchaseBlock({
           </ul>
 
           <div className="mt-7 flex items-center gap-4">
-            <label
-              htmlFor="qty"
+            <span
               className="text-[10.5px] font-semibold tracking-[0.28em] text-[#0B1A2E]/70"
             >
               <L en="QTY" ja="数量" />
-            </label>
-            <div className="inline-flex items-center border border-[#0B1A2E]/25 bg-white/70">
+            </span>
+            <div className="inline-flex items-center gap-2">
               <button
                 type="button"
                 aria-label="数量を減らす"
                 onClick={() => setQty((q) => Math.max(1, q - 1))}
-                className="cursor-pointer px-3 py-2 text-[14px] text-[#0B1A2E] transition-colors hover:bg-[#F1E6CB]/60"
+                className="cursor-pointer px-1 text-[16px] font-light text-[#0B1A2E]/45 transition-colors hover:text-[#0B1A2E]"
               >
                 −
               </button>
-              <input
+              <span
                 id="qty"
-                type="number"
-                inputMode="numeric"
-                min={1}
-                max={12}
-                value={qty}
-                onChange={(e) =>
-                  setQty(Math.max(1, Math.min(12, Number(e.target.value) || 1)))
-                }
-                className="w-12 border-x border-[#0B1A2E]/15 bg-transparent py-2 text-center text-[13px] font-semibold tracking-[0.1em] text-[#0B1A2E] outline-none"
-              />
+                aria-live="polite"
+                aria-label={`数量 ${qty}`}
+                className="w-9 border-b border-[#0B1A2E]/30 pb-0.5 text-center text-[13px] font-semibold tracking-[0.1em] text-[#0B1A2E]"
+              >
+                {qty}
+              </span>
               <button
                 type="button"
                 aria-label="数量を増やす"
                 onClick={() => setQty((q) => Math.min(12, q + 1))}
-                className="cursor-pointer px-3 py-2 text-[14px] text-[#0B1A2E] transition-colors hover:bg-[#F1E6CB]/60"
+                className="cursor-pointer px-1 text-[16px] font-light text-[#0B1A2E]/45 transition-colors hover:text-[#0B1A2E]"
               >
                 ＋
               </button>
