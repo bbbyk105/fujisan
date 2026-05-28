@@ -34,7 +34,7 @@ const steps = [
   {
     num: "Ⅱ",
     en: "Confirm age & quantity",
-    ja: "年齢の確認と、ご本数",
+    ja: "年齢確認と、本数の選択",
     desc: {
       en: "On the bottle page, confirm you are 20 years of age or older and choose how many bottles you'd like.",
       ja: "商品ページで、20歳以上であることをご確認のうえ、ご希望の本数をお選びください。",

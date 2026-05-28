@@ -128,7 +128,7 @@ export function CheckoutView() {
           <p className="mt-6 text-[10.5px] tracking-[0.12em] text-[#0B1A2E]/45">
             <L
               en="Demo checkout — no real payment was processed."
-              ja="デモ用の手続きです。実際の決済・請求は行われていません。"
+              ja="デモ用のお手続きです。実際の決済・請求は行われていません。"
             />
           </p>
 
