@@ -65,12 +65,16 @@ async function authBuilder() {
   // Cloudflare コンテキスト無しで落ちるため、動的 import に閉じ込める。
   const { getCloudflareContext } = await import("@opennextjs/cloudflare");
   const { getDb } = await import("@/db");
+  // nextCookies はサーバーアクション内で Set-Cookie を next/headers 経由で適用する。
+  // 必ずプラグイン配列の最後に置く。
+  const { nextCookies } = await import("better-auth/next-js");
   const { env } = await getCloudflareContext({ async: true });
   const db = await getDb();
 
   return betterAuth({
     database: drizzleAdapter(db, { provider: "sqlite" }),
     ...buildOptions(env as AuthEnv),
+    plugins: [nextCookies()],
   });
 }
 

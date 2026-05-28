@@ -2,22 +2,12 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { signIn } from "@/lib/auth-client";
+import { useSearchParams } from "next/navigation";
+import { signInAction } from "@/lib/actions/auth";
+import type { AuthErrorKey } from "@/lib/auth-errors";
 import { L } from "@/i18n/Localized";
 import { Field, inputCls, PrimaryButton, Notice, OrDivider } from "./ui";
 import { GoogleButton } from "./GoogleButton";
-
-type ErrorKey = "invalid" | "unverified" | "generic" | null;
-
-function classify(error: { code?: string; status?: number } | null): ErrorKey {
-  if (!error) return null;
-  const code = (error.code ?? "").toUpperCase();
-  if (code.includes("VERIF")) return "unverified";
-  if (code.includes("PASSWORD") || code.includes("CREDENTIAL") || error.status === 401)
-    return "invalid";
-  return "generic";
-}
 
 export function LoginForm({
   role,
@@ -26,14 +16,13 @@ export function LoginForm({
   role: "personal" | "business";
   googleEnabled?: boolean;
 }) {
-  const router = useRouter();
   const params = useSearchParams();
   const fallback = role === "business" ? "/shop/business" : "/account";
   const redirectTo = params.get("redirect") || fallback;
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errorKey, setErrorKey] = useState<ErrorKey>(null);
+  const [errorKey, setErrorKey] = useState<AuthErrorKey | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const registerHref =
@@ -43,14 +32,14 @@ export function LoginForm({
     event.preventDefault();
     setErrorKey(null);
     setSubmitting(true);
-    const { error } = await signIn.email({ email, password });
-    if (error) {
+    const res = await signInAction({ email, password });
+    if (!res.ok) {
       setSubmitting(false);
-      setErrorKey(classify(error));
+      setErrorKey(res.error);
       return;
     }
-    router.push(redirectTo);
-    router.refresh();
+    // フルリロードして、ヘッダーナビのセッション表示も確実に同期する
+    window.location.href = redirectTo;
   };
 
   return (

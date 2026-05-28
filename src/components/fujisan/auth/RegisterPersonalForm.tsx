@@ -2,20 +2,11 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
-import { signUp } from "@/lib/auth-client";
+import { registerPersonalAction } from "@/lib/actions/auth";
+import type { AuthErrorKey } from "@/lib/auth-errors";
 import { L } from "@/i18n/Localized";
 import { Field, inputCls, PrimaryButton, Notice, OrDivider } from "./ui";
 import { GoogleButton } from "./GoogleButton";
-
-type ErrorKey = "exists" | "weak" | "generic" | null;
-
-function classify(error: { code?: string; status?: number } | null): ErrorKey {
-  if (!error) return null;
-  const code = (error.code ?? "").toUpperCase();
-  if (code.includes("EXIST") || error.status === 422) return "exists";
-  if (code.includes("PASSWORD")) return "weak";
-  return "generic";
-}
 
 export function RegisterPersonalForm({
   googleEnabled = false,
@@ -25,7 +16,7 @@ export function RegisterPersonalForm({
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errorKey, setErrorKey] = useState<ErrorKey>(null);
+  const [errorKey, setErrorKey] = useState<AuthErrorKey | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
 
@@ -33,15 +24,10 @@ export function RegisterPersonalForm({
     event.preventDefault();
     setErrorKey(null);
     setSubmitting(true);
-    const { error } = await signUp.email({
-      name,
-      email,
-      password,
-      role: "personal",
-    });
+    const res = await registerPersonalAction({ name, email, password });
     setSubmitting(false);
-    if (error) {
-      setErrorKey(classify(error));
+    if (!res.ok) {
+      setErrorKey(res.error);
       return;
     }
     setSent(true);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { signIn } from "@/lib/auth-client";
+import { googleStartAction } from "@/lib/actions/auth";
 
 export function GoogleButton({
   redirectTo,
@@ -18,7 +18,12 @@ export function GoogleButton({
       disabled={loading}
       onClick={async () => {
         setLoading(true);
-        await signIn.social({ provider: "google", callbackURL: redirectTo });
+        const { url } = await googleStartAction(redirectTo);
+        if (url) {
+          window.location.href = url;
+        } else {
+          setLoading(false);
+        }
       }}
       className="inline-flex w-full cursor-pointer items-center justify-center gap-3 border border-[#0F1F36]/22 bg-transparent px-7 py-3.5 text-[12px] font-medium tracking-[0.1em] text-[#0B1A2E] transition-colors hover:border-[#0F1F36]/45 hover:bg-[#F1E6CB]/35 disabled:cursor-not-allowed disabled:opacity-50"
     >
