@@ -3,6 +3,13 @@
 import { useState, type FormEvent } from "react";
 import { L } from "@/i18n/Localized";
 import { useLocale } from "@/i18n/useLocale";
+import {
+  getFieldErrors,
+  contactSchema,
+  type FieldErrorKey,
+} from "@/lib/validation/forms";
+import { FieldError } from "@/components/fujisan/FieldError";
+import { scrollToFirstError } from "@/lib/scrollToFirstError";
 
 type Status = "idle" | "submitting" | "sent";
 
@@ -19,10 +26,32 @@ export function FujisanContactForm() {
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState(SUBJECTS[0].value);
   const [message, setMessage] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<
+    Record<string, FieldErrorKey>
+  >({});
   const locale = useLocale();
+
+  const clearError = (field: string) =>
+    setFieldErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const errors = getFieldErrors(contactSchema, {
+      name,
+      email,
+      subject,
+      message,
+    });
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      scrollToFirstError(event.currentTarget);
+      return;
+    }
     setStatus("submitting");
     // No backend yet — settle on a brand-coherent acknowledgement state.
     window.setTimeout(() => setStatus("sent"), 700);
@@ -79,38 +108,42 @@ export function FujisanContactForm() {
   const submitting = status === "submitting";
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex flex-col gap-7"
-      noValidate={false}
-    >
-      <Field id="contact-name" label="NAME" jp="お名前">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-7" noValidate>
+      <Field id="contact-name" label="NAME" jp="お名前" required>
         <input
           id="contact-name"
           type="text"
           autoComplete="name"
-          required
+          aria-invalid={Boolean(fieldErrors.name)}
           value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="w-full border-b border-[#0F1F36]/22 bg-transparent py-3 text-[15px] text-[#0F1F36] outline-none transition-colors placeholder:text-[#0F1F36]/35 focus:border-[#C9A84C]"
+          onChange={(e) => {
+            setName(e.target.value);
+            clearError("name");
+          }}
+          className="w-full border-b border-[#0F1F36]/22 bg-transparent py-3 text-[15px] text-[#0F1F36] outline-none transition-colors placeholder:text-[#0F1F36]/35 focus:border-[#C9A84C] aria-[invalid=true]:border-[#8B1A1A] aria-[invalid=true]:focus:border-[#8B1A1A]"
           placeholder={locale === "ja" ? "佐々木 優子" : "Sasaki Yuko"}
         />
+        <FieldError error={fieldErrors.name} />
       </Field>
 
-      <Field id="contact-email" label="EMAIL" jp="メールアドレス">
+      <Field id="contact-email" label="EMAIL" jp="メールアドレス" required>
         <input
           id="contact-email"
           type="email"
           autoComplete="email"
-          required
+          aria-invalid={Boolean(fieldErrors.email)}
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full border-b border-[#0F1F36]/22 bg-transparent py-3 text-[15px] text-[#0F1F36] outline-none transition-colors placeholder:text-[#0F1F36]/35 focus:border-[#C9A84C]"
+          onChange={(e) => {
+            setEmail(e.target.value);
+            clearError("email");
+          }}
+          className="w-full border-b border-[#0F1F36]/22 bg-transparent py-3 text-[15px] text-[#0F1F36] outline-none transition-colors placeholder:text-[#0F1F36]/35 focus:border-[#C9A84C] aria-[invalid=true]:border-[#8B1A1A] aria-[invalid=true]:focus:border-[#8B1A1A]"
           placeholder="you@example.com"
         />
+        <FieldError error={fieldErrors.email} />
       </Field>
 
-      <Field id="contact-subject" label="SUBJECT" jp="ご用件">
+      <Field id="contact-subject" label="SUBJECT" jp="ご用件" required>
         <div className="relative">
           <select
             id="contact-subject"
@@ -142,20 +175,24 @@ export function FujisanContactForm() {
         </div>
       </Field>
 
-      <Field id="contact-message" label="MESSAGE" jp="ご用件詳細">
+      <Field id="contact-message" label="MESSAGE" jp="ご用件詳細" required>
         <textarea
           id="contact-message"
-          required
+          aria-invalid={Boolean(fieldErrors.message)}
           value={message}
-          onChange={(e) => setMessage(e.target.value)}
+          onChange={(e) => {
+            setMessage(e.target.value);
+            clearError("message");
+          }}
           rows={5}
-          className="w-full resize-none border-b border-[#0F1F36]/22 bg-transparent py-3 text-[15px] leading-[1.7] text-[#0F1F36] outline-none transition-colors placeholder:text-[#0F1F36]/35 focus:border-[#C9A84C]"
+          className="w-full resize-none border-b border-[#0F1F36]/22 bg-transparent py-3 text-[15px] leading-[1.7] text-[#0F1F36] outline-none transition-colors placeholder:text-[#0F1F36]/35 focus:border-[#C9A84C] aria-[invalid=true]:border-[#8B1A1A] aria-[invalid=true]:focus:border-[#8B1A1A]"
           placeholder={
             locale === "ja"
               ? "ご用件を簡単にお書きください…"
               : "Tell us a little about your enquiry…"
           }
         />
+        <FieldError error={fieldErrors.message} />
       </Field>
 
       <p className="text-[11px] leading-[1.65] text-[#0F1F36]/55">
@@ -221,11 +258,13 @@ function Field({
   id,
   label,
   jp,
+  required,
   children,
 }: {
   id: string;
   label: string;
   jp: string;
+  required?: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -235,6 +274,11 @@ function Field({
         className="text-[12px] font-semibold tracking-[0.16em] text-[#0B1A2E]/75"
       >
         <L ja={jp} en={label} />
+        {required && (
+          <span aria-hidden className="ml-1 text-[#8B1A1A]">
+            *
+          </span>
+        )}
       </label>
       {children}
     </div>

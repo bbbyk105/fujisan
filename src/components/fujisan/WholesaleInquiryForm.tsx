@@ -2,6 +2,13 @@
 
 import { useState, type FormEvent, type ReactNode } from "react";
 import { fujisanProducts } from "@/data/fujisan-products";
+import {
+  getFieldErrors,
+  wholesaleSchema,
+  type FieldErrorKey,
+} from "@/lib/validation/forms";
+import { FieldError } from "@/components/fujisan/FieldError";
+import { scrollToFirstError } from "@/lib/scrollToFirstError";
 import { L } from "@/i18n/Localized";
 import { useLocale } from "@/i18n/useLocale";
 
@@ -47,6 +54,9 @@ export function WholesaleInquiryForm() {
   const [interested, setInterested] = useState<string[]>([]);
   const [message, setMessage] = useState("");
   const [licenseConfirmed, setLicenseConfirmed] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<
+    Record<string, FieldErrorKey>
+  >({});
   const locale = useLocale();
 
   const toggleSlug = (slug: string) =>
@@ -54,9 +64,31 @@ export function WholesaleInquiryForm() {
       s.includes(slug) ? s.filter((x) => x !== slug) : [...s, slug],
     );
 
+  const clearError = (field: string) =>
+    setFieldErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!licenseConfirmed) return;
+    const errors = getFieldErrors(wholesaleSchema, {
+      company,
+      contactName,
+      email,
+      phone,
+      country,
+      website,
+      message,
+      licenseConfirmed,
+    });
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      scrollToFirstError(event.currentTarget);
+      return;
+    }
     setStatus("submitting");
     window.setTimeout(() => setStatus("sent"), 700);
   };
@@ -120,46 +152,60 @@ export function WholesaleInquiryForm() {
   const submitting = status === "submitting";
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-7">
+    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-7">
       <div className="grid grid-cols-1 gap-7 sm:grid-cols-2">
-        <Field id="wh-company" label="COMPANY" jp="貴社・店舗名">
+        <Field id="wh-company" label="COMPANY" jp="貴社・店舗名" required>
           <input
             id="wh-company"
             type="text"
             autoComplete="organization"
-            required
+            aria-invalid={Boolean(fieldErrors.company)}
             value={company}
-            onChange={(e) => setCompany(e.target.value)}
+            onChange={(e) => {
+              setCompany(e.target.value);
+              clearError("company");
+            }}
             className={inputCls}
-            placeholder={locale === "ja" ? "鮨 青山 株式会社" : "Sushi Aoyama Co., Ltd."}
+            placeholder={
+              locale === "ja" ? "鮨 青山 株式会社" : "Sushi Aoyama Co., Ltd."
+            }
           />
+          <FieldError error={fieldErrors.company} />
         </Field>
-        <Field id="wh-contact" label="CONTACT NAME" jp="ご担当者名">
+        <Field id="wh-contact" label="CONTACT NAME" jp="ご担当者名" required>
           <input
             id="wh-contact"
             type="text"
             autoComplete="name"
-            required
+            aria-invalid={Boolean(fieldErrors.contactName)}
             value={contactName}
-            onChange={(e) => setContactName(e.target.value)}
+            onChange={(e) => {
+              setContactName(e.target.value);
+              clearError("contactName");
+            }}
             className={inputCls}
             placeholder={locale === "ja" ? "佐々木 優子" : "Sasaki Yuko"}
           />
+          <FieldError error={fieldErrors.contactName} />
         </Field>
       </div>
 
       <div className="grid grid-cols-1 gap-7 sm:grid-cols-2">
-        <Field id="wh-email" label="EMAIL" jp="メールアドレス">
+        <Field id="wh-email" label="EMAIL" jp="メールアドレス" required>
           <input
             id="wh-email"
             type="email"
             autoComplete="email"
-            required
+            aria-invalid={Boolean(fieldErrors.email)}
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              clearError("email");
+            }}
             className={inputCls}
             placeholder="you@example.com"
           />
+          <FieldError error={fieldErrors.email} />
         </Field>
         <Field id="wh-phone" label="PHONE" jp="ご連絡先電話番号">
           <input
@@ -191,29 +237,46 @@ export function WholesaleInquiryForm() {
             </select>
           </SelectShell>
         </Field>
-        <Field id="wh-country" label="COUNTRY · REGION" jp="国・地域">
+        <Field id="wh-country" label="COUNTRY · REGION" jp="国・地域" required>
           <input
             id="wh-country"
             type="text"
             autoComplete="country-name"
-            required
+            aria-invalid={Boolean(fieldErrors.country)}
             value={country}
-            onChange={(e) => setCountry(e.target.value)}
+            onChange={(e) => {
+              setCountry(e.target.value);
+              clearError("country");
+            }}
             className={inputCls}
-            placeholder={locale === "ja" ? "日本 / シンガポール / イギリス" : "Japan / Singapore / United Kingdom"}
+            placeholder={
+              locale === "ja"
+                ? "日本 / シンガポール / イギリス"
+                : "Japan / Singapore / United Kingdom"
+            }
           />
+          <FieldError error={fieldErrors.country} />
         </Field>
       </div>
 
-      <Field id="wh-website" label="WEBSITE / INSTAGRAM" jp="サイト・SNS（任意）">
+      <Field
+        id="wh-website"
+        label="WEBSITE / INSTAGRAM"
+        jp="サイト・SNS（任意）"
+      >
         <input
           id="wh-website"
           type="url"
+          aria-invalid={Boolean(fieldErrors.website)}
           value={website}
-          onChange={(e) => setWebsite(e.target.value)}
+          onChange={(e) => {
+            setWebsite(e.target.value);
+            clearError("website");
+          }}
           className={inputCls}
           placeholder="https://example.com"
         />
+        <FieldError error={fieldErrors.website} />
       </Field>
 
       <div className="grid grid-cols-1 gap-7 sm:grid-cols-2">
@@ -309,7 +372,11 @@ export function WholesaleInquiryForm() {
         <input
           type="checkbox"
           checked={licenseConfirmed}
-          onChange={(e) => setLicenseConfirmed(e.target.checked)}
+          aria-invalid={Boolean(fieldErrors.licenseConfirmed)}
+          onChange={(e) => {
+            setLicenseConfirmed(e.target.checked);
+            clearError("licenseConfirmed");
+          }}
           className="mt-[3px] h-4 w-4 cursor-pointer accent-[#0B1A2E]"
         />
         <span>
@@ -319,6 +386,7 @@ export function WholesaleInquiryForm() {
           />
         </span>
       </label>
+      <FieldError error={fieldErrors.licenseConfirmed} />
 
       <p className="text-[11px] leading-[1.65] text-[#0F1F36]/55">
         <L
@@ -352,7 +420,7 @@ export function WholesaleInquiryForm() {
       <div className="mt-2 flex items-center justify-between gap-6">
         <button
           type="submit"
-          disabled={submitting || !licenseConfirmed}
+          disabled={submitting}
           className="group/btn inline-flex cursor-pointer items-center gap-3 border-0 bg-transparent p-0 text-[10.5px] font-semibold tracking-[0.34em] text-[#0F1F36] disabled:cursor-not-allowed disabled:opacity-50"
         >
           <span className="relative pb-1">
@@ -380,7 +448,7 @@ export function WholesaleInquiryForm() {
 }
 
 const inputCls =
-  "w-full border-b border-[#0F1F36]/30 bg-transparent py-3 text-[15px] text-[#0F1F36] outline-none transition-colors placeholder:text-[#0F1F36]/40 focus:border-[#C9A84C]";
+  "w-full border-b border-[#0F1F36]/30 bg-transparent py-3 text-[15px] text-[#0F1F36] outline-none transition-colors placeholder:text-[#0F1F36]/40 focus:border-[#C9A84C] aria-[invalid=true]:border-[#8B1A1A] aria-[invalid=true]:focus:border-[#8B1A1A]";
 
 const selectCls =
   "w-full appearance-none border-b border-[#0F1F36]/30 bg-transparent py-3 pr-8 text-[15px] text-[#0F1F36] outline-none transition-colors focus:border-[#C9A84C]";
@@ -389,11 +457,13 @@ function Field({
   id,
   label,
   jp,
+  required,
   children,
 }: {
   id: string;
   label: string;
   jp: string;
+  required?: boolean;
   children: ReactNode;
 }) {
   return (
@@ -403,6 +473,11 @@ function Field({
         className="text-[12px] font-semibold tracking-[0.16em] text-[#0B1A2E]/75"
       >
         <L ja={jp} en={label} />
+        {required && (
+          <span aria-hidden className="ml-1 text-[#8B1A1A]">
+            *
+          </span>
+        )}
       </label>
       {children}
     </div>

@@ -1,18 +1,21 @@
 import type { ReactNode } from "react";
 import { L } from "@/i18n/Localized";
 
+// 未入力・不正な項目は枠を赤くする（aria-invalid="true" の入力に適用）。
 export const inputCls =
-  "w-full border-b border-[#0F1F36]/30 bg-transparent py-3 text-[15px] text-[#0F1F36] outline-none transition-colors placeholder:text-[#0F1F36]/40 focus:border-[#C9A84C]";
+  "w-full border-b border-[#0F1F36]/30 bg-transparent py-3 text-[15px] text-[#0F1F36] outline-none transition-colors placeholder:text-[#0F1F36]/40 focus:border-[#C9A84C] aria-[invalid=true]:border-[#8B1A1A] aria-[invalid=true]:focus:border-[#8B1A1A]";
 
 export function Field({
   id,
   label,
   jp,
+  required,
   children,
 }: {
   id: string;
   label: string;
   jp: string;
+  required?: boolean;
   children: ReactNode;
 }) {
   return (
@@ -22,6 +25,11 @@ export function Field({
         className="text-[12px] font-semibold tracking-[0.16em] text-[#0B1A2E]/75"
       >
         <L ja={jp} en={label} />
+        {required && (
+          <span aria-hidden className="ml-1 text-[#8B1A1A]">
+            *
+          </span>
+        )}
       </label>
       {children}
     </div>

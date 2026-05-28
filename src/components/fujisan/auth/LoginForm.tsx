@@ -5,6 +5,13 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { signInAction } from "@/lib/actions/auth";
 import type { AuthErrorKey } from "@/lib/auth-errors";
+import {
+  getFieldErrors,
+  loginSchema,
+  type FieldErrorKey,
+} from "@/lib/validation/forms";
+import { FieldError } from "@/components/fujisan/FieldError";
+import { scrollToFirstError } from "@/lib/scrollToFirstError";
 import { L } from "@/i18n/Localized";
 import { Field, inputCls, PrimaryButton, Notice, OrDivider } from "./ui";
 import { GoogleButton } from "./GoogleButton";
@@ -23,14 +30,31 @@ export function LoginForm({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorKey, setErrorKey] = useState<AuthErrorKey | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<
+    Record<string, FieldErrorKey>
+  >({});
   const [submitting, setSubmitting] = useState(false);
 
   const registerHref =
     role === "business" ? "/register/business" : "/register/personal";
 
+  const clearError = (field: string) =>
+    setFieldErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setErrorKey(null);
+    const errors = getFieldErrors(loginSchema, { email, password });
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      scrollToFirstError(event.currentTarget);
+      return;
+    }
     setSubmitting(true);
     const res = await signInAction({ email, password });
     if (!res.ok) {
@@ -43,7 +67,7 @@ export function LoginForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-7">
+    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-7">
       {errorKey && (
         <Notice tone="error">
           {errorKey === "unverified" ? (
@@ -65,30 +89,38 @@ export function LoginForm({
         </Notice>
       )}
 
-      <Field id="login-email" label="EMAIL" jp="メールアドレス">
+      <Field id="login-email" label="EMAIL" jp="メールアドレス" required>
         <input
           id="login-email"
           type="email"
           autoComplete="email"
-          required
+          aria-invalid={Boolean(fieldErrors.email)}
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            clearError("email");
+          }}
           className={inputCls}
           placeholder="you@example.com"
         />
+        <FieldError error={fieldErrors.email} />
       </Field>
 
-      <Field id="login-password" label="PASSWORD" jp="パスワード">
+      <Field id="login-password" label="PASSWORD" jp="パスワード" required>
         <input
           id="login-password"
           type="password"
           autoComplete="current-password"
-          required
+          aria-invalid={Boolean(fieldErrors.password)}
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) => {
+            setPassword(e.target.value);
+            clearError("password");
+          }}
           className={inputCls}
           placeholder="••••••••"
         />
+        <FieldError error={fieldErrors.password} />
       </Field>
 
       <PrimaryButton disabled={submitting}>

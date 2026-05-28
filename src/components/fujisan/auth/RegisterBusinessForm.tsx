@@ -4,6 +4,13 @@ import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { registerBusinessAction } from "@/lib/actions/auth";
 import type { AuthErrorKey } from "@/lib/auth-errors";
+import {
+  getFieldErrors,
+  registerBusinessSchema,
+  type FieldErrorKey,
+} from "@/lib/validation/forms";
+import { FieldError } from "@/components/fujisan/FieldError";
+import { scrollToFirstError } from "@/lib/scrollToFirstError";
 import { L } from "@/i18n/Localized";
 import { Field, inputCls, PrimaryButton, Notice } from "./ui";
 
@@ -15,12 +22,36 @@ export function RegisterBusinessForm() {
   const [address, setAddress] = useState("");
   const [password, setPassword] = useState("");
   const [errorKey, setErrorKey] = useState<AuthErrorKey | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<
+    Record<string, FieldErrorKey>
+  >({});
   const [submitting, setSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
+
+  const clearError = (field: string) =>
+    setFieldErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setErrorKey(null);
+    const errors = getFieldErrors(registerBusinessSchema, {
+      companyName,
+      contactName,
+      email,
+      phone,
+      address,
+      password,
+    });
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      scrollToFirstError(event.currentTarget);
+      return;
+    }
     setSubmitting(true);
     const res = await registerBusinessAction({
       contactName,
@@ -58,7 +89,7 @@ export function RegisterBusinessForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-7">
+    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-7">
       {errorKey && (
         <Notice tone="error">
           {errorKey === "exists" ? (
@@ -80,44 +111,56 @@ export function RegisterBusinessForm() {
         </Notice>
       )}
 
-      <Field id="biz-company" label="COMPANY" jp="貴社・店舗名">
+      <Field id="biz-company" label="COMPANY" jp="貴社・店舗名" required>
         <input
           id="biz-company"
           type="text"
           autoComplete="organization"
-          required
+          aria-invalid={Boolean(fieldErrors.companyName)}
           value={companyName}
-          onChange={(e) => setCompanyName(e.target.value)}
+          onChange={(e) => {
+            setCompanyName(e.target.value);
+            clearError("companyName");
+          }}
           className={inputCls}
           placeholder="鮨 青山 株式会社"
         />
+        <FieldError error={fieldErrors.companyName} />
       </Field>
 
-      <Field id="biz-contact" label="CONTACT NAME" jp="ご担当者名">
+      <Field id="biz-contact" label="CONTACT NAME" jp="ご担当者名" required>
         <input
           id="biz-contact"
           type="text"
           autoComplete="name"
-          required
+          aria-invalid={Boolean(fieldErrors.contactName)}
           value={contactName}
-          onChange={(e) => setContactName(e.target.value)}
+          onChange={(e) => {
+            setContactName(e.target.value);
+            clearError("contactName");
+          }}
           className={inputCls}
           placeholder="佐々木 優子"
         />
+        <FieldError error={fieldErrors.contactName} />
       </Field>
 
       <div className="grid grid-cols-1 gap-7 sm:grid-cols-2">
-        <Field id="biz-email" label="EMAIL" jp="メールアドレス">
+        <Field id="biz-email" label="EMAIL" jp="メールアドレス" required>
           <input
             id="biz-email"
             type="email"
             autoComplete="email"
-            required
+            aria-invalid={Boolean(fieldErrors.email)}
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              clearError("email");
+            }}
             className={inputCls}
             placeholder="trade@example.com"
           />
+          <FieldError error={fieldErrors.email} />
         </Field>
         <Field id="biz-phone" label="PHONE" jp="電話番号">
           <input
@@ -144,18 +187,21 @@ export function RegisterBusinessForm() {
         />
       </Field>
 
-      <Field id="biz-password" label="PASSWORD" jp="パスワード（8文字以上）">
+      <Field id="biz-password" label="PASSWORD" jp="パスワード（8文字以上）" required>
         <input
           id="biz-password"
           type="password"
           autoComplete="new-password"
-          required
-          minLength={8}
+          aria-invalid={Boolean(fieldErrors.password)}
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) => {
+            setPassword(e.target.value);
+            clearError("password");
+          }}
           className={inputCls}
           placeholder="••••••••"
         />
+        <FieldError error={fieldErrors.password} />
       </Field>
 
       <p className="text-[11px] leading-[1.65] text-[#0F1F36]/55">

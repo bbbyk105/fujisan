@@ -4,6 +4,13 @@ import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { registerPersonalAction } from "@/lib/actions/auth";
 import type { AuthErrorKey } from "@/lib/auth-errors";
+import {
+  getFieldErrors,
+  registerPersonalSchema,
+  type FieldErrorKey,
+} from "@/lib/validation/forms";
+import { FieldError } from "@/components/fujisan/FieldError";
+import { scrollToFirstError } from "@/lib/scrollToFirstError";
 import { L } from "@/i18n/Localized";
 import { Field, inputCls, PrimaryButton, Notice, OrDivider } from "./ui";
 import { GoogleButton } from "./GoogleButton";
@@ -17,12 +24,33 @@ export function RegisterPersonalForm({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorKey, setErrorKey] = useState<AuthErrorKey | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<
+    Record<string, FieldErrorKey>
+  >({});
   const [submitting, setSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
+
+  const clearError = (field: string) =>
+    setFieldErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setErrorKey(null);
+    const errors = getFieldErrors(registerPersonalSchema, {
+      name,
+      email,
+      password,
+    });
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      scrollToFirstError(event.currentTarget);
+      return;
+    }
     setSubmitting(true);
     const res = await registerPersonalAction({ name, email, password });
     setSubmitting(false);
@@ -53,7 +81,7 @@ export function RegisterPersonalForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-7">
+    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-7">
       {errorKey && (
         <Notice tone="error">
           {errorKey === "exists" ? (
@@ -75,44 +103,55 @@ export function RegisterPersonalForm({
         </Notice>
       )}
 
-      <Field id="reg-name" label="NAME" jp="お名前">
+      <Field id="reg-name" label="NAME" jp="お名前" required>
         <input
           id="reg-name"
           type="text"
           autoComplete="name"
-          required
+          aria-invalid={Boolean(fieldErrors.name)}
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e) => {
+            setName(e.target.value);
+            clearError("name");
+          }}
           className={inputCls}
           placeholder="佐藤 優子"
         />
+        <FieldError error={fieldErrors.name} />
       </Field>
 
-      <Field id="reg-email" label="EMAIL" jp="メールアドレス">
+      <Field id="reg-email" label="EMAIL" jp="メールアドレス" required>
         <input
           id="reg-email"
           type="email"
           autoComplete="email"
-          required
+          aria-invalid={Boolean(fieldErrors.email)}
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            clearError("email");
+          }}
           className={inputCls}
           placeholder="you@example.com"
         />
+        <FieldError error={fieldErrors.email} />
       </Field>
 
-      <Field id="reg-password" label="PASSWORD" jp="パスワード（8文字以上）">
+      <Field id="reg-password" label="PASSWORD" jp="パスワード（8文字以上）" required>
         <input
           id="reg-password"
           type="password"
           autoComplete="new-password"
-          required
-          minLength={8}
+          aria-invalid={Boolean(fieldErrors.password)}
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) => {
+            setPassword(e.target.value);
+            clearError("password");
+          }}
           className={inputCls}
           placeholder="••••••••"
         />
+        <FieldError error={fieldErrors.password} />
       </Field>
 
       <PrimaryButton disabled={submitting}>

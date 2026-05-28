@@ -3,6 +3,16 @@
 import { headers } from "next/headers";
 import { getAuth } from "@/lib/auth";
 import { classifyAuthError, type AuthErrorKey } from "@/lib/auth-errors";
+import {
+  getFieldErrors,
+  loginSchema,
+  registerPersonalSchema,
+  registerBusinessSchema,
+} from "@/lib/validation/forms";
+
+function isValid(schema: Parameters<typeof getFieldErrors>[0], data: unknown) {
+  return Object.keys(getFieldErrors(schema, data)).length === 0;
+}
 
 export type AuthActionResult = { ok: true } | { ok: false; error: AuthErrorKey };
 
@@ -11,6 +21,7 @@ export async function signInAction(input: {
   email: string;
   password: string;
 }): Promise<AuthActionResult> {
+  if (!isValid(loginSchema, input)) return { ok: false, error: "generic" };
   const auth = await getAuth();
   try {
     await auth.api.signInEmail({
@@ -29,6 +40,8 @@ export async function registerPersonalAction(input: {
   email: string;
   password: string;
 }): Promise<AuthActionResult> {
+  if (!isValid(registerPersonalSchema, input))
+    return { ok: false, error: "generic" };
   const auth = await getAuth();
   try {
     await auth.api.signUpEmail({
@@ -55,6 +68,8 @@ export async function registerBusinessAction(input: {
   phone?: string;
   address?: string;
 }): Promise<AuthActionResult> {
+  if (!isValid(registerBusinessSchema, input))
+    return { ok: false, error: "generic" };
   const auth = await getAuth();
   try {
     await auth.api.signUpEmail({
