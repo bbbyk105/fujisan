@@ -21,13 +21,17 @@ export const UNDERAGE_NOTICE_EN = [
 export const SHIPPING_FEE = {
   /** 全国一律送料（税込・円）。カート/チェックアウトの合計計算はこの数値を唯一の出どころとする。 */
   flatJpy: 1100,
+  /** この税込小計（円）以上で送料無料。0 で無効化。 */
+  freeThresholdJpy: 15000,
   flat: "全国一律 1,100円（税込）",
   cool: "クール便指定時 +330円（税込）",
   remote: "北海道・沖縄・離島は別途追加料金がかかる場合があります",
+  free: "15,000円（税込）以上のご購入で送料無料",
   flatEn: "Flat ¥1,100 nationwide (tax incl.)",
   coolEn: "Cool-chain delivery +¥330 (tax incl.)",
   remoteEn:
     "Surcharges may apply for Hokkaido, Okinawa, and remote islands",
+  freeEn: "Free shipping on orders of ¥15,000 (tax incl.) or more",
 } as const;
 
 /** ご注意: [要確認] が残っている項目は本番公開前に必ず差し替えてください */

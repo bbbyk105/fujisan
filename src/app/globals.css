@@ -118,6 +118,16 @@ html[data-locale="ja"] .i18n-en {
   animation: fujisan-toast-in 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* Cart badge pop — replays on count change (keyed remount) */
+@keyframes fujisan-badge-pop {
+  0%   { transform: scale(0.6); }
+  55%  { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+.fujisan-badge-pop {
+  animation: fujisan-badge-pop 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 /* Gentle fade — no translate, for logo/secondary chrome */
 @keyframes fujisan-fade {
   0%   { opacity: 0; }
@@ -167,6 +177,9 @@ html[data-locale="ja"] .i18n-en {
   .fujisan-toast {
     animation: none;
     opacity: 1;
+  }
+  .fujisan-badge-pop {
+    animation: none;
   }
   .fujisan-kenburn,
   .fujisan-breathe {

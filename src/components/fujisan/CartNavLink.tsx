@@ -38,7 +38,9 @@ export function CartNavLink({ mobile = false }: { mobile?: boolean }) {
           <BagIcon />
           <L en="CART" ja="カート" />
           {showCount ? (
-            <span className="text-[#C9A84C]">({count})</span>
+            <span key={count} className="fujisan-badge-pop text-[#C9A84C]">
+              ({count})
+            </span>
           ) : null}
         </span>
         <span
@@ -60,7 +62,10 @@ export function CartNavLink({ mobile = false }: { mobile?: boolean }) {
       <BagIcon />
       <L en="CART" ja="カート" />
       {showCount ? (
-        <span className="ml-0.5 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#0F1F36] px-1 text-[10px] font-semibold leading-none text-[#F6F0E5]">
+        <span
+          key={count}
+          className="fujisan-badge-pop ml-0.5 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#0F1F36] px-1 text-[10px] font-semibold leading-none text-[#F6F0E5]"
+        >
           {count}
         </span>
       ) : null}

@@ -3,6 +3,7 @@ import {
   getFujisanProductBySlug,
   type FujisanProduct,
 } from "@/data/fujisan-products";
+import { SHIPPING_FEE } from "@/data/fujisan-legal";
 
 export const CART_STORAGE_KEY = "fujisan_cart_v1";
 /** 1 銘柄あたりの上限本数（ProductPurchaseBlock の数量上限と揃える）。 */
@@ -84,4 +85,19 @@ export function cartSubtotal(items: CartLine[]): number {
     const product = getFujisanProductBySlug(l.slug);
     return product ? sum + product.priceJpy * l.qty : sum;
   }, 0);
+}
+
+/** 小計に対する送料（円）。空カートは 0、しきい値以上は無料。 */
+export function shippingFee(subtotal: number): number {
+  if (subtotal <= 0) return 0;
+  const threshold = SHIPPING_FEE.freeThresholdJpy;
+  if (threshold > 0 && subtotal >= threshold) return 0;
+  return SHIPPING_FEE.flatJpy;
+}
+
+/** 送料無料まであと何円か。無料化済み・無効時は 0。 */
+export function amountToFreeShipping(subtotal: number): number {
+  const threshold = SHIPPING_FEE.freeThresholdJpy;
+  if (threshold <= 0 || subtotal <= 0) return 0;
+  return Math.max(0, threshold - subtotal);
 }

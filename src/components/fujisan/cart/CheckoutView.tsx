@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { useCart } from "@/lib/cart/useCart";
+import { shippingFee } from "@/lib/cart/cart-core";
 import { useSession } from "@/lib/auth-client";
 import { checkoutSchema, getFieldErrors } from "@/lib/validation/forms";
 import type { FieldErrorKey } from "@/lib/validation/forms";
 import { scrollToFirstError } from "@/lib/scrollToFirstError";
 import { FieldError } from "@/components/fujisan/FieldError";
-import { SHIPPING_FEE, UNDERAGE_NOTICE_EN, UNDERAGE_NOTICE_JP } from "@/data/fujisan-legal";
+import { UNDERAGE_NOTICE_EN, UNDERAGE_NOTICE_JP } from "@/data/fujisan-legal";
 import { L } from "@/i18n/Localized";
 
 const yen = new Intl.NumberFormat("ja-JP");
@@ -42,6 +43,40 @@ export function CheckoutView() {
   const [submitting, setSubmitting] = useState(false);
   const [completed, setCompleted] = useState<CompletedOrder | null>(null);
 
+  // 郵便番号→住所の自動入力。自分が補完した値は上書きするが、
+  // ユーザーが手入力した住所は壊さない（autofilledRef で判定）。
+  const [addrLoading, setAddrLoading] = useState(false);
+  const autofilledRef = useRef("");
+
+  const onPostalChange = (raw: string) => {
+    setPostalCode(raw);
+    const digits = raw.replace(/[^0-9]/g, "");
+    if (digits.length !== 7) return;
+    setAddrLoading(true);
+    fetch(`https://zipcloud.ibsnet.co.jp/api/search?zipcode=${digits}`)
+      .then((res) => res.json())
+      .then((json) => {
+        const results = (
+          json as {
+            results?: Array<
+              Record<"address1" | "address2" | "address3", string>
+            >;
+          }
+        )?.results;
+        const r = results?.[0];
+        if (!r) return;
+        const filled = `${r.address1}${r.address2}${r.address3}`;
+        setAddress((cur) =>
+          !cur || cur === autofilledRef.current ? filled : cur,
+        );
+        autofilledRef.current = filled;
+      })
+      .catch(() => {
+        // ネットワーク不通・APIエラー時は自動入力をスキップ（手入力は可能）
+      })
+      .finally(() => setAddrLoading(false));
+  };
+
   // ログイン済みなら氏名・メールを一度だけ補完する。effect ではなく描画中に
   // 同期する React 推奨パターン（FujisanNavClient の prevPathname と同様）。
   // ユーザーが入力済みの値は上書きしない。
@@ -55,7 +90,7 @@ export function CheckoutView() {
     setEmail((cur) => cur || sessionUser.email);
   }
 
-  const shipping = SHIPPING_FEE.flatJpy;
+  const shipping = shippingFee(subtotal);
   const total = subtotal + shipping;
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -223,7 +258,7 @@ export function CheckoutView() {
               <input
                 id="co-postal"
                 value={postalCode}
-                onChange={(e) => setPostalCode(e.target.value)}
+                onChange={(e) => onPostalChange(e.target.value)}
                 aria-invalid={errors.postalCode ? "true" : undefined}
                 autoComplete="postal-code"
                 inputMode="numeric"
@@ -231,6 +266,12 @@ export function CheckoutView() {
                 placeholder="417-0051"
               />
               <FieldError error={errors.postalCode} />
+              <p className="mt-1.5 text-[10px] leading-[1.5] tracking-[0.04em] text-[#0B1A2E]/45">
+                <L
+                  en="Enter 7 digits to auto-fill your address."
+                  ja="7桁を入力すると住所を自動入力します。"
+                />
+              </p>
             </div>
 
             <div>
@@ -253,6 +294,11 @@ export function CheckoutView() {
             <div className="sm:col-span-2">
               <label htmlFor="co-address" className={labelClass}>
                 <L en="ADDRESS" ja="ご住所" />
+                {addrLoading ? (
+                  <span className="ml-2 font-normal tracking-[0.04em] text-[#C9A84C]">
+                    <L en="looking up…" ja="住所を検索中…" />
+                  </span>
+                ) : null}
               </label>
               <input
                 id="co-address"
@@ -405,7 +451,13 @@ export function CheckoutView() {
               <dt>
                 <L en="Shipping" ja="送料" />
               </dt>
-              <dd className="font-semibold">¥{yen.format(shipping)}</dd>
+              <dd className="font-semibold">
+                {shipping === 0 ? (
+                  <L en="Free" ja="無料" />
+                ) : (
+                  `¥${yen.format(shipping)}`
+                )}
+              </dd>
             </div>
           </dl>
 

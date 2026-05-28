@@ -124,12 +124,12 @@ export default function ProductPurchaseBlock({
             >
               <L en="QTY" ja="数量" />
             </span>
-            <div className="inline-flex items-center gap-2">
+            <div className="inline-flex items-center gap-1">
               <button
                 type="button"
                 aria-label="数量を減らす"
                 onClick={() => setQty((q) => Math.max(1, q - 1))}
-                className="cursor-pointer px-1 text-[16px] font-light text-[#0B1A2E]/45 transition-colors hover:text-[#0B1A2E]"
+                className="flex h-11 w-11 cursor-pointer items-center justify-center text-[18px] font-light text-[#0B1A2E]/45 transition-colors hover:text-[#0B1A2E]"
               >
                 −
               </button>
@@ -145,7 +145,7 @@ export default function ProductPurchaseBlock({
                 type="button"
                 aria-label="数量を増やす"
                 onClick={() => setQty((q) => Math.min(12, q + 1))}
-                className="cursor-pointer px-1 text-[16px] font-light text-[#0B1A2E]/45 transition-colors hover:text-[#0B1A2E]"
+                className="flex h-11 w-11 cursor-pointer items-center justify-center text-[18px] font-light text-[#0B1A2E]/45 transition-colors hover:text-[#0B1A2E]"
               >
                 ＋
               </button>

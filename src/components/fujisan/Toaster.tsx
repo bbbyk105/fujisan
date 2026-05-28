@@ -28,16 +28,32 @@ export function Toaster() {
             <L en={toast.en} ja={toast.ja} />
           </p>
           {toast.action ? (
-            <Link
-              href={toast.action.href}
-              onClick={() => dismissToast(toast.id)}
-              className="group/toast shrink-0 text-[10.5px] font-semibold tracking-[0.18em] text-[#C9A84C] no-underline"
-            >
-              <span className="relative pb-0.5">
-                <L en={toast.action.en} ja={toast.action.ja} />
-                <span className="absolute inset-x-0 bottom-0 h-px bg-[#C9A84C]/40 transition-colors duration-300 group-hover/toast:bg-[#C9A84C]" />
-              </span>
-            </Link>
+            toast.action.href ? (
+              <Link
+                href={toast.action.href}
+                onClick={() => dismissToast(toast.id)}
+                className="group/toast shrink-0 text-[10.5px] font-semibold tracking-[0.18em] text-[#C9A84C] no-underline"
+              >
+                <span className="relative pb-0.5">
+                  <L en={toast.action.en} ja={toast.action.ja} />
+                  <span className="absolute inset-x-0 bottom-0 h-px bg-[#C9A84C]/40 transition-colors duration-300 group-hover/toast:bg-[#C9A84C]" />
+                </span>
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  toast.action?.onClick?.();
+                  dismissToast(toast.id);
+                }}
+                className="group/toast shrink-0 cursor-pointer text-[10.5px] font-semibold tracking-[0.18em] text-[#C9A84C]"
+              >
+                <span className="relative pb-0.5">
+                  <L en={toast.action.en} ja={toast.action.ja} />
+                  <span className="absolute inset-x-0 bottom-0 h-px bg-[#C9A84C]/40 transition-colors duration-300 group-hover/toast:bg-[#C9A84C]" />
+                </span>
+              </button>
+            )
           ) : null}
           <button
             type="button"

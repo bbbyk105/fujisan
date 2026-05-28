@@ -1,15 +1,18 @@
 import {
   MAX_QTY_PER_LINE,
   addLine,
+  amountToFreeShipping,
   cartCount,
   cartSubtotal,
   normalizeLines,
   removeLine,
   setLineQty,
+  shippingFee,
   toLineViews,
   type CartLine,
 } from "@/lib/cart/cart-core";
 import { fujisanProducts } from "@/data/fujisan-products";
+import { SHIPPING_FEE } from "@/data/fujisan-legal";
 
 // 実在の slug / 価格を使う（データ駆動でテストが陳腐化しないように）
 const A = fujisanProducts[0]; // honjozo, 3300
@@ -105,6 +108,32 @@ describe("totals", () => {
 
   it("ignores unknown slugs in the subtotal", () => {
     expect(cartSubtotal([{ slug: "ghost", qty: 3 }])).toBe(0);
+  });
+});
+
+describe("shipping", () => {
+  const { flatJpy, freeThresholdJpy } = SHIPPING_FEE;
+
+  it("charges the flat fee below the free-shipping threshold", () => {
+    expect(shippingFee(freeThresholdJpy - 1)).toBe(flatJpy);
+  });
+
+  it("is free at or above the threshold", () => {
+    expect(shippingFee(freeThresholdJpy)).toBe(0);
+    expect(shippingFee(freeThresholdJpy + 5000)).toBe(0);
+  });
+
+  it("is free for an empty cart", () => {
+    expect(shippingFee(0)).toBe(0);
+  });
+
+  it("reports the remaining amount to free shipping", () => {
+    expect(amountToFreeShipping(freeThresholdJpy - 800)).toBe(800);
+  });
+
+  it("reports zero remaining once the threshold is met", () => {
+    expect(amountToFreeShipping(freeThresholdJpy)).toBe(0);
+    expect(amountToFreeShipping(freeThresholdJpy + 1)).toBe(0);
   });
 });
 
