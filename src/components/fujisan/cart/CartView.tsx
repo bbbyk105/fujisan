@@ -2,8 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import { MAX_QTY_PER_LINE } from "@/lib/cart/cart-core";
 import { useCart } from "@/lib/cart/useCart";
+import { pushToast } from "@/lib/cart/toast-store";
 import { SHIPPING_FEE } from "@/data/fujisan-legal";
 import { L } from "@/i18n/Localized";
 
@@ -50,6 +52,17 @@ function QtyStepper({
 
 export function CartView() {
   const { ready, lines, count, subtotal, setQty, remove } = useCart();
+  // 削除確認中の行（slug）。null のときは確認テロップを出していない。
+  const [confirmingSlug, setConfirmingSlug] = useState<string | null>(null);
+
+  const confirmRemove = (slug: string, name: string) => {
+    remove(slug);
+    setConfirmingSlug(null);
+    pushToast({
+      ja: `${name}をカートから削除しました`,
+      en: `${name} removed from your cart`,
+    });
+  };
 
   // localStorage 復元前はちらつきを避けるため最小限のプレースホルダのみ。
   if (!ready) {
@@ -158,13 +171,35 @@ export function CartView() {
                       qty={qty}
                       onChange={(next) => setQty(slug, next)}
                     />
-                    <button
-                      type="button"
-                      onClick={() => remove(slug)}
-                      className="cursor-pointer text-[11px] tracking-[0.18em] text-[#0B1A2E]/55 underline decoration-[#0B1A2E]/20 underline-offset-4 transition-colors hover:text-[#8B1A1A]"
-                    >
-                      <L en="Remove" ja="削除" />
-                    </button>
+                    {confirmingSlug === slug ? (
+                      <div className="flex items-center gap-3 text-[11px] tracking-[0.14em]">
+                        <span className="text-[#0B1A2E]/70">
+                          <L en="Remove?" ja="削除しますか？" />
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => confirmRemove(slug, product.name)}
+                          className="cursor-pointer font-semibold text-[#8B1A1A] underline decoration-[#8B1A1A]/30 underline-offset-4 transition-colors hover:decoration-[#8B1A1A]"
+                        >
+                          <L en="Yes" ja="削除する" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setConfirmingSlug(null)}
+                          className="cursor-pointer text-[#0B1A2E]/55 transition-colors hover:text-[#0B1A2E]"
+                        >
+                          <L en="Cancel" ja="キャンセル" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setConfirmingSlug(slug)}
+                        className="cursor-pointer text-[11px] tracking-[0.18em] text-[#0B1A2E]/55 underline decoration-[#0B1A2E]/20 underline-offset-4 transition-colors hover:text-[#8B1A1A]"
+                      >
+                        <L en="Remove" ja="削除" />
+                      </button>
+                    )}
                   </div>
                 </div>
               </li>

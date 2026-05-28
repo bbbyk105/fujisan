@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ViewTransition, useState } from "react";
 import type { FujisanProduct } from "@/data/fujisan-products";
 import { useCart } from "@/lib/cart/useCart";
+import { pushToast } from "@/lib/cart/toast-store";
 import { L } from "@/i18n/Localized";
 
 const yen = new Intl.NumberFormat("ja-JP");
@@ -17,6 +18,11 @@ function ShopBottleCard({ product }: { product: FujisanProduct }) {
     add(product.slug, 1);
     setAdded(true);
     window.setTimeout(() => setAdded(false), 2200);
+    pushToast({
+      ja: `${product.name}をカートに追加しました`,
+      en: `${product.name} added to your cart`,
+      action: { href: "/cart", ja: "カートを見る", en: "VIEW CART" },
+    });
   };
 
   return (

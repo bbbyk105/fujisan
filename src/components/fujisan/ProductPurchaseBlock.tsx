@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { UNDERAGE_NOTICE_EN, UNDERAGE_NOTICE_JP } from "@/data/fujisan-legal";
 import { useCart } from "@/lib/cart/useCart";
+import { pushToast } from "@/lib/cart/toast-store";
 import { L } from "@/i18n/Localized";
 
 type Props = {
@@ -38,6 +39,11 @@ export default function ProductPurchaseBlock({
     add(slug, qty);
     setSubmitted(true);
     window.setTimeout(() => setSubmitted(false), 3500);
+    pushToast({
+      ja: `${productName}を${qty}本カートに追加しました`,
+      en: `${productName} ×${qty} added to your cart`,
+      action: { href: "/cart", ja: "カートを見る", en: "VIEW CART" },
+    });
   };
 
   return (
@@ -238,24 +244,6 @@ export default function ProductPurchaseBlock({
             )}
             <span aria-hidden>→</span>
           </button>
-
-          {submitted ? (
-            <Link
-              href="/cart"
-              className="group/cart mt-4 inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.24em] text-[#0B1A2E] no-underline"
-            >
-              <span className="relative pb-1">
-                <L en="VIEW CART" ja="カートを見る" />
-                <span className="absolute inset-x-0 -bottom-0 h-px bg-[#0B1A2E]/45 transition-all duration-500 group-hover/cart:bg-[#C9A84C]" />
-              </span>
-              <span
-                aria-hidden
-                className="transition-transform duration-500 group-hover/cart:translate-x-1 group-hover/cart:text-[#C9A84C]"
-              >
-                →
-              </span>
-            </Link>
-          ) : null}
 
           <p className="mt-4 text-[10.5px] leading-[1.7] text-[#0B1A2E]/55">
             <L
