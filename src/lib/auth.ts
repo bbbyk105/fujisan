@@ -99,8 +99,11 @@ export async function isGoogleEnabled() {
 /**
  * Better Auth CLI (`generate`) 専用の静的インスタンス。プレーン Node で動き
  * Cloudflare コンテキストを持たないため、設定の形だけを CLI に渡す。
+ * 実行時には使われないので logger を無効化し、baseURL / secret 未設定による
+ * 警告（モジュール読込のたびに出る）を抑止する。
  */
 export const auth = betterAuth({
   database: drizzleAdapter({} as never, { provider: "sqlite" }),
   ...buildOptions({}),
+  logger: { disabled: true },
 });
