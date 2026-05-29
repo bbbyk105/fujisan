@@ -9,6 +9,18 @@ type Props = {
   products: FujisanProduct[];
 };
 
+/**
+ * モバイル（6カラム）でのボトル配置。
+ * 上段3本は2カラム幅で並べ、下段2本は半カラムずらして上3本の谷間に収める。
+ * md 以上は通常の5カラム横並びに戻す。
+ */
+function stagger(i: number) {
+  const base = "col-span-2 md:col-span-1 md:col-start-auto";
+  if (i === 3) return `${base} col-start-2`;
+  if (i === 4) return `${base} col-start-4`;
+  return base;
+}
+
 /** View Transition とホバー演出が必要なボトルショーケース（クライアント境界） */
 export function FujisanHeroShowcase({ products }: Props) {
   return (
@@ -17,13 +29,13 @@ export function FujisanHeroShowcase({ products }: Props) {
         id="showcase"
         className="relative z-20 mt-8 scroll-mt-[86px] px-2 sm:px-4 md:mt-4 md:px-7 lg:mt-0 xl:mt-10"
       >
-        <div className="mx-auto grid max-w-[1330px] grid-cols-3 items-end gap-x-1 gap-y-3 sm:gap-x-3 md:grid-cols-5 md:gap-x-2 lg:gap-x-4 xl:max-w-[1660px] xl:gap-x-6">
+        <div className="mx-auto grid max-w-[1330px] grid-cols-6 items-end gap-x-1 gap-y-3 sm:gap-x-3 md:grid-cols-5 md:gap-x-2 lg:gap-x-4 xl:max-w-[1660px] xl:gap-x-6">
           {products.map((p, i) => (
             <Link
               key={`${p.slug}-bottle`}
               href={`/products/${p.slug}`}
               aria-label={`${p.name} ${p.variantLine}`}
-              className="group relative flex h-[270px] items-end justify-center overflow-visible no-underline outline-none focus-visible:ring-2 focus-visible:ring-[#C9A84C]/60 sm:h-[330px] md:h-[390px] lg:h-[430px] xl:h-[455px]"
+              className={`group relative flex h-[270px] items-end justify-center overflow-visible no-underline outline-none focus-visible:ring-2 focus-visible:ring-[#C9A84C]/60 sm:h-[330px] md:h-[390px] lg:h-[430px] xl:h-[455px] ${stagger(i)}`}
               style={{ zIndex: 20 - i }}
             >
               <div
@@ -57,12 +69,12 @@ export function FujisanHeroShowcase({ products }: Props) {
       </div>
 
       <div className="relative z-20 bg-[#FAF5E8]/92 px-2 pb-8 pt-3 sm:px-4 md:px-7 md:pb-1 md:pt-2">
-        <div className="mx-auto grid max-w-[1330px] grid-cols-3 gap-x-1 gap-y-6 sm:gap-x-3 md:grid-cols-5 md:gap-x-2 lg:gap-x-4 xl:max-w-[1660px] xl:gap-x-6">
+        <div className="mx-auto grid max-w-[1330px] grid-cols-6 gap-x-1 gap-y-6 sm:gap-x-3 md:grid-cols-5 md:gap-x-2 lg:gap-x-4 xl:max-w-[1660px] xl:gap-x-6">
           {products.map((p, i) => (
             <Link
               key={`${p.slug}-info`}
               href={`/products/${p.slug}`}
-              className="fujisan-rise group flex flex-col items-center px-1 text-center no-underline outline-none focus-visible:ring-2 focus-visible:ring-[#C9A84C]/60"
+              className={`fujisan-rise group flex flex-col items-center px-1 text-center no-underline outline-none focus-visible:ring-2 focus-visible:ring-[#C9A84C]/60 ${stagger(i)}`}
               style={{ animationDelay: `${1400 + i * 120}ms` }}
             >
               <p className="font-serif text-[12px] font-semibold tracking-[0.16em] text-[#0B1A2E] transition-colors duration-300 group-hover:text-[#C9A84C] md:text-[15px] md:tracking-[0.18em]">
