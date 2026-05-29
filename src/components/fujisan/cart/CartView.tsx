@@ -10,7 +10,7 @@ import {
 } from "@/lib/cart/cart-core";
 import { useCart } from "@/lib/cart/useCart";
 import { pushToast } from "@/lib/cart/toast-store";
-import { fujisanProducts } from "@/data/fujisan-products";
+import { fujisanProducts, primaryVolume } from "@/data/fujisan-products";
 import { SHIPPING_FEE } from "@/data/fujisan-legal";
 import { L } from "@/i18n/Localized";
 
@@ -57,11 +57,11 @@ function QtyStepper({
 
 export function CartView() {
   const { ready, lines, count, subtotal, add, setQty, remove } = useCart();
-  // 削除確認中の行（slug）。null のときは確認テロップを出していない。
-  const [confirmingSlug, setConfirmingSlug] = useState<string | null>(null);
+  // 削除確認中の行（`${slug}-${ml}`）。null のときは確認テロップを出していない。
+  const [confirmingKey, setConfirmingKey] = useState<string | null>(null);
 
-  const quickAdd = (slug: string, name: string) => {
-    add(slug, 1);
+  const quickAdd = (slug: string, ml: number, name: string) => {
+    add(slug, ml, 1);
     pushToast({
       ja: `${name}をカートに追加しました`,
       en: `${name} added to your cart`,
@@ -69,16 +69,21 @@ export function CartView() {
     });
   };
 
-  const confirmRemove = (slug: string, name: string, qty: number) => {
-    remove(slug);
-    setConfirmingSlug(null);
+  const confirmRemove = (
+    slug: string,
+    ml: number,
+    name: string,
+    qty: number,
+  ) => {
+    remove(slug, ml);
+    setConfirmingKey(null);
     pushToast({
-      ja: `${name}をカートから削除しました`,
-      en: `${name} removed from your cart`,
+      ja: `${name}（${ml}ml）をカートから削除しました`,
+      en: `${name} ${ml}ml removed from your cart`,
       action: {
         ja: "元に戻す",
         en: "UNDO",
-        onClick: () => add(slug, qty),
+        onClick: () => add(slug, ml, qty),
       },
     });
   };
@@ -152,11 +157,11 @@ export function CartView() {
                     <span className="text-[#0B1A2E]/55">{p.variant}</span>
                   </Link>
                   <p className="mt-1 font-serif text-[13px] font-semibold text-[#0B1A2E]">
-                    ¥{yen.format(p.priceJpy)}
+                    ¥{yen.format(primaryVolume(p).priceJpy)}
                   </p>
                   <button
                     type="button"
-                    onClick={() => quickAdd(p.slug, p.name)}
+                    onClick={() => quickAdd(p.slug, primaryVolume(p).ml, p.name)}
                     className="mt-3 cursor-pointer border border-[#0B1A2E]/30 px-5 py-2 text-[10px] font-semibold tracking-[0.24em] text-[#0B1A2E] transition-colors hover:border-[#0B1A2E] hover:bg-[#0B1A2E] hover:text-[#F8F3E7]"
                   >
                     <L en="ADD" ja="追加" />
@@ -194,9 +199,11 @@ export function CartView() {
           </div>
 
           <ul>
-            {lines.map(({ slug, qty, product }) => (
+            {lines.map(({ slug, ml, qty, product, volume }) => {
+              const lineKey = `${slug}-${ml}`;
+              return (
               <li
-                key={slug}
+                key={lineKey}
                 className="flex gap-5 border-b border-[#0B1A2E]/10 py-7"
               >
                 <Link
@@ -226,19 +233,21 @@ export function CartView() {
                           en={product.variantLine}
                           ja={product.variantLineJp}
                         />
+                        <span className="mx-1.5 text-[#0B1A2E]/30">·</span>
+                        {ml}ml
                       </p>
                     </div>
                     <p className="shrink-0 font-serif text-[15px] font-semibold tracking-[0.02em] text-[#0B1A2E]">
-                      ¥{yen.format(product.priceJpy * qty)}
+                      ¥{yen.format(volume.priceJpy * qty)}
                     </p>
                   </div>
 
                   <div className="mt-auto flex items-center justify-between gap-4 pt-5">
                     <QtyStepper
                       qty={qty}
-                      onChange={(next) => setQty(slug, next)}
+                      onChange={(next) => setQty(slug, ml, next)}
                     />
-                    {confirmingSlug === slug ? (
+                    {confirmingKey === lineKey ? (
                       <div className="flex items-center gap-3 text-[11px] tracking-[0.14em]">
                         <span className="text-[#0B1A2E]/70">
                           <L en="Remove?" ja="削除しますか？" />
@@ -246,7 +255,7 @@ export function CartView() {
                         <button
                           type="button"
                           onClick={() =>
-                            confirmRemove(slug, product.name, qty)
+                            confirmRemove(slug, ml, product.name, qty)
                           }
                           className="cursor-pointer font-semibold text-[#8B1A1A] underline decoration-[#8B1A1A]/30 underline-offset-4 transition-colors hover:decoration-[#8B1A1A]"
                         >
@@ -254,7 +263,7 @@ export function CartView() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => setConfirmingSlug(null)}
+                          onClick={() => setConfirmingKey(null)}
                           className="cursor-pointer text-[#0B1A2E]/55 transition-colors hover:text-[#0B1A2E]"
                         >
                           <L en="Cancel" ja="キャンセル" />
@@ -263,7 +272,7 @@ export function CartView() {
                     ) : (
                       <button
                         type="button"
-                        onClick={() => setConfirmingSlug(slug)}
+                        onClick={() => setConfirmingKey(lineKey)}
                         className="cursor-pointer text-[11px] tracking-[0.18em] text-[#0B1A2E]/55 underline decoration-[#0B1A2E]/20 underline-offset-4 transition-colors hover:text-[#8B1A1A]"
                       >
                         <L en="Remove" ja="削除" />
@@ -272,7 +281,8 @@ export function CartView() {
                   </div>
                 </div>
               </li>
-            ))}
+              );
+            })}
           </ul>
 
           <Link

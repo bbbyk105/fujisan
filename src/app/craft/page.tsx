@@ -176,8 +176,8 @@ export default function CraftIndexPage() {
             </h2>
             <p className="mt-4 text-[13.5px] font-light leading-[1.78] text-[#F2E4C7]/78">
               <L
-                en="Six expressions, each carrying water, rice, and the hand of the toji."
-                ja="六つの表情。そのどれもが、水と米と杜氏の手を宿しています。"
+                en="Five expressions, each carrying water, rice, and the hand of the toji."
+                ja="五つの表情。そのどれもが、水と米と杜氏の手を宿しています。"
               />
             </p>
           </div>

@@ -420,8 +420,11 @@ export function CheckoutView() {
           <div className="mt-4 h-px w-8 bg-[#0B1A2E]/30" />
 
           <ul className="mt-6 space-y-4">
-            {lines.map(({ slug, qty, product }) => (
-              <li key={slug} className="flex items-start justify-between gap-4">
+            {lines.map(({ slug, ml, qty, product, volume }) => (
+              <li
+                key={`${slug}-${ml}`}
+                className="flex items-start justify-between gap-4"
+              >
                 <div>
                   <p className="font-serif text-[13.5px] font-semibold tracking-[0.06em] text-[#0B1A2E]">
                     {product.name}
@@ -431,10 +434,12 @@ export function CheckoutView() {
                   </p>
                   <p className="mt-0.5 text-[10.5px] tracking-[0.14em] text-[#0B1A2E]/55">
                     <L en={product.variantLine} ja={product.variantLineJp} />
+                    <span className="mx-1.5 text-[#0B1A2E]/30">·</span>
+                    {ml}ml
                   </p>
                 </div>
                 <p className="shrink-0 font-serif text-[13.5px] font-semibold text-[#0B1A2E]">
-                  ¥{yen.format(product.priceJpy * qty)}
+                  ¥{yen.format(volume.priceJpy * qty)}
                 </p>
               </li>
             ))}

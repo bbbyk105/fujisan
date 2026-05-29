@@ -62,39 +62,41 @@ export async function WholesalePriceList() {
         </span>
       </div>
 
-      {fujisanProducts.map((p) => (
-        <div
-          key={p.slug}
-          className="grid grid-cols-2 items-baseline gap-x-4 gap-y-1 border-b border-[#0B1A2E]/10 py-5 sm:grid-cols-[1.6fr_1fr_1fr] sm:items-center"
-        >
-          <div className="col-span-2 sm:col-span-1">
-            <span className="font-serif text-[14px] font-semibold tracking-[0.12em] text-[#0B1A2E]">
-              {p.name} · {p.variant.replace(/\n/g, " ")}
-            </span>
-            <span className="mt-0.5 block font-jp text-[10.5px] tracking-[0.18em] text-[#C9A84C]/85">
-              {p.variantLineJp}
-            </span>
+      {fujisanProducts.flatMap((p) =>
+        p.volumes.map((v) => (
+          <div
+            key={`${p.slug}-${v.ml}`}
+            className="grid grid-cols-2 items-baseline gap-x-4 gap-y-1 border-b border-[#0B1A2E]/10 py-5 sm:grid-cols-[1.6fr_1fr_1fr] sm:items-center"
+          >
+            <div className="col-span-2 sm:col-span-1">
+              <span className="font-serif text-[14px] font-semibold tracking-[0.12em] text-[#0B1A2E]">
+                {p.name} · {p.variant.replace(/\n/g, " ")}
+              </span>
+              <span className="mt-0.5 block font-jp text-[10.5px] tracking-[0.18em] text-[#C9A84C]/85">
+                {p.variantLineJp} · {v.ml}ml
+              </span>
+            </div>
+            <div className="text-left sm:text-right">
+              <span className="font-serif text-[15px] text-[#0B1A2E]">
+                {yen(v.wholesalePriceJpy)}
+              </span>
+            </div>
+            <div className="text-right">
+              <span className="font-serif text-[15px] text-[#0B1A2E]">
+                {yen(v.wholesalePriceJpy * v.caseSize)}
+              </span>
+              <span className="ml-1.5 text-[10px] text-[#0B1A2E]/55">
+                ×{v.caseSize}
+              </span>
+            </div>
           </div>
-          <div className="text-left sm:text-right">
-            <span className="font-serif text-[15px] text-[#0B1A2E]">
-              {yen(p.wholesalePriceJpy)}
-            </span>
-          </div>
-          <div className="text-right">
-            <span className="font-serif text-[15px] text-[#0B1A2E]">
-              {yen(p.wholesalePriceJpy * p.caseSize)}
-            </span>
-            <span className="ml-1.5 text-[10px] text-[#0B1A2E]/55">
-              ×{p.caseSize}
-            </span>
-          </div>
-        </div>
-      ))}
+        )),
+      )}
 
       <p className="mt-6 text-[11px] leading-[1.7] text-[#0B1A2E]/55">
         <L
-          en="Prices are per 720 ml bottle, excluding tax, for reference. Volume terms apply beyond ten cases per month — contact your trade desk for a formal quote."
-          ja="価格は 720ml 1本あたり・税抜の参考価格です。月10ケースを超える場合は数量条件がございます。正式なお見積りは担当窓口までご相談ください。"
+          en="Prices are per bottle (300 ml / 180 ml as listed), excluding tax, for reference (estimated CIF, Asia region). MOQ 3,000 bottles per shipment, mixed SKUs allowed — contact your trade desk for a formal quote."
+          ja="価格は1本あたり（300ml／180ml）・税抜の参考価格です（アジア向け CIF 概算）。最小ロットは1出荷あたり3,000本（銘柄混載可）。正式なお見積りは担当窓口までご相談ください。"
         />
       </p>
     </div>

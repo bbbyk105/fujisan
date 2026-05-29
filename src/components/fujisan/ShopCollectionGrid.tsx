@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ViewTransition, useState } from "react";
-import type { FujisanProduct } from "@/data/fujisan-products";
+import { primaryVolume, type FujisanProduct } from "@/data/fujisan-products";
 import { useCart } from "@/lib/cart/useCart";
 import { pushToast } from "@/lib/cart/toast-store";
 import { L } from "@/i18n/Localized";
@@ -13,9 +13,11 @@ const yen = new Intl.NumberFormat("ja-JP");
 function ShopBottleCard({ product }: { product: FujisanProduct }) {
   const { add } = useCart();
   const [added, setAdded] = useState(false);
+  const base = primaryVolume(product);
+  const multiVolume = product.volumes.length > 1;
 
   const onAdd = () => {
-    add(product.slug, 1);
+    add(product.slug, base.ml, 1);
     setAdded(true);
     window.setTimeout(() => setAdded(false), 2200);
     pushToast({
@@ -73,12 +75,19 @@ function ShopBottleCard({ product }: { product: FujisanProduct }) {
         </p>
 
         <div className="mt-auto flex items-end justify-between gap-3 pt-5">
-          <p className="font-serif text-[20px] font-semibold tracking-[0.02em] text-[#0B1A2E]">
-            ¥{yen.format(product.priceJpy)}
-            <span className="ml-1.5 align-middle text-[10px] font-medium tracking-[0.14em] text-[#0B1A2E]/55">
-              <L en="(tax incl.)" ja="（税込）" />
-            </span>
-          </p>
+          <div>
+            <p className="font-serif text-[20px] font-semibold tracking-[0.02em] text-[#0B1A2E]">
+              ¥{yen.format(base.priceJpy)}
+              <span className="ml-1.5 align-middle text-[10px] font-medium tracking-[0.14em] text-[#0B1A2E]/55">
+                <L en={`${base.ml}ml · tax incl.`} ja={`${base.ml}ml・税込`} />
+              </span>
+            </p>
+            {multiVolume ? (
+              <p className="mt-0.5 text-[10px] tracking-[0.12em] text-[#0B1A2E]/50">
+                <L en="Other sizes available" ja="他の容量もあります" />
+              </p>
+            ) : null}
+          </div>
         </div>
 
         <button

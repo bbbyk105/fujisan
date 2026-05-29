@@ -49,7 +49,7 @@ export async function generateMetadata({
   const product = getFujisanProductBySlug(slug);
   if (!product) return { title: "FUJISAN SAKE" };
   return {
-    title: `${product.name} ${product.variantLine} — FUJISAN SAKE`,
+    title: `${product.name} ${product.variant} ${product.variantJp} — ${product.variantLine} — FUJISAN SAKE`,
     description: product.desc.replace(/\n/g, " "),
   };
 }
@@ -110,11 +110,14 @@ export default async function ProductDetailPage({
             </p>
 
             <h1 className="mt-3 font-serif leading-[0.95] tracking-[0.02em] text-[#0B1A2E]">
-              <span className="block text-[clamp(48px,7vw,96px)] font-semibold">
+              <span className="block text-[clamp(36px,4.6vw,60px)] font-medium tracking-[0.06em] text-[#1D2432]/80">
                 {product.name}
               </span>
-              <span className="mt-2 block whitespace-pre-line text-[clamp(20px,2.4vw,30px)] font-medium tracking-[0.1em] text-[#1D2432]/90">
-                <L en={product.variant} ja={product.variantLineJp} />
+              <span className="mt-2 block text-[clamp(40px,6vw,84px)] font-semibold tracking-[0.04em]">
+                <L en={product.variant} ja={product.variantJp} />
+              </span>
+              <span className="mt-2 block font-jp text-[clamp(13px,1.1vw,15px)] font-semibold tracking-[0.34em] text-[#C9A84C]">
+                <L en={product.variantJp} ja={product.variant} />
               </span>
             </h1>
 
@@ -201,8 +204,10 @@ export default async function ProductDetailPage({
       <ProductPurchaseBlock
         slug={product.slug}
         productName={product.name}
+        variant={product.variant}
+        variantJp={product.variantJp}
         variantLine={product.variantLine}
-        priceJpy={product.priceJpy}
+        volumes={product.volumes}
         shippingNote={FUJISAN_LEGAL.shippingFeeNote}
         shippingNoteEn={FUJISAN_LEGAL.shippingFeeNoteEn}
       />
@@ -319,10 +324,10 @@ export default async function ProductDetailPage({
                 />
               </span>
               <span className="font-serif text-[clamp(22px,2.4vw,30px)] font-semibold tracking-[0.04em] text-[#0B1A2E] group-hover:text-[#C9A84C]">
-                {p.name}
+                {p.name} <L en={p.variant} ja={p.variantJp} />
               </span>
-              <span className="whitespace-pre-line text-[11px] font-semibold tracking-[0.16em] text-[#0B1A2E]/72">
-                <L en={p.variant} ja={p.variantLineJp} />
+              <span className="text-[11px] font-semibold tracking-[0.16em] text-[#0B1A2E]/72">
+                <L en={p.variantLine} ja={p.variantLineJp} />
               </span>
             </Link>
           ))}

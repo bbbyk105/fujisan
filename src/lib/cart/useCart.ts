@@ -21,9 +21,9 @@ type UseCart = {
   lines: CartLineView[];
   count: number;
   subtotal: number;
-  add: (slug: string, qty?: number) => void;
-  setQty: (slug: string, qty: number) => void;
-  remove: (slug: string) => void;
+  add: (slug: string, ml: number, qty?: number) => void;
+  setQty: (slug: string, ml: number, qty: number) => void;
+  remove: (slug: string, ml: number) => void;
   clear: () => void;
 };
 

@@ -16,7 +16,7 @@ import { L } from "@/i18n/Localized";
 export const metadata = {
   title: "For your table — FUJISAN SAKE",
   description:
-    "Order a single bottle of Fujisan sake for your home. Six expressions, nationwide delivery, age verification at every step.",
+    "Order a single bottle of Fujisan sake for your home. Five expressions, nationwide delivery, age verification at every step.",
 };
 
 const yen = new Intl.NumberFormat("ja-JP");
@@ -27,8 +27,8 @@ const steps = [
     en: "Choose your bottle",
     ja: "一本を選ぶ",
     desc: {
-      en: "Browse six expressions of Fujisan and open the bottle that calls to you. Each detail page shows its temperature and brewer notes.",
-      ja: "六種の銘柄から、気になる一本をお選びください。各商品ページに、おすすめの温度・蔵元の言葉を記しています。",
+      en: "Browse five expressions of Fujisan and open the bottle that calls to you. Each detail page shows its temperature and brewer notes.",
+      ja: "五種の銘柄から、気になる一本をお選びください。各商品ページに、おすすめの温度・蔵元の言葉を記しています。",
     },
   },
   {
@@ -51,8 +51,11 @@ const steps = [
   },
 ];
 
-const priceMin = Math.min(...fujisanProducts.map((p) => p.priceJpy));
-const priceMax = Math.max(...fujisanProducts.map((p) => p.priceJpy));
+const allPrices = fujisanProducts.flatMap((p) =>
+  p.volumes.map((v) => v.priceJpy),
+);
+const priceMin = Math.min(...allPrices);
+const priceMax = Math.max(...allPrices);
 
 export default function ShopPersonalPage() {
   return (
@@ -66,8 +69,8 @@ export default function ShopPersonalPage() {
         jp="― 一本から、家へ ―"
         lead={
           <L
-            en="Single 720 ml bottles, gift-ready, shipped from our small brewhouse in Shizuoka. We hand-check every order — and verify age at order and at delivery."
-            ja="720ml の単品を、贈り物にも。静岡の小さな蔵から、ひとつずつ検品してお届けします。ご注文時とお届け時に、年齢を確認します。"
+            en="Single bottles in 300 ml and 180 ml, gift-ready, shipped from our small brewhouse in Shizuoka. We hand-check every order — and verify age at order and at delivery."
+            ja="300ml・180ml の単品を、贈り物にも。静岡の小さな蔵から、ひとつずつ検品してお届けします。ご注文時とお届け時に、年齢を確認します。"
           />
         }
         crumbs={[
@@ -154,8 +157,8 @@ export default function ShopPersonalPage() {
                 className="mt-5 max-w-[560px] font-serif text-[clamp(24px,2.6vw,32px)] font-semibold leading-[1.18] tracking-[0.06em] text-[#0B1A2E]"
               >
                 <L
-                  en="Six expressions of Fujisan."
-                  ja="富士山、六つの表情。"
+                  en="Five expressions of Fujisan."
+                  ja="富士山、五つの表情。"
                 />
               </Reveal>
               <Reveal
@@ -164,12 +167,12 @@ export default function ShopPersonalPage() {
                 className="mt-4 max-w-[520px] text-[13.5px] leading-[1.78] text-[#1D2432]/78"
               >
                 <L
-                  en={`Each label is 720 ml. Prices range from ¥${yen.format(
+                  en={`Available in 300 ml and 180 ml. Prices range from ¥${yen.format(
                     priceMin,
                   )} to ¥${yen.format(priceMax)} (tax incl.). Add a bottle to your cart, or tap it to read the brewer notes first.`}
                   ja={
                     <>
-                      <span className="inline-block">いずれも 720ml。</span>
+                      <span className="inline-block">300ml・180ml をご用意。</span>
                       <span className="inline-block">
                         価格は ¥{yen.format(priceMin)} 〜 ¥
                         {yen.format(priceMax)}（税込）。
