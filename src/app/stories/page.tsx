@@ -278,8 +278,8 @@ export default function StoriesPage() {
             </h2>
             <p className="mt-4 text-[13.5px] leading-[1.85] text-[#F2E4C7]/78">
               <L
-                en="Six labels, each with its own character — from crisp and dry to round and rich. Pick the one that fits the evening."
-                ja="六つの銘柄、それぞれに個性があります。きりりと辛口のものから、丸くコクのあるものまで。今宵に合う一本をどうぞ。"
+                en="Five labels, each with its own character — from crisp and dry to round and slightly sweet. Pick the one that fits the evening."
+                ja="五つの銘柄、それぞれに個性があります。きりりと辛口のものから、ふくよかでやや甘口のものまで。今宵に合う一本をどうぞ。"
               />
             </p>
           </div>

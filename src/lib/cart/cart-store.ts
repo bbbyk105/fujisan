@@ -80,19 +80,19 @@ export function getReadyServerSnapshot(): boolean {
   return false;
 }
 
-export function addToCart(slug: string, qty = 1) {
+export function addToCart(slug: string, ml: number, qty = 1) {
   ensureInit();
-  commit(addLine(state, slug, qty));
+  commit(addLine(state, slug, ml, qty));
 }
 
-export function setCartQty(slug: string, qty: number) {
+export function setCartQty(slug: string, ml: number, qty: number) {
   ensureInit();
-  commit(setLineQty(state, slug, qty));
+  commit(setLineQty(state, slug, ml, qty));
 }
 
-export function removeFromCart(slug: string) {
+export function removeFromCart(slug: string, ml: number) {
   ensureInit();
-  commit(removeLine(state, slug));
+  commit(removeLine(state, slug, ml));
 }
 
 export function clearCart() {

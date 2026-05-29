@@ -17,7 +17,7 @@ export function FujisanHeroShowcase({ products }: Props) {
         id="showcase"
         className="relative z-20 mt-8 scroll-mt-[86px] px-2 sm:px-4 md:mt-4 md:px-7 lg:mt-0 xl:mt-10"
       >
-        <div className="mx-auto grid max-w-[1330px] grid-cols-3 items-end gap-x-1 gap-y-3 sm:gap-x-3 md:grid-cols-6 md:gap-x-2 lg:gap-x-4 xl:max-w-[1660px] xl:gap-x-6">
+        <div className="mx-auto grid max-w-[1330px] grid-cols-3 items-end gap-x-1 gap-y-3 sm:gap-x-3 md:grid-cols-5 md:gap-x-2 lg:gap-x-4 xl:max-w-[1660px] xl:gap-x-6">
           {products.map((p, i) => (
             <Link
               key={`${p.slug}-bottle`}
@@ -57,7 +57,7 @@ export function FujisanHeroShowcase({ products }: Props) {
       </div>
 
       <div className="relative z-20 bg-[#FAF5E8]/92 px-2 pb-8 pt-3 sm:px-4 md:px-7 md:pb-1 md:pt-2">
-        <div className="mx-auto grid max-w-[1330px] grid-cols-3 gap-x-1 gap-y-6 sm:gap-x-3 md:grid-cols-6 md:gap-x-2 lg:gap-x-4 xl:max-w-[1660px] xl:gap-x-6">
+        <div className="mx-auto grid max-w-[1330px] grid-cols-3 gap-x-1 gap-y-6 sm:gap-x-3 md:grid-cols-5 md:gap-x-2 lg:gap-x-4 xl:max-w-[1660px] xl:gap-x-6">
           {products.map((p, i) => (
             <Link
               key={`${p.slug}-info`}

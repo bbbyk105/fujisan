@@ -88,8 +88,8 @@ const faqs = [
       ja: "最低発注ロットは？",
     },
     a: {
-      en: "Domestic orders begin at one case (6 bottles of 720 ml). Export and mixed-label cases vary — we tune to your programme.",
-      ja: "国内は 1 ケース（720ml × 6本）より承ります。海外向けや、複数の銘柄を組み合わせたケースは、内容に応じてご相談ください。",
+      en: "Domestic orders begin at one case (300 ml × 12 or 180 ml × 24 bottles). Export shipments start at an MOQ of 3,000 bottles, mixed SKUs allowed — we tune to your programme.",
+      ja: "国内は 1 ケース（300ml × 12本／180ml × 24本）より承ります。輸出は 1 出荷 3,000 本（銘柄混載可）が最小ロットです。内容に応じてご相談ください。",
     },
   },
   {

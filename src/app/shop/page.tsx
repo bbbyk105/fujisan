@@ -24,11 +24,11 @@ const paths = [
     image: "/images/fujisan/art-of-sake/ochoko.png",
     imagePos: "object-[55%_50%]",
     lead: {
-      en: "A single bottle, gift-ready, delivered to your home. Six expressions of Fujisan from ¥3,300, with age verification at every step.",
-      ja: "一本から、ご家庭へ、贈り物へ。富士山の六つの表情を、ひとつずつ丁寧にお届けします。3,300円より。",
+      en: "A single bottle, gift-ready, delivered to your home. Five expressions of Fujisan from ¥1,600, with age verification at every step.",
+      ja: "一本から、ご家庭へ、贈り物へ。富士山の五つの表情を、ひとつずつ丁寧にお届けします。1,600円より。",
     },
     bullets: [
-      { en: "Single 720 ml bottles from ¥3,300", ja: "720ml ／ 3,300円より" },
+      { en: "Single 300 ml & 180 ml bottles from ¥1,600", ja: "300ml・180ml ／ 1,600円より" },
       { en: "Nationwide shipping ¥1,100 (tax incl.)", ja: SHIPPING_FEE.flat },
       { en: "Ships within 2 business days", ja: "ご注文確認後 原則 2 営業日以内に発送" },
       { en: "Age 20+ verified at order & delivery", ja: "20歳未満には販売いたしません" },

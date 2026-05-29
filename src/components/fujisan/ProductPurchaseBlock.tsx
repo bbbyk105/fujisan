@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { UNDERAGE_NOTICE_EN, UNDERAGE_NOTICE_JP } from "@/data/fujisan-legal";
+import type { FujisanVolume } from "@/data/fujisan-products";
 import { useCart } from "@/lib/cart/useCart";
 import { pushToast } from "@/lib/cart/toast-store";
 import { L } from "@/i18n/Localized";
@@ -11,8 +12,13 @@ type Props = {
   /** カートに追加する商品の slug */
   slug: string;
   productName: string;
+  /** 銘柄名（ローマ字・例: SHOGUN） */
+  variant: string;
+  /** 銘柄名の漢字（例: 将軍） */
+  variantJp: string;
   variantLine: string;
-  priceJpy: number;
+  /** 容量ごとの価格（先頭が既定 SKU） */
+  volumes: FujisanVolume[];
   /** 日本語の送料表記 */
   shippingNote: string;
   /** 英語ロケール表示用の送料表記 */
@@ -24,8 +30,10 @@ const yen = new Intl.NumberFormat("ja-JP");
 export default function ProductPurchaseBlock({
   slug,
   productName,
+  variant,
+  variantJp,
   variantLine,
-  priceJpy,
+  volumes,
   shippingNote,
   shippingNoteEn,
 }: Props) {
@@ -33,15 +41,18 @@ export default function ProductPurchaseBlock({
   const [confirmed, setConfirmed] = useState(false);
   const [qty, setQty] = useState(1);
   const [submitted, setSubmitted] = useState(false);
+  const [selectedMl, setSelectedMl] = useState(volumes[0].ml);
+
+  const selected = volumes.find((v) => v.ml === selectedMl) ?? volumes[0];
 
   const onAddToCart = () => {
     if (!confirmed) return;
-    add(slug, qty);
+    add(slug, selected.ml, qty);
     setSubmitted(true);
     window.setTimeout(() => setSubmitted(false), 3500);
     pushToast({
-      ja: `${productName}を${qty}本カートに追加しました`,
-      en: `${productName} ×${qty} added to your cart`,
+      ja: `${productName}（${selected.ml}ml）を${qty}本カートに追加しました`,
+      en: `${productName} ${selected.ml}ml ×${qty} added to your cart`,
       action: { href: "/cart", ja: "カートを見る", en: "VIEW CART" },
     });
   };
@@ -63,22 +74,58 @@ export default function ProductPurchaseBlock({
             className="mt-6 font-serif text-[clamp(22px,2.4vw,30px)] font-semibold tracking-[0.04em] text-[#0B1A2E]"
           >
             {productName}{" "}
+            <L en={variant} ja={`${variant} ${variantJp}`} />{" "}
             <span className="text-[#0B1A2E]/60">/ {variantLine}</span>
           </h2>
 
           <p className="mt-6 font-serif text-[clamp(28px,3.2vw,38px)] font-semibold tracking-[0.02em] text-[#0B1A2E]">
-            ¥{yen.format(priceJpy)}
+            ¥{yen.format(selected.priceJpy)}
             <span className="ml-2 align-middle text-[12px] font-medium tracking-[0.18em] text-[#0B1A2E]/60">
               <L en="(tax incl.)" ja="（税込）" />
             </span>
           </p>
 
-          <ul className="mt-4 space-y-1.5 text-[12.5px] leading-[1.7] text-[#1D2432]/76">
+          {/* 容量の選択（複数容量がある場合のみボタン表示） */}
+          <div className="mt-6">
+            <span className="text-[10.5px] font-semibold tracking-[0.28em] text-[#0B1A2E]/70">
+              <L en="VOLUME" ja="容量" />
+            </span>
+            <div className="mt-3 flex flex-wrap gap-2.5">
+              {volumes.map((v) => {
+                const active = v.ml === selected.ml;
+                return (
+                  <button
+                    key={v.ml}
+                    type="button"
+                    onClick={() => setSelectedMl(v.ml)}
+                    aria-pressed={active}
+                    disabled={volumes.length === 1}
+                    className={`min-w-[88px] cursor-pointer border px-4 py-2.5 text-[12px] font-semibold tracking-[0.1em] transition-colors disabled:cursor-default ${
+                      active
+                        ? "border-[#0B1A2E] bg-[#0B1A2E] text-[#F8F3E7]"
+                        : "border-[#0B1A2E]/30 bg-transparent text-[#0B1A2E]/80 hover:border-[#0B1A2E]"
+                    }`}
+                  >
+                    {v.ml}ml
+                    <span
+                      className={`ml-1.5 text-[10.5px] font-medium ${
+                        active ? "text-[#F8F3E7]/75" : "text-[#0B1A2E]/55"
+                      }`}
+                    >
+                      ¥{yen.format(v.priceJpy)}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <ul className="mt-5 space-y-1.5 text-[12.5px] leading-[1.7] text-[#1D2432]/76">
             <li>
               ·{" "}
               <L
-                en="720ml × 1 bottle. Prices include 10% Japanese consumption tax."
-                ja="720ml 1本／消費税10%込みの価格を表示しています。"
+                en={`${selected.ml}ml × 1 bottle. Prices include 10% Japanese consumption tax.`}
+                ja={`${selected.ml}ml 1本／消費税10%込みの価格を表示しています。`}
               />
             </li>
             <li>

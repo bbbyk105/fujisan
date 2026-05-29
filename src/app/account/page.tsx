@@ -114,7 +114,7 @@ export default async function AccountPage() {
                 titleEn="Continue shopping"
                 titleJp="買い物を続ける"
                 descEn="Single bottles, delivered with care to your door."
-                descJp="720ml の単品を、ご自宅まで丁寧にお届け。"
+                descJp="300ml・180ml の単品を、ご自宅まで丁寧にお届け。"
               />
               <ActionCard
                 num="02"
