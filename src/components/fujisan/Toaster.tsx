@@ -19,7 +19,9 @@ export function Toaster() {
         <div
           key={toast.id}
           role="status"
-          className="fujisan-toast pointer-events-auto flex w-full max-w-[360px] items-center gap-4 border border-[#C9A84C]/30 bg-[#0B1A2E] px-5 py-3.5 text-[#F8F3E7] shadow-[0_18px_44px_rgba(11,26,46,0.4)]"
+          className={`fujisan-toast pointer-events-auto flex w-full max-w-[360px] items-center gap-4 border border-[#C9A84C]/30 bg-[#0B1A2E] px-5 py-3.5 text-[#F8F3E7] shadow-[0_18px_44px_rgba(11,26,46,0.4)] ${
+            toast.leaving ? "fujisan-toast--leaving" : ""
+          }`}
         >
           <span className="text-[#C9A84C]" aria-hidden>
             ✓

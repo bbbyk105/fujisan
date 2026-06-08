@@ -15,10 +15,14 @@ export type Toast = {
   ja: string;
   en: string;
   action?: ToastAction;
+  /** 退場アニメーション中。true の間は DOM に残し、フェードアウトさせる。 */
+  leaving?: boolean;
 };
 
 const EMPTY: Toast[] = [];
 const TOAST_DURATION = 3200;
+/** 退場アニメーションの長さ。globals.css の fujisan-toast-out と揃える。 */
+const EXIT_DURATION = 320;
 /** 同時表示の上限。超えたら古いものから捨てる。 */
 const MAX_TOASTS = 3;
 
@@ -70,6 +74,18 @@ export function pushToast(toast: Omit<Toast, "id">) {
 }
 
 export function dismissToast(id: number) {
+  clearTimer(id);
+  const target = toasts.find((t) => t.id === id);
+  // すでに退場中、または存在しない場合は何もしない（多重発火防止）。
+  if (!target || target.leaving) return;
+  // まず leaving を立ててフェードアウトさせ、アニメ後に実削除する。
+  toasts = toasts.map((t) => (t.id === id ? { ...t, leaving: true } : t));
+  emit();
+  const timer = setTimeout(() => removeToast(id), EXIT_DURATION);
+  timers.set(id, timer);
+}
+
+function removeToast(id: number) {
   clearTimer(id);
   toasts = toasts.filter((t) => t.id !== id);
   emit();

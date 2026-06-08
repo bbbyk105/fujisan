@@ -5,6 +5,8 @@ import { useRef, useState } from "react";
 import { useCart } from "@/lib/cart/useCart";
 import { shippingFee } from "@/lib/cart/cart-core";
 import { useSession } from "@/lib/auth-client";
+import { createOrderAction } from "@/lib/actions/orders";
+import type { OrderLine } from "@/db/orders-schema";
 import { checkoutSchema, getFieldErrors } from "@/lib/validation/forms";
 import type { FieldErrorKey } from "@/lib/validation/forms";
 import { scrollToFirstError } from "@/lib/scrollToFirstError";
@@ -93,7 +95,7 @@ export function CheckoutView() {
   const shipping = shippingFee(subtotal);
   const total = subtotal + shipping;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (submitting) return;
 
@@ -105,13 +107,42 @@ export function CheckoutView() {
       return;
     }
 
-    // モック決済: 実際の請求は行わず、確定演出のみ。
     setSubmitting(true);
-    window.setTimeout(() => {
-      setCompleted({ ref: makeOrderRef(), total, count });
-      clear();
-      setSubmitting(false);
-    }, 800);
+
+    // ログイン中なら DB に注文を永続化し、/account の「注文・配送」に表示できるようにする。
+    // 未ログインはモック確定のみ（カート空にして注文番号を発行）。
+    let orderRef = makeOrderRef();
+    if (session?.user?.id) {
+      const orderItems: OrderLine[] = lines.map((l) => ({
+        slug: l.slug,
+        name: l.product.name,
+        variant: l.product.variant,
+        ml: l.ml,
+        qty: l.qty,
+        unitPrice: l.volume.priceJpy,
+        lineTotal: l.volume.priceJpy * l.qty,
+      }));
+      const res = await createOrderAction({
+        items: orderItems,
+        itemsCount: count,
+        subtotal,
+        shipping,
+        total,
+        customerName: name,
+        customerEmail: email,
+        postalCode,
+        address,
+        phone,
+      });
+      if (res.ok) {
+        orderRef = res.orderRef;
+      }
+      // 失敗時はクライアント側番号にフォールバックし、確定演出は止めない。
+    }
+
+    setCompleted({ ref: orderRef, total, count });
+    clear();
+    setSubmitting(false);
   };
 
   // 復元前

@@ -60,7 +60,7 @@ export default async function CraftPage({
         lead={<L en={pillar.lead} ja={pillar.leadJp} />}
         crumbs={[
           { label: "HOME", href: "/#top" },
-          { label: "THE CRAFT", href: "/craft" },
+          { label: "STORIES", href: "/stories" },
           { label: pillar.eyebrow, href: `/craft/${pillar.slug}` },
         ]}
         bgPosition={pillar.heroPosition}

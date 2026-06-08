@@ -284,12 +284,17 @@ export default function ProductPurchaseBlock({
                 : "cursor-not-allowed border border-[#0B1A2E]/25 bg-[#0B1A2E]/12 text-[#0B1A2E]/45"
             }`}
           >
-            {submitted ? (
-              <L en="Added to cart" ja="カートに追加しました" />
-            ) : (
-              <L en="ADD TO CART" ja="カートに追加" />
-            )}
-            <span aria-hidden>→</span>
+            <span
+              key={submitted ? "added" : "idle"}
+              className="fujisan-swap gap-3"
+            >
+              {submitted ? (
+                <L en="Added to cart" ja="カートに追加しました" />
+              ) : (
+                <L en="ADD TO CART" ja="カートに追加" />
+              )}
+              <span aria-hidden>→</span>
+            </span>
           </button>
 
           <p className="mt-4 text-[10.5px] leading-[1.7] text-[#0B1A2E]/55">

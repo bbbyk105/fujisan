@@ -17,6 +17,8 @@ export const user = sqliteTable("user", {
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
   role: text("role").default("personal"),
+  /** 管理者ロール。"owner" | "staff" | null。null は通常顧客。 */
+  adminRole: text("admin_role"),
   companyName: text("company_name"),
   phone: text("phone"),
   address: text("address"),

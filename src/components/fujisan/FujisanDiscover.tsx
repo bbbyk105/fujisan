@@ -16,7 +16,7 @@ const features = [
       "太古の溶岩層をくぐり、自然にろ過された澄み切った雪解け水。私たちの酒造りは、ここから始まります。",
     image: "/images/fujisan/features/water.png",
     alt: "Pure water from Mt. Fuji",
-    href: "/craft/water",
+    href: "/stories",
   },
   {
     num: "02",
@@ -30,7 +30,7 @@ const features = [
       "澄んだ味わいを引き出すため、厳選した酒造好適米を丹念に磨き上げます。",
     image: "/images/fujisan/features/ricebox.png",
     alt: "Premium Japanese rice",
-    href: "/craft/rice",
+    href: "/stories",
   },
   {
     num: "03",
@@ -44,7 +44,7 @@ const features = [
       "蔵人の手仕事と、長く受け継がれた技が、唯一無二の品格を宿す一献を醸し出します。",
     image: "/images/fujisan/art-of-sake/ochoko.png",
     alt: "Traditional sake brewing",
-    href: "/craft/brewing",
+    href: "/stories",
   },
   {
     num: "04",

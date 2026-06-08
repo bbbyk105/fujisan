@@ -21,7 +21,7 @@ const paths = [
     jp: "個人のお客様",
     href: "/shop/personal",
     cta: { en: "BROWSE THE COLLECTION", ja: "コレクションを見る" },
-    image: "/images/fujisan/art-of-sake/ochoko.png",
+    image: "/images/personal.png",
     imagePos: "object-[55%_50%]",
     lead: {
       en: "A single bottle, gift-ready, delivered to your home. Five expressions of Fujisan from ¥1,600, with age verification at every step.",
@@ -40,7 +40,7 @@ const paths = [
     jp: "法人・卸 / 取扱店",
     href: "/shop/business",
     cta: { en: "OPEN A TRADE ACCOUNT", ja: "卸・取扱のご相談へ" },
-    image: "/images/fujisan/stories/izakaya.png",
+    image: "/images/restaurant.png",
     imagePos: "object-[50%_46%]",
     lead: {
       en: "For restaurants, bars, retailers, and hospitality programmes. Account pricing, dedicated brewer support, and case quantities, by appointment.",
@@ -75,6 +75,7 @@ export default function ShopHubPage() {
           { label: "HOME", href: "/#top" },
           { label: "PURCHASE", href: "/shop" },
         ]}
+        bgSrc="/images/shizuoka.png"
         bgPosition="object-[50%_42%]"
       />
 

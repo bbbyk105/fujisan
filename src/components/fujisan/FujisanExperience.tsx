@@ -1,8 +1,40 @@
-import Image from "next/image";
+import type { ComponentType } from "react";
 import { Reveal } from "@/components/reveal/Reveal";
 import { revealDelays } from "@/components/reveal/constants";
 import FujisanFooter from "./FujisanFooter";
 import { L } from "@/i18n/Localized";
+
+type IconProps = { className?: string };
+
+const essences: {
+  Icon: ComponentType<IconProps>;
+  label: string;
+  labelJp: string;
+  sub: string;
+  subJp: string;
+}[] = [
+  {
+    Icon: IconFuji,
+    label: "BLESSINGS OF FUJI",
+    labelJp: "富士の恵み",
+    sub: "Pure water and the clean air it hides",
+    subJp: "清らかな水と潜んだ空気",
+  },
+  {
+    Icon: IconBowl,
+    label: "THE CRAFT",
+    labelJp: "匠の技",
+    sub: "Artisan techniques, passed down",
+    subJp: "受け継がれる職人の技",
+  },
+  {
+    Icon: IconBottle,
+    label: "JAPANESE AESTHETIC",
+    labelJp: "日本の美意識",
+    sub: "Heart and culture in every drop",
+    subJp: "一滴に宿る心と文化",
+  },
+];
 
 export default function FujisanExperience() {
   return (
@@ -91,42 +123,84 @@ export default function FujisanExperience() {
           </Reveal>
         </div>
 
-        <div className="mt-16 grid grid-cols-1 items-center gap-10 md:grid-cols-[1fr_1fr_1fr] md:gap-8">
-          <div className="flex justify-center md:justify-start">
-            <div className="relative h-[104px] w-[240px] overflow-hidden md:h-[120px] md:w-[280px]">
-              <Image
-                src="/images/logo/logo-nihonshu.png"
-                alt="日本酒 SAKE"
-                fill
-                sizes="(min-width: 768px) 280px, 240px"
-                className="fujisan-nihonshu-logo object-cover opacity-90"
+        <div className="mt-16 grid grid-cols-1 gap-10 sm:grid-cols-3 md:gap-8">
+          {essences.map(({ Icon, label, labelJp, sub, subJp }, i) => (
+            <Reveal
+              key={labelJp}
+              className="group flex flex-col items-center gap-4 text-center"
+              delay={0.12 + i * 0.1}
+            >
+              <Icon className="h-9 w-9 text-[#0B1A2E]/85 transition-colors duration-500 group-hover:text-[#C9A84C]" />
+              <span
+                aria-hidden
+                className="h-px w-8 bg-[#C9A84C]/45 transition-all duration-500 group-hover:w-12 group-hover:bg-[#C9A84C]"
               />
-            </div>
-          </div>
-
-          <div className="flex flex-col items-center gap-3 text-center">
-            <span className="text-[10px] font-semibold tracking-[0.38em] text-[#C9A84C]">
-              JAPAN PREMIUM EDITION
-            </span>
-            <span className="h-px w-16 bg-[#C9A84C]/45" />
-            <span className="font-serif text-[13px] tracking-[0.28em] text-[#0B1A2E]/80">
-              FUJISAN SAKE COLLECTION
-            </span>
-          </div>
-
-          <div className="flex flex-col items-center gap-3 md:items-end">
-            <span className="font-jp text-[11px] tracking-[0.3em] text-[#0B1A2E]/60">
-              公式取扱店
-            </span>
-            <span className="h-px w-16 bg-[#C9A84C]/45" />
-            <span className="text-[10px] font-semibold tracking-[0.32em] text-[#0B1A2E]/70">
-              AUTHORIZED · EST. JAPAN
-            </span>
-          </div>
+              <div>
+                <p className="font-serif text-[15px] font-semibold tracking-[0.22em] text-[#0B1A2E] md:text-[16px]">
+                  <L en={label} ja={labelJp} />
+                </p>
+                <p className="mt-2 text-[11.5px] font-light leading-[1.7] tracking-[0.14em] text-[#2B2419]/68 md:text-[12px]">
+                  <L en={sub} ja={subJp} />
+                </p>
+              </div>
+            </Reveal>
+          ))}
         </div>
       </div>
 
       <FujisanFooter />
     </section>
+  );
+}
+
+function IconFuji({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 48 40" fill="none" className={className}>
+      <path
+        d="M3 33L18 11L23.5 18.5L30 8L45 33H3Z"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinejoin="round"
+      />
+      <path d="M14 22L18 11L21.5 17L19 22H14Z" fill="currentColor" fillOpacity="0.6" />
+      <path d="M26 14L30 8L34 15L31.5 17.5H28L26 14Z" fill="currentColor" fillOpacity="0.6" />
+    </svg>
+  );
+}
+
+function IconBowl({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 40 40" fill="none" className={className}>
+      <path
+        d="M5 18H35C35 27 28.5 33 20 33C11.5 33 5 27 5 18Z"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinejoin="round"
+      />
+      <path d="M3 18H37" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+      <path
+        d="M16 12C16 9 18 8 18 6M22 13C22 10.5 24 9.5 24 7.5"
+        stroke="currentColor"
+        strokeWidth="1"
+        strokeLinecap="round"
+        opacity="0.7"
+      />
+    </svg>
+  );
+}
+
+function IconBottle({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 40 40" fill="none" className={className}>
+      <path
+        d="M16 4H24V10L27 14V34C27 35.1 26.1 36 25 36H15C13.9 36 13 35.1 13 34V14L16 10V4Z"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinejoin="round"
+      />
+      <path d="M13 22H27" stroke="currentColor" strokeWidth="1" />
+      <path d="M16 7H24" stroke="currentColor" strokeWidth="1" />
+      <circle cx="20" cy="28" r="1.3" fill="currentColor" />
+    </svg>
   );
 }

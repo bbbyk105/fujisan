@@ -89,6 +89,11 @@ export function RegisterPersonalForm({
               en="An account with this email already exists. Try signing in instead."
               ja="このメールアドレスは既に登録されています。ログインをお試しください。"
             />
+          ) : errorKey === "name-taken" ? (
+            <L
+              en="This name is already in use. Please choose a different name."
+              ja="このお名前は既に登録されています。別のお名前でご登録ください。"
+            />
           ) : errorKey === "weak" ? (
             <L
               en="Password must be at least 8 characters."

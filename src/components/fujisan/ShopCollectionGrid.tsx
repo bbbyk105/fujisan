@@ -96,14 +96,16 @@ function ShopBottleCard({ product }: { product: FujisanProduct }) {
           aria-live="polite"
           className="mt-4 inline-flex w-full cursor-pointer items-center justify-center gap-2 border border-[#0B1A2E] bg-[#0B1A2E] px-5 py-3 text-[10.5px] font-semibold tracking-[0.26em] text-[#F8F3E7] transition-colors hover:bg-[#1D2432]"
         >
-          {added ? (
-            <L en="ADDED ✓" ja="追加しました ✓" />
-          ) : (
-            <>
-              <L en="ADD TO CART" ja="カートに追加" />
-              <span aria-hidden>+</span>
-            </>
-          )}
+          <span key={added ? "added" : "idle"} className="fujisan-swap gap-2">
+            {added ? (
+              <L en="ADDED ✓" ja="追加しました ✓" />
+            ) : (
+              <>
+                <L en="ADD TO CART" ja="カートに追加" />
+                <span aria-hidden>+</span>
+              </>
+            )}
+          </span>
         </button>
       </div>
     </article>

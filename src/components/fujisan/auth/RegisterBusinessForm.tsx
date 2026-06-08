@@ -97,6 +97,11 @@ export function RegisterBusinessForm() {
               en="An account with this email already exists. Try signing in instead."
               ja="このメールアドレスは既に登録されています。ログインをお試しください。"
             />
+          ) : errorKey === "name-taken" ? (
+            <L
+              en="This contact name is already registered. Please use a different name."
+              ja="このご担当者名は既に登録されています。別のお名前でご登録ください。"
+            />
           ) : errorKey === "weak" ? (
             <L
               en="Password must be at least 8 characters."

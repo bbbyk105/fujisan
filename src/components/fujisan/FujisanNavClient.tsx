@@ -87,7 +87,7 @@ export function FujisanNavClient({ links }: Props) {
 
   const isActive = (link: FujisanNavLinkItem) => {
     const match = link.match ?? link.href;
-    // Path-style match (e.g. "/stories" or "/craft")
+    // Path-style match (e.g. "/stories" or "/shop")
     if (match.startsWith("/") && !match.startsWith("/#")) {
       return pathname === match || pathname.startsWith(`${match}/`);
     }

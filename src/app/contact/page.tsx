@@ -14,12 +14,13 @@ export const metadata = {
     "Reach our small team in Shizuoka for general enquiries, trade and wholesale, brewery visits, or press requests.",
 };
 
+const CONTACT_EMAIL = "mtfujipharmacy@gmail.com";
+
 const channels = [
   {
     num: "Ⅰ",
     eyebrow: "GENERAL CARE",
     jp: "一般のお問い合わせ",
-    address: "care@fujisan-sake.com",
     desc: "Orders, deliveries, gifting, and anything we can help with around your bottle.",
     descJa: "ご注文・配送・ギフトのご相談など、一本にまつわることなら何でも。",
   },
@@ -27,7 +28,6 @@ const channels = [
     num: "Ⅱ",
     eyebrow: "TRADE & WHOLESALE",
     jp: "卸・取扱店",
-    address: "trade@fujisan-sake.com",
     desc: "For restaurants, bars, and retailers considering Fujisan for their programme.",
     descJa: "飲食店・バー・小売店で、富士山の採用をご検討の方へ。",
   },
@@ -35,7 +35,6 @@ const channels = [
     num: "Ⅲ",
     eyebrow: "BREWERY VISITS",
     jp: "蔵見学",
-    address: "visit@fujisan-sake.com",
     desc: "Small group visits to the kura, by appointment, between November and March.",
     descJa: "11月〜3月、ご予約制での少人数の蔵見学を承ります。",
   },
@@ -43,7 +42,6 @@ const channels = [
     num: "Ⅳ",
     eyebrow: "PRESS & MEDIA",
     jp: "取材・メディア",
-    address: "press@fujisan-sake.com",
     desc: "Editorial features, photography requests, and review samples.",
     descJa: "記事掲載・撮影のご依頼、レビュー用サンプルについて。",
   },
@@ -75,6 +73,7 @@ export default function ContactPage() {
           { label: "HOME", href: "/#top" },
           { label: "CONTACT", href: "/contact" },
         ]}
+        bgSrc="/images/lake.png"
         bgPosition="object-[50%_42%]"
       />
 
@@ -134,16 +133,41 @@ export default function ContactPage() {
               className="mt-5 font-serif text-[clamp(22px,2.2vw,28px)] font-semibold leading-[1.2] tracking-[0.06em] text-[#0B1A2E]"
               delay={revealDelays.d1}
             >
-              <L en="Or write to the right desk." ja="担当窓口へ、直接どうぞ。" />
+              <L en="Or write to us directly." ja="メールでも、直接どうぞ。" />
             </Reveal>
 
-            <ul className="mt-10 flex flex-col gap-9">
+            {/* 窓口は一つのメールアドレスに集約。用件はメール本文でお知らせください。 */}
+            <Reveal as="div" delay={revealDelays.d2} className="mt-7">
+              <a
+                href={`mailto:${CONTACT_EMAIL}`}
+                className="group/email inline-flex items-center gap-2 font-serif text-[clamp(18px,1.8vw,22px)] text-[#0B1A2E] no-underline transition-colors hover:text-[#C9A84C]"
+              >
+                <span className="relative pb-0.5">
+                  {CONTACT_EMAIL}
+                  <span className="absolute inset-x-0 -bottom-0 h-px bg-[#0B1A2E]/35 transition-all duration-500 group-hover/email:bg-[#C9A84C]" />
+                </span>
+                <span
+                  aria-hidden
+                  className="text-[13px] transition-transform duration-500 group-hover/email:translate-x-1"
+                >
+                  ↗
+                </span>
+              </a>
+              <p className="mt-4 max-w-[400px] text-[12.5px] font-light leading-[1.7] text-[#1D2432]/76">
+                <L
+                  en="All enquiries reach the same small desk in Shizuoka. A short note about your purpose helps us reply faster."
+                  ja="どのご用件も、静岡の同じ窓口でお受けしています。ご用件を一言添えていただけると、よりスムーズにご返信できます。"
+                />
+              </p>
+            </Reveal>
+
+            <ul className="mt-9 flex flex-col gap-5">
               {channels.map((c, i) => (
                 <Reveal
-                  key={c.address}
-                  delay={0.12 + i * 0.08}
-                  as="div"
-                  className="border-t border-[#0B1A2E]/12 pt-5"
+                  key={c.num}
+                  delay={0.18 + i * 0.06}
+                  as="li"
+                  className="border-t border-[#0B1A2E]/12 pt-4"
                 >
                   <div className="flex items-center gap-3">
                     <span className="font-serif text-[10.5px] font-medium tracking-[0.32em] text-[#C9A84C]">
@@ -152,23 +176,11 @@ export default function ContactPage() {
                     <span className="text-[10px] font-semibold tracking-[0.32em] text-[#0B1A2E]/65">
                       {c.eyebrow}
                     </span>
+                    <span className="font-jp text-[11px] tracking-[0.22em] text-[#C9A84C]/85">
+                      {c.jp}
+                    </span>
                   </div>
-                  <p className="mt-2 font-jp text-[11.5px] tracking-[0.26em] text-[#C9A84C]/85">
-                    {c.jp}
-                  </p>
-                  <a
-                    href={`mailto:${c.address}`}
-                    className="group/email mt-3 inline-flex items-center gap-2 font-serif text-[15.5px] text-[#0B1A2E] no-underline transition-colors hover:text-[#C9A84C]"
-                  >
-                    <span className="relative pb-0.5">
-                      {c.address}
-                      <span className="absolute inset-x-0 -bottom-0 h-px bg-[#0B1A2E]/35 transition-all duration-500 group-hover/email:bg-[#C9A84C]" />
-                    </span>
-                    <span aria-hidden className="text-[12px] transition-transform duration-500 group-hover/email:translate-x-1">
-                      ↗
-                    </span>
-                  </a>
-                  <p className="mt-3 max-w-[360px] text-[12.5px] font-light leading-[1.7] text-[#1D2432]/76">
+                  <p className="mt-2 max-w-[360px] text-[12.5px] font-light leading-[1.7] text-[#1D2432]/76">
                     <L en={c.desc} ja={c.descJa} />
                   </p>
                 </Reveal>

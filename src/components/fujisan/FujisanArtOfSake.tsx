@@ -38,24 +38,6 @@ const pillars = [
   },
 ];
 
-const craftPhotos = [
-  {
-    src: "/images/fujisan/art-of-sake/sake.png",
-    alt: "Clear brewing water pouring into a wooden vessel",
-    position: "object-[42%_50%]",
-  },
-  {
-    src: "/images/fujisan/art-of-sake/rice.png",
-    alt: "Steaming Japanese rice for sake brewing",
-    position: "object-[50%_50%]",
-  },
-  {
-    src: "/images/fujisan/art-of-sake/ochoko.png",
-    alt: "Sake poured into an ochoko cup",
-    position: "object-[63%_50%]",
-  },
-];
-
 export default function FujisanArtOfSake() {
   return (
     <section
@@ -151,25 +133,18 @@ export default function FujisanArtOfSake() {
           </div>
         </div>
 
-        <div className="grid min-h-[720px] grid-cols-1 sm:min-h-[520px] sm:grid-cols-3 lg:min-h-[520px]">
-          {craftPhotos.map((photo) => (
-            <div
-              key={photo.src}
-              className="relative min-h-[240px] overflow-hidden border-t border-[#D7B46A]/15 sm:border-l sm:border-t-0"
-            >
-              <Image
-                src={photo.src}
-                alt={photo.alt}
-                fill
-                sizes="(min-width: 1024px) 17vw, (min-width: 640px) 34vw, 100vw"
-                className={`object-cover ${photo.position}`}
-              />
-              <div
-                aria-hidden
-                className="pointer-events-none absolute inset-0 bg-linear-to-b from-[#0F1D30]/10 via-transparent to-[#0F1D30]/35"
-              />
-            </div>
-          ))}
+        <div className="relative min-h-[360px] overflow-hidden border-t border-[#D7B46A]/15 sm:min-h-[520px] lg:min-h-[520px] lg:border-l lg:border-t-0">
+          <Image
+            src="/images/rice.png"
+            alt="Spring water, freshly steamed rice, and sake poured into an ochoko"
+            fill
+            sizes="(min-width: 1024px) 52vw, 100vw"
+            className="object-cover object-[50%_50%]"
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 bg-linear-to-b from-[#0F1D30]/10 via-transparent to-[#0F1D30]/35"
+          />
         </div>
       </div>
 

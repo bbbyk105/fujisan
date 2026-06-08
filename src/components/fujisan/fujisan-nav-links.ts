@@ -11,7 +11,7 @@ export type FujisanNavLinkItem = {
   /**
    * Pattern used to derive active state.
    * - Hash form ("#showcase") matches when on `/` and the section is in view
-   * - Path form ("/stories", "/craft") matches when pathname starts with it
+   * - Path form ("/stories", "/shop") matches when pathname starts with it
    */
   match?: string;
   children?: FujisanNavChild[];
@@ -19,31 +19,6 @@ export type FujisanNavLinkItem = {
 
 export const FUJISAN_NAV_LINKS: FujisanNavLinkItem[] = [
   { href: "/#top", label: "HOME", match: "#top" },
-  {
-    href: "/craft",
-    label: "THE CRAFT",
-    match: "/craft",
-    children: [
-      {
-        label: "PURE WATER",
-        jp: "富士の水",
-        href: "/craft/water",
-        desc: "Snowmelt, fifty years in the mountain.",
-      },
-      {
-        label: "PREMIUM RICE",
-        jp: "厳選米",
-        href: "/craft/rice",
-        desc: "Sakamai grown for the brewer.",
-      },
-      {
-        label: "TRADITIONAL BREWING",
-        jp: "伝統醸造",
-        href: "/craft/brewing",
-        desc: "A hundred winter days at the kura.",
-      },
-    ],
-  },
   { href: "/stories", label: "STORIES", match: "/stories" },
   {
     href: "/shop",
