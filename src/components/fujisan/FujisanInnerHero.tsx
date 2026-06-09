@@ -34,7 +34,7 @@ export function FujisanInnerHero({
   jp,
   lead,
   crumbs,
-  bgSrc = "/images/fujisan/hero/mtfuji.png",
+  bgSrc = "/images/fujisan/hero/mtfuji.webp",
   bgPosition = "object-[50%_46%]",
   tone = "light",
 }: Props) {

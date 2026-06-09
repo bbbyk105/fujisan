@@ -135,7 +135,7 @@ export default function FujisanArtOfSake() {
 
         <div className="relative min-h-[360px] overflow-hidden border-t border-[#D7B46A]/15 sm:min-h-[520px] lg:min-h-[520px] lg:border-l lg:border-t-0">
           <Image
-            src="/images/rice.png"
+            src="/images/rice.webp"
             alt="Spring water, freshly steamed rice, and sake poured into an ochoko"
             fill
             sizes="(min-width: 1024px) 52vw, 100vw"

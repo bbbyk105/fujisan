@@ -73,7 +73,7 @@ export default function ContactPage() {
           { label: "HOME", href: "/#top" },
           { label: "CONTACT", href: "/contact" },
         ]}
-        bgSrc="/images/lake.png"
+        bgSrc="/images/lake.webp"
         bgPosition="object-[50%_42%]"
       />
 
@@ -199,7 +199,7 @@ export default function ContactPage() {
         <div className="mx-auto grid max-w-[1280px] grid-cols-1 lg:grid-cols-[1fr_1fr]">
           <div className="relative min-h-[300px] overflow-hidden md:min-h-[440px]">
             <Image
-              src="/images/fujisan/hero/mtfuji.png"
+              src="/images/fujisan/hero/mtfuji.webp"
               alt="Mt. Fuji at the foot of the brewery"
               fill
               priority

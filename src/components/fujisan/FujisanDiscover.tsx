@@ -14,7 +14,7 @@ const features = [
     desc: "Our sake begins with crystal-clear snowmelt, naturally filtered through ancient volcanic rock.",
     descJp:
       "太古の溶岩層をくぐり、自然にろ過された澄み切った雪解け水。私たちの酒造りは、ここから始まります。",
-    image: "/images/fujisan/features/water.png",
+    image: "/images/fujisan/features/water.webp",
     alt: "Pure water from Mt. Fuji",
     href: "/stories",
   },
@@ -28,7 +28,7 @@ const features = [
     desc: "We select only the finest rice, polished to perfection for a clean and refined taste.",
     descJp:
       "澄んだ味わいを引き出すため、厳選した酒造好適米を丹念に磨き上げます。",
-    image: "/images/fujisan/features/ricebox.png",
+    image: "/images/fujisan/features/ricebox.webp",
     alt: "Premium Japanese rice",
     href: "/stories",
   },
@@ -42,7 +42,7 @@ const features = [
     desc: "Craftsmanship and time-honored techniques create sake of exceptional quality and character.",
     descJp:
       "蔵人の手仕事と、長く受け継がれた技が、唯一無二の品格を宿す一献を醸し出します。",
-    image: "/images/fujisan/art-of-sake/ochoko.png",
+    image: "/images/fujisan/art-of-sake/ochoko.webp",
     alt: "Traditional sake brewing",
     href: "/stories",
   },
@@ -56,7 +56,7 @@ const features = [
     desc: "Each bottle carries a story — of the land, the people, and the traditions that live on in every drop.",
     descJp:
       "一本一本に、土地と人、そして一滴に息づく伝統の物語が宿ります。",
-    image: "/images/fujisan/toji.png",
+    image: "/images/fujisan/toji.webp",
     imagePosition: "object-[50%_28%]",
     alt: "杜氏 — 蔵の仕込みを見守る",
     href: "/stories",

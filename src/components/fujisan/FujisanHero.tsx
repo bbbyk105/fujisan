@@ -11,7 +11,7 @@ export default function FujisanHero() {
     >
       <div className="absolute inset-x-0 top-[72px] z-0 h-[620px] overflow-hidden md:top-[86px] md:h-[650px] lg:h-[675px]">
         <Image
-          src="/images/fujisan/hero/mtfuji.png"
+          src="/images/fujisan/hero/mtfuji.webp"
           alt="Mt. Fuji at sunrise"
           fill
           priority
@@ -115,7 +115,7 @@ export default function FujisanHero() {
             aria-hidden
           >
             <Image
-              src="/images/logo/logo-fuji.png"
+              src="/images/logo/logo-fuji.webp"
               alt=""
               fill
               fetchPriority="low"

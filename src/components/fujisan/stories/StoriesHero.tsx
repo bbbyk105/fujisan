@@ -38,7 +38,7 @@ export function StoriesHero({
   jp,
   lead,
   crumbs,
-  bgSrc = "/images/fujisan/hero/mtfuji.png",
+  bgSrc = "/images/fujisan/hero/mtfuji.webp",
   bgPosition = "object-[50%_46%]",
 }: Props) {
   const root = useRef<HTMLElement | null>(null);
