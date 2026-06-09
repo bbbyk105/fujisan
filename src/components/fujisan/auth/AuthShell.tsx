@@ -33,11 +33,14 @@ export function AuthShell({
   mode,
   brand,
   children,
+  showRoleSwitch = true,
 }: {
   role: Role;
   mode: "login" | "register";
   brand: BrandPanel;
   children: ReactNode;
+  /** 個人/法人の切替タブを出すか。パスワード再設定など mode に該当しない画面では false。 */
+  showRoleSwitch?: boolean;
 }) {
   const theme = THEME[role];
 
@@ -105,9 +108,11 @@ export function AuthShell({
             <L en={brand.crumbEn} ja={brand.crumbJp} />
           </Link>
 
-          <div className="mt-8 w-full max-w-[460px] self-center lg:mt-10 lg:self-start">
-            <RoleSwitch active={role} mode={mode} />
-          </div>
+          {showRoleSwitch && (
+            <div className="mt-8 w-full max-w-[460px] self-center lg:mt-10 lg:self-start">
+              <RoleSwitch active={role} mode={mode} />
+            </div>
+          )}
 
           <div className="mt-8 flex w-full max-w-[460px] flex-1 flex-col justify-center self-center lg:self-start">
             {children}

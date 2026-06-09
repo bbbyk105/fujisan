@@ -6,6 +6,9 @@ import { and, desc, eq, like, or, sql } from "drizzle-orm";
 import { getAuth } from "@/lib/auth";
 import { getDb } from "@/db";
 import { user as userTable } from "@/db/auth-schema";
+import { teamInvite } from "@/db/invite-schema";
+import { sendEmail } from "@/lib/email";
+import { isEmailLike } from "@/lib/validation/forms";
 import {
   getEffectiveAdminRole,
   isOwner,
@@ -17,7 +20,8 @@ type TeamMember = {
   id: string;
   name: string;
   email: string;
-  adminRole: AdminRole;
+  /** 管理ロール。一般顧客（権限なし）は null。 */
+  adminRole: AdminRole | null;
   /** env で owner 指定されている＝ DB の admin_role を消してもこの人は owner のまま */
   isEnvOwner: boolean;
   createdAt: Date;
@@ -95,7 +99,7 @@ export async function adminListTeamAction(input?: {
         id: row.id,
         name: row.name,
         email: row.email,
-        adminRole: role as AdminRole,
+        adminRole: role,
         isEnvOwner: envOwner,
         createdAt: row.createdAt,
       });
@@ -190,6 +194,82 @@ export async function adminSetMemberRoleAction(input: {
     revalidatePath("/admin/orders");
     revalidatePath("/account");
     return { ok: true };
+  } catch {
+    return { ok: false, error: "db" };
+  }
+}
+
+/**
+ * メールアドレスでチームに招待する（owner 専用）。
+ * - 既に登録済みのメール → その場で admin_role を付与（status: "granted"）
+ * - 未登録のメール → team_invite に予約し、登録案内メールを送る（status: "invited"）。
+ *   その人が後から新規登録すると databaseHooks が自動で role を付与する。
+ */
+export async function adminInviteByEmailAction(input: {
+  email: string;
+  role: AdminRole;
+}): Promise<
+  | { ok: true; status: "granted" | "invited" }
+  | { ok: false; error: "unauth" | "forbidden" | "invalid" | "db" }
+> {
+  const gate = await requireOwner();
+  if (!gate.ok) return { ok: false, error: gate.reason };
+
+  const email = input.email.trim().toLowerCase();
+  if (!isEmailLike(email)) return { ok: false, error: "invalid" };
+  if (input.role !== "owner" && input.role !== "staff")
+    return { ok: false, error: "invalid" };
+
+  try {
+    const db = await getDb();
+
+    // 既存ユーザーなら即時付与
+    const [existing] = await db
+      .select({ id: userTable.id })
+      .from(userTable)
+      .where(eq(userTable.email, email))
+      .limit(1);
+
+    if (existing) {
+      await db
+        .update(userTable)
+        .set({ adminRole: input.role })
+        .where(eq(userTable.id, existing.id));
+      revalidatePath("/admin/team");
+      revalidatePath("/account");
+      return { ok: true, status: "granted" };
+    }
+
+    // 未登録なら招待を予約（同じメールの再招待は role を上書き）
+    await db
+      .insert(teamInvite)
+      .values({
+        email,
+        adminRole: input.role,
+        invitedByEmail: gate.email,
+      })
+      .onConflictDoUpdate({
+        target: teamInvite.email,
+        set: { adminRole: input.role, invitedByEmail: gate.email },
+      });
+
+    // 登録案内メールを送信（RESEND 未設定時は dev コンソール出力）
+    const { getCloudflareContext } = await import("@opennextjs/cloudflare");
+    const { env } = await getCloudflareContext({ async: true });
+    const e = env as { BETTER_AUTH_URL?: string; RESEND_API_KEY?: string; RESEND_FROM?: string };
+    const base = e.BETTER_AUTH_URL ?? "";
+    const roleLabel = input.role === "owner" ? "蔵元（owner）" : "スタッフ（staff）";
+    await sendEmail(
+      {
+        to: email,
+        subject: "FUJISAN — チームへの招待 / You're invited to the team",
+        text: `FUJISAN SAKE\n\n${gate.email} さんから、FUJISAN の管理チーム（${roleLabel}）に招待されました。\n以下のリンクからこのメールアドレスで新規登録すると、登録完了後に自動で権限が付与されます。\n\n${base}/register/personal\n\nYou've been invited as ${input.role}. Register with this email to receive access automatically.\n`,
+      },
+      { apiKey: e.RESEND_API_KEY, from: e.RESEND_FROM },
+    );
+
+    revalidatePath("/admin/team");
+    return { ok: true, status: "invited" };
   } catch {
     return { ok: false, error: "db" };
   }

@@ -23,6 +23,22 @@ function buildOptions(env: AuthEnv) {
     emailAndPassword: {
       enabled: true,
       requireEmailVerification: true,
+      sendResetPassword: async ({
+        user,
+        url,
+      }: {
+        user: { email: string };
+        url: string;
+      }) => {
+        await sendEmail(
+          {
+            to: user.email,
+            subject: "FUJISAN — パスワードの再設定 / Reset your password",
+            text: `FUJISAN SAKE\n\n以下のリンクからパスワードを再設定してください。\nReset your password using the link below:\n\n${url}\n\nこのリクエストに心当たりがない場合は、このメールを破棄してください。\nIf you did not request this, you can safely ignore this email.\n`,
+          },
+          { apiKey: env.RESEND_API_KEY, from: env.RESEND_FROM },
+        );
+      },
     },
     emailVerification: {
       sendOnSignUp: true,
@@ -68,12 +84,37 @@ async function authBuilder() {
   // nextCookies はサーバーアクション内で Set-Cookie を next/headers 経由で適用する。
   // 必ずプラグイン配列の最後に置く。
   const { nextCookies } = await import("better-auth/next-js");
+  const { eq } = await import("drizzle-orm");
+  const { user: userTable, teamInvite } = await import("@/db/schema");
   const { env } = await getCloudflareContext({ async: true });
   const db = await getDb();
 
   return betterAuth({
     database: drizzleAdapter(db, { provider: "sqlite" }),
     ...buildOptions(env as AuthEnv),
+    databaseHooks: {
+      user: {
+        create: {
+          // メール招待で先に予約された admin_role を、新規登録時に付与する。
+          // 登録経路（メール/パスワード・Google）を問わず共通で効く。
+          after: async (created: { id: string; email: string }) => {
+            const email = created.email.trim().toLowerCase();
+            const invite = await db
+              .select({ adminRole: teamInvite.adminRole })
+              .from(teamInvite)
+              .where(eq(teamInvite.email, email))
+              .limit(1);
+            const role = invite[0]?.adminRole;
+            if (role !== "owner" && role !== "staff") return;
+            await db
+              .update(userTable)
+              .set({ adminRole: role })
+              .where(eq(userTable.id, created.id));
+            await db.delete(teamInvite).where(eq(teamInvite.email, email));
+          },
+        },
+      },
+    },
     plugins: [nextCookies()],
   });
 }

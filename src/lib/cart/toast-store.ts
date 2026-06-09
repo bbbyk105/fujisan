@@ -74,11 +74,13 @@ export function pushToast(toast: Omit<Toast, "id">) {
 }
 
 export function dismissToast(id: number) {
-  clearTimer(id);
   const target = toasts.find((t) => t.id === id);
-  // すでに退場中、または存在しない場合は何もしない（多重発火防止）。
+  // すでに退場中、または存在しない場合は何もしない。
+  // ここで clearTimer する前に return しないと、二重呼び出しで削除タイマーまで
+  // 消してしまいトーストが消えなくなる（多重発火防止）。
   if (!target || target.leaving) return;
-  // まず leaving を立ててフェードアウトさせ、アニメ後に実削除する。
+  // 自動退場タイマーを止め、leaving を立ててフェードアウト→アニメ後に実削除する。
+  clearTimer(id);
   toasts = toasts.map((t) => (t.id === id ? { ...t, leaving: true } : t));
   emit();
   const timer = setTimeout(() => removeToast(id), EXIT_DURATION);

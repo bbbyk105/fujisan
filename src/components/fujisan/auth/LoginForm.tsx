@@ -15,6 +15,7 @@ import { scrollToFirstError } from "@/lib/scrollToFirstError";
 import { L } from "@/i18n/Localized";
 import { Field, inputCls, PrimaryButton, Notice, OrDivider } from "./ui";
 import { GoogleButton } from "./GoogleButton";
+import { ResendVerification } from "./ResendVerification";
 
 export function LoginForm({
   role,
@@ -68,14 +69,21 @@ export function LoginForm({
 
   return (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-7">
-      {errorKey && (
-        <Notice tone="error">
-          {errorKey === "unverified" ? (
+      {errorKey === "unverified" && (
+        <Notice tone="info">
+          <div className="flex flex-col gap-2.5">
             <L
-              en="Please verify your email — check the link we sent to your inbox."
-              ja="メールアドレスの確認が必要です。お送りした確認メールのリンクをクリックしてください。"
+              en="Please verify your email — check the link we sent to your inbox. Didn't get it?"
+              ja="メールアドレスの確認が必要です。お送りした確認メールのリンクをクリックしてください。届いていない場合は、こちらから再送できます。"
             />
-          ) : errorKey === "invalid" ? (
+            <ResendVerification email={email} role={role} />
+          </div>
+        </Notice>
+      )}
+
+      {errorKey && errorKey !== "unverified" && (
+        <Notice tone="error">
+          {errorKey === "invalid" ? (
             <L
               en="Invalid email or password."
               ja="メールアドレスまたはパスワードが正しくありません。"
@@ -121,6 +129,16 @@ export function LoginForm({
           placeholder="••••••••"
         />
         <FieldError error={fieldErrors.password} />
+        <Link
+          href={
+            role === "business"
+              ? "/forgot-password/business"
+              : "/forgot-password/personal"
+          }
+          className="mt-2 w-fit text-[12px] text-[#0B1A2E]/70 underline decoration-[#C9A84C]/50 underline-offset-4 transition-colors hover:text-[#0B1A2E] hover:decoration-[#C9A84C]"
+        >
+          <L en="Forgot your password?" ja="パスワードをお忘れですか？" />
+        </Link>
       </Field>
 
       <PrimaryButton disabled={submitting}>

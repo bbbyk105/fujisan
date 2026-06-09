@@ -13,6 +13,7 @@ import { FieldError } from "@/components/fujisan/FieldError";
 import { scrollToFirstError } from "@/lib/scrollToFirstError";
 import { L } from "@/i18n/Localized";
 import { Field, inputCls, PrimaryButton, Notice } from "./ui";
+import { ResendVerification } from "./ResendVerification";
 
 export function RegisterBusinessForm() {
   const [companyName, setCompanyName] = useState("");
@@ -78,6 +79,7 @@ export function RegisterBusinessForm() {
             ja={`${email} に確認メールを送信しました。メールアドレスを認証のうえログインすると、卸価格をご覧いただけます。`}
           />
         </Notice>
+        <ResendVerification email={email} role="business" />
         <Link
           href="/login/business"
           className="font-semibold text-[#0B1A2E] underline decoration-[#C9A84C]/60 underline-offset-4 transition-colors hover:decoration-[#C9A84C]"

@@ -27,7 +27,8 @@ type Member = {
   id: string;
   name: string;
   email: string;
-  adminRole: AdminRole;
+  /** 管理ロール。一般顧客（権限なし）は null。 */
+  adminRole: AdminRole | null;
   isEnvOwner: boolean;
   createdAt: Date;
   isSelf: boolean;
@@ -84,53 +85,59 @@ export function AdminTeamRow({ member }: Props) {
   };
 
   return (
-    <li className="grid grid-cols-1 items-center gap-4 border border-[#0B1A2E]/12 bg-white px-6 py-5 md:grid-cols-[1.6fr_180px_1fr_auto]">
-      <div className="flex flex-col gap-1">
-        <span className="font-serif text-[14px] font-semibold tracking-[0.04em] text-[#0B1A2E]">
-          {member.name || "（名前なし）"}
-          {member.isSelf && (
-            <span className="ml-2 text-[10px] font-semibold tracking-[0.24em] text-[#C9A84C]">
-              YOU
-            </span>
-          )}
-        </span>
-        <span className="text-[12px] text-[#0B1A2E]/65">{member.email}</span>
+    <li className="flex flex-col gap-4 border border-[#0B1A2E]/12 bg-white px-6 py-5 md:flex-row md:flex-wrap md:items-center md:gap-x-6 md:gap-y-3">
+      {/* 左: 氏名 + メール + ロールバッジ（隣接させる） */}
+      <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:items-center sm:gap-5">
+        <div className="flex min-w-0 flex-col gap-1">
+          <span className="font-serif text-[14px] font-semibold tracking-[0.04em] text-[#0B1A2E]">
+            {member.name || "（名前なし）"}
+            {member.isSelf && (
+              <span className="ml-2 text-[10px] font-semibold tracking-[0.24em] text-[#C9A84C]">
+                YOU
+              </span>
+            )}
+          </span>
+          <span className="truncate text-[12px] text-[#0B1A2E]/65">
+            {member.email}
+          </span>
+        </div>
+
+        <RoleBadge role={member.adminRole} envOwner={member.isEnvOwner} />
       </div>
 
-      <RoleBadge role={member.adminRole} envOwner={member.isEnvOwner} />
+      {/* 右: ロール変更 + 保存（セレクトと保存ボタンは同じ高さで横並び、登録日は下に） */}
+      <div className="flex flex-col gap-1.5">
+        <div className="flex items-stretch gap-3">
+          <select
+            value={role}
+            disabled={isEnvLocked || pending}
+            onChange={(e) =>
+              setRole(e.target.value as "owner" | "staff" | "none")
+            }
+            className="w-full border border-[#0B1A2E]/25 bg-white px-3 py-2 text-[12.5px] text-[#0B1A2E] outline-none focus:border-[#C9A84C] disabled:bg-[#0B1A2E]/[0.04] disabled:text-[#0B1A2E]/50 sm:w-[210px]"
+          >
+            <option value="owner">{ROLE_LABEL.owner}</option>
+            <option value="staff">{ROLE_LABEL.staff}</option>
+            <option value="none">{ROLE_LABEL.none}</option>
+          </select>
 
-      <div className="flex flex-col gap-2">
-        <select
-          value={role}
-          disabled={isEnvLocked || pending}
-          onChange={(e) =>
-            setRole(e.target.value as "owner" | "staff" | "none")
-          }
-          className="w-full border border-[#0B1A2E]/25 bg-white px-3 py-2 text-[12.5px] text-[#0B1A2E] outline-none focus:border-[#C9A84C] disabled:bg-[#0B1A2E]/[0.04] disabled:text-[#0B1A2E]/50"
-        >
-          <option value="owner">{ROLE_LABEL.owner}</option>
-          <option value="staff">{ROLE_LABEL.staff}</option>
-          <option value="none">{ROLE_LABEL.none}</option>
-        </select>
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={!dirty || isEnvLocked || pending}
+            className="inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 border border-[#0B1A2E] bg-[#0B1A2E] px-5 text-[10.5px] font-semibold tracking-[0.26em] text-[#F8F3E7] transition-colors hover:bg-[#1D2432] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {pending ? "保存中…" : "保存"}
+          </button>
+        </div>
         <span className="text-[10.5px] text-[#0B1A2E]/55">
           登録: {fmtDate(member.createdAt)}
         </span>
       </div>
 
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={!dirty || isEnvLocked || pending}
-          className="inline-flex cursor-pointer items-center gap-2 border border-[#0B1A2E] bg-[#0B1A2E] px-5 py-2.5 text-[10.5px] font-semibold tracking-[0.26em] text-[#F8F3E7] transition-colors hover:bg-[#1D2432] disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {pending ? "保存中…" : "保存"}
-        </button>
-      </div>
-
       {message && (
         <span
-          className={`md:col-span-4 text-[11.5px] ${
+          className={`w-full text-[11.5px] md:basis-full ${
             message === "保存しました" ? "text-[#2F5A2F]" : "text-[#8B1A1A]"
           }`}
         >
@@ -145,38 +152,39 @@ function RoleBadge({
   role,
   envOwner,
 }: {
-  role: AdminRole;
+  role: AdminRole | null;
   envOwner: boolean;
 }) {
-  const STYLES: Record<
-    "owner" | "staff",
-    { cls: string; dot: string; label: string }
+  const META: Record<
+    "owner" | "staff" | "none",
+    { jp: string; en: string; accent: boolean; muted: boolean }
   > = {
-    owner: {
-      cls: "border-[#C9A84C]/60 bg-[#F1E6CB]/60 text-[#0B1A2E]",
-      dot: "bg-[#C9A84C]",
-      label: "OWNER",
-    },
-    staff: {
-      cls: "border-[#5C8A5C]/60 bg-[#5C8A5C]/[0.10] text-[#2F5A2F]",
-      dot: "bg-[#5C8A5C]",
-      label: "STAFF",
-    },
+    owner: { jp: "蔵元", en: "OWNER", accent: true, muted: false },
+    staff: { jp: "スタッフ", en: "STAFF", accent: false, muted: false },
+    none: { jp: "顧客", en: "CUSTOMER", accent: false, muted: true },
   };
-  const s = STYLES[role];
+  const m = META[role ?? "none"];
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <span className="inline-flex items-baseline gap-2 whitespace-nowrap">
       <span
-        className={`inline-flex items-center gap-1.5 border px-2.5 py-1 text-[9.5px] font-semibold tracking-[0.24em] ${s.cls}`}
+        className={`font-serif text-[14px] tracking-[0.08em] ${
+          m.muted ? "text-[#0B1A2E]/45" : "text-[#0B1A2E]"
+        }`}
       >
-        <span aria-hidden className={`h-[5px] w-[5px] rounded-full ${s.dot}`} />
-        {s.label}
+        {m.jp}
+      </span>
+      <span
+        className={`text-[9px] font-semibold tracking-[0.3em] ${
+          m.accent ? "text-[#C9A84C]" : "text-[#0B1A2E]/40"
+        }`}
+      >
+        {m.en}
       </span>
       {envOwner && (
-        <span className="border border-[#0B1A2E]/25 bg-[#FAF5E8] px-2 py-1 text-[9px] font-semibold tracking-[0.22em] text-[#0B1A2E]/70">
-          ENV
+        <span className="border-l border-[#0B1A2E]/15 pl-2 text-[9px] tracking-[0.22em] text-[#0B1A2E]/40">
+          env固定
         </span>
       )}
-    </div>
+    </span>
   );
 }

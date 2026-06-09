@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import FujisanNav from "@/components/fujisan/FujisanNav";
 import FujisanFooter from "@/components/fujisan/FujisanFooter";
 import { AdminTeamRow } from "@/components/fujisan/admin/AdminTeamRow";
+import { AdminInviteForm } from "@/components/fujisan/admin/AdminInviteForm";
 import { LogoutButton } from "@/components/fujisan/auth/LogoutButton";
 import { getSession } from "@/lib/session";
 import { getEffectiveAdminRole, isOwner } from "@/lib/admin";
@@ -15,11 +16,7 @@ export const metadata = {
 
 export const dynamic = "force-dynamic";
 
-type SearchParams = Promise<{ q?: string; tab?: string }>;
-
-export default async function AdminTeamPage(props: {
-  searchParams?: SearchParams;
-}) {
+export default async function AdminTeamPage() {
   const session = await getSession();
   const sessUser = session?.user as
     | { id?: string; email?: string }
@@ -35,12 +32,9 @@ export default async function AdminTeamPage(props: {
     return <ForbiddenView email={email} />;
   }
 
-  const params = (await props.searchParams) ?? {};
-  const q = params.q?.trim() ?? "";
-  // tab=all で全ユーザー検索（昇格候補）、それ以外は admin だけ
-  const adminsOnly = params.tab !== "all";
-
-  const res = await adminListTeamAction({ adminsOnly, q: q || undefined });
+  // チーム管理は「メール招待のみ」。一般顧客一覧からの昇格は廃止
+  // （誤操作で顧客を権限者にしてしまう事故を防ぐため）。
+  const res = await adminListTeamAction({ adminsOnly: true });
   const members = (res.ok ? res.members : []).map((m) => ({
     ...m,
     isSelf: m.id === userId,
@@ -57,19 +51,20 @@ export default async function AdminTeamPage(props: {
       <section className="bg-[#0B1A2E] fujisan-dark-panel text-[#F2E4C7]">
         <div className="mx-auto flex max-w-[1280px] flex-col gap-5 px-7 pt-[124px] pb-10 md:flex-row md:items-end md:justify-between md:px-12 md:pt-[150px] md:pb-12">
           <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-2 bg-[#E2C97E] px-3 py-1.5 text-[10px] font-semibold tracking-[0.24em] text-[#0B1A2E]">
-                ADMIN · 蔵 内
+            <div className="flex items-center gap-3">
+              <span className="font-jp text-[12px] tracking-[0.34em] text-[#E2C97E]">
+                ― 蔵内 ―
               </span>
-              <span className="inline-flex items-center gap-2 border border-[#E2C97E]/55 px-3 py-1.5 text-[10px] font-semibold tracking-[0.24em] text-[#E2C97E]">
-                OWNER · 蔵元
+              <span className="h-px w-10 bg-[#E2C97E]/50" />
+              <span className="text-[10px] font-semibold uppercase tracking-[0.38em] text-[#E2C97E]/80">
+                Team
               </span>
             </div>
-            <h1 className="mt-5 font-serif text-[clamp(22px,2.6vw,30px)] font-semibold leading-[1.18] tracking-[0.04em] text-[#F2E4C7]">
+            <h1 className="mt-6 font-serif text-[clamp(24px,2.8vw,34px)] font-semibold leading-[1.16] tracking-[0.06em] text-[#F2E4C7]">
               メンバー管理
             </h1>
-            <p className="mt-3 text-[12.5px] tracking-[0.02em] text-[#F2E4C7]/70">
-              注文・配送を扱うスタッフをここで増減できます。
+            <p className="mt-4 max-w-[44ch] text-[13px] leading-[1.85] tracking-[0.02em] text-[#F2E4C7]/72">
+              注文・配送を扱う蔵人を、メールでお招きします。招待した方が登録すると、自動で権限が付きます。
             </p>
           </div>
 
@@ -82,69 +77,38 @@ export default async function AdminTeamPage(props: {
 
       {/* Body */}
       <section className="mx-auto w-full max-w-[1280px] flex-1 px-7 pb-24 pt-12 md:px-12 md:pt-14">
-        {/* Filter tabs + search */}
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#0B1A2E]/15 pb-4">
-          <div className="flex gap-1 text-[11px] font-semibold tracking-[0.28em]">
-            <TabLink active={adminsOnly} href="/admin/team" label="メンバーのみ" />
-            <TabLink
-              active={!adminsOnly}
-              href="/admin/team?tab=all"
-              label="全ユーザー（昇格候補）"
-            />
-          </div>
-          <form action="/admin/team" className="flex items-center gap-2">
-            {!adminsOnly && <input type="hidden" name="tab" value="all" />}
-            <input
-              type="search"
-              name="q"
-              defaultValue={q}
-              placeholder="名前 / メールで検索"
-              className="w-[260px] border border-[#0B1A2E]/25 bg-white px-3 py-2 text-[12.5px] outline-none focus:border-[#C9A84C]"
-            />
-            <button
-              type="submit"
-              className="border border-[#0B1A2E] bg-[#0B1A2E] px-4 py-2 text-[10.5px] font-semibold tracking-[0.26em] text-[#F8F3E7] hover:bg-[#1D2432]"
-            >
-              検索
-            </button>
-            {q && (
-              <Link
-                href={adminsOnly ? "/admin/team" : "/admin/team?tab=all"}
-                className="text-[10.5px] font-semibold tracking-[0.26em] text-[#0B1A2E]/65 no-underline hover:text-[#0B1A2E]"
-              >
-                クリア
-              </Link>
-            )}
-          </form>
+        {/* メールアドレスで招待 */}
+        <div className="mb-10">
+          <AdminInviteForm />
+        </div>
+
+        {/* メンバー見出し */}
+        <div className="flex items-baseline gap-4 border-b border-[#0B1A2E]/15 pb-4">
+          <span className="font-jp text-[12px] tracking-[0.3em] text-[#C9A84C]">
+            現在のメンバー
+          </span>
+          <span className="h-px flex-1 bg-[#0B1A2E]/12" />
+          <span className="text-[11px] tracking-[0.22em] text-[#0B1A2E]/55">
+            {members.length} 名
+          </span>
         </div>
 
         {/* List */}
         {members.length === 0 ? (
-          <div className="mt-10 border border-dashed border-[#0B1A2E]/25 bg-[#FAF5E8]/55 px-7 py-16 text-center">
-            <p className="font-serif text-[15px] font-semibold tracking-[0.04em] text-[#0B1A2E]">
-              {adminsOnly
-                ? "まだメンバーはあなただけです。"
-                : q
-                  ? `「${q}」に一致するユーザーが見つかりませんでした。`
-                  : "ユーザーがいません。"}
+          <div className="mt-10 border border-[#0B1A2E]/15 bg-white px-7 py-16 text-center">
+            <p className="font-serif text-[16px] font-semibold tracking-[0.04em] text-[#0B1A2E]">
+              まだメンバーはあなただけです。
             </p>
-            <p className="mx-auto mt-3 max-w-[42ch] text-[12.5px] leading-[1.75] text-[#0B1A2E]/70">
-              {adminsOnly
-                ? "「全ユーザー（昇格候補）」タブから、登録済みのお客様を staff / owner に昇格できます。"
-                : "顧客に /register/personal で登録してもらってから、ここで昇格してください。"}
+            <p className="mx-auto mt-3 max-w-[44ch] text-[12.5px] leading-[1.85] text-[#0B1A2E]/65">
+              上の「メールアドレスで招待」から、蔵人をお招きください。
             </p>
           </div>
         ) : (
-          <>
-            <p className="mt-5 text-[11px] font-semibold tracking-[0.28em] text-[#0B1A2E]/55">
-              {members.length} 名表示中
-            </p>
-            <ul className="mt-4 flex flex-col gap-3">
-              {members.map((m) => (
-                <AdminTeamRow key={m.id} member={m} />
-              ))}
-            </ul>
-          </>
+          <ul className="mt-6 flex flex-col gap-3">
+            {members.map((m) => (
+              <AdminTeamRow key={m.id} member={m} />
+            ))}
+          </ul>
         )}
 
         {/* Footer nav */}
@@ -161,29 +125,6 @@ export default async function AdminTeamPage(props: {
 
       <FujisanFooter />
     </main>
-  );
-}
-
-function TabLink({
-  href,
-  label,
-  active,
-}: {
-  href: string;
-  label: string;
-  active: boolean;
-}) {
-  return (
-    <Link
-      href={href}
-      className={`border-b-2 px-3 py-2 no-underline transition-colors ${
-        active
-          ? "border-[#C9A84C] text-[#0B1A2E]"
-          : "border-transparent text-[#0B1A2E]/55 hover:text-[#0B1A2E]"
-      }`}
-    >
-      {label}
-    </Link>
   );
 }
 

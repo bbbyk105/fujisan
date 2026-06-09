@@ -1,11 +1,25 @@
 import {
   getFieldErrors,
+  isEmailLike,
   loginSchema,
   registerPersonalSchema,
   registerBusinessSchema,
   contactSchema,
   wholesaleSchema,
 } from "@/lib/validation/forms";
+
+describe("isEmailLike", () => {
+  it("accepts valid emails (trimming whitespace)", () => {
+    expect(isEmailLike("a@b.com")).toBe(true);
+    expect(isEmailLike("  user.name@example.co.jp  ")).toBe(true);
+  });
+  it("rejects malformed or empty values", () => {
+    expect(isEmailLike("")).toBe(false);
+    expect(isEmailLike("nope")).toBe(false);
+    expect(isEmailLike("a@b")).toBe(false);
+    expect(isEmailLike("a b@c.com")).toBe(false);
+  });
+});
 
 describe("loginSchema", () => {
   it("passes with email + password", () => {

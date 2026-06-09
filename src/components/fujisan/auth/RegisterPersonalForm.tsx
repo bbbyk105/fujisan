@@ -14,6 +14,7 @@ import { scrollToFirstError } from "@/lib/scrollToFirstError";
 import { L } from "@/i18n/Localized";
 import { Field, inputCls, PrimaryButton, Notice, OrDivider } from "./ui";
 import { GoogleButton } from "./GoogleButton";
+import { ResendVerification } from "./ResendVerification";
 
 export function RegisterPersonalForm({
   googleEnabled = false,
@@ -70,6 +71,7 @@ export function RegisterPersonalForm({
             ja={`${email} に確認メールを送信しました。リンクを開いてメールアドレスを認証のうえ、ログインしてください。`}
           />
         </Notice>
+        <ResendVerification email={email} role="personal" />
         <Link
           href="/login/personal"
           className="font-semibold text-[#0B1A2E] underline decoration-[#C9A84C]/60 underline-offset-4 transition-colors hover:decoration-[#C9A84C]"

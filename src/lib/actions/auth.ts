@@ -8,6 +8,7 @@ import { getDb } from "@/db";
 import { user as userTable } from "@/db/auth-schema";
 import {
   getFieldErrors,
+  isEmailLike,
   loginSchema,
   registerPersonalSchema,
   registerBusinessSchema,
@@ -143,6 +144,75 @@ export async function deleteAccountAction(): Promise<AuthActionResult> {
     return { ok: true };
   } catch {
     return { ok: false, error: "generic" };
+  }
+}
+
+/**
+ * メール認証リンクの再送。
+ * アカウントの有無や認証済みかどうかは漏らさず、形式が正しければ常に ok を返す
+ * （存在しない・既に認証済みなどで better-auth が失敗しても成功として扱う）。
+ */
+export async function resendVerificationAction(input: {
+  email: string;
+  role?: "personal" | "business";
+}): Promise<AuthActionResult> {
+  const email = input.email.trim();
+  if (!isEmailLike(email)) return { ok: false, error: "invalid" };
+  const callbackURL = input.role === "business" ? "/shop/business" : "/account";
+  const auth = await getAuth();
+  try {
+    await auth.api.sendVerificationEmail({
+      body: { email, callbackURL },
+      headers: await headers(),
+    });
+  } catch {
+    /* 列挙攻撃を避けるため、失敗しても成功として扱う */
+  }
+  return { ok: true };
+}
+
+/**
+ * パスワード再設定メールの送信を要求する。
+ * アカウント列挙を避けるため、形式が正しければ存在有無に関わらず常に ok を返す。
+ * redirectTo は better-auth がリンク先（/reset-password?token=...）の組み立てに使う。
+ */
+export async function requestPasswordResetAction(input: {
+  email: string;
+}): Promise<AuthActionResult> {
+  const email = input.email.trim();
+  if (!isEmailLike(email)) return { ok: false, error: "invalid" };
+  const auth = await getAuth();
+  try {
+    await auth.api.requestPasswordReset({
+      body: { email, redirectTo: "/reset-password" },
+      headers: await headers(),
+    });
+  } catch {
+    /* 列挙攻撃を避けるため、失敗しても成功として扱う */
+  }
+  return { ok: true };
+}
+
+/**
+ * トークンと新しいパスワードでパスワードを再設定する。
+ * トークン期限切れ・不正・パスワード不備などは error キーで返す。
+ */
+export async function resetPasswordAction(input: {
+  token: string;
+  password: string;
+}): Promise<AuthActionResult> {
+  const token = input.token.trim();
+  if (!token) return { ok: false, error: "invalid" };
+  if (input.password.length < 8) return { ok: false, error: "weak" };
+  const auth = await getAuth();
+  try {
+    await auth.api.resetPassword({
+      body: { token, newPassword: input.password },
+      headers: await headers(),
+    });
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, error: classifyAuthError(error) };
   }
 }
 

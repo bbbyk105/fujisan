@@ -6,6 +6,11 @@ export type FieldErrorKey = "required" | "email" | "min8" | "url" | "agree";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const URL_RE = /^https?:\/\/\S+$/i;
 
+/** 前後空白を除いてメール形式かどうかを判定する純関数（再送アクション等で再利用）。 */
+export function isEmailLike(value: string): boolean {
+  return EMAIL_RE.test(value.trim());
+}
+
 const requiredString = z
   .string()
   .refine((v) => v.trim().length > 0, "required");
@@ -37,6 +42,14 @@ export const registerBusinessSchema = z.object({
   email: emailString,
   phone: z.string().optional(),
   address: z.string().optional(),
+  password,
+});
+
+export const forgotPasswordSchema = z.object({
+  email: emailString,
+});
+
+export const resetPasswordSchema = z.object({
   password,
 });
 
