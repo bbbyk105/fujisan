@@ -25,7 +25,7 @@ const stories: Story[] = [
       "Fujisan is a winter sake. Cold air keeps fermentation slow and clean, so brewing runs from late autumn into the coldest weeks of the year. The mornings start early, and a lot of the work is judged by smell and touch.",
     excerptJp:
       "富士山は冬の酒です。冷たい空気が発酵をゆっくり、澄んだものに保つので、仕込みは晩秋から一年で最も寒い時期にかけて行います。朝は早く、多くは香りと手ざわりで見極めます。",
-    image: "/images/fujisan/toji.png",
+    image: "/images/fujisan/toji.webp",
     position: "object-[50%_28%]",
     href: "/craft/brewing",
     ctaEn: "READ THE FULL CRAFT",
@@ -40,7 +40,7 @@ const stories: Story[] = [
       "The daiginjo leans on Yamadanishiki, blended with Homarefuji, a sake rice bred here in Shizuoka. Polish away the outer grain and mostly the starchy heart is left. That is where the clean, quiet sweetness comes from.",
     excerptJp:
       "大吟醸の軸は山田錦。静岡で生まれた酒米、誉富士を合わせます。米の外側を削ると、でんぷん質の中心が残る。澄んだ静かな甘みは、そこから生まれます。",
-    image: "/images/fujisan/features/ricebox.png",
+    image: "/images/fujisan/features/ricebox.webp",
     position: "object-[50%_46%]",
     href: "/craft/rice",
     ctaEn: "READ THE FULL STORY",
@@ -55,7 +55,7 @@ const stories: Story[] = [
       "The brewing water is Mt. Fuji snowmelt that has spent decades working down through volcanic rock. It comes out soft and low in iron — the kind of water that keeps a sake delicate rather than heavy.",
     excerptJp:
       "仕込み水は、何十年もかけて溶岩の層を下ってきた富士山の雪解け水。やわらかく鉄分が少ないので、酒は重くならず、繊細に仕上がります。",
-    image: "/images/fujisan/features/water.png",
+    image: "/images/fujisan/features/water.webp",
     position: "object-[50%_42%]",
     href: "/craft/water",
     ctaEn: "READ THE FULL STORY",
@@ -70,7 +70,7 @@ const stories: Story[] = [
       "Not every sake likes heat, but the junmai styles do. Warmed gently in a tin chirori to around body temperature, they turn rounder and softer — good company for a slow meal and a longer conversation.",
     excerptJp:
       "どんな酒でも燗が合うわけではありませんが、純米系はよく映えます。ちろりで人肌ほどにそっと温めると、丸くやわらかに。ゆっくりした食事と、長い話の相手にどうぞ。",
-    image: "/images/kappou.png",
+    image: "/images/kappou.webp",
     position: "object-[55%_50%]",
   },
   {
@@ -82,7 +82,7 @@ const stories: Story[] = [
       "One bottle, two drinks. Well chilled it is sharp and refreshing; with a little warmth the body and sweetness come forward. Pour a glass each way and taste the difference yourself.",
     excerptJp:
       "一本で、二通り。よく冷やせばシャープで爽やか、少し温めればふくらみと甘みが前に出ます。両方注いで、その違いを確かめてみてください。",
-    image: "/images/fujisan/art-of-sake/sake.png",
+    image: "/images/fujisan/art-of-sake/sake.webp",
     position: "object-[42%_50%]",
   },
   {
@@ -94,7 +94,7 @@ const stories: Story[] = [
       "The cup shapes the aroma as much as the sake does. A small ochoko keeps it tight and focused; a wine glass lifts the fruit and flowers. It is worth keeping a few shapes within reach.",
     excerptJp:
       "香りは、酒と同じくらい器で決まります。小さなおちょこは香りをまとめ、ワイングラスは果実や花の香りをひらく。形違いをいくつか手元に置いておくと楽しめます。",
-    image: "/images/fujisan/shuki.png",
+    image: "/images/fujisan/shuki.webp",
     position: "object-[50%_50%]",
   },
 ];
@@ -125,7 +125,7 @@ export default function StoriesPage() {
           { label: "HOME", href: "/#top" },
           { label: "STORIES", href: "/stories" },
         ]}
-        bgSrc="/images/afternoon-fuji.png"
+        bgSrc="/images/afternoon-fuji.webp"
         bgPosition="object-[50%_50%]"
       />
 

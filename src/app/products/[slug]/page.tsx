@@ -79,7 +79,7 @@ export default async function ProductDetailPage({
       <section className="fujisan-paper relative isolate scroll-mt-[86px] overflow-hidden bg-[#FAF5E8] pt-[86px]">
         <div className="absolute inset-x-0 top-[86px] z-0 h-[520px] overflow-hidden md:h-[600px]">
           <Image
-            src="/images/fujisan/hero/mtfuji.png"
+            src="/images/fujisan/hero/mtfuji.webp"
             alt=""
             fill
             priority

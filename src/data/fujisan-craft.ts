@@ -70,9 +70,9 @@ export const fujisanCraftPillars: CraftPillar[] = [
       "鉄分やマンガンが少なく、口当たりは絹のよう。麹と酵母が穏やかに息をするための、最良の余白です。",
       "私たちは水に手を加えません。山が決めた水の表情を、そのまま酒に映します。",
     ],
-    heroImage: "/images/fujisan/features/water.png",
+    heroImage: "/images/fujisan/features/water.webp",
     heroPosition: "object-[50%_42%]",
-    detailImage: "/images/fujisan/art-of-sake/sake.png",
+    detailImage: "/images/fujisan/art-of-sake/sake.webp",
     stats: [
       {
         label: "MINERAL TYPE",
@@ -162,9 +162,9 @@ export const fujisanCraftPillars: CraftPillar[] = [
       "兵庫・静岡の契約農家とともに、土と水と人の仕事から米を選びます。三代にわたり弊蔵に米を届けてくださる田もあります。",
       "精米歩合四十%から六十%。残るのは粒の真ん中、澱粉の核だけ。麹はこの清らかな糖を、酒の魂へと翻訳していきます。",
     ],
-    heroImage: "/images/fujisan/features/ricebox.png",
+    heroImage: "/images/fujisan/features/ricebox.webp",
     heroPosition: "object-[50%_46%]",
-    detailImage: "/images/fujisan/art-of-sake/rice.png",
+    detailImage: "/images/fujisan/art-of-sake/rice.webp",
     stats: [
       {
         label: "VARIETIES",
@@ -256,9 +256,9 @@ export const fujisanCraftPillars: CraftPillar[] = [
       "麹は四十時間、麹室で育てられ、手と目で温度と湿度を確かめます。酒母は無理をせず、酵母が静かに増えるよう導きます。本仕込みは三〜四週間、低温で進めながら、毎日の変化を一手に記録します。",
       "搾りはやさしく。最も繊細な銘柄には、袋に詰めて雫を集める袋吊りも。酒は蔵の闇でしばらく休み、自分自身になっていきます。",
     ],
-    heroImage: "/images/fujisan/toji.png",
+    heroImage: "/images/fujisan/toji.webp",
     heroPosition: "object-[50%_28%]",
-    detailImage: "/images/fujisan/toji.png",
+    detailImage: "/images/fujisan/toji.webp",
     stats: [
       {
         label: "BREW SEASON",

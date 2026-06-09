@@ -128,7 +128,7 @@ export function FujisanNavClient({ links }: Props) {
           className="relative block h-[44px] w-[178px] overflow-hidden no-underline sm:w-[210px] md:h-[52px] md:w-[250px]"
         >
           <Image
-            src="/images/logo/header-logo.png"
+            src="/images/logo/header-logo.webp"
             alt="FUJISAN SAKE"
             fill
             priority
@@ -375,7 +375,7 @@ export function FujisanNavClient({ links }: Props) {
           </div>
           <div className="relative mt-auto h-28 w-28 opacity-20">
             <Image
-              src="/images/logo/logo-fuji.png"
+              src="/images/logo/logo-fuji.webp"
               alt=""
               fill
               sizes="112px"

@@ -334,7 +334,7 @@ export default function ShopBusinessPage() {
           <aside className="lg:border-l lg:border-[#0B1A2E]/12 lg:pl-14">
             <Reveal className="relative h-[260px] w-full overflow-hidden md:h-[320px]">
               <Image
-                src="/images/direct-to-cus.png"
+                src="/images/direct-to-cus.webp"
                 alt=""
                 fill
                 sizes="(min-width: 1024px) 38vw, 100vw"
