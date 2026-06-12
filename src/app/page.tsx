@@ -20,7 +20,7 @@ const FujisanDiscover = dynamic(
   {
     loading: () => (
       <section
-        className="min-h-[min(100vh,720px)] bg-[#FAF5E8]"
+        className="min-h-[min(100vh,720px)] bg-paper"
         aria-busy
         aria-label="読み込み中"
       />
@@ -33,7 +33,7 @@ const FujisanExperience = dynamic(
   {
     loading: () => (
       <section
-        className="min-h-[480px] bg-[#FAF5E8]"
+        className="min-h-[480px] bg-paper"
         aria-busy
         aria-label="読み込み中"
       />
@@ -43,7 +43,7 @@ const FujisanExperience = dynamic(
 
 export default function Home() {
   return (
-    <main className="bg-[#FAF5E8] text-ink min-h-screen">
+    <main className="bg-paper text-ink min-h-screen">
       <FujisanNav />
       <FujisanHero />
       <FujisanArtOfSake />

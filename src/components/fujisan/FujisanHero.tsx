@@ -7,7 +7,7 @@ export default function FujisanHero() {
   return (
     <section
       id="top"
-      className="fujisan-paper relative isolate scroll-mt-[86px] overflow-hidden bg-[#FAF5E8] pt-[72px] text-[#0B1A2E] md:pt-[86px]"
+      className="fujisan-paper relative isolate scroll-mt-[86px] overflow-hidden bg-paper pt-[72px] text-[#0B1A2E] md:pt-[86px]"
     >
       <div className="absolute inset-x-0 top-[72px] z-0 h-[620px] overflow-hidden md:top-[86px] md:h-[650px] lg:h-[675px]">
         <Image
@@ -20,9 +20,9 @@ export default function FujisanHero() {
           sizes="100vw"
           className="fujisan-kenburn object-cover object-[50%_46%] md:object-[50%_44%]"
         />
-        <div className="absolute inset-0 bg-linear-to-r from-[#FAF2E4]/92 via-[#FAF2E4]/28 to-[#DCE6EE]/8" />
+        <div className="absolute inset-0 bg-linear-to-r from-paper-warm/92 via-paper-warm/28 to-[#DCE6EE]/8" />
         <div className="absolute inset-x-0 top-0 h-44 bg-linear-to-b from-[#F9EFE0]/70 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 h-[260px] bg-linear-to-b from-transparent via-[#FAF5E8]/74 to-[#FAF5E8]" />
+        <div className="absolute inset-x-0 bottom-0 h-[260px] bg-linear-to-b from-transparent via-paper/74 to-paper" />
       </div>
 
       <div className="relative z-10 mx-auto max-w-[1760px] px-6 pt-10 sm:px-8 md:px-[7vw] md:pt-12 lg:px-[4.5vw] 2xl:px-16">
@@ -64,7 +64,7 @@ export default function FujisanHero() {
                 }
               />
               <span
-                className="fujisan-rise-slow mt-4 block font-serif text-[clamp(66px,10vw,150px)] font-semibold leading-[0.9] tracking-[0.04em]"
+                className="fujisan-rise-lcp mt-4 block font-serif text-[clamp(66px,10vw,150px)] font-semibold leading-[0.9] tracking-[0.04em]"
                 style={{ animationDelay: "420ms" }}
               >
                 FUJISAN

@@ -23,10 +23,37 @@ function BagIcon() {
   );
 }
 
-export function CartNavLink({ mobile = false }: { mobile?: boolean }) {
+export function CartNavLink({
+  mobile = false,
+  compact = false,
+}: {
+  mobile?: boolean;
+  compact?: boolean;
+}) {
   const { count, ready } = useCart();
   // SSR/初回描画では count を出さず、ハイドレーション不整合を避ける。
   const showCount = ready && count > 0;
+
+  // モバイルヘッダー常設用 — アイコン + バッジのみ（ハンバーガー内に隠さない）
+  if (compact) {
+    return (
+      <Link
+        href="/cart"
+        aria-label={showCount ? `Cart, ${count} items` : "Cart"}
+        className="relative flex h-10 w-10 items-center justify-center border border-[#0F1F36]/20 bg-paper-card/80 text-[#0F1F36] no-underline"
+      >
+        <BagIcon />
+        {showCount ? (
+          <span
+            key={count}
+            className="fujisan-badge-pop absolute -right-1.5 -top-1.5 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#0F1F36] px-1 text-[10px] font-semibold leading-none text-[#F6F0E5]"
+          >
+            {count}
+          </span>
+        ) : null}
+      </Link>
+    );
+  }
 
   if (mobile) {
     return (

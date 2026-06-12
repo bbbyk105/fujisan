@@ -148,7 +148,7 @@ export function CheckoutView() {
   // 復元前
   if (!ready && !completed) {
     return (
-      <section className="bg-[#FAF5E8]">
+      <section className="bg-paper">
         <div className="mx-auto min-h-[40vh] max-w-[1280px] px-7 py-20 md:px-12" />
       </section>
     );
@@ -157,7 +157,7 @@ export function CheckoutView() {
   // 注文完了
   if (completed) {
     return (
-      <section className="bg-[#FAF5E8]">
+      <section className="bg-paper">
         <div className="mx-auto max-w-[760px] px-7 py-24 text-center md:px-12 md:py-32">
           <p className="font-serif text-[11px] font-semibold tracking-[0.3em] text-[#C9A84C]">
             <L en="ORDER CONFIRMED" ja="ご注文を承りました" />
@@ -172,7 +172,7 @@ export function CheckoutView() {
             />
           </p>
 
-          <div className="mx-auto mt-9 max-w-[360px] border border-[#0B1A2E]/15 bg-[#F8F3E7] px-7 py-6 text-left">
+          <div className="mx-auto mt-9 max-w-[360px] border border-[#0B1A2E]/15 bg-paper-card px-7 py-6 text-left">
             <div className="flex items-center justify-between text-[12px]">
               <span className="tracking-[0.18em] text-[#0B1A2E]/60">
                 <L en="ORDER No." ja="注文番号" />
@@ -200,7 +200,7 @@ export function CheckoutView() {
 
           <Link
             href="/shop/personal"
-            className="group/btn mt-9 inline-flex items-center justify-center gap-3 border border-[#0B1A2E] bg-[#0B1A2E] px-8 py-4 text-[10.5px] font-semibold tracking-[0.32em] text-[#F8F3E7] no-underline transition-colors hover:bg-[#1D2432]"
+            className="group/btn mt-9 inline-flex items-center justify-center gap-3 border border-[#0B1A2E] bg-[#0B1A2E] px-8 py-4 text-[10.5px] font-semibold tracking-[0.32em] text-paper-card no-underline transition-colors hover:bg-[#1D2432]"
           >
             <L en="BACK TO THE SHOP" ja="ショップへ戻る" />
             <span
@@ -218,7 +218,7 @@ export function CheckoutView() {
   // カートが空
   if (lines.length === 0) {
     return (
-      <section className="bg-[#FAF5E8]">
+      <section className="bg-paper">
         <div className="mx-auto max-w-[1280px] px-7 py-24 text-center md:px-12 md:py-32">
           <p className="font-serif text-[11px] font-semibold tracking-[0.3em] text-[#0B1A2E]/55">
             <L en="NOTHING TO CHECK OUT" ja="お手続きできる商品がありません" />
@@ -228,7 +228,7 @@ export function CheckoutView() {
           </h2>
           <Link
             href="/shop/personal"
-            className="group/btn mt-9 inline-flex items-center justify-center gap-3 border border-[#0B1A2E] bg-[#0B1A2E] px-8 py-4 text-[10.5px] font-semibold tracking-[0.32em] text-[#F8F3E7] no-underline transition-colors hover:bg-[#1D2432]"
+            className="group/btn mt-9 inline-flex items-center justify-center gap-3 border border-[#0B1A2E] bg-[#0B1A2E] px-8 py-4 text-[10.5px] font-semibold tracking-[0.32em] text-paper-card no-underline transition-colors hover:bg-[#1D2432]"
           >
             <L en="BROWSE THE COLLECTION" ja="コレクションを見る" />
             <span aria-hidden>→</span>
@@ -239,7 +239,7 @@ export function CheckoutView() {
   }
 
   return (
-    <section className="bg-[#FAF5E8]">
+    <section className="bg-paper">
       <div className="mx-auto grid max-w-[1280px] grid-cols-1 gap-12 px-7 py-16 md:px-12 md:py-20 lg:grid-cols-[1.4fr_1fr] lg:gap-16">
         {/* Form */}
         <form ref={formRef} noValidate onSubmit={handleSubmit}>
@@ -353,7 +353,7 @@ export function CheckoutView() {
           <div
             role="note"
             aria-label="未成年飲酒防止のお知らせ"
-            className="mt-6 border border-[#C9A84C]/35 bg-[#F4ECD9]/80 px-5 py-4 text-[12.5px] leading-[1.7] text-[#1D2432]/86"
+            className="mt-6 border border-[#C9A84C]/35 bg-paper-tint/80 px-5 py-4 text-[12.5px] leading-[1.7] text-[#1D2432]/86"
           >
             <L
               ja={
@@ -413,7 +413,7 @@ export function CheckoutView() {
             <L en="PAYMENT" ja="お支払い" />
           </p>
           <div className="mt-4 h-px w-8 bg-[#0B1A2E]/30" />
-          <div className="mt-6 border border-dashed border-[#0B1A2E]/30 bg-[#F8F3E7] px-5 py-5 text-[12.5px] leading-[1.7] text-[#1D2432]/82">
+          <div className="mt-6 border border-dashed border-[#0B1A2E]/30 bg-paper-card px-5 py-5 text-[12.5px] leading-[1.7] text-[#1D2432]/82">
             <L
               en="This is a demo checkout. No payment provider is connected yet, so placing the order will not charge any card."
               ja="これはデモ用のお手続きです。決済サービスは未接続のため、ご注文を確定してもカードへの請求は発生しません。"
@@ -426,7 +426,7 @@ export function CheckoutView() {
             className={`mt-9 inline-flex w-full items-center justify-center gap-3 px-7 py-4 text-[11px] font-semibold tracking-[0.28em] transition-all ${
               submitting
                 ? "cursor-not-allowed border border-[#0B1A2E]/25 bg-[#0B1A2E]/12 text-[#0B1A2E]/45"
-                : "cursor-pointer border border-[#0B1A2E] bg-[#0B1A2E] text-[#F8F3E7] hover:bg-[#1D2432]"
+                : "cursor-pointer border border-[#0B1A2E] bg-[#0B1A2E] text-paper-card hover:bg-[#1D2432]"
             }`}
           >
             {submitting ? (
@@ -444,7 +444,7 @@ export function CheckoutView() {
         </form>
 
         {/* Order summary */}
-        <aside className="h-fit border border-[#0B1A2E]/12 bg-[#F8F3E7] px-7 py-9 lg:sticky lg:top-[104px]">
+        <aside className="h-fit border border-[#0B1A2E]/12 bg-paper-card px-7 py-9 lg:sticky lg:top-[104px]">
           <p className="font-serif text-[11px] font-semibold tracking-[0.3em] text-[#0B1A2E]/66">
             <L en="ORDER SUMMARY" ja="ご注文内容" />
           </p>

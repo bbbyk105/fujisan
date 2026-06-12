@@ -32,7 +32,7 @@ export async function WholesalePriceList() {
         <div className="mt-9 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Link
             href="/login/business?redirect=/shop/business"
-            className="inline-flex w-full max-w-[260px] items-center justify-center border border-[#0B1A2E] bg-[#0B1A2E] px-7 py-3.5 text-[11px] font-semibold tracking-[0.28em] text-[#F8F3E7] no-underline transition-colors hover:bg-[#16273d] sm:w-auto"
+            className="inline-flex w-full max-w-[260px] items-center justify-center border border-[#0B1A2E] bg-[#0B1A2E] px-7 py-3.5 text-[11px] font-semibold tracking-[0.28em] text-paper-card no-underline transition-colors hover:bg-[#16273d] sm:w-auto"
           >
             <L en="TRADE SIGN IN" ja="取扱店ログイン" />
           </Link>

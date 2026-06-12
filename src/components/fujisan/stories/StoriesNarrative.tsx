@@ -173,7 +173,7 @@ export function StoriesNarrative({ stories }: Props) {
       }
 
       // ----- Per-story (alternating) -----
-      const items = gsap.utils.toArray<HTMLElement>(".story-item.is-alt");
+      const items = gsap.utils.toArray<HTMLElement>(".story-item.is-alt", root.current!);
       items.forEach((item, i) => {
         const image = item.querySelector(".story-image-clip");
         const imageInner = item.querySelector(".story-image-inner");
@@ -336,7 +336,7 @@ export function StoriesNarrative({ stories }: Props) {
   return (
     <div ref={root} className="stories-track">
       {/* ===== Opening — large editorial feature ===== */}
-      <section className="opening-scene story-item relative bg-[#FAF5E8]">
+      <section className="opening-scene story-item relative bg-paper">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-[#0B1A2E]/15 to-transparent"
@@ -346,7 +346,6 @@ export function StoriesNarrative({ stories }: Props) {
         <span
           aria-hidden
           className="opening-kanji pointer-events-none absolute -left-8 top-[8%] z-0 select-none font-serif text-[clamp(180px,26vw,400px)] leading-none text-[#0B1A2E]/[0.05] md:-left-16"
-          style={{ willChange: "transform" }}
         >
           {KANJI[0]}
         </span>
@@ -355,10 +354,10 @@ export function StoriesNarrative({ stories }: Props) {
           {/* Image */}
           <div className="relative min-h-[460px] overflow-hidden md:min-h-[720px]">
             <div
-              className="opening-image-clip absolute inset-0 will-change-transform"
+              className="opening-image-clip absolute inset-0"
               style={{ clipPath: "inset(0% 0% 0% 0%)" }}
             >
-              <div className="opening-image-inner absolute inset-[-10%] will-change-transform">
+              <div className="opening-image-inner absolute inset-[-10%]">
                 <Image
                   src={opening.image}
                   alt=""
@@ -380,7 +379,7 @@ export function StoriesNarrative({ stories }: Props) {
                     "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/></svg>\")",
                 }}
               />
-              <div className="absolute left-7 top-7 flex items-baseline gap-3 text-[#FAF5E8]/95">
+              <div className="absolute left-7 top-7 flex items-baseline gap-3 text-paper/95">
                 <span className="font-serif text-[48px] leading-none">
                   {KANJI[0]}
                 </span>
@@ -486,7 +485,6 @@ export function StoriesNarrative({ stories }: Props) {
                         ? "right-[-2vw] top-[-6%]"
                         : "left-[-2vw] top-[-6%]"
                     }`}
-                    style={{ willChange: "transform" }}
                   >
                     {kanji}
                   </span>
@@ -500,10 +498,10 @@ export function StoriesNarrative({ stories }: Props) {
                     } ${imageRight ? "lg:order-2 lg:col-start-6" : ""}`}
                   >
                     <div
-                      className="story-image-clip absolute inset-0 will-change-transform"
+                      className="story-image-clip absolute inset-0"
                       style={{ clipPath: "inset(0% 0% 0% 0%)" }}
                     >
-                      <div className="story-image-inner absolute inset-[-10%] will-change-transform">
+                      <div className="story-image-inner absolute inset-[-10%]">
                         <Image
                           src={story.image}
                           alt=""
@@ -528,7 +526,7 @@ export function StoriesNarrative({ stories }: Props) {
                             "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/></svg>\")",
                         }}
                       />
-                      <div className="absolute left-5 top-5 flex items-baseline gap-2 text-[#FAF5E8]/92">
+                      <div className="absolute left-5 top-5 flex items-baseline gap-2 text-paper/92">
                         <span className="font-serif text-[32px] leading-none">
                           {kanji}
                         </span>

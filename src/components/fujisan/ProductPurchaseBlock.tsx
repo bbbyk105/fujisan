@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { UNDERAGE_NOTICE_EN, UNDERAGE_NOTICE_JP } from "@/data/fujisan-legal";
 import type { FujisanVolume } from "@/data/fujisan-products";
 import { useCart } from "@/lib/cart/useCart";
@@ -39,6 +39,9 @@ export default function ProductPurchaseBlock({
 }: Props) {
   const { add } = useCart();
   const [confirmed, setConfirmed] = useState(false);
+  // 未確認のままボタンを押した時にチェックボックスへ誘導するためのエラー状態
+  const [needsConfirm, setNeedsConfirm] = useState(false);
+  const checkboxRef = useRef<HTMLInputElement>(null);
   const [qty, setQty] = useState(1);
   const [submitted, setSubmitted] = useState(false);
   const [selectedMl, setSelectedMl] = useState(volumes[0].ml);
@@ -46,7 +49,17 @@ export default function ProductPurchaseBlock({
   const selected = volumes.find((v) => v.ml === selectedMl) ?? volumes[0];
 
   const onAddToCart = () => {
-    if (!confirmed) return;
+    // disabled で無効化しない（スクリーンリーダーから到達不能になるため）。
+    // 未確認クリックはチェックボックスへフォーカスを移して要求を伝える。
+    if (!confirmed) {
+      setNeedsConfirm(true);
+      checkboxRef.current?.focus();
+      checkboxRef.current?.scrollIntoView({
+        block: "center",
+        behavior: "smooth",
+      });
+      return;
+    }
     add(slug, selected.ml, qty);
     setSubmitted(true);
     window.setTimeout(() => setSubmitted(false), 3500);
@@ -60,7 +73,7 @@ export default function ProductPurchaseBlock({
   return (
     <section
       aria-labelledby="purchase-heading"
-      className="border-t border-[#0B1A2E]/10 bg-[#FAF5E8]"
+      className="border-t border-[#0B1A2E]/10 bg-paper"
     >
       <div className="mx-auto grid max-w-[1280px] grid-cols-1 gap-12 px-7 py-16 md:grid-cols-[1.1fr_1fr] md:gap-14 md:px-12 md:py-20">
         <div>
@@ -71,14 +84,14 @@ export default function ProductPurchaseBlock({
 
           <h2
             id="purchase-heading"
-            className="mt-6 font-serif text-[clamp(22px,2.4vw,30px)] font-semibold tracking-[0.04em] text-[#0B1A2E]"
+            className="mt-6 font-serif text-[clamp(22px,2.4vw,30px)] font-semibold leading-[1.2] tracking-[0.04em] text-[#0B1A2E]"
           >
             {productName}{" "}
             <L en={variant} ja={`${variant} ${variantJp}`} />{" "}
             <span className="text-[#0B1A2E]/60">/ {variantLine}</span>
           </h2>
 
-          <p className="mt-6 font-serif text-[clamp(28px,3.2vw,38px)] font-semibold tracking-[0.02em] text-[#0B1A2E]">
+          <p className="mt-6 font-serif text-[clamp(28px,3.2vw,38px)] font-semibold leading-[1.15] tracking-[0.02em] text-[#0B1A2E]">
             ¥{yen.format(selected.priceJpy)}
             <span className="ml-2 align-middle text-[12px] font-medium tracking-[0.18em] text-[#0B1A2E]/60">
               <L en="(tax incl.)" ja="（税込）" />
@@ -90,7 +103,7 @@ export default function ProductPurchaseBlock({
             <span className="text-[10.5px] font-semibold tracking-[0.28em] text-[#0B1A2E]/70">
               <L en="VOLUME" ja="容量" />
             </span>
-            <div className="mt-3 flex flex-wrap gap-2.5">
+            <div className="mt-3 flex flex-wrap gap-3">
               {volumes.map((v) => {
                 const active = v.ml === selected.ml;
                 return (
@@ -100,16 +113,16 @@ export default function ProductPurchaseBlock({
                     onClick={() => setSelectedMl(v.ml)}
                     aria-pressed={active}
                     disabled={volumes.length === 1}
-                    className={`min-w-[88px] cursor-pointer border px-4 py-2.5 text-[12px] font-semibold tracking-[0.1em] transition-colors disabled:cursor-default ${
+                    className={`min-w-[88px] cursor-pointer border px-4 py-3 text-[12px] font-semibold tracking-[0.1em] transition-colors disabled:cursor-default ${
                       active
-                        ? "border-[#0B1A2E] bg-[#0B1A2E] text-[#F8F3E7]"
+                        ? "border-[#0B1A2E] bg-[#0B1A2E] text-paper-card"
                         : "border-[#0B1A2E]/30 bg-transparent text-[#0B1A2E]/80 hover:border-[#0B1A2E]"
                     }`}
                   >
                     {v.ml}ml
                     <span
                       className={`ml-1.5 text-[10.5px] font-medium ${
-                        active ? "text-[#F8F3E7]/75" : "text-[#0B1A2E]/55"
+                        active ? "text-paper-card/75" : "text-[#0B1A2E]/70"
                       }`}
                     >
                       ¥{yen.format(v.priceJpy)}
@@ -211,7 +224,7 @@ export default function ProductPurchaseBlock({
           <div
             role="note"
             aria-label="未成年飲酒防止のお知らせ"
-            className="mt-7 border border-[#C9A84C]/35 bg-[#F4ECD9]/80 px-5 py-5 text-[clamp(18px,2vw,22px)] font-medium leading-[1.55] text-[#1D2432]/86"
+            className="mt-7 border border-[#C9A84C]/35 bg-paper-tint/80 px-5 py-5 text-[clamp(18px,2vw,22px)] font-medium leading-[1.55] text-[#1D2432]/86"
           >
             <L
               ja={
@@ -235,13 +248,24 @@ export default function ProductPurchaseBlock({
             />
           </div>
 
-          <label className="mt-6 flex cursor-pointer items-start gap-3 text-[13px] leading-[1.6] text-[#0B1A2E]/85 select-none">
+          <label
+            className={`mt-6 flex cursor-pointer items-start gap-3 text-[13px] leading-[1.6] text-[#0B1A2E]/85 select-none ${
+              needsConfirm
+                ? "outline outline-2 outline-offset-8 outline-[#8B1A1A]/65"
+                : ""
+            }`}
+          >
             <input
+              ref={checkboxRef}
               type="checkbox"
               checked={confirmed}
-              onChange={(e) => setConfirmed(e.target.checked)}
+              onChange={(e) => {
+                setConfirmed(e.target.checked);
+                if (e.target.checked) setNeedsConfirm(false);
+              }}
               className="mt-[3px] h-4 w-4 cursor-pointer border-[#0B1A2E]/40 accent-[#0B1A2E]"
               aria-describedby="age-check-note"
+              aria-invalid={needsConfirm}
             />
             <span>
               <L
@@ -264,9 +288,20 @@ export default function ProductPurchaseBlock({
               />
             </span>
           </label>
+          {needsConfirm ? (
+            <p
+              role="alert"
+              className="mt-3 pl-7 text-[11px] font-semibold leading-[1.6] text-[#8B1A1A]"
+            >
+              <L
+                en="Please confirm your age above to add this item to the cart."
+                ja="カートに追加するには、上記の年齢確認にチェックをお願いします。"
+              />
+            </p>
+          ) : null}
           <p
             id="age-check-note"
-            className="mt-2 pl-7 text-[10.5px] leading-[1.6] text-[#0B1A2E]/55"
+            className="mt-2 pl-7 text-[10.5px] leading-[1.6] text-[#0B1A2E]/72"
           >
             <L
               en="* Age verification may also be performed at delivery."
@@ -277,11 +312,11 @@ export default function ProductPurchaseBlock({
           <button
             type="button"
             onClick={onAddToCart}
-            disabled={!confirmed}
-            className={`mt-7 inline-flex w-full items-center justify-center gap-3 px-7 py-4 text-[11px] font-semibold tracking-[0.28em] transition-all ${
+            aria-disabled={!confirmed}
+            className={`mt-7 inline-flex w-full cursor-pointer items-center justify-center gap-3 px-7 py-4 text-[11px] font-semibold tracking-[0.28em] transition-all ${
               confirmed
-                ? "cursor-pointer border border-[#0B1A2E] bg-[#0B1A2E] text-[#F8F3E7] hover:bg-[#1D2432]"
-                : "cursor-not-allowed border border-[#0B1A2E]/25 bg-[#0B1A2E]/12 text-[#0B1A2E]/45"
+                ? "border border-[#0B1A2E] bg-[#0B1A2E] text-paper-card hover:bg-[#1D2432]"
+                : "border border-[#0B1A2E]/35 bg-[#0B1A2E]/15 text-[#0B1A2E]/60"
             }`}
           >
             <span
@@ -297,7 +332,7 @@ export default function ProductPurchaseBlock({
             </span>
           </button>
 
-          <p className="mt-4 text-[10.5px] leading-[1.7] text-[#0B1A2E]/55">
+          <p className="mt-4 text-[10.5px] leading-[1.7] text-[#0B1A2E]/72">
             <L
               en="Before completing your order, age verification and shipping conditions will be confirmed once more at checkout."
               ja="ご注文の確定前に、ご購入手続き画面で再度年齢確認と配送条件をご確認いただきます。"

@@ -45,7 +45,7 @@ export function FujisanInnerHero({
       className={`relative isolate overflow-hidden pt-[86px] ${
         isDark
           ? "fujisan-dark-panel bg-[#0F1D30] text-[#F2E4C7]"
-          : "fujisan-paper bg-[#FAF5E8] text-[#0B1A2E]"
+          : "fujisan-paper bg-paper text-[#0B1A2E]"
       }`}
     >
       <div className="absolute inset-x-0 top-[86px] z-0 h-[460px] overflow-hidden md:h-[520px]">
@@ -66,9 +66,9 @@ export function FujisanInnerHero({
           </>
         ) : (
           <>
-            <div className="absolute inset-0 bg-linear-to-r from-[#FAF2E4]/94 via-[#FAF2E4]/40 to-[#DCE6EE]/8" />
+            <div className="absolute inset-0 bg-linear-to-r from-paper-warm/94 via-paper-warm/40 to-[#DCE6EE]/8" />
             <div className="absolute inset-x-0 top-0 h-32 bg-linear-to-b from-[#F9EFE0]/80 to-transparent" />
-            <div className="absolute inset-x-0 bottom-0 h-[200px] bg-linear-to-b from-transparent via-[#FAF5E8]/74 to-[#FAF5E8]" />
+            <div className="absolute inset-x-0 bottom-0 h-[200px] bg-linear-to-b from-transparent via-paper/74 to-paper" />
           </>
         )}
       </div>

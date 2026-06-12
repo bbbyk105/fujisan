@@ -101,7 +101,7 @@ const stories: Story[] = [
 
 export default function StoriesPage() {
   return (
-    <main className="stories-page bg-[#FAF5E8] text-[#0B1A2E] min-h-screen">
+    <main className="stories-page bg-paper text-[#0B1A2E] min-h-screen">
       <FujisanNav />
 
       <StoriesProgress

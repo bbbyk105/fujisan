@@ -47,7 +47,7 @@ export function PrimaryButton({
     <button
       type="submit"
       disabled={disabled}
-      className="mt-2 inline-flex w-full cursor-pointer items-center justify-center gap-3 border border-[#0B1A2E] bg-[#0B1A2E] px-7 py-3.5 text-[11px] font-semibold tracking-[0.28em] text-[#F8F3E7] transition-colors hover:bg-[#16273d] disabled:cursor-not-allowed disabled:opacity-50"
+      className="mt-2 inline-flex w-full cursor-pointer items-center justify-center gap-3 border border-[#0B1A2E] bg-[#0B1A2E] px-7 py-3.5 text-[11px] font-semibold tracking-[0.28em] text-paper-card transition-colors hover:bg-[#16273d] disabled:cursor-not-allowed disabled:opacity-50"
     >
       {children}
     </button>

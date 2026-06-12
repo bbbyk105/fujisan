@@ -59,7 +59,7 @@ const priceMax = Math.max(...allPrices);
 
 export default function ShopPersonalPage() {
   return (
-    <main className="bg-[#FAF5E8] text-[#0B1A2E] min-h-screen">
+    <main className="bg-paper text-[#0B1A2E] min-h-screen">
       <FujisanNav />
 
       <FujisanInnerHero
@@ -82,7 +82,7 @@ export default function ShopPersonalPage() {
       />
 
       {/* ===== Three-step flow ===== */}
-      <section className="relative bg-[#FAF5E8]">
+      <section className="relative bg-paper">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-[#0B1A2E]/15 to-transparent"
@@ -138,7 +138,7 @@ export default function ShopPersonalPage() {
       </section>
 
       {/* ===== Collection ===== */}
-      <section className="border-t border-[#0B1A2E]/10 bg-[#F4ECD9]">
+      <section className="border-t border-[#0B1A2E]/10 bg-paper-tint">
         <div className="mx-auto max-w-[1280px] px-7 py-20 md:px-12 md:py-24">
           <div className="flex flex-wrap items-end justify-between gap-6">
             <div>
@@ -192,7 +192,7 @@ export default function ShopPersonalPage() {
       </section>
 
       {/* ===== Practical info: shipping · payment · age ===== */}
-      <section className="border-t border-[#0B1A2E]/10 bg-[#FAF5E8]">
+      <section className="border-t border-[#0B1A2E]/10 bg-paper">
         <div className="mx-auto max-w-[1280px] px-7 py-20 md:px-12 md:py-24">
           <Reveal className="flex items-center gap-3">
             <span className="font-serif text-[11px] font-medium tracking-[0.32em] text-[#C9A84C]">
@@ -275,7 +275,7 @@ export default function ShopPersonalPage() {
           <div
             role="note"
             aria-label="未成年飲酒防止のお知らせ"
-            className="mt-14 border border-[#C9A84C]/35 bg-[#F4ECD9]/80 px-6 py-5 text-[12.5px] leading-[1.8] text-[#1D2432]/86"
+            className="mt-14 border border-[#C9A84C]/35 bg-paper-tint/80 px-6 py-5 text-[12.5px] leading-[1.8] text-[#1D2432]/86"
           >
             <p className="font-serif text-[10px] font-medium tracking-[0.32em] text-[#C9A84C]">
               <L
@@ -306,7 +306,7 @@ export default function ShopPersonalPage() {
           <div className="mt-12 flex flex-wrap items-center gap-6">
             <Link
               href={`/products/${fujisanProducts[0].slug}`}
-              className="group/btn inline-flex items-center justify-center gap-3 border border-[#0B1A2E] bg-[#0B1A2E] px-8 py-4 text-[10.5px] font-semibold tracking-[0.34em] text-[#F8F3E7] no-underline transition-colors hover:bg-[#1D2432]"
+              className="group/btn inline-flex items-center justify-center gap-3 border border-[#0B1A2E] bg-[#0B1A2E] px-8 py-4 text-[10.5px] font-semibold tracking-[0.34em] text-paper-card no-underline transition-colors hover:bg-[#1D2432]"
             >
               <L en="START WITH OUR FLAGSHIP" ja="代表銘柄から選ぶ" />
               <span aria-hidden className="transition-transform duration-500 group-hover/btn:translate-x-1">

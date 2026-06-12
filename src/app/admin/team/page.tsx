@@ -44,7 +44,7 @@ export default async function AdminTeamPage() {
   const staffCount = members.filter((m) => m.adminRole === "staff").length;
 
   return (
-    <main className="flex min-h-screen flex-col bg-[#FAF5E8] text-[#0B1A2E]">
+    <main className="flex min-h-screen flex-col bg-paper text-[#0B1A2E]">
       <FujisanNav />
 
       {/* Header */}
@@ -154,7 +154,7 @@ function Kpi({
 
 function ForbiddenView({ email }: { email: string | undefined }) {
   return (
-    <main className="flex min-h-screen flex-col bg-[#FAF5E8] text-[#0B1A2E]">
+    <main className="flex min-h-screen flex-col bg-paper text-[#0B1A2E]">
       <FujisanNav />
       <section className="mx-auto flex w-full max-w-[680px] flex-1 flex-col items-center justify-center px-7 pt-[140px] pb-24 text-center md:pt-[180px]">
         <p className="font-serif text-[10px] font-semibold tracking-[0.34em] text-[#8B1A1A]">

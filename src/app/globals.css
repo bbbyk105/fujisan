@@ -12,6 +12,10 @@
   --color-crimson: #8B1A1A;
   --color-cream: #FAF7F0;
   --color-gold-dark: #8B6E2A;
+  --color-paper: #FAF5E8;
+  --color-paper-warm: #FAF2E4;
+  --color-paper-card: #F8F3E7;
+  --color-paper-tint: #F4ECD9;
   --font-body: var(--font-noto-serif), var(--font-noto-serif-jp), Georgia, serif;
   --font-serif: var(--font-shippori-mincho), var(--font-noto-serif-jp), var(--font-noto-serif), Georgia, serif;
   --font-jp: var(--font-noto-serif-jp), var(--font-shippori-mincho), serif;
@@ -43,6 +47,12 @@ body {
 em {
   font-style: italic;
   letter-spacing: 0.01em;
+}
+
+/* キーボードフォーカスの可視化 — outline: none で消さない（WCAG 2.4.7） */
+:where(button, [role="button"], input, select, textarea, summary, a):focus-visible {
+  outline: 2px solid rgba(201, 168, 76, 0.75);
+  outline-offset: 2px;
 }
 
 /* ========================================
@@ -107,6 +117,16 @@ html[data-locale="ja"] .i18n-en {
 .fujisan-rise-slow {
   opacity: 0;
   animation: fujisan-rise-slow 1800ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* LCP 候補要素専用 — opacity を 0 にすると Lighthouse が不可視状態で
+   LCP を計測するため、transform のみ動かす */
+@keyframes fujisan-rise-lcp {
+  0%   { transform: translate3d(0, 36px, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+.fujisan-rise-lcp {
+  animation: fujisan-rise-lcp 1800ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* Toast slide-in — quick, from below */
@@ -196,6 +216,7 @@ html[data-locale="ja"] .i18n-en {
 @media (prefers-reduced-motion: reduce) {
   .fujisan-rise,
   .fujisan-rise-slow,
+  .fujisan-rise-lcp,
   .fujisan-fade,
   .fujisan-toast,
   .fujisan-swap {
@@ -271,9 +292,11 @@ html[data-locale="ja"] .i18n-en {
 }
 
 .fujisan-bottle {
+  /* drift は無限ループにしない（WCAG 2.2.2: 5秒超の自動モーションには
+     停止手段が必要 — 有限 3 周で静止させる） */
   animation:
     fujisan-bottle-enter 1500ms cubic-bezier(0.22, 1, 0.36, 1) both,
-    fujisan-bottle-drift 9s ease-in-out infinite 1500ms;
+    fujisan-bottle-drift 9s ease-in-out 1500ms 3;
   will-change: transform, opacity;
 }
 

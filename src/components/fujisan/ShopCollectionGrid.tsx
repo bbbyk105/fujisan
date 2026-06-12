@@ -17,6 +17,20 @@ function ShopBottleCard({ product }: { product: FujisanProduct }) {
   const multiVolume = product.volumes.length > 1;
 
   const onAdd = () => {
+    // 商品詳細ページと動線を揃える: サイト入場時の AgeGate と同じフラグを参照し、
+    // 未確認のままの即時追加を防ぐ（通常は AgeGate 通過済みなので素通り）
+    if (window.localStorage.getItem("fujisan-age-confirmed") !== "yes") {
+      pushToast({
+        ja: "ご購入には年齢確認が必要です。商品ページからお進みください",
+        en: "Age verification is required. Please continue from the product page",
+        action: {
+          href: `/products/${product.slug}`,
+          ja: "商品ページへ",
+          en: "VIEW PRODUCT",
+        },
+      });
+      return;
+    }
     add(product.slug, base.ml, 1);
     setAdded(true);
     window.setTimeout(() => setAdded(false), 2200);
@@ -28,7 +42,7 @@ function ShopBottleCard({ product }: { product: FujisanProduct }) {
   };
 
   return (
-    <article className="group flex flex-col border border-[#0B1A2E]/12 bg-[#F8F3E7] transition-colors hover:border-[#C9A84C]/55">
+    <article className="group flex flex-col border border-[#0B1A2E]/12 bg-paper-card transition-colors hover:border-[#C9A84C]/55">
       <Link
         href={`/products/${product.slug}`}
         className="no-underline outline-none focus-visible:ring-2 focus-visible:ring-[#C9A84C]/60"
@@ -78,12 +92,12 @@ function ShopBottleCard({ product }: { product: FujisanProduct }) {
           <div>
             <p className="font-serif text-[20px] font-semibold tracking-[0.02em] text-[#0B1A2E]">
               ¥{yen.format(base.priceJpy)}
-              <span className="ml-1.5 align-middle text-[10px] font-medium tracking-[0.14em] text-[#0B1A2E]/55">
+              <span className="ml-1.5 align-middle text-[10px] font-medium tracking-[0.14em] text-[#0B1A2E]/75">
                 <L en={`${base.ml}ml · tax incl.`} ja={`${base.ml}ml・税込`} />
               </span>
             </p>
             {multiVolume ? (
-              <p className="mt-0.5 text-[10px] tracking-[0.12em] text-[#0B1A2E]/50">
+              <p className="mt-0.5 text-[10px] tracking-[0.12em] text-[#0B1A2E]/70">
                 <L en="Other sizes available" ja="他の容量もあります" />
               </p>
             ) : null}
@@ -94,7 +108,7 @@ function ShopBottleCard({ product }: { product: FujisanProduct }) {
           type="button"
           onClick={onAdd}
           aria-live="polite"
-          className="mt-4 inline-flex w-full cursor-pointer items-center justify-center gap-2 border border-[#0B1A2E] bg-[#0B1A2E] px-5 py-3 text-[10.5px] font-semibold tracking-[0.26em] text-[#F8F3E7] transition-colors hover:bg-[#1D2432]"
+          className="mt-4 inline-flex w-full cursor-pointer items-center justify-center gap-2 border border-[#0B1A2E] bg-[#0B1A2E] px-5 py-3.5 text-[10.5px] font-semibold tracking-[0.26em] text-paper-card transition-colors hover:bg-[#1D2432]"
         >
           <span key={added ? "added" : "idle"} className="fujisan-swap gap-2">
             {added ? (
