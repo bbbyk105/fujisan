@@ -66,7 +66,7 @@ const features = [
 
 export default function FujisanDiscover() {
   return (
-    <section className="relative bg-[#FAF5E8]">
+    <section className="relative bg-paper">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-[#0B1A2E]/15 to-transparent"
@@ -93,7 +93,7 @@ export default function FujisanDiscover() {
                 className={`pointer-events-none absolute inset-0 ${
                   dark
                     ? "bg-linear-to-br from-[#0B1A2E]/94 via-[#0B1A2E]/55 to-[#0B1A2E]/15"
-                    : "bg-linear-to-br from-[#FAF5E8]/92 via-[#FAF5E8]/45 to-[#FAF5E8]/0"
+                    : "bg-linear-to-br from-paper/92 via-paper/45 to-paper/0"
                 }`}
               />
 

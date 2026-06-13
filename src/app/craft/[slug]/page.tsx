@@ -49,7 +49,7 @@ export default async function CraftPage({
   const next = fujisanCraftPillars[(idx + 1) % fujisanCraftPillars.length];
 
   return (
-    <main className="bg-[#FAF5E8] text-[#0B1A2E] min-h-screen">
+    <main className="bg-paper text-[#0B1A2E] min-h-screen">
       <FujisanNav />
 
       <FujisanInnerHero
@@ -67,7 +67,7 @@ export default async function CraftPage({
       />
 
       {/* ===== Story (locale-aware single column) ===== */}
-      <section className="relative bg-[#FAF5E8]">
+      <section className="relative bg-paper">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-[#0B1A2E]/15 to-transparent"
@@ -226,7 +226,7 @@ export default async function CraftPage({
       </section>
 
       {/* ===== Process ===== */}
-      <section className="relative bg-[#FAF5E8]">
+      <section className="relative bg-paper">
         <div className="mx-auto max-w-[1280px] px-7 py-20 md:px-12 md:py-24">
           <Reveal className="flex items-center gap-3">
             <span className="font-serif text-[11px] font-medium tracking-[0.32em] text-[#C9A84C]">
@@ -281,7 +281,7 @@ export default async function CraftPage({
       </section>
 
       {/* ===== Prev / Next ===== */}
-      <section className="border-t border-[#0B1A2E]/10 bg-[#F4ECD9]">
+      <section className="border-t border-[#0B1A2E]/10 bg-paper-tint">
         <div className="mx-auto grid max-w-[1280px] grid-cols-1 md:grid-cols-2">
           {[
             {
@@ -302,7 +302,7 @@ export default async function CraftPage({
             <Link
               key={p.slug}
               href={`/craft/${p.slug}`}
-              className={`group flex flex-col gap-2 border-[#0B1A2E]/10 px-7 py-10 no-underline transition-colors hover:bg-[#FAF5E8] md:px-12 md:py-14 ${
+              className={`group flex flex-col gap-2 border-[#0B1A2E]/10 px-7 py-10 no-underline transition-colors hover:bg-paper md:px-12 md:py-14 ${
                 align === "right"
                   ? "md:items-end md:text-right md:border-l"
                   : "md:items-start border-b md:border-b-0"

@@ -154,7 +154,7 @@ export function DeleteAccountButton() {
             type="button"
             disabled={!canSubmit}
             onClick={handleDelete}
-            className="inline-flex cursor-pointer items-center justify-center gap-3 border border-[#8B1A1A] bg-[#8B1A1A] px-6 py-3 text-[10.5px] font-semibold tracking-[0.3em] text-[#F8F3E7] transition-colors hover:bg-[#741515] disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex cursor-pointer items-center justify-center gap-3 border border-[#8B1A1A] bg-[#8B1A1A] px-6 py-3 text-[10.5px] font-semibold tracking-[0.3em] text-paper-card transition-colors hover:bg-[#741515] disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading ? (
               <L en="DELETING…" ja="退会処理中…" />

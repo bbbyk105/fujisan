@@ -38,7 +38,7 @@ const essences: {
 
 export default function FujisanExperience() {
   return (
-    <section className="relative scroll-mt-[86px] overflow-hidden bg-[#FAF5E8]" id="about">
+    <section className="relative scroll-mt-[86px] overflow-hidden bg-paper" id="about">
       <div
         aria-hidden
         className="pointer-events-none absolute -right-24 top-0 bottom-[72px] w-[640px] opacity-[0.07]"

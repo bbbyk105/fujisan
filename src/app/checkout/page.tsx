@@ -15,7 +15,7 @@ export const dynamic = "force-static";
 
 export default function CheckoutPage() {
   return (
-    <main className="min-h-screen bg-[#FAF5E8] text-[#0B1A2E]">
+    <main className="min-h-screen bg-paper text-[#0B1A2E]">
       <FujisanNav />
 
       <FujisanInnerHero

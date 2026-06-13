@@ -69,7 +69,7 @@ export function FujisanHeroShowcase({ products }: Props) {
         </div>
       </div>
 
-      <div className="relative z-20 bg-[#FAF5E8]/92 px-2 pb-8 pt-3 sm:px-4 md:px-7 md:pb-1 md:pt-2">
+      <div className="relative z-20 bg-paper/92 px-2 pb-8 pt-3 sm:px-4 md:px-7 md:pb-1 md:pt-2">
         <div className="mx-auto grid max-w-[1330px] grid-cols-6 gap-x-1 gap-y-6 sm:gap-x-3 md:grid-cols-5 md:gap-x-2 lg:gap-x-4 xl:max-w-[1660px] xl:gap-x-6">
           {products.map((p, i) => (
             <Link
@@ -91,7 +91,7 @@ export function FujisanHeroShowcase({ products }: Props) {
 
       {/* 一覧（/shop/personal）への動線 */}
       <div
-        className="fujisan-rise relative z-20 mx-auto flex max-w-[1330px] flex-col items-center gap-4 px-4 pb-12 pt-6 md:flex-row md:justify-center md:gap-8 md:pb-14 md:pt-8 xl:max-w-[1660px]"
+        className="fujisan-rise relative z-20 mx-auto flex max-w-[1330px] flex-col items-center gap-4 px-4 pb-8 pt-4 md:flex-row md:justify-center md:gap-8 md:pb-14 md:pt-8 xl:max-w-[1660px]"
         style={{ animationDelay: "1900ms" }}
       >
         <span
@@ -100,7 +100,7 @@ export function FujisanHeroShowcase({ products }: Props) {
         />
         <Link
           href="/shop/personal"
-          className="group/all inline-flex items-center gap-3 border border-[#0B1A2E]/35 bg-[#FAF5E8]/65 px-7 py-3.5 text-[10.5px] font-semibold tracking-[0.34em] text-[#0B1A2E] no-underline backdrop-blur-sm transition-colors hover:border-[#0B1A2E] hover:bg-[#F1E6CB]/80 hover:text-[#0B1A2E] md:px-9 md:py-4"
+          className="group/all inline-flex items-center gap-3 border border-[#0B1A2E]/35 bg-paper/65 px-7 py-3.5 text-[10.5px] font-semibold tracking-[0.34em] text-[#0B1A2E] no-underline backdrop-blur-sm transition-colors hover:border-[#0B1A2E] hover:bg-[#F1E6CB]/80 hover:text-[#0B1A2E] md:px-9 md:py-4"
         >
           <span className="relative">
             <L en="VIEW THE COLLECTION" ja="銘柄一覧を見る" />

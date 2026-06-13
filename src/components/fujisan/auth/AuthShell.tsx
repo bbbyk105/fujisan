@@ -45,7 +45,7 @@ export function AuthShell({
   const theme = THEME[role];
 
   return (
-    <main className="min-h-screen bg-[#FAF5E8] text-[#0B1A2E]">
+    <main className="min-h-screen bg-paper text-[#0B1A2E]">
       <FujisanNav />
 
       <section className="mx-auto grid min-h-screen w-full max-w-[1520px] grid-cols-1 lg:grid-cols-[1.05fr_1fr]">

@@ -57,7 +57,7 @@ const paths = [
 
 export default function ShopHubPage() {
   return (
-    <main className="bg-[#FAF5E8] text-[#0B1A2E] min-h-screen">
+    <main className="bg-paper text-[#0B1A2E] min-h-screen">
       <FujisanNav />
 
       <FujisanInnerHero
@@ -80,7 +80,7 @@ export default function ShopHubPage() {
       />
 
       {/* ===== Two paths ===== */}
-      <section className="relative bg-[#FAF5E8]">
+      <section className="relative bg-paper">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-[#0B1A2E]/15 to-transparent"
@@ -91,7 +91,7 @@ export default function ShopHubPage() {
               key={p.href}
               as="article"
               delay={revealDelays.d1 + i * 0.1}
-              className="group relative flex flex-col overflow-hidden border border-[#0B1A2E]/12 bg-[#F8F3E7]"
+              className="group relative flex flex-col overflow-hidden border border-[#0B1A2E]/12 bg-paper-card"
             >
               <div className="relative h-[260px] w-full overflow-hidden md:h-[300px]">
                 <Image
@@ -161,7 +161,7 @@ export default function ShopHubPage() {
       </section>
 
       {/* ===== Reassurance band ===== */}
-      <section className="border-t border-[#0B1A2E]/10 bg-[#F4ECD9]">
+      <section className="border-t border-[#0B1A2E]/10 bg-paper-tint">
         <div className="mx-auto max-w-[1180px] px-7 py-14 md:px-12 md:py-16">
           <div className="grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-12">
             {[

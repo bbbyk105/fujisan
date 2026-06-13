@@ -72,11 +72,11 @@ export default async function ProductDetailPage({
   const others = fujisanProducts.filter((p) => p.slug !== slug);
 
   return (
-    <main className="bg-[#FAF5E8] text-[#0B1A2E] min-h-screen">
+    <main className="bg-paper text-[#0B1A2E] min-h-screen">
       <FujisanNav />
 
       {/* ===== Hero ===== */}
-      <section className="fujisan-paper relative isolate scroll-mt-[86px] overflow-hidden bg-[#FAF5E8] pt-[86px]">
+      <section className="fujisan-paper relative isolate scroll-mt-[86px] overflow-hidden bg-paper pt-[86px]">
         <div className="absolute inset-x-0 top-[86px] z-0 h-[520px] overflow-hidden md:h-[600px]">
           <Image
             src="/images/fujisan/hero/mtfuji.webp"
@@ -88,9 +88,9 @@ export default async function ProductDetailPage({
             sizes="100vw"
             className="scale-[1.04] object-cover object-[50%_44%]"
           />
-          <div className="absolute inset-0 bg-linear-to-r from-[#FAF2E4]/94 via-[#FAF2E4]/34 to-[#DCE6EE]/8" />
+          <div className="absolute inset-0 bg-linear-to-r from-paper-warm/94 via-paper-warm/34 to-[#DCE6EE]/8" />
           <div className="absolute inset-x-0 top-0 h-40 bg-linear-to-b from-[#F9EFE0]/80 to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 h-[220px] bg-linear-to-b from-transparent via-[#FAF5E8]/76 to-[#FAF5E8]" />
+          <div className="absolute inset-x-0 bottom-0 h-[220px] bg-linear-to-b from-transparent via-paper/76 to-paper" />
         </div>
 
         <div className="relative z-10 mx-auto grid max-w-[1440px] grid-cols-1 items-center gap-10 px-6 pb-4 pt-8 sm:px-8 md:grid-cols-[1.1fr_1fr] md:gap-12 md:px-[6vw] md:pb-0 md:pt-14 lg:px-[4.5vw] lg:pt-16 2xl:px-16">
@@ -213,7 +213,7 @@ export default async function ProductDetailPage({
       />
 
       {/* ===== Specs + Pairing ===== */}
-      <section className="bg-[#FAF5E8]">
+      <section className="bg-paper">
         <div className="mx-auto grid max-w-[1280px] grid-cols-1 gap-12 px-7 py-16 md:grid-cols-[1.1fr_1fr] md:gap-14 md:px-12 md:py-20">
           <div>
             <p className="font-serif text-[11px] font-semibold tracking-[0.3em] text-[#0B1A2E]/66">
@@ -249,7 +249,7 @@ export default async function ProductDetailPage({
       </section>
 
       {/* ===== Collection strip ===== */}
-      <section className="border-t border-[#0B1A2E]/10 bg-[#FAF5E8]">
+      <section className="border-t border-[#0B1A2E]/10 bg-paper">
         <div className="mx-auto max-w-[1280px] px-7 py-14 md:px-12 md:py-20">
           <div className="flex items-end justify-between gap-6">
             <div>
@@ -282,7 +282,7 @@ export default async function ProductDetailPage({
       </section>
 
       {/* ===== Prev / Next ===== */}
-      <section className="border-t border-[#0B1A2E]/10 bg-[#F4ECD9]">
+      <section className="border-t border-[#0B1A2E]/10 bg-paper-tint">
         <div className="mx-auto grid max-w-[1280px] grid-cols-1 md:grid-cols-2">
           {[
             {
@@ -303,7 +303,7 @@ export default async function ProductDetailPage({
             <Link
               key={p.slug}
               href={`/products/${p.slug}`}
-              className={`group flex flex-col gap-2 border-[#0B1A2E]/10 px-7 py-10 no-underline transition-colors hover:bg-[#FAF5E8] md:px-12 md:py-14 ${
+              className={`group flex flex-col gap-2 border-[#0B1A2E]/10 px-7 py-10 no-underline transition-colors hover:bg-paper md:px-12 md:py-14 ${
                 align === "right"
                   ? "md:items-end md:text-right md:border-l"
                   : "md:items-start border-b md:border-b-0"

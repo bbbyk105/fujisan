@@ -222,7 +222,7 @@ export function FujisanNavClient({ links }: Props) {
                       : "pointer-events-none -translate-y-1 opacity-0"
                   }`}
                 >
-                  <div className="w-[340px] border border-[#0F1F36]/12 bg-[#F8F3E7]/98 shadow-[0_28px_60px_rgba(15,31,54,0.18)] backdrop-blur-md">
+                  <div className="w-[340px] border border-[#0F1F36]/12 bg-paper-card/98 shadow-[0_28px_60px_rgba(15,31,54,0.18)] backdrop-blur-md">
                     <div
                       aria-hidden
                       className="h-px w-full bg-linear-to-r from-transparent via-[#C9A84C]/55 to-transparent"
@@ -266,14 +266,16 @@ export function FujisanNavClient({ links }: Props) {
           <LocaleSwitch />
         </nav>
 
-        {/* Mobile toggle */}
+        {/* Mobile: カート常時露出 + toggle（カートをハンバーガー内に隠さない） */}
+        <div className="flex items-center gap-2.5 lg:hidden">
+        <CartNavLink compact />
         <button
           type="button"
           aria-label={open ? "Close menu" : "Open menu"}
           aria-expanded={open}
           aria-controls="fujisan-mobile-menu"
           onClick={() => setOpen((v) => !v)}
-          className="relative z-[60] flex h-10 w-10 cursor-pointer flex-col items-center justify-center gap-[6px] border border-[#0F1F36]/20 bg-[#F8F3E7]/80 p-0 lg:hidden"
+          className="relative z-[60] flex h-10 w-10 cursor-pointer flex-col items-center justify-center gap-[6px] border border-[#0F1F36]/20 bg-paper-card/80 p-0"
         >
           <span
             className={`block h-px w-5 bg-[#0F1F36] transition-transform duration-300 ${
@@ -291,6 +293,7 @@ export function FujisanNavClient({ links }: Props) {
             }`}
           />
         </button>
+        </div>
       </div>
 
       {/* Mobile overlay */}

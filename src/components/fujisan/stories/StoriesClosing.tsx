@@ -74,9 +74,10 @@ export function StoriesClosing() {
         },
       );
 
-      // Background gradient drift
+      // Background gradient drift — backgroundPosition は main thread 描画に
+      // なるため、200% 高の要素を transform（compositor-only）で動かす
       gsap.to(".closing-bg-drift", {
-        backgroundPosition: "0% 100%",
+        yPercent: -50,
         duration: 18,
         ease: "none",
         repeat: -1,
@@ -124,12 +125,10 @@ export function StoriesClosing() {
     >
       <div
         aria-hidden
-        className="closing-bg-drift pointer-events-none absolute inset-0 opacity-50"
+        className="closing-bg-drift pointer-events-none absolute inset-x-0 top-0 h-[200%] opacity-50"
         style={{
           backgroundImage:
             "linear-gradient(180deg, rgba(215,180,106,0.10) 0%, rgba(15,29,48,0) 35%, rgba(15,29,48,0) 65%, rgba(215,180,106,0.10) 100%)",
-          backgroundSize: "100% 200%",
-          backgroundPosition: "0% 0%",
         }}
       />
       <div

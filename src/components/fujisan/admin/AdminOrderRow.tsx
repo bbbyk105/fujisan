@@ -104,7 +104,7 @@ export function AdminOrderRow({ order }: Props) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="grid w-full cursor-pointer grid-cols-[120px_1fr_120px_100px_120px_28px] items-center gap-4 border-0 bg-transparent px-6 py-4 text-left hover:bg-[#FAF5E8]/60"
+        className="grid w-full cursor-pointer grid-cols-[120px_1fr_120px_100px_120px_28px] items-center gap-4 border-0 bg-transparent px-6 py-4 text-left hover:bg-paper/60"
       >
         <span className="font-serif text-[13px] font-semibold tracking-[0.04em] text-[#0B1A2E]">
           {order.orderRef}
@@ -227,7 +227,7 @@ export function AdminOrderRow({ order }: Props) {
                   type="button"
                   onClick={handleSave}
                   disabled={!dirty || pending}
-                  className="inline-flex cursor-pointer items-center gap-2 border border-[#0B1A2E] bg-[#0B1A2E] px-5 py-3 text-[11px] font-semibold tracking-[0.26em] text-[#F8F3E7] transition-colors hover:bg-[#1D2432] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex cursor-pointer items-center gap-2 border border-[#0B1A2E] bg-[#0B1A2E] px-5 py-3 text-[11px] font-semibold tracking-[0.26em] text-paper-card transition-colors hover:bg-[#1D2432] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {pending ? "保存中…" : "保存"}
                 </button>
@@ -271,7 +271,7 @@ function Section({
 function StatusPill({ status }: { status: OrderStatus }) {
   const STYLES: Record<OrderStatus, { cls: string; dot: string }> = {
     pending: {
-      cls: "border-[#0B1A2E]/30 bg-[#FAF5E8] text-[#0B1A2E]",
+      cls: "border-[#0B1A2E]/30 bg-paper text-[#0B1A2E]",
       dot: "bg-[#0B1A2E]/55",
     },
     confirmed: {

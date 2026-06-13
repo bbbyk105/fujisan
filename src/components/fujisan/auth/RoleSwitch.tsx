@@ -33,7 +33,7 @@ export function RoleSwitch({
             aria-selected={on}
             className={`flex flex-col items-center gap-0.5 px-4 py-3 text-center no-underline transition-colors ${
               on
-                ? "bg-[#0B1A2E] text-[#F8F3E7]"
+                ? "bg-[#0B1A2E] text-paper-card"
                 : "text-[#0B1A2E]/50 hover:bg-[#F1E6CB]/55 hover:text-[#0B1A2E]"
             }`}
           >

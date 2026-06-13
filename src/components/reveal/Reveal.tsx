@@ -45,6 +45,15 @@ export function Reveal({
       return;
     }
 
+    // dynamic import の遅延マウントでビューポート内/通過済みになっていると
+    // IntersectionObserver が発火しないまま opacity:0 で固定されるため、
+    // observe 前に現在位置で即時判定する（-8% rootMargin と揃えた 0.92 係数）
+    const rect = node.getBoundingClientRect();
+    if (rect.top < window.innerHeight * 0.92) {
+      setShown(true);
+      return;
+    }
+
     const io = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {

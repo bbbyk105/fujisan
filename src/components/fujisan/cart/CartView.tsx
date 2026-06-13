@@ -91,7 +91,7 @@ export function CartView() {
   // localStorage 復元前はちらつきを避けるため最小限のプレースホルダのみ。
   if (!ready) {
     return (
-      <section className="bg-[#FAF5E8]">
+      <section className="bg-paper">
         <div className="mx-auto min-h-[40vh] max-w-[1280px] px-7 py-20 md:px-12" />
       </section>
     );
@@ -99,7 +99,7 @@ export function CartView() {
 
   if (lines.length === 0) {
     return (
-      <section className="bg-[#FAF5E8]">
+      <section className="bg-paper">
         <div className="mx-auto max-w-[1280px] px-7 py-24 text-center md:px-12 md:py-32">
           <p className="font-serif text-[11px] font-semibold tracking-[0.3em] text-[#0B1A2E]/55">
             <L en="YOUR CART IS EMPTY" ja="カートは空です" />
@@ -118,7 +118,7 @@ export function CartView() {
           </p>
           <Link
             href="/shop/personal"
-            className="group/btn mt-9 inline-flex items-center justify-center gap-3 border border-[#0B1A2E] bg-[#0B1A2E] px-8 py-4 text-[10.5px] font-semibold tracking-[0.32em] text-[#F8F3E7] no-underline transition-colors hover:bg-[#1D2432]"
+            className="group/btn mt-9 inline-flex items-center justify-center gap-3 border border-[#0B1A2E] bg-[#0B1A2E] px-8 py-4 text-[10.5px] font-semibold tracking-[0.32em] text-paper-card no-underline transition-colors hover:bg-[#1D2432]"
           >
             <L en="BROWSE THE COLLECTION" ja="コレクションを見る" />
             <span
@@ -162,7 +162,7 @@ export function CartView() {
                   <button
                     type="button"
                     onClick={() => quickAdd(p.slug, primaryVolume(p).ml, p.name)}
-                    className="mt-3 cursor-pointer border border-[#0B1A2E]/30 px-5 py-2 text-[10px] font-semibold tracking-[0.24em] text-[#0B1A2E] transition-colors hover:border-[#0B1A2E] hover:bg-[#0B1A2E] hover:text-[#F8F3E7]"
+                    className="mt-3 cursor-pointer border border-[#0B1A2E]/30 px-5 py-2 text-[10px] font-semibold tracking-[0.24em] text-[#0B1A2E] transition-colors hover:border-[#0B1A2E] hover:bg-[#0B1A2E] hover:text-paper-card"
                   >
                     <L en="ADD" ja="追加" />
                   </button>
@@ -185,7 +185,7 @@ export function CartView() {
       : 100;
 
   return (
-    <section className="bg-[#FAF5E8]">
+    <section className="bg-paper">
       <div className="mx-auto grid max-w-[1280px] grid-cols-1 gap-12 px-7 py-16 md:px-12 md:py-20 lg:grid-cols-[1.5fr_1fr] lg:gap-16">
         {/* Line items */}
         <div>
@@ -295,7 +295,7 @@ export function CartView() {
         </div>
 
         {/* Summary */}
-        <aside className="h-fit border border-[#0B1A2E]/12 bg-[#F8F3E7] px-7 py-9 lg:sticky lg:top-[104px]">
+        <aside className="h-fit border border-[#0B1A2E]/12 bg-paper-card px-7 py-9 lg:sticky lg:top-[104px]">
           <p className="font-serif text-[11px] font-semibold tracking-[0.3em] text-[#0B1A2E]/66">
             <L en="ORDER SUMMARY" ja="ご注文内容" />
           </p>
@@ -380,7 +380,7 @@ export function CartView() {
 
           <Link
             href="/checkout"
-            className="group/btn mt-7 inline-flex w-full items-center justify-center gap-3 border border-[#0B1A2E] bg-[#0B1A2E] px-7 py-4 text-[11px] font-semibold tracking-[0.28em] text-[#F8F3E7] no-underline transition-colors hover:bg-[#1D2432]"
+            className="group/btn mt-7 inline-flex w-full items-center justify-center gap-3 border border-[#0B1A2E] bg-[#0B1A2E] px-7 py-4 text-[11px] font-semibold tracking-[0.28em] text-paper-card no-underline transition-colors hover:bg-[#1D2432]"
           >
             <L en="PROCEED TO CHECKOUT" ja="ご購入手続きへ" />
             <span

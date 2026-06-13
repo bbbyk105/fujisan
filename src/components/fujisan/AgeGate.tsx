@@ -64,7 +64,7 @@ export default function AgeGate() {
       aria-describedby="age-gate-desc"
       className="fixed inset-0 z-[100] flex items-center justify-center bg-[#0B1A2E]/85 px-6 backdrop-blur-sm"
     >
-      <div className="w-full max-w-[460px] border border-[#D7B46A]/40 bg-[#F8F3E7] px-7 py-9 text-center text-[#0B1A2E] shadow-[0_30px_70px_rgba(11,26,46,0.45)] md:px-10 md:py-12">
+      <div className="w-full max-w-[460px] border border-[#D7B46A]/40 bg-paper-card px-7 py-9 text-center text-[#0B1A2E] shadow-[0_30px_70px_rgba(11,26,46,0.45)] md:px-10 md:py-12">
         <p className="font-serif text-[10.5px] font-semibold tracking-[0.34em] text-[#C9A84C]">
           AGE VERIFICATION
         </p>
@@ -106,7 +106,7 @@ export default function AgeGate() {
           <button
             type="button"
             onClick={onYes}
-            className="cursor-pointer border border-[#0B1A2E] bg-[#0B1A2E] px-7 py-3 text-[11px] font-semibold tracking-[0.28em] text-[#F8F3E7] transition-colors hover:bg-[#1D2432]"
+            className="cursor-pointer border border-[#0B1A2E] bg-[#0B1A2E] px-7 py-3 text-[11px] font-semibold tracking-[0.28em] text-paper-card transition-colors hover:bg-[#1D2432]"
           >
             はい（20歳以上）
           </button>

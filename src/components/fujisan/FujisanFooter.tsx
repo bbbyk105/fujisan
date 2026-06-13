@@ -73,18 +73,18 @@ export default function FujisanFooter() {
           ))}
         </ul>
 
-        <div className="flex items-center gap-5 text-[#F4EBD5]/72">
+        <div className="flex items-center gap-1 text-[#F4EBD5]/72">
           <a
             href="#"
             aria-label="Instagram"
-            className="transition-colors hover:text-[#D7B46A]"
+            className="p-3 transition-colors hover:text-[#D7B46A]"
           >
             <IconInstagram />
           </a>
           <a
             href="#"
             aria-label="Facebook"
-            className="transition-colors hover:text-[#D7B46A]"
+            className="p-3 transition-colors hover:text-[#D7B46A]"
           >
             <IconFacebook />
           </a>

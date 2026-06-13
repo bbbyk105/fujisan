@@ -60,7 +60,7 @@ export function OrderTimeline({ status }: { status: OrderStatus }) {
                   ? isCurrent
                     ? "border-[#C9A84C] bg-[#C9A84C] ring-4 ring-[#C9A84C]/25"
                     : "border-[#C9A84C] bg-[#C9A84C]"
-                  : "border-[#0B1A2E]/20 bg-[#FAF5E8]"
+                  : "border-[#0B1A2E]/20 bg-paper"
               }`}
             />
 
