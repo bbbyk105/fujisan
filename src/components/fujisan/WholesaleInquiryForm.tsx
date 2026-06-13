@@ -39,13 +39,25 @@ const TIMING = [
   { value: "flexible", label: "Flexible · 時期未定" },
 ];
 
-export function WholesaleInquiryForm() {
+/** 法人ログイン時に登録情報から自動入力する初期値。 */
+export type WholesaleDefaults = {
+  company?: string;
+  contactName?: string;
+  email?: string;
+  phone?: string;
+};
+
+export function WholesaleInquiryForm({
+  defaults,
+}: {
+  defaults?: WholesaleDefaults;
+}) {
   const [status, setStatus] = useState<Status>("idle");
 
-  const [company, setCompany] = useState("");
-  const [contactName, setContactName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  const [company, setCompany] = useState(defaults?.company ?? "");
+  const [contactName, setContactName] = useState(defaults?.contactName ?? "");
+  const [email, setEmail] = useState(defaults?.email ?? "");
+  const [phone, setPhone] = useState(defaults?.phone ?? "");
   const [businessType, setBusinessType] = useState(BUSINESS_TYPES[0].value);
   const [country, setCountry] = useState("Japan");
   const [website, setWebsite] = useState("");

@@ -3,6 +3,7 @@ import FujisanNav from "@/components/fujisan/FujisanNav";
 import FujisanFooter from "@/components/fujisan/FujisanFooter";
 import { FujisanInnerHero } from "@/components/fujisan/FujisanInnerHero";
 import { WholesaleInquiryForm } from "@/components/fujisan/WholesaleInquiryForm";
+import { getSession } from "@/lib/session";
 import { WholesalePriceList } from "@/components/fujisan/WholesalePriceList";
 import { TradeAccessBand } from "@/components/fujisan/TradeAccessBand";
 import { Reveal } from "@/components/reveal/Reveal";
@@ -124,9 +125,30 @@ const faqs = [
   },
 ];
 
-export default function ShopBusinessPage() {
+export default async function ShopBusinessPage() {
+  // 法人ログイン中なら、登録情報でお見積りフォームを自動入力する。
+  const session = await getSession();
+  const su = session?.user as
+    | {
+        name?: string;
+        email?: string;
+        role?: string;
+        companyName?: string | null;
+        phone?: string | null;
+      }
+    | undefined;
+  const wholesaleDefaults =
+    su?.role === "business"
+      ? {
+          company: su.companyName ?? "",
+          contactName: su.name ?? "",
+          email: su.email ?? "",
+          phone: su.phone ?? "",
+        }
+      : undefined;
+
   return (
-    <main className="bg-[#FAF5E8] text-[#0B1A2E] min-h-screen">
+    <main className="bg-paper text-[#0B1A2E] min-h-screen">
       <FujisanNav />
 
       <FujisanInnerHero
@@ -151,7 +173,7 @@ export default function ShopBusinessPage() {
       <TradeAccessBand />
 
       {/* ===== Benefits ===== */}
-      <section className="relative bg-[#FAF5E8]">
+      <section className="relative bg-paper">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-[#0B1A2E]/15 to-transparent"
@@ -252,7 +274,7 @@ export default function ShopBusinessPage() {
       </section>
 
       {/* ===== Trade price list (role-gated) ===== */}
-      <section className="relative bg-[#FAF5E8]">
+      <section className="relative bg-paper">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-[#0B1A2E]/15 to-transparent"
@@ -286,7 +308,7 @@ export default function ShopBusinessPage() {
       </section>
 
       {/* ===== Inquiry form ===== */}
-      <section className="relative bg-[#FAF5E8]">
+      <section className="relative bg-paper">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-[#0B1A2E]/15 to-transparent"
@@ -326,7 +348,7 @@ export default function ShopBusinessPage() {
             </Reveal>
 
             <Reveal className="mt-10" delay={revealDelays.d3}>
-              <WholesaleInquiryForm />
+              <WholesaleInquiryForm defaults={wholesaleDefaults} />
             </Reveal>
           </div>
 
@@ -396,7 +418,7 @@ export default function ShopBusinessPage() {
       </section>
 
       {/* ===== FAQ ===== */}
-      <section className="border-t border-[#0B1A2E]/10 bg-[#F4ECD9]">
+      <section className="border-t border-[#0B1A2E]/10 bg-paper-tint">
         <div className="mx-auto max-w-[1180px] px-7 py-20 md:px-12 md:py-24">
           <Reveal className="flex items-center gap-3">
             <span className="font-serif text-[11px] font-medium tracking-[0.32em] text-[#C9A84C]">

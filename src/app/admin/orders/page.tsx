@@ -63,7 +63,7 @@ export default async function AdminOrdersPage() {
     .reduce((sum, o) => sum + o.total, 0);
 
   return (
-    <main className="flex min-h-screen flex-col bg-[#FAF5E8] text-[#0B1A2E]">
+    <main className="flex min-h-screen flex-col bg-paper text-[#0B1A2E]">
       <FujisanNav />
 
       {/* Header */}
@@ -84,20 +84,34 @@ export default async function AdminOrdersPage() {
             <p className="mt-3 text-[12.5px] tracking-[0.02em] text-[#F2E4C7]/70">
               {email}
             </p>
-            {isOwnerUser && (
+            <div className="mt-5 flex flex-wrap items-center gap-3">
               <Link
-                href="/admin/team"
-                className="group/team mt-5 inline-flex items-center gap-3 border border-[#E2C97E]/55 bg-[#E2C97E]/[0.08] px-5 py-3 text-[10.5px] font-semibold tracking-[0.3em] text-[#E2C97E] no-underline transition-colors hover:border-[#E2C97E] hover:bg-[#E2C97E]/15"
+                href="/admin/customers"
+                className="group/cust inline-flex items-center gap-3 border border-[#E2C97E]/45 px-5 py-3 text-[10.5px] font-semibold tracking-[0.3em] text-[#E2C97E] no-underline transition-colors hover:border-[#E2C97E] hover:bg-[#E2C97E]/[0.08]"
               >
-                メンバー管理
+                取扱店アカウント
                 <span
                   aria-hidden
-                  className="transition-transform duration-500 group-hover/team:translate-x-1"
+                  className="transition-transform duration-500 group-hover/cust:translate-x-1"
                 >
                   →
                 </span>
               </Link>
-            )}
+              {isOwnerUser && (
+                <Link
+                  href="/admin/team"
+                  className="group/team inline-flex items-center gap-3 border border-[#E2C97E]/55 bg-[#E2C97E]/[0.08] px-5 py-3 text-[10.5px] font-semibold tracking-[0.3em] text-[#E2C97E] no-underline transition-colors hover:border-[#E2C97E] hover:bg-[#E2C97E]/15"
+                >
+                  メンバー管理
+                  <span
+                    aria-hidden
+                    className="transition-transform duration-500 group-hover/team:translate-x-1"
+                  >
+                    →
+                  </span>
+                </Link>
+              )}
+            </div>
           </div>
 
           <dl className="grid grid-cols-2 gap-x-6 gap-y-3 md:grid-cols-4 md:gap-x-10">
@@ -115,7 +129,7 @@ export default async function AdminOrdersPage() {
       {/* Body */}
       <section className="mx-auto w-full max-w-[1480px] flex-1 px-7 pb-24 pt-12 md:px-12 md:pt-14">
         {orders.length === 0 ? (
-          <div className="border border-dashed border-[#0B1A2E]/25 bg-[#FAF5E8]/55 px-7 py-16 text-center">
+          <div className="border border-dashed border-[#0B1A2E]/25 bg-paper/55 px-7 py-16 text-center">
             <p className="font-serif text-[15px] font-semibold tracking-[0.04em] text-[#0B1A2E]">
               まだ注文がありません。
             </p>
@@ -185,7 +199,7 @@ function Kpi({
 
 function ForbiddenView({ email }: { email: string | undefined }) {
   return (
-    <main className="flex min-h-screen flex-col bg-[#FAF5E8] text-[#0B1A2E]">
+    <main className="flex min-h-screen flex-col bg-paper text-[#0B1A2E]">
       <FujisanNav />
       <section className="mx-auto flex w-full max-w-[680px] flex-1 flex-col items-center justify-center px-7 pt-[140px] pb-24 text-center md:pt-[180px]">
         <p className="font-serif text-[10px] font-semibold tracking-[0.34em] text-[#8B1A1A]">
