@@ -364,7 +364,7 @@ export function StoriesNarrative({ stories }: Props) {
                   fill
                   priority
                   sizes="(min-width: 1024px) 58vw, 100vw"
-                  className={`object-cover ${opening.position}`}
+                  className={`fujisan-grade object-cover ${opening.position}`}
                 />
               </div>
               <div
@@ -511,7 +511,7 @@ export function StoriesNarrative({ stories }: Props) {
                               ? "(min-width: 1024px) 56vw, 92vw"
                               : "(min-width: 1024px) 48vw, 92vw"
                           }
-                          className={`object-cover transition-transform duration-[1100ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/item:scale-[1.04] ${story.position}`}
+                          className={`fujisan-grade object-cover transition-transform duration-[1100ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/item:scale-[1.04] ${story.position}`}
                         />
                       </div>
                       <div

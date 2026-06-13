@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { fujisanProducts } from "@/data/fujisan-products";
 import { FujisanHeroShowcase } from "./FujisanHeroShowcase";
+import { KineticFujisanTitle } from "./KineticFujisanTitle";
 import { L } from "@/i18n/Localized";
 
 export default function FujisanHero() {
@@ -63,12 +64,7 @@ export default function FujisanHero() {
                   </>
                 }
               />
-              <span
-                className="fujisan-rise-lcp mt-4 block font-serif text-[clamp(66px,10vw,150px)] font-semibold leading-[0.9] tracking-[0.04em]"
-                style={{ animationDelay: "420ms" }}
-              >
-                FUJISAN
-              </span>
+              <KineticFujisanTitle />
             </h1>
 
             <p
@@ -83,28 +79,8 @@ export default function FujisanHero() {
               style={{ animationDelay: "980ms" }}
             >
               <L
-                en={
-                  <>
-                    From the pure snowmelt of Mt. Fuji
-                    <br />
-                    to masterful brewing, discover a sake
-                    <br />
-                    collection that embodies Japan&apos;s
-                    <br />
-                    heritage and natural beauty.
-                  </>
-                }
-                ja={
-                  <>
-                    富士山の雪解け水と、
-                    <br />
-                    蔵人の手技が織りなす一献。
-                    <br />
-                    日本の伝統と自然の美しさを宿す、
-                    <br />
-                    珠玉の日本酒コレクション。
-                  </>
-                }
+                en="From the pure snowmelt of Mt. Fuji to masterful brewing — a sake collection that embodies Japan's heritage and natural beauty."
+                ja="富士山の雪解け水と蔵人の手技が織りなす一献。日本の伝統と自然の美しさを宿す、珠玉の日本酒コレクション。"
               />
             </p>
           </div>

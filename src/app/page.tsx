@@ -1,6 +1,7 @@
 import dynamic from "next/dynamic";
 import FujisanNav from "@/components/fujisan/FujisanNav";
 import FujisanHero from "@/components/fujisan/FujisanHero";
+import { FujisanRidge } from "@/components/fujisan/FujisanRidge";
 
 const FujisanArtOfSake = dynamic(
   () => import("@/components/fujisan/FujisanArtOfSake"),
@@ -47,6 +48,10 @@ export default function Home() {
       <FujisanNav />
       <FujisanHero />
       <FujisanArtOfSake />
+      {/* シグネチャー: 稜線のセクション区切り */}
+      <div aria-hidden className="relative bg-paper py-6 md:py-8">
+        <FujisanRidge className="mx-auto h-[38px] w-full max-w-[1100px] px-6 text-[#0B1A2E]/25 md:h-[46px]" />
+      </div>
       <FujisanDiscover />
       <FujisanExperience />
     </main>

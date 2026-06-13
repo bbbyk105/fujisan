@@ -22,6 +22,18 @@ function stagger(i: number) {
   return base;
 }
 
+/**
+ * md 以上でボトル列を稜線状（中央峰）に持ち上げる。
+ * ヒーロー背景の富士・FUJISAN タイポと同じシグネチャーの反復。
+ */
+const RIDGE_LIFT = [
+  "md:translate-y-0",
+  "md:-translate-y-[22px]",
+  "md:-translate-y-[46px]",
+  "md:-translate-y-[26px]",
+  "md:-translate-y-[2px]",
+];
+
 /** View Transition とホバー演出が必要なボトルショーケース（クライアント境界） */
 export function FujisanHeroShowcase({ products }: Props) {
   return (
@@ -36,7 +48,7 @@ export function FujisanHeroShowcase({ products }: Props) {
               key={`${p.slug}-bottle`}
               href={`/products/${p.slug}`}
               aria-label={`${p.name} ${p.variantLine}`}
-              className={`group relative flex h-[270px] items-end justify-center overflow-visible no-underline outline-none focus-visible:ring-2 focus-visible:ring-[#C9A84C]/60 sm:h-[330px] md:h-[390px] lg:h-[430px] xl:h-[455px] ${stagger(i)}`}
+              className={`group relative flex h-[270px] items-end justify-center overflow-visible no-underline outline-none focus-visible:ring-2 focus-visible:ring-[#C9A84C]/60 sm:h-[330px] md:h-[390px] lg:h-[430px] xl:h-[455px] ${stagger(i)} ${RIDGE_LIFT[i] ?? ""}`}
               style={{ zIndex: 20 - i }}
             >
               <div

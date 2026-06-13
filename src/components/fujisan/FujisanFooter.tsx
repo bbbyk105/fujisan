@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { UNDERAGE_NOTICE_JP, UNDERAGE_NOTICE_EN } from "@/data/fujisan-legal";
+import { FujisanRidge } from "./FujisanRidge";
 import { L } from "@/i18n/Localized";
 
 const FOOTER_LINKS = [
@@ -12,10 +13,18 @@ const FOOTER_LINKS = [
 
 export default function FujisanFooter() {
   return (
-    <footer className="relative bg-[#0F1D30]" id="contact">
+    <footer
+      className="fujisan-dark-glow relative overflow-hidden bg-[#0F1D30]"
+      id="contact"
+    >
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-[#D7B46A]/40 to-transparent"
+      />
+      {/* シグネチャー: 稜線の透かし（全ページ共通のフッターでモチーフを通す） */}
+      <FujisanRidge
+        variant="fill"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-[120px] w-full text-[#F2E4C7]/[0.045]"
       />
 
       {/* 法令対応：未成年飲酒防止表示（全ページ常時掲示） */}

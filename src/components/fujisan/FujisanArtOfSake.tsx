@@ -139,7 +139,11 @@ export default function FujisanArtOfSake() {
             alt="Spring water, freshly steamed rice, and sake poured into an ochoko"
             fill
             sizes="(min-width: 1024px) 52vw, 100vw"
-            className="object-cover object-[50%_50%]"
+            className="fujisan-grade object-cover object-[50%_50%]"
+          />
+          <div
+            aria-hidden
+            className="fujisan-grade-wash pointer-events-none absolute inset-0"
           />
           <div
             aria-hidden

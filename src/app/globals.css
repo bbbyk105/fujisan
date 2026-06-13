@@ -240,6 +240,33 @@ html[data-locale="ja"] .i18n-en {
   }
 }
 
+/* ========================================
+   Photo grading — 写真の統一トーン
+   素材写真の色温度差（青い富士 / 暖色の米・蔵）を
+   藍の薄い被せと彩度の正規化で一族に揃える
+   ======================================== */
+.fujisan-grade {
+  filter: saturate(0.88) contrast(1.04) brightness(0.99);
+}
+.fujisan-grade-wash {
+  background-image: linear-gradient(
+    160deg,
+    rgba(15, 31, 54, 0.16),
+    rgba(15, 31, 54, 0.05) 45%,
+    rgba(201, 168, 76, 0.05)
+  );
+  mix-blend-mode: multiply;
+}
+
+/* ダーク面の照度設計 — 均一なベタ塗りを避け、上方からの灯りを一点入れる */
+.fujisan-dark-glow {
+  background-image: radial-gradient(
+    ellipse 80% 60% at 50% 0%,
+    rgba(215, 180, 106, 0.07),
+    transparent 60%
+  );
+}
+
 /* Fujisan landing page */
 .fujisan-paper {
   background-image:
@@ -250,6 +277,7 @@ html[data-locale="ja"] .i18n-en {
 
 .fujisan-dark-panel {
   background-image:
+    radial-gradient(ellipse 70% 55% at 26% 6%, rgba(215, 180, 106, 0.09), transparent 62%),
     linear-gradient(135deg, rgba(255, 255, 255, 0.035), transparent 42%),
     repeating-linear-gradient(90deg, rgba(234, 217, 181, 0.035) 0 1px, transparent 1px 9px);
 }
