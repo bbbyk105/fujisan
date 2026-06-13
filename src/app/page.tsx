@@ -49,8 +49,8 @@ export default function Home() {
       <FujisanHero />
       <FujisanArtOfSake />
       {/* シグネチャー: 稜線のセクション区切り */}
-      <div aria-hidden className="relative bg-paper py-6 md:py-8">
-        <FujisanRidge className="mx-auto h-[38px] w-full max-w-[1100px] px-6 text-[#0B1A2E]/25 md:h-[46px]" />
+      <div aria-hidden className="relative bg-paper py-8 md:py-12">
+        <FujisanRidge className="mx-auto h-[92px] w-full max-w-[680px] px-6 text-[#0B1A2E]/30 md:h-[120px]" />
       </div>
       <FujisanDiscover />
       <FujisanExperience />

@@ -24,7 +24,7 @@ export default function FujisanFooter() {
       {/* シグネチャー: 稜線の透かし（全ページ共通のフッターでモチーフを通す） */}
       <FujisanRidge
         variant="fill"
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-[120px] w-full text-[#F2E4C7]/[0.045]"
+        className="pointer-events-none absolute inset-x-0 bottom-0 mx-auto h-[170px] w-full max-w-[900px] text-[#F2E4C7]/[0.05]"
       />
 
       {/* 法令対応：未成年飲酒防止表示（全ページ常時掲示） */}
