@@ -7,6 +7,7 @@ import FujisanFooter from "@/components/fujisan/FujisanFooter";
 import { LogoutButton } from "@/components/fujisan/auth/LogoutButton";
 import { DeleteAccountButton } from "@/components/fujisan/auth/DeleteAccountButton";
 import { AccountSidebar } from "@/components/fujisan/auth/AccountSidebar";
+import { ProfileEditForm } from "@/components/fujisan/auth/ProfileEditForm";
 import { OrderTimeline } from "@/components/fujisan/auth/OrderTimeline";
 import { getSession } from "@/lib/session";
 import { getDb } from "@/db";
@@ -55,16 +56,36 @@ export default async function AccountPage() {
   const isAdmin = isStaffOrAbove(adminRole);
   const isOwnerUser = isOwner(adminRole);
 
-  // 登録日を取りに行く（セッションには無いので DB から）
+  // 登録日と最新の登録情報を DB から取得（セッションは更新が反映されないため）
   let memberSinceJp = "—";
   let memberSinceEn = "—";
+  // 表示・編集はセッションではなく DB の最新値を使う
+  const profile = {
+    name: user.name ?? "",
+    email: user.email,
+    companyName: user.companyName ?? "",
+    phone: user.phone ?? "",
+    address: user.address ?? "",
+  };
   try {
     const db = await getDb();
     const [rec] = await db
-      .select({ createdAt: userTable.createdAt })
+      .select({
+        createdAt: userTable.createdAt,
+        name: userTable.name,
+        companyName: userTable.companyName,
+        phone: userTable.phone,
+        address: userTable.address,
+      })
       .from(userTable)
       .where(eq(userTable.id, user.id))
       .limit(1);
+    if (rec) {
+      profile.name = rec.name ?? profile.name;
+      profile.companyName = rec.companyName ?? "";
+      profile.phone = rec.phone ?? "";
+      profile.address = rec.address ?? "";
+    }
     if (rec?.createdAt) {
       const d = new Date(rec.createdAt);
       memberSinceJp = new Intl.DateTimeFormat("ja-JP", {
@@ -80,8 +101,8 @@ export default async function AccountPage() {
     /* DB 失敗時はダッシュを残す */
   }
 
-  const displayName = user.companyName || user.name || "—";
-  const initial = (user.companyName || user.name || user.email || "F")
+  const displayName = profile.companyName || profile.name || "—";
+  const initial = (profile.companyName || profile.name || user.email || "F")
     .trim()
     .charAt(0)
     .toUpperCase();
@@ -95,7 +116,7 @@ export default async function AccountPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-[#FAF5E8] text-[#0B1A2E]">
+    <main className="min-h-screen bg-paper text-[#0B1A2E]">
       <FujisanNav />
 
       {/* ===== Header band ===== */}
@@ -225,7 +246,7 @@ export default async function AccountPage() {
             {/* ===== ORDERS ===== */}
             <Section id="orders" labelEn="ORDERS" labelJa="注文・配送">
               {orders.length === 0 ? (
-                <div className="border border-dashed border-[#0B1A2E]/22 bg-[#FAF5E8]/55 px-7 py-12 text-center md:py-16">
+                <div className="border border-dashed border-[#0B1A2E]/22 bg-paper/55 px-7 py-12 text-center md:py-16">
                   <p className="font-serif text-[15px] font-semibold tracking-[0.04em] text-[#0B1A2E]">
                     <L
                       en="No orders yet."
@@ -259,7 +280,7 @@ export default async function AccountPage() {
                   {orders.map((o) => (
                     <li
                       key={o.id}
-                      className="border border-[#0B1A2E]/12 bg-[#FAF5E8]/65 px-6 py-7 md:px-8 md:py-8"
+                      className="border border-[#0B1A2E]/12 bg-paper/65 px-6 py-7 md:px-8 md:py-8"
                     >
                       {/* header */}
                       <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
@@ -346,51 +367,10 @@ export default async function AccountPage() {
 
             {/* ===== PROFILE ===== */}
             <Section id="profile" labelEn="PROFILE" labelJa="登録情報">
-              <div className="border border-[#0B1A2E]/12 bg-[#FAF5E8]/65 px-7 py-8 md:px-10 md:py-10">
-                <dl className="grid grid-cols-1 gap-x-14 gap-y-9 sm:grid-cols-2">
-                  <Detail
-                    labelEn="NAME"
-                    labelJp="ご担当者・お名前"
-                    value={user.name}
-                  />
-                  <Detail
-                    labelEn="EMAIL"
-                    labelJp="メールアドレス"
-                    value={user.email}
-                  />
-                  {isBusiness && (
-                    <>
-                      <Detail
-                        labelEn="COMPANY"
-                        labelJp="会社・店舗名"
-                        value={user.companyName}
-                      />
-                      <Detail
-                        labelEn="PHONE"
-                        labelJp="電話番号"
-                        value={user.phone}
-                      />
-                      <Detail
-                        labelEn="ADDRESS"
-                        labelJp="所在地"
-                        value={user.address}
-                      />
-                    </>
-                  )}
-                </dl>
-              </div>
-              <p className="mt-4 text-[11.5px] leading-[1.7] text-[#0B1A2E]/55">
-                <L
-                  en="Need to update your details? Contact us and our small team in Shizuoka will adjust them by hand."
-                  ja="登録情報の変更をご希望の場合は、お問い合わせください。静岡の少人数チームが順次対応いたします。"
-                />{" "}
-                <Link
-                  href="/contact"
-                  className="font-semibold underline decoration-[#C9A84C]/55 underline-offset-4 hover:decoration-[#C9A84C]"
-                >
-                  <L en="Contact us →" ja="お問い合わせへ →" />
-                </Link>
-              </p>
+              <ProfileEditForm
+                isBusiness={isBusiness}
+                initial={profile}
+              />
             </Section>
 
             {/* ===== SHOPPING ===== */}
@@ -501,7 +481,7 @@ export default async function AccountPage() {
                 </div>
               )}
 
-              <div className="border border-[#0B1A2E]/12 bg-[#FAF5E8]/65 px-7 py-8 md:px-10 md:py-10">
+              <div className="border border-[#0B1A2E]/12 bg-paper/65 px-7 py-8 md:px-10 md:py-10">
                 <h3 className="font-serif text-[16px] font-semibold tracking-[0.04em] text-[#0B1A2E]">
                   <L en="Sign out" ja="ログアウト" />
                 </h3>
@@ -681,7 +661,7 @@ function StatusPill({ status }: { status: string }) {
     { cls: string; en: string; ja: string; dot: string }
   > = {
     pending: {
-      cls: "border-[#0B1A2E]/30 bg-[#FAF5E8] text-[#0B1A2E]",
+      cls: "border-[#0B1A2E]/30 bg-paper text-[#0B1A2E]",
       en: "Received",
       ja: "受付済",
       dot: "bg-[#0B1A2E]/55",
@@ -736,26 +716,3 @@ function formatOrderDate(d: Date): string {
   }).format(d);
 }
 
-function Detail({
-  labelEn,
-  labelJp,
-  value,
-}: {
-  labelEn: string;
-  labelJp: string;
-  value?: string | null;
-}): ReactNode {
-  return (
-    <div className="flex flex-col gap-2 border-t border-[#0B1A2E]/12 pt-4">
-      <dt className="flex items-baseline gap-3 text-[10px] font-semibold tracking-[0.32em] text-[#0F1F36]/60">
-        <span>{labelEn}</span>
-        <span className="font-jp tracking-[0.24em] text-[#C9A84C]/85">
-          {labelJp}
-        </span>
-      </dt>
-      <dd className="font-serif text-[15px] tracking-[0.02em] text-[#0B1A2E]">
-        {value || "—"}
-      </dd>
-    </div>
-  );
-}
