@@ -14,7 +14,7 @@ const FOOTER_LINKS = [
 export default function FujisanFooter() {
   return (
     <footer
-      className="fujisan-dark-glow relative overflow-hidden bg-[#0F1D30]"
+      className="fujisan-dark-glow relative mt-auto overflow-hidden bg-[#0F1D30]"
       id="contact"
     >
       <div

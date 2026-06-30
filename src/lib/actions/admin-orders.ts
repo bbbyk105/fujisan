@@ -2,7 +2,7 @@
 
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, ne } from "drizzle-orm";
 import { getAuth } from "@/lib/auth";
 import { getEffectiveAdminRole, isStaffOrAbove } from "@/lib/admin";
 import { getDb } from "@/db";
@@ -12,6 +12,11 @@ import {
   type OrderLine,
   type OrderStatus,
 } from "@/db/orders-schema";
+import {
+  sendOrderShippedEmail,
+  sendOrderDeliveredEmail,
+  type OrderEmailData,
+} from "@/lib/emails/order-emails";
 
 type AdminOrderListItem = {
   id: string;
@@ -61,9 +66,11 @@ export async function adminListOrdersAction(): Promise<
 
   try {
     const db = await getDb();
+    // 未払いで放棄された pending（住所未取得・空）は一覧に出さない。
     const rows = await db
       .select()
       .from(orderTable)
+      .where(ne(orderTable.status, "pending"))
       .orderBy(desc(orderTable.createdAt))
       .limit(200);
 
@@ -121,18 +128,16 @@ export async function adminUpdateOrderAction(input: {
 
   try {
     const db = await getDb();
-    // 既存行をいちど読んで shippedAt / deliveredAt の自動補完を判断する
+    // 既存行を読み込む（自動補完の判断＋発送/お届けメールの内容に使う）
     const [current] = await db
-      .select({
-        shippedAt: orderTable.shippedAt,
-        deliveredAt: orderTable.deliveredAt,
-      })
+      .select()
       .from(orderTable)
       .where(eq(orderTable.id, input.orderId))
       .limit(1);
 
     if (!current) return { ok: false, error: "invalid" };
 
+    const prevStatus = current.status as OrderStatus;
     const now = new Date();
     const carrier = (input.trackingCarrier ?? "").trim();
     const number = (input.trackingNumber ?? "").trim();
@@ -156,6 +161,35 @@ export async function adminUpdateOrderAction(input: {
 
     revalidatePath("/admin/orders");
     revalidatePath("/account");
+
+    // ステータスが新たに shipped / delivered へ「変わった瞬間」だけ顧客へ通知する。
+    // メール送信に失敗しても管理操作自体は成功させる（在庫・状態の更新は済んでいる）。
+    if (prevStatus !== input.status) {
+      const emailData: OrderEmailData = {
+        orderRef: current.orderRef,
+        customerName: current.customerName,
+        customerEmail: current.customerEmail,
+        items: safeParseItems(current.itemsJson),
+        itemsCount: current.itemsCount,
+        subtotal: current.subtotal,
+        shipping: current.shipping,
+        total: current.total,
+        postalCode: current.postalCode,
+        address: current.address,
+        trackingCarrier: carrier || null,
+        trackingNumber: number || null,
+      };
+      try {
+        if (input.status === "shipped") {
+          await sendOrderShippedEmail(emailData);
+        } else if (input.status === "delivered") {
+          await sendOrderDeliveredEmail(emailData);
+        }
+      } catch (err) {
+        console.error("[admin:orders] 配送通知メールの送信に失敗:", err);
+      }
+    }
+
     return { ok: true };
   } catch {
     return { ok: false, error: "db" };

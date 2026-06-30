@@ -15,7 +15,7 @@ export const dynamic = "force-static";
 
 export default function CartPage() {
   return (
-    <main className="min-h-screen bg-paper text-[#0B1A2E]">
+    <main className="flex min-h-screen flex-col bg-paper text-[#0B1A2E]">
       <FujisanNav />
 
       <FujisanInnerHero

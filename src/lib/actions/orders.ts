@@ -1,7 +1,7 @@
 "use server";
 
 import { headers } from "next/headers";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq, ne } from "drizzle-orm";
 import { getAuth } from "@/lib/auth";
 import { getDb } from "@/db";
 import {
@@ -119,10 +119,16 @@ export async function listMyOrdersAction(limit = 20): Promise<OrderRecord[]> {
 
   try {
     const db = await getDb();
+    // 未払いで放棄された pending（住所未取得・空）は表示しない。確定済み以降のみ。
     const rows = await db
       .select()
       .from(orderTable)
-      .where(eq(orderTable.userId, session.user.id))
+      .where(
+        and(
+          eq(orderTable.userId, session.user.id),
+          ne(orderTable.status, "pending"),
+        ),
+      )
       .orderBy(desc(orderTable.createdAt))
       .limit(limit);
 

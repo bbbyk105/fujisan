@@ -1,10 +1,18 @@
 import { z } from "zod";
 
 /** UI でローカライズして表示するためのエラーキー（メッセージ文字列ではなくキーを返す）。 */
-export type FieldErrorKey = "required" | "email" | "min8" | "url" | "agree";
+export type FieldErrorKey =
+  | "required"
+  | "email"
+  | "min8"
+  | "url"
+  | "agree"
+  | "postal";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const URL_RE = /^https?:\/\/\S+$/i;
+/** 日本の郵便番号（7桁。ハイフン任意）。発送は国内のみのためこの形式に限定する。 */
+const JP_POSTAL_RE = /^\d{3}-?\d{4}$/;
 
 /** 前後空白を除いてメール形式かどうかを判定する純関数（再送アクション等で再利用）。 */
 export function isEmailLike(value: string): boolean {
@@ -19,6 +27,12 @@ const emailString = z
   .string()
   .refine((v) => v.trim().length > 0, "required")
   .refine((v) => EMAIL_RE.test(v.trim()), "email");
+
+/** 日本国内の郵便番号（必須＋7桁形式）。海外発送は受け付けないための国内ゲート。 */
+const jpPostalString = z
+  .string()
+  .refine((v) => v.trim().length > 0, "required")
+  .refine((v) => JP_POSTAL_RE.test(v.trim()), "postal");
 
 const password = z
   .string()
@@ -74,7 +88,8 @@ export const wholesaleSchema = z.object({
 export const checkoutSchema = z.object({
   name: requiredString,
   email: emailString,
-  postalCode: requiredString,
+  // 発送は日本国内のみ。郵便番号は日本の7桁形式を必須とする。
+  postalCode: jpPostalString,
   address: requiredString,
   phone: requiredString,
   ageConfirmed: z.boolean().refine((v) => v === true, "agree"),

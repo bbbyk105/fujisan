@@ -50,6 +50,12 @@ export const order = sqliteTable(
     address: text("address").notNull(),
     phone: text("phone").notNull(),
 
+    /** 決済情報（Stripe Checkout） */
+    /** 支払いを確定した Checkout Session の id。Webhook の冪等化キーにも使う。 */
+    stripeSessionId: text("stripe_session_id"),
+    /** 支払い確定日時（Webhook で payment_status==='paid' を受けた瞬間）。 */
+    paidAt: integer("paid_at", { mode: "timestamp_ms" }),
+
     /** 追跡情報（発送後に蔵側で記入） */
     trackingCarrier: text("tracking_carrier"),
     trackingNumber: text("tracking_number"),

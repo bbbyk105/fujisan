@@ -55,7 +55,7 @@ const hours = [
 
 export default function ContactPage() {
   return (
-    <main className="bg-paper text-[#0B1A2E] min-h-screen">
+    <main className="flex min-h-screen flex-col bg-paper text-[#0B1A2E]">
       <FujisanNav />
 
       <FujisanInnerHero

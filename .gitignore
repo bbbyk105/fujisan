@@ -51,3 +51,9 @@ cloudflare-env.d.ts
 
 # wrangler local secrets
 .dev.vars
+
+# agent skills (npx skills add で再生成可能。共有したい場合はこの行を消す)
+.agents/
+skills/
+skills-lock.json
+.claude/skills/

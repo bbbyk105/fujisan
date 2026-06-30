@@ -116,7 +116,7 @@ export default async function AccountPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-paper text-[#0B1A2E]">
+    <main className="flex min-h-screen flex-col bg-paper text-[#0B1A2E]">
       <FujisanNav />
 
       {/* ===== Header band ===== */}

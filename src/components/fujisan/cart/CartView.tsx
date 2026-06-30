@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   MAX_QTY_PER_LINE,
   amountToFreeShipping,
@@ -10,11 +10,24 @@ import {
 } from "@/lib/cart/cart-core";
 import { useCart } from "@/lib/cart/useCart";
 import { pushToast } from "@/lib/cart/toast-store";
+import { useSession } from "@/lib/auth-client";
+import { startCheckoutAction } from "@/lib/actions/checkout";
 import { fujisanProducts, primaryVolume } from "@/data/fujisan-products";
 import { SHIPPING_FEE } from "@/data/fujisan-legal";
 import { L } from "@/i18n/Localized";
+import { useLocale } from "@/i18n/useLocale";
 
 const yen = new Intl.NumberFormat("ja-JP");
+
+/** 決済開始の失敗理由。"login"/"age" はフロント固有のゲート、それ以外は action 由来。 */
+type CheckoutError =
+  | "unauth"
+  | "invalid"
+  | "config"
+  | "stripe"
+  | "db"
+  | "login"
+  | "age";
 
 function QtyStepper({
   qty,
@@ -57,8 +70,53 @@ function QtyStepper({
 
 export function CartView() {
   const { ready, lines, count, subtotal, add, setQty, remove } = useCart();
+  const { data: session, isPending } = useSession();
+  const locale = useLocale();
   // 削除確認中の行（`${slug}-${ml}`）。null のときは確認テロップを出していない。
   const [confirmingKey, setConfirmingKey] = useState<string | null>(null);
+
+  // 決済開始まわりの状態
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<CheckoutError | null>(null);
+  const loggedIn = Boolean(session?.user?.id);
+
+  // Stripe をキャンセルして /cart?canceled=1 に戻ってきた場合のお知らせ。
+  // 静的ページなので useSearchParams は使わず、マウント後に location から読む。
+  const [canceled, setCanceled] = useState(false);
+  useEffect(() => {
+    // クライアント専用の URL をマウント後に一度だけ反映（ハイドレーション不一致回避）。
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setCanceled(
+      new URLSearchParams(window.location.search).get("canceled") === "1",
+    );
+  }, []);
+
+  // 「お支払いへ進む」: 年齢確認・ログインを確認し、Stripe 決済ページへ遷移する。
+  const handleCheckout = async () => {
+    if (submitting) return;
+    setCheckoutError(null);
+    if (!session?.user?.id) {
+      setCheckoutError("login");
+      return;
+    }
+    if (!ageConfirmed) {
+      setCheckoutError("age");
+      return;
+    }
+    setSubmitting(true);
+    const res = await startCheckoutAction({
+      items: lines.map((l) => ({ slug: l.slug, ml: l.ml, qty: l.qty })),
+      locale,
+    });
+    if (res.ok) {
+      // Stripe ホスト型決済ページへ。遷移するので submitting は解除しない。
+      window.location.href = res.url;
+      return;
+    }
+    setSubmitting(false);
+    setCheckoutError(res.error);
+  };
 
   const quickAdd = (slug: string, ml: number, name: string) => {
     add(slug, ml, 1);
@@ -378,23 +436,165 @@ export function CartView() {
             />
           </p>
 
-          <Link
-            href="/checkout"
-            className="group/btn mt-7 inline-flex w-full items-center justify-center gap-3 border border-[#0B1A2E] bg-[#0B1A2E] px-7 py-4 text-[11px] font-semibold tracking-[0.28em] text-paper-card no-underline transition-colors hover:bg-[#1D2432]"
-          >
-            <L en="PROCEED TO CHECKOUT" ja="ご購入手続きへ" />
-            <span
-              aria-hidden
-              className="transition-transform duration-500 group-hover/btn:translate-x-1"
+          {/* キャンセルして戻ってきたとき */}
+          {canceled ? (
+            <p
+              role="status"
+              className="mt-6 border border-gold/45 bg-paper-tint/80 px-4 py-3 text-[11.5px] leading-[1.7] text-[#1D2432]/85"
             >
-              →
+              <L
+                en="Payment was canceled — your cart is unchanged. You can try again anytime."
+                ja="お支払いがキャンセルされました。カートはそのままです。いつでももう一度お試しいただけます。"
+              />
+            </p>
+          ) : null}
+
+          {/* 国内発送のみ・海外案内 */}
+          <p className="mt-6 text-[11px] leading-[1.7] text-[#0B1A2E]/60">
+            <L
+              en={
+                <>
+                  We ship within Japan only. For delivery outside Japan, please{" "}
+                  <Link
+                    href="/contact"
+                    className="font-semibold text-[#0B1A2E] underline decoration-gold/60 underline-offset-2 transition-colors hover:decoration-gold"
+                  >
+                    contact us
+                  </Link>
+                  .
+                </>
+              }
+              ja={
+                <>
+                  発送は日本国内のみです。海外発送をご希望の方は
+                  <Link
+                    href="/contact"
+                    className="font-semibold text-[#0B1A2E] underline decoration-gold/60 underline-offset-2 transition-colors hover:decoration-gold"
+                  >
+                    お問い合わせ
+                  </Link>
+                  ください。
+                </>
+              }
+            />
+          </p>
+
+          {/* 年齢確認（酒類のため法令上必須） */}
+          <label className="mt-5 flex cursor-pointer items-start gap-3 text-[12.5px] leading-[1.6] text-[#0B1A2E]/85 select-none">
+            <input
+              type="checkbox"
+              checked={ageConfirmed}
+              onChange={(e) => {
+                setAgeConfirmed(e.target.checked);
+                if (e.target.checked) setCheckoutError(null);
+              }}
+              aria-invalid={checkoutError === "age" ? "true" : undefined}
+              className="mt-[3px] h-4 w-4 cursor-pointer border-[#0B1A2E]/40 accent-[#0B1A2E]"
+            />
+            <span>
+              <L
+                en={
+                  <>
+                    I confirm that I am{" "}
+                    <strong className="font-semibold">
+                      20 years of age or older
+                    </strong>{" "}
+                    and that purchasing alcohol is permitted under applicable
+                    law.
+                  </>
+                }
+                ja={
+                  <>
+                    私は<strong className="font-semibold">20歳以上</strong>
+                    であり、本商品の購入が法令上認められていることを確認しました。
+                  </>
+                }
+              />
             </span>
-          </Link>
+          </label>
+          {checkoutError === "age" ? (
+            <p role="alert" className="mt-2 text-[11px] text-crimson">
+              <L
+                en="Please confirm you are 20 or older to continue."
+                ja="20歳以上であることをご確認ください。"
+              />
+            </p>
+          ) : null}
+
+          {/* 未ログイン: 購入にはログインが必要 */}
+          {!isPending && !loggedIn ? (
+            <div
+              role="note"
+              className="mt-5 border border-gold/45 bg-paper-tint/80 px-4 py-4 text-[12px] leading-[1.7] text-[#1D2432]/88"
+            >
+              <p className="font-semibold">
+                <L
+                  en="Please sign in to complete your purchase."
+                  ja="ご購入にはログインが必要です。"
+                />
+              </p>
+              <div className="mt-3 flex flex-wrap gap-3">
+                <Link
+                  href="/login/personal"
+                  className="inline-flex items-center gap-2 border border-[#0B1A2E] bg-[#0B1A2E] px-5 py-2.5 text-[10.5px] font-semibold tracking-[0.24em] text-paper-card no-underline transition-colors hover:bg-[#1D2432]"
+                >
+                  <L en="SIGN IN" ja="ログイン" />
+                </Link>
+                <Link
+                  href="/register/personal"
+                  className="inline-flex items-center gap-2 border border-[#0B1A2E]/30 px-5 py-2.5 text-[10.5px] font-semibold tracking-[0.24em] text-[#0B1A2E] no-underline transition-colors hover:border-[#0B1A2E]"
+                >
+                  <L en="CREATE ACCOUNT" ja="新規登録" />
+                </Link>
+              </div>
+            </div>
+          ) : null}
+
+          {/* 決済開始エラー（ログイン・年齢以外） */}
+          {checkoutError && checkoutError !== "login" && checkoutError !== "age" ? (
+            <p
+              role="alert"
+              className="mt-5 border border-crimson/40 bg-crimson/6 px-4 py-3 text-[11.5px] leading-[1.7] text-crimson"
+            >
+              <L
+                en="We couldn't start the payment. Please try again."
+                ja="決済を開始できませんでした。もう一度お試しください。"
+              />
+            </p>
+          ) : null}
+
+          <button
+            type="button"
+            onClick={handleCheckout}
+            disabled={submitting || (!isPending && !loggedIn)}
+            className={`group/btn mt-6 inline-flex w-full items-center justify-center gap-3 px-7 py-4 text-[11px] font-semibold tracking-[0.28em] transition-all ${
+              submitting || (!isPending && !loggedIn)
+                ? "cursor-not-allowed border border-[#0B1A2E]/25 bg-[#0B1A2E]/12 text-[#0B1A2E]/45"
+                : "cursor-pointer border border-[#0B1A2E] bg-[#0B1A2E] text-paper-card hover:bg-[#1D2432]"
+            }`}
+          >
+            {submitting ? (
+              <L en="REDIRECTING TO PAYMENT…" ja="決済ページへ移動中…" />
+            ) : (
+              <>
+                <L
+                  en={`PROCEED TO PAYMENT · ¥${yen.format(total)}`}
+                  ja={`お支払いへ進む · ¥${yen.format(total)}`}
+                />
+                <span
+                  aria-hidden
+                  className="transition-transform duration-500 group-hover/btn:translate-x-1"
+                >
+                  →
+                </span>
+              </>
+            )}
+          </button>
 
           <p className="mt-4 text-[10.5px] leading-[1.7] text-[#0B1A2E]/55">
             <L
-              en="Age verification (20+) and shipping conditions are confirmed at checkout."
-              ja="お手続き画面で、年齢確認（20歳以上）と配送条件をご確認いただきます。"
+              en="Name, address and payment are entered securely on the next screen (Stripe)."
+              ja="お名前・ご住所・お支払いは、次の画面（Stripe の安全な決済ページ）でご入力いただきます。"
             />
           </p>
         </aside>

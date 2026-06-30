@@ -19,6 +19,10 @@ const MESSAGES: Record<FieldErrorKey, { en: string; ja: string }> = {
     en: "Please confirm to continue.",
     ja: "ご確認のうえチェックしてください。",
   },
+  postal: {
+    en: "Enter a valid Japanese postal code (e.g. 417-0051). We ship within Japan only.",
+    ja: "日本の郵便番号（例: 417-0051）を入力してください。発送は日本国内のみです。",
+  },
 };
 
 /** バリデーションエラーキーを日英でインライン表示する。error が無ければ何も描画しない。 */
