@@ -2,9 +2,11 @@
 
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { desc, eq, ne } from "drizzle-orm";
+import { and, desc, eq, ne } from "drizzle-orm";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getAuth } from "@/lib/auth";
-import { getEffectiveAdminRole, isStaffOrAbove } from "@/lib/admin";
+import { getEffectiveAdminRole, isOwner, isStaffOrAbove } from "@/lib/admin";
+import { getStripe } from "@/lib/stripe";
 import { getDb } from "@/db";
 import {
   order as orderTable,
@@ -15,6 +17,7 @@ import {
 import {
   sendOrderShippedEmail,
   sendOrderDeliveredEmail,
+  sendOrderRefundedEmail,
   type OrderEmailData,
 } from "@/lib/emails/order-emails";
 
@@ -37,6 +40,7 @@ type AdminOrderListItem = {
   trackingNumber: string | null;
   shippedAt: Date | null;
   deliveredAt: Date | null;
+  refundedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -53,6 +57,28 @@ async function requireStaff(): Promise<
   if (!isStaffOrAbove(role)) return { ok: false, reason: "forbidden" };
   return { ok: true, userId: u.id, email: u.email };
 }
+
+/** 返金など「お金を動かす」操作は owner のみに限定する。 */
+async function requireOwner(): Promise<
+  | { ok: true; userId: string; email: string }
+  | { ok: false; reason: "unauth" | "forbidden" }
+> {
+  const auth = await getAuth();
+  const session = await auth.api.getSession({ headers: await headers() });
+  const u = session?.user as { id?: string; email?: string } | undefined;
+  if (!u?.email || !u.id) return { ok: false, reason: "unauth" };
+  const role = await getEffectiveAdminRole({ userId: u.id, email: u.email });
+  if (!isOwner(role)) return { ok: false, reason: "forbidden" };
+  return { ok: true, userId: u.id, email: u.email };
+}
+
+/** 返金可能なステータス（支払い済み・未返金）。 */
+const REFUNDABLE_STATUSES: OrderStatus[] = [
+  "confirmed",
+  "preparing",
+  "shipped",
+  "delivered",
+];
 
 /**
  * 管理者向け: 全注文を新しい順で取得する。非 admin にはエラー（空配列ではなく明示）。
@@ -93,6 +119,7 @@ export async function adminListOrdersAction(): Promise<
       trackingNumber: row.trackingNumber,
       shippedAt: row.shippedAt ?? null,
       deliveredAt: row.deliveredAt ?? null,
+      refundedAt: row.refundedAt ?? null,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     }));
@@ -194,6 +221,147 @@ export async function adminUpdateOrderAction(input: {
   } catch {
     return { ok: false, error: "db" };
   }
+}
+
+type RefundEnv = { STRIPE_SECRET_KEY?: string };
+
+/**
+ * 管理者（owner）向け: 注文を全額返金する。
+ *
+ * - Stripe の PaymentIntent に対して `refunds.create` を実行し、成功したら
+ *   注文ステータスを `refunded` にして返金メールを送る。
+ * - 冪等: Stripe には orderId ベースの idempotencyKey を渡し、DB 更新は
+ *   `status != 'refunded'` の WHERE 付きで原子的に行う（二重返金を防ぐ）。
+ * - 返金対象は「支払い済み・未返金」の注文のみ（pending / cancelled / refunded は不可）。
+ * - 破損・誤配送などの実務対応を想定した全額返金。部分返金は将来対応。
+ */
+export async function adminRefundOrderAction(input: {
+  orderId: string;
+}): Promise<
+  | { ok: true }
+  | {
+      ok: false;
+      error:
+        | "unauth"
+        | "forbidden"
+        | "invalid"
+        | "not_refundable"
+        | "config"
+        | "stripe"
+        | "db";
+    }
+> {
+  const gate = await requireOwner();
+  if (!gate.ok) return { ok: false, error: gate.reason };
+  if (!input.orderId) return { ok: false, error: "invalid" };
+
+  let current;
+  try {
+    const db = await getDb();
+    [current] = await db
+      .select()
+      .from(orderTable)
+      .where(eq(orderTable.id, input.orderId))
+      .limit(1);
+  } catch {
+    return { ok: false, error: "db" };
+  }
+  if (!current) return { ok: false, error: "invalid" };
+
+  // 支払い済み・未返金のみ返金可能。
+  if (
+    !REFUNDABLE_STATUSES.includes(current.status as OrderStatus) ||
+    !current.stripeSessionId
+  ) {
+    return { ok: false, error: "not_refundable" };
+  }
+
+  const { env } = await getCloudflareContext({ async: true });
+  const e = env as RefundEnv;
+  if (!e.STRIPE_SECRET_KEY) return { ok: false, error: "config" };
+  const stripe = getStripe(e.STRIPE_SECRET_KEY);
+
+  // 返金対象の PaymentIntent を特定（保存済み → 無ければ Session から取得）。
+  let paymentIntentId = current.stripePaymentIntentId ?? null;
+  if (!paymentIntentId) {
+    try {
+      const sess = await stripe.checkout.sessions.retrieve(
+        current.stripeSessionId,
+      );
+      paymentIntentId =
+        typeof sess.payment_intent === "string"
+          ? sess.payment_intent
+          : (sess.payment_intent?.id ?? null);
+    } catch {
+      return { ok: false, error: "stripe" };
+    }
+  }
+  if (!paymentIntentId) return { ok: false, error: "not_refundable" };
+
+  // Stripe 側で返金を実行（全額）。idempotencyKey で再実行時の二重返金を防ぐ。
+  let refundId: string;
+  try {
+    const refund = await stripe.refunds.create(
+      { payment_intent: paymentIntentId },
+      { idempotencyKey: `refund_${current.id}` },
+    );
+    refundId = refund.id;
+  } catch {
+    return { ok: false, error: "stripe" };
+  }
+
+  // DB を原子的に refunded へ。既に他操作で返金済みなら更新行ゼロ（メールも送らない）。
+  let updated;
+  try {
+    const db = await getDb();
+    updated = await db
+      .update(orderTable)
+      .set({
+        status: "refunded",
+        stripeRefundId: refundId,
+        stripePaymentIntentId: paymentIntentId,
+        refundedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(orderTable.id, current.id),
+          ne(orderTable.status, "refunded"),
+        ),
+      )
+      .returning({ id: orderTable.id });
+  } catch {
+    // Stripe 返金は成立済み。DB 反映のみ失敗 → 手動で status を直せるようログを残す。
+    console.error(
+      `[admin:refund] Stripe 返金は成立したが DB 更新に失敗: order=${current.id} refund=${refundId}`,
+    );
+    return { ok: false, error: "db" };
+  }
+
+  revalidatePath("/admin/orders");
+  revalidatePath("/account");
+
+  if (updated.length === 0) return { ok: true }; // 既に返金済み。メールは重複送信しない。
+
+  // 返金メール（ベストエフォート。失敗しても返金自体は成立している）。
+  try {
+    await sendOrderRefundedEmail({
+      orderRef: current.orderRef,
+      customerName: current.customerName,
+      customerEmail: current.customerEmail,
+      items: safeParseItems(current.itemsJson),
+      itemsCount: current.itemsCount,
+      subtotal: current.subtotal,
+      shipping: current.shipping,
+      total: current.total,
+      postalCode: current.postalCode,
+      address: current.address,
+      refundAmount: current.total,
+    });
+  } catch (err) {
+    console.error("[admin:refund] 返金メール送信に失敗:", err);
+  }
+
+  return { ok: true };
 }
 
 function safeParseItems(json: string): OrderLine[] {

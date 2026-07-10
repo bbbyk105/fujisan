@@ -47,8 +47,11 @@ export default function ProductPurchaseBlock({
   const [selectedMl, setSelectedMl] = useState(volumes[0].ml);
 
   const selected = volumes.find((v) => v.ml === selectedMl) ?? volumes[0];
+  const soldOut = selected.soldOut === true;
 
   const onAddToCart = () => {
+    // 完売 SKU は追加不可（選択中の容量が品切れならここで止める）。
+    if (soldOut) return;
     // disabled で無効化しない（スクリーンリーダーから到達不能になるため）。
     // 未確認クリックはチェックボックスへフォーカスを移して要求を伝える。
     if (!confirmed) {
@@ -106,6 +109,7 @@ export default function ProductPurchaseBlock({
             <div className="mt-3 flex flex-wrap gap-3">
               {volumes.map((v) => {
                 const active = v.ml === selected.ml;
+                const vSoldOut = v.soldOut === true;
                 return (
                   <button
                     key={v.ml}
@@ -117,16 +121,25 @@ export default function ProductPurchaseBlock({
                       active
                         ? "border-[#0B1A2E] bg-[#0B1A2E] text-paper-card"
                         : "border-[#0B1A2E]/30 bg-transparent text-[#0B1A2E]/80 hover:border-[#0B1A2E]"
-                    }`}
+                    } ${vSoldOut ? "opacity-55" : ""}`}
                   >
                     {v.ml}ml
                     <span
                       className={`ml-1.5 text-[10.5px] font-medium ${
-                        active ? "text-paper-card/75" : "text-[#0B1A2E]/70"
-                      }`}
+                        vSoldOut ? "line-through" : ""
+                      } ${active ? "text-paper-card/75" : "text-[#0B1A2E]/70"}`}
                     >
                       ¥{yen.format(v.priceJpy)}
                     </span>
+                    {vSoldOut ? (
+                      <span
+                        className={`ml-1.5 text-[9px] font-semibold tracking-[0.14em] ${
+                          active ? "text-paper-card/85" : "text-crimson"
+                        }`}
+                      >
+                        <L en="SOLD OUT" ja="完売" />
+                      </span>
+                    ) : null}
                   </button>
                 );
               })}
@@ -312,25 +325,42 @@ export default function ProductPurchaseBlock({
           <button
             type="button"
             onClick={onAddToCart}
-            aria-disabled={!confirmed}
-            className={`mt-7 inline-flex w-full cursor-pointer items-center justify-center gap-3 px-7 py-4 text-[11px] font-semibold tracking-[0.28em] transition-all ${
-              confirmed
-                ? "border border-[#0B1A2E] bg-[#0B1A2E] text-paper-card hover:bg-[#1D2432]"
-                : "border border-[#0B1A2E]/35 bg-[#0B1A2E]/15 text-[#0B1A2E]/60"
+            aria-disabled={soldOut || !confirmed}
+            disabled={soldOut}
+            className={`mt-7 inline-flex w-full items-center justify-center gap-3 px-7 py-4 text-[11px] font-semibold tracking-[0.28em] transition-all ${
+              soldOut
+                ? "cursor-not-allowed border border-[#0B1A2E]/25 bg-[#0B1A2E]/[0.07] text-[#0B1A2E]/45"
+                : confirmed
+                  ? "cursor-pointer border border-[#0B1A2E] bg-[#0B1A2E] text-paper-card hover:bg-[#1D2432]"
+                  : "cursor-pointer border border-[#0B1A2E]/35 bg-[#0B1A2E]/15 text-[#0B1A2E]/60"
             }`}
           >
-            <span
-              key={submitted ? "added" : "idle"}
-              className="fujisan-swap gap-3"
-            >
-              {submitted ? (
-                <L en="Added to cart" ja="カートに追加しました" />
-              ) : (
-                <L en="ADD TO CART" ja="カートに追加" />
-              )}
-              <span aria-hidden>→</span>
-            </span>
+            {soldOut ? (
+              <span className="gap-3">
+                <L en="SOLD OUT" ja="完売しました" />
+              </span>
+            ) : (
+              <span
+                key={submitted ? "added" : "idle"}
+                className="fujisan-swap gap-3"
+              >
+                {submitted ? (
+                  <L en="Added to cart" ja="カートに追加しました" />
+                ) : (
+                  <L en="ADD TO CART" ja="カートに追加" />
+                )}
+                <span aria-hidden>→</span>
+              </span>
+            )}
           </button>
+          {soldOut ? (
+            <p className="mt-3 text-[11.5px] leading-[1.7] text-[#0B1A2E]/70">
+              <L
+                en="This size is currently sold out. Please check back soon or contact us for restock updates."
+                ja="この容量は現在完売しています。入荷までいましばらくお待ちください。"
+              />
+            </p>
+          ) : null}
 
           <p className="mt-4 text-[10.5px] leading-[1.7] text-[#0B1A2E]/72">
             <L

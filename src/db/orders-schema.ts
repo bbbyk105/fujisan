@@ -12,7 +12,8 @@ export const ORDER_STATUSES = [
   "preparing", // 蔵で準備中
   "shipped", // 発送済み（追跡番号あり）
   "delivered", // お届け済
-  "cancelled", // キャンセル
+  "cancelled", // キャンセル（未決済のまま取消）
+  "refunded", // 返金済み（Stripe 返金完了。adminRefundOrderAction からのみ到達）
 ] as const;
 
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
@@ -53,8 +54,16 @@ export const order = sqliteTable(
     /** 決済情報（Stripe Checkout） */
     /** 支払いを確定した Checkout Session の id。Webhook の冪等化キーにも使う。 */
     stripeSessionId: text("stripe_session_id"),
+    /** 支払いの PaymentIntent id。返金（refunds.create）の対象に使う。Webhook で保存。 */
+    stripePaymentIntentId: text("stripe_payment_intent_id"),
     /** 支払い確定日時（Webhook で payment_status==='paid' を受けた瞬間）。 */
     paidAt: integer("paid_at", { mode: "timestamp_ms" }),
+
+    /** 返金情報（管理者が返金操作したとき） */
+    /** Stripe の Refund id（冪等キー兼、二重返金防止の記録）。 */
+    stripeRefundId: text("stripe_refund_id"),
+    /** 返金完了日時。 */
+    refundedAt: integer("refunded_at", { mode: "timestamp_ms" }),
 
     /** 追跡情報（発送後に蔵側で記入） */
     trackingCarrier: text("tracking_carrier"),

@@ -26,6 +26,7 @@ type CheckoutError =
   | "config"
   | "stripe"
   | "db"
+  | "soldout"
   | "login"
   | "age";
 
@@ -550,8 +551,24 @@ export function CartView() {
             </div>
           ) : null}
 
-          {/* 決済開始エラー（ログイン・年齢以外） */}
-          {checkoutError && checkoutError !== "login" && checkoutError !== "age" ? (
+          {/* 完売エラー: カート内に品切れ SKU が混ざっている */}
+          {checkoutError === "soldout" ? (
+            <p
+              role="alert"
+              className="mt-5 border border-crimson/40 bg-crimson/6 px-4 py-3 text-[11.5px] leading-[1.7] text-crimson"
+            >
+              <L
+                en="One of the bottles in your cart has just sold out. Please remove it and try again."
+                ja="カート内の商品が完売しました。該当の商品を削除してから、もう一度お試しください。"
+              />
+            </p>
+          ) : null}
+
+          {/* 決済開始エラー（ログイン・年齢・完売以外） */}
+          {checkoutError &&
+          checkoutError !== "login" &&
+          checkoutError !== "age" &&
+          checkoutError !== "soldout" ? (
             <p
               role="alert"
               className="mt-5 border border-crimson/40 bg-crimson/6 px-4 py-3 text-[11.5px] leading-[1.7] text-crimson"

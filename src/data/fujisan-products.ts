@@ -8,6 +8,12 @@ export type FujisanVolume = {
   wholesalePriceJpy: number;
   /** 卸の1ケース入数（300ml×12／180ml×24） */
   caseSize: number;
+  /**
+   * 完売フラグ。true の SKU は購入不可（カート追加・決済を拒否）にする。
+   * 在庫数の本格管理は将来 D1 テーブルに移すが、当面はこの手動フラグで運用する。
+   * 品切れ時は該当 SKU に `soldOut: true` を足すだけ。
+   */
+  soldOut?: boolean;
 };
 
 export type FujisanProduct = {
@@ -297,4 +303,14 @@ export function findVolume(
   ml: number,
 ): FujisanVolume | undefined {
   return product.volumes.find((v) => v.ml === ml);
+}
+
+/** その SKU（容量）が完売か。 */
+export function isVolumeSoldOut(volume: FujisanVolume): boolean {
+  return volume.soldOut === true;
+}
+
+/** 商品の全 SKU が完売か（購入導線を丸ごと閉じる判定に使う）。 */
+export function isProductSoldOut(product: FujisanProduct): boolean {
+  return product.volumes.every((v) => v.soldOut === true);
 }

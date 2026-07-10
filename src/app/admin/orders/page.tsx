@@ -55,11 +55,13 @@ export default async function AdminOrdersPage() {
       shipped: 0,
       delivered: 0,
       cancelled: 0,
+      refunded: 0,
     },
   );
   const inFlight = counts.pending + counts.confirmed + counts.preparing;
+  // 売上はキャンセル・返金を除外（返金済みは実質未計上）。
   const totalRevenue = orders
-    .filter((o) => o.status !== "cancelled")
+    .filter((o) => o.status !== "cancelled" && o.status !== "refunded")
     .reduce((sum, o) => sum + o.total, 0);
 
   return (
@@ -151,7 +153,7 @@ export default async function AdminOrdersPage() {
 
             <ul className="mt-4 flex flex-col gap-3">
               {orders.map((o) => (
-                <AdminOrderRow key={o.id} order={o} />
+                <AdminOrderRow key={o.id} order={o} canRefund={isOwnerUser} />
               ))}
             </ul>
           </>

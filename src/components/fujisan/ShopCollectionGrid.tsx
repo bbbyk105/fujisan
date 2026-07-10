@@ -3,7 +3,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ViewTransition, useState } from "react";
-import { primaryVolume, type FujisanProduct } from "@/data/fujisan-products";
+import {
+  primaryVolume,
+  isProductSoldOut,
+  type FujisanProduct,
+} from "@/data/fujisan-products";
 import { useCart } from "@/lib/cart/useCart";
 import { pushToast } from "@/lib/cart/toast-store";
 import { L } from "@/i18n/Localized";
@@ -15,6 +19,9 @@ function ShopBottleCard({ product }: { product: FujisanProduct }) {
   const [added, setAdded] = useState(false);
   const base = primaryVolume(product);
   const multiVolume = product.volumes.length > 1;
+  // 既定 SKU（表示中の容量）が完売か / 全 SKU が完売か。
+  const baseSoldOut = base.soldOut === true;
+  const allSoldOut = isProductSoldOut(product);
 
   const onAdd = () => {
     // 商品詳細ページと動線を揃える: サイト入場時の AgeGate と同じフラグを参照し、
@@ -63,6 +70,11 @@ function ShopBottleCard({ product }: { product: FujisanProduct }) {
             </div>
           </div>
           <span className="absolute bottom-3 left-1/2 h-4 w-[42%] -translate-x-1/2 rounded-[50%] bg-[#0B1A2E]/16 blur-[9px]" />
+          {baseSoldOut ? (
+            <span className="absolute left-4 top-4 border border-crimson/40 bg-paper-card/90 px-2.5 py-1 text-[9px] font-semibold tracking-[0.22em] text-crimson">
+              <L en="SOLD OUT" ja="完売" />
+            </span>
+          ) : null}
         </div>
       </Link>
 
@@ -104,23 +116,39 @@ function ShopBottleCard({ product }: { product: FujisanProduct }) {
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={onAdd}
-          aria-live="polite"
-          className="mt-4 inline-flex w-full cursor-pointer items-center justify-center gap-2 border border-[#0B1A2E] bg-[#0B1A2E] px-5 py-3.5 text-[10.5px] font-semibold tracking-[0.26em] text-paper-card transition-colors hover:bg-[#1D2432]"
-        >
-          <span key={added ? "added" : "idle"} className="fujisan-swap gap-2">
-            {added ? (
-              <L en="ADDED ✓" ja="追加しました ✓" />
+        {baseSoldOut ? (
+          <Link
+            href={`/products/${product.slug}`}
+            className="mt-4 inline-flex w-full items-center justify-center gap-2 border border-[#0B1A2E]/25 bg-[#0B1A2E]/6 px-5 py-3.5 text-[10.5px] font-semibold tracking-[0.26em] text-[#0B1A2E]/70 no-underline transition-colors hover:border-[#0B1A2E]/45"
+          >
+            {allSoldOut ? (
+              <L en="SOLD OUT" ja="完売しました" />
             ) : (
               <>
-                <L en="ADD TO CART" ja="カートに追加" />
-                <span aria-hidden>+</span>
+                <L en="OTHER SIZES" ja="他の容量を見る" />
+                <span aria-hidden>→</span>
               </>
             )}
-          </span>
-        </button>
+          </Link>
+        ) : (
+          <button
+            type="button"
+            onClick={onAdd}
+            aria-live="polite"
+            className="mt-4 inline-flex w-full cursor-pointer items-center justify-center gap-2 border border-[#0B1A2E] bg-[#0B1A2E] px-5 py-3.5 text-[10.5px] font-semibold tracking-[0.26em] text-paper-card transition-colors hover:bg-[#1D2432]"
+          >
+            <span key={added ? "added" : "idle"} className="fujisan-swap gap-2">
+              {added ? (
+                <L en="ADDED ✓" ja="追加しました ✓" />
+              ) : (
+                <>
+                  <L en="ADD TO CART" ja="カートに追加" />
+                  <span aria-hidden>+</span>
+                </>
+              )}
+            </span>
+          </button>
+        )}
       </div>
     </article>
   );

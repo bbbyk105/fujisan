@@ -25,6 +25,8 @@ export type OrderEmailData = {
   address: string;
   trackingCarrier?: string | null;
   trackingNumber?: string | null;
+  /** 返金メール用: 実際に返金した金額（円）。未指定なら total を使う。 */
+  refundAmount?: number;
 };
 
 type ResendEnv = {
@@ -296,6 +298,68 @@ ${FUJISAN_LEGAL.sellerName} / ${FUJISAN_LEGAL.email}
     {
       to: d.customerEmail,
       subject: `FUJISAN — お届けが完了しました（${d.orderRef}）/ Delivered`,
+      text,
+      html,
+    },
+    opts,
+  );
+}
+
+// ── ④ 返金のお知らせ ───────────────────────────────────────────────────
+
+export async function sendOrderRefundedEmail(d: OrderEmailData): Promise<void> {
+  const { opts, baseUrl } = await resendOpts();
+  const ctaUrl = `${baseUrl}/account`;
+  const refund = d.refundAmount ?? d.total;
+
+  const refundBlock = `<div style="margin:16px 0 0;border:1px solid #C9A84C55;background:#fbf6e8;padding:14px 18px;font-size:13px;line-height:1.8;color:#0B1A2E;">
+         <div style="display:flex;justify-content:space-between;">
+           <span style="color:#0B1A2E99;letter-spacing:0.1em;font-size:11px;">返金額 / REFUNDED</span>
+           <strong style="font-weight:700;font-size:15px;">¥${yen.format(refund)}</strong>
+         </div>
+       </div>`;
+
+  const text = `FUJISAN SAKE — ご返金の手続きを行いました / Your refund has been processed
+
+${d.customerName} 様
+
+ご注文（${d.orderRef}）について、¥${yen.format(refund)} のご返金手続きを行いました。
+ご利用のカード会社や決済方法により、返金がお手元の明細に反映されるまで数日〜2週間程度かかる場合があります。
+
+We've processed a refund of ¥${yen.format(refund)} for your order.
+Depending on your card issuer, it may take several days to two weeks to appear on your statement.
+
+────────────────────────────────
+注文番号 / Order No.: ${d.orderRef}
+
+${itemsText(d.items)}
+
+返金額 / Refunded: ¥${yen.format(refund)}
+────────────────────────────────
+
+ご不明な点がございましたら、本メールへの返信または下記までお問い合わせください。
+If you have any questions, simply reply to this email.
+
+${FUJISAN_LEGAL.sellerName}
+${FUJISAN_LEGAL.address}
+TEL ${FUJISAN_LEGAL.phone} / ${FUJISAN_LEGAL.email}
+※20歳未満の飲酒は法律で禁止されています。
+`;
+
+  const html = htmlShell({
+    badge: "REFUNDED ／ ご返金のお知らせ",
+    heading: "ご返金の手続きを行いました。",
+    lead: `${escapeHtml(d.customerName)} 様、ご注文について ¥${yen.format(refund)} のご返金手続きを行いました。ご利用のカード会社により、明細への反映まで数日〜2週間程度かかる場合があります。<br/><span style="color:#1D243299;">We've refunded ¥${yen.format(refund)}. It may take several days to appear on your statement.</span>`,
+    d,
+    extraBlock: refundBlock,
+    ctaLabel: "ご注文履歴を見る",
+    ctaUrl,
+  });
+
+  await sendEmail(
+    {
+      to: d.customerEmail,
+      subject: `FUJISAN — ご返金の手続きを行いました（${d.orderRef}）/ Refund processed`,
       text,
       html,
     },

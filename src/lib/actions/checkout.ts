@@ -54,7 +54,10 @@ export async function startCheckoutAction(input: {
   locale?: "ja" | "en";
 }): Promise<
   | { ok: true; url: string }
-  | { ok: false; error: "unauth" | "invalid" | "config" | "stripe" | "db" }
+  | {
+      ok: false;
+      error: "unauth" | "invalid" | "config" | "stripe" | "db" | "soldout";
+    }
 > {
   // 認証チェック
   const auth = await getAuth();
@@ -75,6 +78,8 @@ export async function startCheckoutAction(input: {
     if (!product) return { ok: false, error: "invalid" };
     const volume = findVolume(product, ci.ml);
     if (!volume) return { ok: false, error: "invalid" };
+    // 完売 SKU は決済に進ませない（UI で無効化していても最後の砦としてここで拒否）。
+    if (volume.soldOut) return { ok: false, error: "soldout" };
     const qty = Math.floor(ci.qty);
     if (!Number.isInteger(qty) || qty < 1 || qty > 12) {
       return { ok: false, error: "invalid" };

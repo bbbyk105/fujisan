@@ -3,7 +3,10 @@
 import { useState, useTransition } from "react";
 import type { OrderStatus } from "@/db/orders-schema";
 import { ORDER_STATUSES } from "@/db/orders-schema";
-import { adminUpdateOrderAction } from "@/lib/actions/admin-orders";
+import {
+  adminUpdateOrderAction,
+  adminRefundOrderAction,
+} from "@/lib/actions/admin-orders";
 
 const yen = new Intl.NumberFormat("ja-JP");
 
@@ -14,7 +17,19 @@ const STATUS_LABELS_JA: Record<OrderStatus, string> = {
   shipped: "発送済み",
   delivered: "お届け済",
   cancelled: "キャンセル",
+  refunded: "返金済み",
 };
+
+/** 手動のステータス変更で選べる値（refunded は返金操作からのみ到達させる）。 */
+const SELECTABLE_STATUSES = ORDER_STATUSES.filter((s) => s !== "refunded");
+
+/** 返金ボタンを表示できる（支払い済み・未返金）ステータス。 */
+const REFUNDABLE: OrderStatus[] = [
+  "confirmed",
+  "preparing",
+  "shipped",
+  "delivered",
+];
 
 const CARRIER_PRESETS = [
   "ヤマト運輸",
@@ -40,6 +55,7 @@ type Props = {
     trackingNumber: string | null;
     shippedAt: Date | null;
     deliveredAt: Date | null;
+    refundedAt: Date | null;
     createdAt: Date;
     items: {
       slug: string;
@@ -50,6 +66,8 @@ type Props = {
       lineTotal: number;
     }[];
   };
+  /** owner のみ返金ボタンを表示する。 */
+  canRefund: boolean;
 };
 
 function fmt(d: Date): string {
@@ -67,18 +85,23 @@ function fmt(d: Date): string {
  * - 折りたたみ式: ヘッダーをクリックで詳細＋編集フォームを開閉
  * - フォーム保存で `adminUpdateOrderAction` を呼ぶ → revalidatePath で /admin/orders と /account が更新される
  */
-export function AdminOrderRow({ order }: Props) {
+export function AdminOrderRow({ order, canRefund }: Props) {
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState<OrderStatus>(order.status);
   const [carrier, setCarrier] = useState(order.trackingCarrier ?? "");
   const [number, setNumber] = useState(order.trackingNumber ?? "");
   const [message, setMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const [refundMsg, setRefundMsg] = useState<string | null>(null);
+  const [refunding, startRefund] = useTransition();
 
   const dirty =
     status !== order.status ||
     carrier !== (order.trackingCarrier ?? "") ||
     number !== (order.trackingNumber ?? "");
+
+  // owner かつ「支払い済み・未返金」の注文にのみ返金ボタンを出す。
+  const showRefund = canRefund && REFUNDABLE.includes(order.status);
 
   const handleSave = () => {
     setMessage(null);
@@ -94,6 +117,32 @@ export function AdminOrderRow({ order }: Props) {
         setTimeout(() => setMessage(null), 2500);
       } else {
         setMessage(`保存失敗: ${res.error}`);
+      }
+    });
+  };
+
+  const REFUND_ERRORS: Record<string, string> = {
+    unauth: "権限がありません（再ログイン）",
+    forbidden: "返金は owner のみ可能です",
+    invalid: "注文が見つかりません",
+    not_refundable: "この注文は返金できません（未決済/返金済み）",
+    config: "Stripe の設定が未完了です",
+    stripe: "Stripe 返金に失敗しました",
+    db: "返金は成立しましたが記録更新に失敗（要手動確認）",
+  };
+
+  const handleRefund = () => {
+    const ok = window.confirm(
+      `注文 ${order.orderRef} を全額（¥${yen.format(order.total)}）返金します。\nこの操作は取り消せません。よろしいですか？`,
+    );
+    if (!ok) return;
+    setRefundMsg(null);
+    startRefund(async () => {
+      const res = await adminRefundOrderAction({ orderId: order.id });
+      if (res.ok) {
+        setRefundMsg("返金しました。まもなく一覧に反映されます。");
+      } else {
+        setRefundMsg(`返金失敗: ${REFUND_ERRORS[res.error] ?? res.error}`);
       }
     });
   };
@@ -173,6 +222,12 @@ export function AdminOrderRow({ order }: Props) {
                       <li>{fmt(order.deliveredAt)}</li>
                     </>
                   )}
+                  {order.refundedAt && (
+                    <>
+                      <li className="text-crimson">返金日時:</li>
+                      <li className="text-crimson">{fmt(order.refundedAt)}</li>
+                    </>
+                  )}
                 </ul>
               </Section>
             </div>
@@ -185,7 +240,7 @@ export function AdminOrderRow({ order }: Props) {
                   onChange={(e) => setStatus(e.target.value as OrderStatus)}
                   className="w-full border border-[#0B1A2E]/25 bg-white px-3 py-2.5 text-[13px] text-[#0B1A2E] outline-none focus:border-[#C9A84C]"
                 >
-                  {ORDER_STATUSES.map((s) => (
+                  {SELECTABLE_STATUSES.map((s) => (
                     <option key={s} value={s}>
                       {STATUS_LABELS_JA[s]}（{s}）
                     </option>
@@ -243,6 +298,42 @@ export function AdminOrderRow({ order }: Props) {
                   </span>
                 )}
               </div>
+
+              {/* 返金（owner のみ・支払い済み注文のみ）。破損・誤配送などの実務対応。 */}
+              {showRefund && (
+                <div className="mt-3 border-t border-crimson/15 pt-5">
+                  <p className="text-[10px] font-semibold tracking-[0.3em] text-crimson/80">
+                    返金
+                  </p>
+                  <p className="mt-2 text-[11px] leading-[1.6] text-[#0B1A2E]/60">
+                    Stripe 経由で全額（¥{yen.format(order.total)}
+                    ）を返金し、お客様へ返金メールを送ります。取り消せません。
+                  </p>
+                  <div className="mt-3 flex items-center gap-4">
+                    <button
+                      type="button"
+                      onClick={handleRefund}
+                      disabled={refunding}
+                      className="inline-flex cursor-pointer items-center gap-2 border border-crimson bg-transparent px-5 py-3 text-[11px] font-semibold tracking-[0.22em] text-crimson transition-colors hover:bg-crimson hover:text-paper-card disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {refunding
+                        ? "返金処理中…"
+                        : `全額返金（¥${yen.format(order.total)}）`}
+                    </button>
+                    {refundMsg && (
+                      <span
+                        className={`text-[11.5px] leading-normal ${
+                          refundMsg.startsWith("返金失敗")
+                            ? "text-crimson"
+                            : "text-[#2F5A2F]"
+                        }`}
+                      >
+                        {refundMsg}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -292,6 +383,10 @@ function StatusPill({ status }: { status: OrderStatus }) {
     },
     cancelled: {
       cls: "border-[#8B1A1A]/45 bg-[#8B1A1A]/[0.08] text-[#8B1A1A]",
+      dot: "bg-[#8B1A1A]",
+    },
+    refunded: {
+      cls: "border-[#8B1A1A]/55 bg-[#8B1A1A]/[0.12] text-[#8B1A1A]",
       dot: "bg-[#8B1A1A]",
     },
   };

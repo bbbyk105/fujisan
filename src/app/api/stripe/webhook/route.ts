@@ -8,6 +8,7 @@ import {
   sendOrderConfirmedEmail,
   type OrderEmailData,
 } from "@/lib/emails/order-emails";
+import { alertOps } from "@/lib/ops-alert";
 
 // 署名検証のため生ボディを読む。プリレンダ・キャッシュは一切しない。
 export const dynamic = "force-dynamic";
@@ -63,6 +64,20 @@ export async function POST(request: Request): Promise<Response> {
     } catch (err) {
       // 確定（DB 更新）で落ちた場合のみ 500 を返す → Stripe が再送（冪等なので二重確定なし）。
       const msg = err instanceof Error ? err.message : "unknown";
+      // 入金済みなのに注文確定できていない＝人が気づくべき事象。管理者へアラート。
+      // アラート自体の失敗で Webhook を落とさないよう内部で握りつぶす（alertOps はベストエフォート）。
+      await alertOps(
+        "Stripe Webhook で注文確定に失敗",
+        [
+          `event: ${event.type}`,
+          `session: ${session.id}`,
+          `orderId: ${session.metadata?.orderId ?? "(なし)"}`,
+          `orderRef: ${session.metadata?.orderRef ?? "(なし)"}`,
+          `error: ${msg}`,
+          "",
+          "入金は成立している可能性があります。Stripe Dashboard と D1 の orders を確認してください（Stripe は自動再送します）。",
+        ].join("\n"),
+      );
       return new Response(`fulfillment error: ${msg}`, { status: 500 });
     }
   }
@@ -106,6 +121,12 @@ async function fulfillOrder(
   const postalCode = (addr?.postal_code || "").trim();
   const address = formatJpAddress(addr);
 
+  // 返金に使う PaymentIntent id を保存しておく（後で Session を引き直さずに返金できる）。
+  const paymentIntentId =
+    typeof full.payment_intent === "string"
+      ? full.payment_intent
+      : (full.payment_intent?.id ?? null);
+
   // pending → confirmed を原子的に。住所等もこの時点で書き戻す。
   // 更新行が無ければ既に他の配信が確定済み。
   const updated = await db
@@ -113,6 +134,7 @@ async function fulfillOrder(
     .set({
       status: "confirmed",
       stripeSessionId: session.id,
+      stripePaymentIntentId: paymentIntentId,
       paidAt: new Date(),
       customerName,
       customerEmail,
