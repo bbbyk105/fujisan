@@ -5,9 +5,12 @@ import { googleStartAction } from "@/lib/actions/auth";
 
 export function GoogleButton({
   redirectTo,
+  errorRedirectTo = "/login/personal?error=google",
   children,
 }: {
   redirectTo: string;
+  /** OAuth 失敗時の戻り先。ログイン画面側が ?error=google を見て通知を出す。 */
+  errorRedirectTo?: string;
   children: ReactNode;
 }) {
   const [loading, setLoading] = useState(false);
@@ -18,7 +21,7 @@ export function GoogleButton({
       disabled={loading}
       onClick={async () => {
         setLoading(true);
-        const { url } = await googleStartAction(redirectTo);
+        const { url } = await googleStartAction(redirectTo, errorRedirectTo);
         if (url) {
           window.location.href = url;
         } else {

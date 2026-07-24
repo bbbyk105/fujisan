@@ -27,6 +27,7 @@ export function LoginForm({
   const params = useSearchParams();
   const fallback = role === "business" ? "/shop/business" : "/account";
   const redirectTo = params.get("redirect") || fallback;
+  const googleError = params.get("error") === "google";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -69,6 +70,15 @@ export function LoginForm({
 
   return (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-7">
+      {googleError && !errorKey && (
+        <Notice tone="error">
+          <L
+            en="Google sign-in didn't complete. Please try again, or sign in with your email and password."
+            ja="Google ログインが完了しませんでした。もう一度お試しいただくか、メールアドレスとパスワードでログインしてください。"
+          />
+        </Notice>
+      )}
+
       {errorKey === "unverified" && (
         <Notice tone="info">
           <div className="flex flex-col gap-2.5">

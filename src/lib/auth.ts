@@ -63,6 +63,15 @@ function buildOptions(env: AuthEnv) {
     user: {
       additionalFields: additionalUserFields,
     },
+    account: {
+      accountLinking: {
+        // メール/パスワード登録済みのユーザーが同じメールで Google ログインした際、
+        // 既存アカウントへ自動リンクする（未設定だと account_not_linked で弾かれる）。
+        // Google はメール確認済みの ID しか返さないため trusted に含めて安全。
+        enabled: true,
+        trustedProviders: ["google"],
+      },
+    },
     ...(googleEnabled
       ? {
           socialProviders: {
