@@ -207,11 +207,18 @@ export function FujisanNavClient({ links }: Props) {
       ref={headerRef}
       style={{ viewTransitionName: "site-header" }}
       className={`fixed top-0 inset-x-0 z-50 border-b border-[#0F1F36]/14 transition-shadow duration-500 ${
-        scrolled
-          ? "bg-[#F6F0E5]/95 shadow-[0_6px_28px_rgba(15,31,54,0.08)] backdrop-blur-md"
-          : "bg-[#F6F0E5]/96"
+        scrolled ? "shadow-[0_6px_28px_rgba(15,31,54,0.08)]" : ""
       }`}
     >
+      {/* 背景 + ブラーはヘッダー本体ではなく内側レイヤーに置く。
+          ヘッダー自身に backdrop-filter を付けると fixed 子孫（モバイルメニュー）の
+          包含ブロックになり、パネルの inset-0 がヘッダー枠に閉じ込められるため。 */}
+      <div
+        aria-hidden
+        className={`absolute inset-0 -z-10 ${
+          scrolled ? "bg-[#F6F0E5]/95 backdrop-blur-md" : "bg-[#F6F0E5]/96"
+        }`}
+      />
       <div className="mx-auto flex h-[72px] max-w-[1760px] items-center justify-between px-5 sm:px-7 md:h-[86px] md:px-9 lg:px-[4.5vw] 2xl:px-16">
         <Link
           href="/#top"
