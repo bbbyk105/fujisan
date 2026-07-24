@@ -1,211 +1,68 @@
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
-import { useRef, type ReactNode } from "react";
-import { ensureGsap, gsap, SplitText, useGSAP } from "./gsap-setup";
+import { Chars, Words } from "./split-text";
 
-ensureGsap();
+type Crumb = { label: string; href: string };
 
-type Crumb = { label: ReactNode; href: string };
+export type HeroChapter = {
+  kanji: string;
+  labelJa: string;
+  labelEn: string;
+};
 
 type Props = {
-  eyebrow: ReactNode;
-  chapter: string;
   titleEn: string;
   titleJp: string;
-  jp: string;
-  lead: ReactNode;
+  leadEn: string;
+  leadJa: string;
   crumbs: Crumb[];
+  chapters: HeroChapter[];
   bgSrc?: string;
   bgPosition?: string;
 };
 
+const GRAIN =
+  "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.7'/></svg>\")";
+
 /**
- * /stories の Hero。
- * - SplitText で英文タイトルを 1 文字ずつ、yPercent + rotate でせり上げ
- * - 日本語タイトルは 1 文字ずつ縦書きで stagger
- * - 富士山背景: clip-path で下から立ち上がる + 雲が横スクロール + 長押しで parallax
- * - カーソル追従の柔らかいスポット（パフォーマンスのため quickTo を使用）
+ * /stories の序（Hero）— 絵巻の巻頭。Server Component（演出は StoriesFx）。
+ * - 日本語: 縦書きタイトル「富士山酒物語」を右に立て、左下に前書きと目次
+ * - 英語: 横組みの大見出しに同じ構成
  */
 export function StoriesHero({
-  eyebrow,
-  chapter,
   titleEn,
   titleJp,
-  jp,
-  lead,
+  leadEn,
+  leadJa,
   crumbs,
+  chapters,
   bgSrc = "/images/fujisan/hero/mtfuji.webp",
   bgPosition = "object-[50%_46%]",
 }: Props) {
-  const root = useRef<HTMLElement | null>(null);
-
-  useGSAP(
-    () => {
-      const reduce = window.matchMedia(
-        "(prefers-reduced-motion: reduce)",
-      ).matches;
-
-      // ----- Split English title (chars within words) -----
-      const titleEl = root.current?.querySelector<HTMLElement>(
-        ".hero-title-en",
-      );
-      let split: SplitText | null = null;
-      if (titleEl) {
-        split = new SplitText(titleEl, {
-          type: "chars,words",
-          charsClass: "char-en",
-          wordsClass: "word-en",
-        });
-      }
-
-      // ----- Master timeline -----
-      const tl = gsap.timeline({
-        defaults: { ease: "power3.out" },
-        delay: 0.1,
-      });
-
-      if (reduce) {
-        // No motion: just make sure everything is visible
-        gsap.set(
-          [
-            ".hero-bg-image",
-            ".char-en",
-            ".jp-char",
-            ".hero-eyebrow > *",
-            ".hero-crumb",
-            ".hero-jp",
-            ".hero-lead",
-            ".hero-meta",
-          ],
-          { y: 0, opacity: 1, clipPath: "inset(0% 0% 0% 0%)" },
-        );
-      } else {
-        // BG: clip-path bottom→top wipe + slow scale-out
-        gsap.set(".hero-bg-image", {
-          clipPath: "inset(100% 0% 0% 0%)",
-          scale: 1.14,
-        });
-        tl.to(
-          ".hero-bg-image",
-          {
-            clipPath: "inset(0% 0% 0% 0%)",
-            duration: 1.6,
-            ease: "power4.out",
-          },
-          0,
-        ).to(
-          ".hero-bg-image",
-          { scale: 1, duration: 2.2, ease: "power2.out" },
-          0,
-        );
-
-        // Crumbs
-        tl.from(
-          ".hero-crumb",
-          { y: 12, opacity: 0, duration: 0.5, stagger: 0.05 },
-          0.1,
-        );
-
-        // Eyebrow (chapter + line + label)
-        tl.from(
-          ".hero-eyebrow > *",
-          { y: 18, opacity: 0, duration: 0.7, stagger: 0.07 },
-          0.25,
-        );
-
-        // English title — char-by-char with slight rotate
-        if (split?.chars?.length) {
-          tl.from(
-            split.chars,
-            {
-              yPercent: 140,
-              rotate: 5,
-              opacity: 0,
-              duration: 1.0,
-              stagger: 0.025,
-              ease: "power4.out",
-            },
-            0.35,
-          );
-        }
-
-        // Japanese title — vertical char stagger
-        tl.from(
-          ".jp-char",
-          {
-            y: 30,
-            opacity: 0,
-            duration: 0.8,
-            stagger: 0.07,
-            ease: "power3.out",
-          },
-          0.55,
-        );
-
-        tl.from(".hero-jp", { y: 18, opacity: 0, duration: 0.7 }, 0.95)
-          .from(".hero-lead", { y: 22, opacity: 0, duration: 0.8 }, 1.05)
-          .from(".hero-meta > *", { y: 14, opacity: 0, duration: 0.6, stagger: 0.08 }, 1.2);
-
-        // 登場シーケンス全体が ~1.95s と長いため、~1.45s に圧縮（NN/g 基準）
-        tl.timeScale(1.35);
-
-        // Parallax on scroll
-        gsap.to(".hero-bg-image", {
-          yPercent: 18,
-          ease: "none",
-          scrollTrigger: {
-            trigger: root.current,
-            start: "top top",
-            end: "bottom top",
-            scrub: 0.4,
-          },
-        });
-        gsap.to(".hero-text-stack", {
-          yPercent: -22,
-          opacity: 0.7,
-          ease: "none",
-          scrollTrigger: {
-            trigger: root.current,
-            start: "top top",
-            end: "bottom top",
-            scrub: 0.4,
-          },
-        });
-
-        // Cursor spotlight (quickTo for 60fps performance)
-        const spot = root.current?.querySelector<HTMLElement>(".hero-spotlight");
-        if (spot) {
-          const xTo = gsap.quickTo(spot, "x", { duration: 0.5, ease: "power3" });
-          const yTo = gsap.quickTo(spot, "y", { duration: 0.5, ease: "power3" });
-          const onMove = (e: PointerEvent) => {
-            const rect = root.current!.getBoundingClientRect();
-            xTo(e.clientX - rect.left);
-            yTo(e.clientY - rect.top);
-          };
-          root.current?.addEventListener("pointermove", onMove);
-          return () => {
-            root.current?.removeEventListener("pointermove", onMove);
-            split?.revert();
-          };
-        }
-      }
-
-      return () => {
-        split?.revert();
-      };
-    },
-    { scope: root },
+  const crumbRow = (
+    <div className="flex flex-wrap items-center gap-2 text-[10.5px] font-semibold tracking-[0.24em]">
+      {crumbs.map((crumb, i) => (
+        <span key={crumb.href} className="hero-crumb flex items-center gap-2">
+          <Link
+            href={crumb.href}
+            className="text-[#0B1A2E]/60 no-underline transition-colors hover:text-[#C9A84C]"
+          >
+            {crumb.label}
+          </Link>
+          {i < crumbs.length - 1 && (
+            <span aria-hidden className="text-[#0B1A2E]/30">
+              /
+            </span>
+          )}
+        </span>
+      ))}
+    </div>
   );
 
   return (
-    <section
-      ref={root}
-      className="fujisan-paper relative isolate overflow-hidden bg-paper pt-[86px] text-[#0B1A2E]"
-    >
-      {/* Background layer */}
-      <div className="absolute inset-x-0 top-[86px] z-0 h-[680px] overflow-hidden md:h-[760px]">
+    <section className="stories-hero relative isolate overflow-hidden bg-paper text-[#0B1A2E]">
+      {/* 背景 */}
+      <div className="absolute inset-0 z-0 overflow-hidden">
         <div className="hero-bg-image absolute inset-0 will-change-transform">
           <Image
             src={bgSrc}
@@ -215,112 +72,118 @@ export function StoriesHero({
             loading="eager"
             fetchPriority="high"
             sizes="100vw"
-            className={`object-cover ${bgPosition}`}
+            className={`fujisan-grade object-cover ${bgPosition}`}
           />
         </div>
-        <div className="absolute inset-0 bg-linear-to-r from-paper-warm/94 via-paper-warm/40 to-[#DCE6EE]/8" />
-        <div className="absolute inset-x-0 top-0 h-32 bg-linear-to-b from-[#F9EFE0]/80 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 h-[260px] bg-linear-to-b from-transparent via-paper/74 to-paper" />
-
-        {/* grain */}
+        <div className="absolute inset-0 bg-linear-to-r from-paper-warm/90 via-paper-warm/30 to-transparent" />
+        <div className="absolute inset-x-0 top-0 h-36 bg-linear-to-b from-[#F9EFE0]/75 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-[240px] bg-linear-to-b from-transparent via-paper/70 to-paper" />
         <div
           aria-hidden
           className="absolute inset-0 mix-blend-overlay opacity-[0.10]"
-          style={{
-            backgroundImage:
-              "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.7'/></svg>\")",
-          }}
-        />
-
-        {/* Cursor spotlight */}
-        <div
-          aria-hidden
-          className="hero-spotlight pointer-events-none absolute -left-[200px] -top-[200px] h-[400px] w-[400px] rounded-full opacity-50 mix-blend-screen"
-          style={{
-            background:
-              "radial-gradient(circle, rgba(226,201,126,0.35) 0%, rgba(226,201,126,0) 70%)",
-            filter: "blur(20px)",
-          }}
+          style={{ backgroundImage: GRAIN }}
         />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-[1440px] px-7 pb-32 pt-12 sm:px-8 md:px-12 md:pb-44 md:pt-24">
-        {/* Crumbs */}
-        {crumbs.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2 text-[10.5px] font-semibold tracking-[0.24em]">
-            {crumbs.map((crumb, i) => (
-              <span key={crumb.href} className="hero-crumb flex items-center gap-2">
-                <Link
-                  href={crumb.href}
-                  className="text-[#0B1A2E]/60 no-underline transition-colors hover:text-[#C9A84C]"
-                >
-                  {crumb.label}
-                </Link>
-                {i < crumbs.length - 1 && (
-                  <span aria-hidden className="text-[#0B1A2E]/30">
-                    /
-                  </span>
-                )}
-              </span>
-            ))}
-          </div>
-        )}
+      <div className="relative z-10 mx-auto flex min-h-[100svh] w-full max-w-[1480px] flex-col px-6 pb-14 pt-[100px] sm:px-8 md:px-12 md:pb-16 md:pt-[118px]">
+        {crumbRow}
 
-        <div className="hero-text-stack mt-10 flex max-w-[920px] flex-col gap-5 will-change-transform">
-          {/* Eyebrow */}
-          <div className="hero-eyebrow flex items-center gap-4">
-            <span className="font-serif text-[11px] font-medium tracking-[0.36em] text-[#C9A84C]">
-              {chapter}
-            </span>
-            <span className="h-px w-12 bg-[#C9A84C]/55" />
-            <span className="text-[10px] font-semibold uppercase tracking-[0.38em] text-[#C9A84C]">
-              {eyebrow}
-            </span>
-          </div>
+        {/* ===== 日本語 — 縦書きの巻頭 ===== */}
+        <div className="i18n-fragment i18n-ja">
+          <div className="hero-text-stack mt-8 flex flex-1 flex-col justify-between gap-14 will-change-transform md:mt-4 md:flex-row-reverse md:items-end md:gap-10">
+            {/* 縦書きタイトル — 夜の富士に掛け軸のように立てる */}
+            <div className="flex items-end justify-end self-end md:pb-10 md:pr-[2vw]">
+              <h1
+                className="tategaki font-serif text-[clamp(46px,8.2vh,92px)] font-semibold leading-[1.05] tracking-[0.14em] text-off-white"
+                style={{ textShadow: "0 1px 24px rgba(11,26,46,0.45)" }}
+              >
+                <Chars text={titleJp} className="hero-char" />
+              </h1>
+            </div>
 
-          {/* Title — bilingual */}
-          <h1
-            aria-label={titleEn}
-            className="font-serif text-[clamp(44px,7vw,108px)] font-semibold leading-[0.96] tracking-[0.02em] text-[#0B1A2E]"
-          >
-            {/* English: SplitText animates .char-en within */}
-            <span className="i18n-fragment i18n-en hero-title-en block">
-              {titleEn}
-            </span>
-            {/* Japanese: manually split into chars */}
-            <span className="i18n-fragment i18n-ja block">
-              {[...titleJp].map((c, i) => (
-                <span
-                  key={`${c}-${i}`}
-                  className="jp-char inline-block"
-                >
-                  {c}
+            {/* 前書き + 目次 */}
+            <div className="flex max-w-[560px] flex-col gap-8 pb-1">
+              <div className="hero-eyebrow flex items-center gap-4">
+                <span className="font-serif text-[12px] tracking-[0.3em] text-[#C9A84C]">
+                  序
                 </span>
-              ))}
-            </span>
-          </h1>
+                <span className="h-px w-12 bg-[#C9A84C]/55" />
+                <span className="font-jp text-[11px] tracking-[0.28em] text-[#0B1A2E]/60">
+                  富士のふもと、六つの覚え書き
+                </span>
+              </div>
 
-          <p className="hero-jp font-jp text-[13px] tracking-[0.32em] text-[#C9A84C]/90">
-            {jp}
-          </p>
+              <p className="hero-lead max-w-[520px] text-[14px] font-light leading-[2.15] text-[#2B2419]/85 md:text-[15px]">
+                {leadJa}
+              </p>
 
-          <p className="hero-lead mt-4 max-w-[640px] text-[14.5px] font-light leading-[1.85] text-[#2B2419]/82 md:text-[16px]">
-            {lead}
-          </p>
+              <nav
+                aria-label="章の目次"
+                className="hero-toc mt-1 flex flex-wrap gap-x-7 gap-y-5"
+              >
+                {chapters.map((c, i) => (
+                  <a
+                    key={c.kanji}
+                    href={`#story-ch-${i + 1}`}
+                    className="group flex flex-col items-center gap-2 no-underline"
+                  >
+                    <span className="font-serif text-[24px] leading-none text-[#0B1A2E]/85 transition-colors duration-300 group-hover:text-[#C9A84C]">
+                      {c.kanji}
+                    </span>
+                    <span className="text-[9.5px] tracking-[0.18em] text-[#0B1A2E]/45">
+                      {c.labelJa}
+                    </span>
+                  </a>
+                ))}
+              </nav>
+            </div>
+          </div>
+        </div>
 
-          {/* Meta row — chapter count */}
-          <div className="hero-meta mt-10 flex flex-wrap items-end gap-x-12 gap-y-6">
-            <div className="flex items-baseline gap-3">
-              <span className="font-serif text-[11px] font-medium tracking-[0.32em] text-[#0B1A2E]/55">
-                CHAPTERS
+        {/* ===== English — horizontal opening ===== */}
+        <div className="i18n-fragment i18n-en">
+          <div className="hero-text-stack mt-10 flex flex-1 flex-col justify-end gap-8 will-change-transform">
+            <div className="hero-eyebrow flex items-center gap-4">
+              <span className="font-serif text-[12px] tracking-[0.3em] text-[#C9A84C]">
+                序
               </span>
-              <span className="font-serif text-[28px] leading-none text-[#0B1A2E]">
-                06
-              </span>
-              <span className="text-[11px] tracking-[0.3em] text-[#0B1A2E]/40">
-                / 六章
+              <span className="h-px w-12 bg-[#C9A84C]/55" />
+              <span className="text-[10px] font-semibold uppercase tracking-[0.38em] text-[#0B1A2E]/60">
+                SIX NOTES FROM THE FOOT OF MT. FUJI
               </span>
             </div>
+
+            <h1 className="max-w-[980px] font-serif text-[clamp(44px,6.6vw,100px)] font-semibold leading-[0.98] tracking-[0.02em] text-[#0B1A2E]">
+              <Words text={titleEn} className="hero-word" masked />
+            </h1>
+
+            <p className="font-jp text-[12.5px] tracking-[0.3em] text-[#C9A84C]/90">
+              ― 富士山酒物語 ―
+            </p>
+
+            <p className="hero-lead max-w-[620px] text-[14.5px] font-light leading-[1.9] text-[#2B2419]/85 md:text-[16px]">
+              {leadEn}
+            </p>
+
+            <nav
+              aria-label="Chapters"
+              className="hero-toc mt-2 flex flex-wrap gap-x-8 gap-y-5"
+            >
+              {chapters.map((c, i) => (
+                <a
+                  key={c.kanji}
+                  href={`#story-ch-${i + 1}`}
+                  className="group flex flex-col items-center gap-2 no-underline"
+                >
+                  <span className="font-serif text-[24px] leading-none text-[#0B1A2E]/85 transition-colors duration-300 group-hover:text-[#C9A84C]">
+                    {c.kanji}
+                  </span>
+                  <span className="text-[9px] uppercase tracking-[0.22em] text-[#0B1A2E]/45">
+                    {c.labelEn}
+                  </span>
+                </a>
+              ))}
+            </nav>
           </div>
         </div>
       </div>
