@@ -6,6 +6,7 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getAuth } from "@/lib/auth";
 import { getDb } from "@/db";
 import { order as orderTable, type OrderLine } from "@/db/orders-schema";
+import { user as userTable } from "@/db/auth-schema";
 import { getFujisanProductBySlug, findVolume } from "@/data/fujisan-products";
 import { SHIPPING_FEE } from "@/data/fujisan-legal";
 import { getStripe } from "@/lib/stripe";
@@ -40,11 +41,12 @@ function makeOrderRef(): string {
  * その URL（Stripe ホスト型決済ページ）を返す。クライアントはこの URL へ遷移する。
  *
  * 設計:
- * - お届け先（氏名・住所・郵便番号・電話）は **Stripe の決済ページで収集**する
- *   （shipping_address_collection / phone_number_collection）。発送は日本国内のみ
- *   なので allowed_countries は ["JP"] に限定。自前の住所フォーム（/checkout）は廃止。
- * - 注文行はここで pending 保存し、住所等は支払い完了後に Webhook が Stripe から
- *   受け取って書き戻す（pending の住所は空文字で開始）。
+ * - お届け先は二経路。**登録情報に郵便番号7桁＋住所があればそれを使い**、
+ *   Stripe の住所収集を省略する。無ければ **Stripe の決済ページで収集**する
+ *   （shipping_address_collection、allowed_countries は ["JP"] 限定）。
+ *   自前の住所フォーム（/checkout）は廃止済み。
+ * - 注文行はここで pending 保存。登録住所はこの時点で書き込み、Stripe 収集の
+ *   場合は支払い完了後に Webhook が書き戻す（Webhook は既存値を空で潰さない）。
  * - 金額はクライアント申告を信用せず、slug + ml からカタログ価格を引き直す。
  * - 認証必須（注文は user に紐づく。ゲスト購入は受け付けない）。
  */
@@ -109,11 +111,41 @@ export async function startCheckoutAction(input: {
     "",
   );
 
-  // 注文を pending で保存。お届け先は支払い完了時に Webhook が Stripe から書き戻すため空で開始。
+  // 登録済みのお届け先（アカウントの登録情報）。郵便番号7桁＋住所が揃っていれば
+  // それを注文に使い、Stripe 決済ページでの住所収集を省略する。
+  let savedAddress: {
+    postalCode: string;
+    address: string;
+    phone: string;
+    name: string;
+  } | null = null;
   const id = crypto.randomUUID();
   const orderRef = makeOrderRef();
   try {
     const db = await getDb();
+    const [profile] = await db
+      .select({
+        name: userTable.name,
+        phone: userTable.phone,
+        postalCode: userTable.postalCode,
+        address: userTable.address,
+      })
+      .from(userTable)
+      .where(eq(userTable.id, user.id))
+      .limit(1);
+    const postal = (profile?.postalCode ?? "").trim();
+    const addr = (profile?.address ?? "").trim();
+    if (/^\d{7}$/.test(postal) && addr.length > 0) {
+      savedAddress = {
+        postalCode: postal,
+        address: addr,
+        phone: (profile?.phone ?? "").trim(),
+        name: (profile?.name ?? user.name ?? "").trim(),
+      };
+    }
+
+    // 注文を pending で保存。登録住所があればその場で書き込み、
+    // 無ければ空で開始して支払い完了時に Webhook が Stripe から書き戻す。
     await db.insert(orderTable).values({
       id,
       userId: user.id,
@@ -124,11 +156,11 @@ export async function startCheckoutAction(input: {
       subtotal,
       shipping,
       total,
-      customerName: (user.name ?? "").trim(),
+      customerName: savedAddress?.name || (user.name ?? "").trim(),
       customerEmail: (user.email ?? "").trim(),
-      postalCode: "",
-      address: "",
-      phone: "",
+      postalCode: savedAddress?.postalCode ?? "",
+      address: savedAddress?.address ?? "",
+      phone: savedAddress?.phone ?? "",
     });
   } catch {
     return { ok: false, error: "db" };
@@ -162,9 +194,19 @@ export async function startCheckoutAction(input: {
       customer_email: (user.email ?? "").trim() || undefined,
       // サイトの言語切替（data-locale）に合わせる。auto はブラウザ依存でズレるため使わない。
       locale: input.locale === "en" ? "en" : "ja",
-      // お届け先住所を Stripe 側で収集。発送は日本国内のみ。
-      shipping_address_collection: { allowed_countries: ["JP"] },
-      phone_number_collection: { enabled: true },
+      // 登録済みのお届け先があれば Stripe での住所収集を省略（登録住所へ発送）。
+      // 無ければ Stripe 決済ページで収集する。発送は日本国内のみ。
+      ...(savedAddress
+        ? {
+            // 電話も未登録の場合だけ Stripe で収集する。
+            ...(savedAddress.phone
+              ? {}
+              : { phone_number_collection: { enabled: true } }),
+          }
+        : {
+            shipping_address_collection: { allowed_countries: ["JP"] },
+            phone_number_collection: { enabled: true },
+          }),
       billing_address_collection: "auto",
       // 注文の逆引きキー。Webhook はこれを使って確定する。
       metadata: { orderId: id, orderRef },

@@ -1,11 +1,12 @@
 "use server";
 
 import { headers } from "next/headers";
-import { eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { getAuth } from "@/lib/auth";
 import { classifyAuthError, type AuthErrorKey } from "@/lib/auth-errors";
 import { getDb } from "@/db";
 import { user as userTable } from "@/db/auth-schema";
+import { order as orderTable } from "@/db/orders-schema";
 import {
   getFieldErrors,
   isEmailLike,
@@ -123,17 +124,47 @@ export async function signOutAction(): Promise<void> {
   }
 }
 
+export type DeleteAccountResult =
+  | { ok: true }
+  | { ok: false; error: AuthErrorKey | "active-orders" };
+
+/** お届けが完了していない（＝退会をブロックする）注文ステータス。 */
+const UNDELIVERED_STATUSES = [
+  "pending",
+  "confirmed",
+  "preparing",
+  "shipped",
+] as const;
+
 /**
  * 退会（アカウント削除）。ログイン中のユーザーを D1 から物理削除する。
+ * お届けが完了していない注文（受付済〜発送済み）が残っている間は退会できない
+ * （配送先・連絡先が消えて発送・返金対応ができなくなるため）。
  * session / account は user.id への onDelete: cascade で自動的に消える。
  * その後 signOut でセッション cookie もクリアする。
  */
-export async function deleteAccountAction(): Promise<AuthActionResult> {
+export async function deleteAccountAction(): Promise<DeleteAccountResult> {
   const auth = await getAuth();
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user?.id) return { ok: false, error: "invalid" };
   try {
     const db = await getDb();
+
+    // 進行中（未配達）の注文があれば退会をブロックする。
+    const undelivered = await db
+      .select({ id: orderTable.id })
+      .from(orderTable)
+      .where(
+        and(
+          eq(orderTable.userId, session.user.id),
+          inArray(orderTable.status, [...UNDELIVERED_STATUSES]),
+        ),
+      )
+      .limit(1);
+    if (undelivered.length > 0) {
+      return { ok: false, error: "active-orders" };
+    }
+
     await db.delete(userTable).where(eq(userTable.id, session.user.id));
     // セッション cookie を確実にクリア（行が消えても残ると 401 ループの原因になる）
     try {

@@ -26,6 +26,12 @@ export const additionalUserFields = {
     required: false,
     input: true,
   },
+  /** 郵便番号（ハイフンなし7桁）。住所とセットで注文時のお届け先に使う。 */
+  postalCode: {
+    type: "string",
+    required: false,
+    input: true,
+  },
   address: {
     type: "string",
     required: false,

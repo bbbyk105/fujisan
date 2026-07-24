@@ -30,6 +30,7 @@ type AccountSession = {
   role?: string;
   companyName?: string | null;
   phone?: string | null;
+  postalCode?: string | null;
   address?: string | null;
 };
 
@@ -65,6 +66,7 @@ export default async function AccountPage() {
     email: user.email,
     companyName: user.companyName ?? "",
     phone: user.phone ?? "",
+    postalCode: user.postalCode ?? "",
     address: user.address ?? "",
   };
   try {
@@ -75,6 +77,7 @@ export default async function AccountPage() {
         name: userTable.name,
         companyName: userTable.companyName,
         phone: userTable.phone,
+        postalCode: userTable.postalCode,
         address: userTable.address,
       })
       .from(userTable)
@@ -84,6 +87,7 @@ export default async function AccountPage() {
       profile.name = rec.name ?? profile.name;
       profile.companyName = rec.companyName ?? "";
       profile.phone = rec.phone ?? "";
+      profile.postalCode = rec.postalCode ?? "";
       profile.address = rec.address ?? "";
     }
     if (rec?.createdAt) {
@@ -108,11 +112,9 @@ export default async function AccountPage() {
     .toUpperCase();
 
   const sidebar = [
-    { id: "overview", number: "01", en: "OVERVIEW", ja: "概要" },
-    { id: "orders", number: "02", en: "ORDERS", ja: "注文・配送" },
-    { id: "profile", number: "03", en: "PROFILE", ja: "登録情報" },
-    { id: "shopping", number: "04", en: "SHOPPING", ja: "お買い物" },
-    { id: "security", number: "05", en: "SECURITY", ja: "セキュリティ" },
+    { id: "orders", number: "01", en: "ORDERS", ja: "注文・配送" },
+    { id: "profile", number: "02", en: "PROFILE", ja: "登録情報" },
+    { id: "security", number: "03", en: "SECURITY", ja: "セキュリティ" },
   ];
 
   return (
@@ -260,73 +262,6 @@ export default async function AccountPage() {
               </div>
             )}
 
-            {/* ===== OVERVIEW ===== */}
-            <Section id="overview" labelEn="OVERVIEW" labelJa="概要">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <SummaryCard
-                  num="01"
-                  titleEn="Your verification status"
-                  titleJa="メール認証ステータス"
-                  bodyEn={
-                    user.emailVerified
-                      ? "All set — verified. You can place orders and view trade pricing where applicable."
-                      : "Open the confirmation link we sent to your inbox to finish verification."
-                  }
-                  bodyJa={
-                    user.emailVerified
-                      ? "認証は完了しています。ご注文・卸価格のご利用が可能です。"
-                      : "受信メール内の確認リンクを開いてご認証を完了してください。"
-                  }
-                  tone={user.emailVerified ? "good" : "warn"}
-                />
-                {orders.length > 0 ? (
-                  <div className="flex flex-col gap-4 border border-[#0B1A2E]/12 bg-[#F1E6CB]/40 px-7 py-7">
-                    <div className="flex items-center justify-between">
-                      <span className="font-serif text-[11px] font-medium tracking-[0.34em] text-[#C9A84C]">
-                        02
-                      </span>
-                      <StatusPill status={orders[0].status} />
-                    </div>
-                    <div>
-                      <h3 className="font-serif text-[15px] font-semibold tracking-[0.04em] text-[#0B1A2E]">
-                        <L en="Your latest order" ja="直近のご注文" />
-                      </h3>
-                      <p className="mt-2 text-[12px] leading-[1.75] text-[#1D2432]/72">
-                        {orders[0].orderRef} ·{" "}
-                        {formatOrderDate(orders[0].createdAt)} ·{" "}
-                        {orders[0].itemsCount} <L en="bottle(s)" ja="本" /> · ¥
-                        {yen.format(orders[0].total)}
-                      </p>
-                      <a
-                        href="#orders"
-                        className="group/latest mt-3 inline-flex items-center gap-2 text-[10.5px] font-semibold tracking-[0.28em] text-[#0B1A2E] no-underline"
-                      >
-                        <span className="relative pb-0.5">
-                          <L en="TRACK PROGRESS" ja="配送状況を見る" />
-                          <span className="absolute inset-x-0 bottom-0 h-px bg-[#0B1A2E]/45 transition-colors duration-500 group-hover/latest:bg-[#C9A84C]" />
-                        </span>
-                        <span
-                          aria-hidden
-                          className="transition-transform duration-500 group-hover/latest:translate-x-1 group-hover/latest:text-[#C9A84C]"
-                        >
-                          →
-                        </span>
-                      </a>
-                    </div>
-                  </div>
-                ) : (
-                  <ActionCard
-                    num="02"
-                    href={isBusiness ? "/shop/business" : "/products"}
-                    titleEn="Find your first bottle"
-                    titleJp="最初の一本を選ぶ"
-                    descEn="Five expressions of Fujisan, brewed at the foot of the mountain."
-                    descJp="富士の麓で醸す、五つの銘柄からお選びください。"
-                  />
-                )}
-              </div>
-            </Section>
-
             {/* ===== ORDERS ===== */}
             <Section id="orders" labelEn="ORDERS" labelJa="注文・配送">
               {orders.length === 0 ? (
@@ -457,67 +392,6 @@ export default async function AccountPage() {
               />
             </Section>
 
-            {/* ===== SHOPPING ===== */}
-            <Section id="shopping" labelEn="SHOPPING" labelJa="お買い物">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {isBusiness ? (
-                  <>
-                    <ActionCard
-                      num="01"
-                      href="/shop/business"
-                      titleEn="View wholesale pricing"
-                      titleJp="卸価格・発注"
-                      descEn="Per-bottle and per-case trade pricing for every label."
-                      descJp="全銘柄の1本・1ケースあたりの卸価格を確認。"
-                    />
-                    <ActionCard
-                      num="02"
-                      href="/contact"
-                      titleEn="Contact your trade desk"
-                      titleJp="お問い合わせ・ご相談"
-                      descEn="Quotes, lead times, brewery visits — in JA / EN."
-                      descJp="お見積り・納期・蔵見学のご相談（日本語・英語）。"
-                    />
-                  </>
-                ) : (
-                  <>
-                    <ActionCard
-                      num="01"
-                      href="/shop/personal"
-                      titleEn="Continue shopping"
-                      titleJp="買い物を続ける"
-                      descEn="Single bottles, delivered with care to your door."
-                      descJp="300ml・180ml の単品を、ご自宅まで丁寧にお届け。"
-                    />
-                    <ActionCard
-                      num="02"
-                      href="/cart"
-                      titleEn="View your cart"
-                      titleJp="カートを見る"
-                      descEn="Review what's in your basket and head to checkout."
-                      descJp="カートの中身を確認し、お支払いへお進みください。"
-                    />
-                  </>
-                )}
-                <ActionCard
-                  num="03"
-                  href="/shipping"
-                  titleEn="Shipping & delivery"
-                  titleJp="配送・送料について"
-                  descEn="Cool-chain delivery, fees, and timing across Japan."
-                  descJp="全国へのクール便・送料・お届け時期について。"
-                />
-                <ActionCard
-                  num="04"
-                  href="/stories"
-                  titleEn="Read the stories"
-                  titleJp="物語を読む"
-                  descEn="Water, rice, the hand of the toji — what's behind every bottle."
-                  descJp="水と米、杜氏の手。一本一本の背景にある物語へ。"
-                />
-              </div>
-            </Section>
-
             {/* ===== SECURITY ===== */}
             <Section id="security" labelEn="SECURITY" labelJa="セキュリティ">
               <div className="border border-[#0B1A2E]/12 bg-paper/65 px-7 py-8 md:px-10 md:py-10">
@@ -607,90 +481,6 @@ function Section({
       </div>
       <div className="mt-6">{children}</div>
     </section>
-  );
-}
-
-function SummaryCard({
-  num,
-  titleEn,
-  titleJa,
-  bodyEn,
-  bodyJa,
-  tone,
-}: {
-  num: string;
-  titleEn: string;
-  titleJa: string;
-  bodyEn: string;
-  bodyJa: string;
-  tone?: "good" | "warn";
-}) {
-  const dot =
-    tone === "good"
-      ? "bg-[#5C8A5C]"
-      : tone === "warn"
-        ? "bg-[#C9A84C]"
-        : "bg-[#0B1A2E]/35";
-  return (
-    <div className="flex flex-col gap-4 border border-[#0B1A2E]/12 bg-[#F1E6CB]/40 px-7 py-7">
-      <div className="flex items-center justify-between">
-        <span className="font-serif text-[11px] font-medium tracking-[0.34em] text-[#C9A84C]">
-          {num}
-        </span>
-        <span aria-hidden className={`h-[6px] w-[6px] rounded-full ${dot}`} />
-      </div>
-      <div>
-        <h3 className="font-serif text-[15px] font-semibold tracking-[0.04em] text-[#0B1A2E]">
-          <L en={titleEn} ja={titleJa} />
-        </h3>
-        <p className="mt-2 text-[12px] leading-[1.75] text-[#1D2432]/72">
-          <L en={bodyEn} ja={bodyJa} />
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function ActionCard({
-  num,
-  href,
-  titleEn,
-  titleJp,
-  descEn,
-  descJp,
-}: {
-  num: string;
-  href: string;
-  titleEn: string;
-  titleJp: string;
-  descEn: string;
-  descJp: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="group flex flex-col gap-3 border border-[#0B1A2E]/14 bg-[#F1E6CB]/35 px-7 py-7 no-underline transition-colors hover:border-[#0B1A2E]/30 hover:bg-[#F1E6CB]/60"
-    >
-      <div className="flex items-center justify-between">
-        <span className="font-serif text-[11px] font-medium tracking-[0.34em] text-[#C9A84C]">
-          {num}
-        </span>
-        <span
-          aria-hidden
-          className="text-[14px] text-[#0B1A2E]/50 transition-transform duration-500 group-hover:translate-x-1 group-hover:text-[#C9A84C]"
-        >
-          →
-        </span>
-      </div>
-      <div>
-        <h3 className="font-serif text-[15px] font-semibold tracking-[0.04em] text-[#0B1A2E]">
-          <L en={titleEn} ja={titleJp} />
-        </h3>
-        <p className="mt-2 text-[12px] leading-[1.75] text-[#1D2432]/72">
-          <L en={descEn} ja={descJp} />
-        </p>
-      </div>
-    </Link>
   );
 }
 

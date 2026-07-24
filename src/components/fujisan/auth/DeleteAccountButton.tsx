@@ -35,7 +35,7 @@ export function DeleteAccountButton() {
     const res = await deleteAccountAction();
     if (!res.ok) {
       setLoading(false);
-      setError("delete-failed");
+      setError(res.error === "active-orders" ? "active-orders" : "delete-failed");
       return;
     }
     window.location.href = "/";
@@ -142,10 +142,17 @@ export function DeleteAccountButton() {
             role="alert"
             className="mt-4 text-[12.5px] leading-[1.65] text-[#8B1A1A]"
           >
-            <L
-              en="Could not delete your account. Please try again."
-              ja="退会処理を完了できませんでした。再度お試しください。"
-            />
+            {error === "active-orders" ? (
+              <L
+                en="You have an order still on its way. Account deletion becomes available once every order has been delivered."
+                ja="お届けが完了していないご注文があるため、いまは退会できません。すべてのご注文のお届け完了後に、あらためてお手続きください。"
+              />
+            ) : (
+              <L
+                en="Could not delete your account. Please try again."
+                ja="退会処理を完了できませんでした。再度お試しください。"
+              />
+            )}
           </p>
         )}
 

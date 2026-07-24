@@ -9,6 +9,7 @@ type Initial = {
   email: string;
   companyName: string;
   phone: string;
+  postalCode: string;
   address: string;
 };
 
@@ -22,7 +23,9 @@ const inputCls =
 
 /**
  * ダッシュボードの「登録情報」を編集するフォーム。
- * 法人は会社名・電話・所在地も編集できる。メールアドレスはここでは変更不可。
+ * 電話・郵便番号・住所は個人／法人ともに編集可（登録済みなら注文時の
+ * お届け先に使われ、Stripe 決済ページでの住所入力を省略できる）。
+ * 会社名は法人のみ。メールアドレスはここでは変更不可。
  */
 export function ProfileEditForm({
   isBusiness,
@@ -34,16 +37,17 @@ export function ProfileEditForm({
   const [name, setName] = useState(initial.name);
   const [companyName, setCompanyName] = useState(initial.companyName);
   const [phone, setPhone] = useState(initial.phone);
+  const [postalCode, setPostalCode] = useState(initial.postalCode);
   const [address, setAddress] = useState(initial.address);
   const [pending, setPending] = useState(false);
   const [notice, setNotice] = useState<Notice>(null);
 
   const dirty =
     name !== initial.name ||
-    (isBusiness &&
-      (companyName !== initial.companyName ||
-        phone !== initial.phone ||
-        address !== initial.address));
+    phone !== initial.phone ||
+    postalCode !== initial.postalCode ||
+    address !== initial.address ||
+    (isBusiness && companyName !== initial.companyName);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -55,13 +59,17 @@ export function ProfileEditForm({
     setPending(true);
     const res = await updateMyProfileAction({
       name,
-      ...(isBusiness ? { companyName, phone, address } : {}),
+      phone,
+      postalCode,
+      address,
+      ...(isBusiness ? { companyName } : {}),
     });
     setPending(false);
     if (!res.ok) {
       const msg: Record<string, string> = {
         unauth: "ログインが切れています。再度ログインしてください。",
         invalid: "入力内容をご確認ください。",
+        postal: "郵便番号は7桁でご入力ください（例: 4180101）。",
         db: "保存に失敗しました。時間をおいて再度お試しください。",
       };
       setNotice({ tone: "err", text: msg[res.error] ?? "保存に失敗しました。" });
@@ -94,41 +102,56 @@ export function ProfileEditForm({
         </FieldBlock>
 
         {isBusiness && (
-          <>
-            <FieldBlock labelEn="COMPANY" labelJp="会社・店舗名">
-              <input
-                type="text"
-                autoComplete="organization"
-                value={companyName}
-                onChange={(e) => setCompanyName(e.target.value)}
-                className={inputCls}
-                placeholder="株式会社〇〇商店"
-              />
-            </FieldBlock>
-            <FieldBlock labelEn="PHONE" labelJp="電話番号">
-              <input
-                type="tel"
-                autoComplete="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className={inputCls}
-                placeholder="03-xxxx-xxxx"
-              />
-            </FieldBlock>
-            <div className="sm:col-span-2">
-              <FieldBlock labelEn="ADDRESS" labelJp="所在地">
-                <input
-                  type="text"
-                  autoComplete="street-address"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  className={inputCls}
-                  placeholder="静岡県〇〇市…"
-                />
-              </FieldBlock>
-            </div>
-          </>
+          <FieldBlock labelEn="COMPANY" labelJp="会社・店舗名">
+            <input
+              type="text"
+              autoComplete="organization"
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
+              className={inputCls}
+              placeholder="株式会社〇〇商店"
+            />
+          </FieldBlock>
         )}
+
+        <FieldBlock labelEn="PHONE" labelJp="電話番号">
+          <input
+            type="tel"
+            autoComplete="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            className={inputCls}
+            placeholder="090-xxxx-xxxx"
+          />
+        </FieldBlock>
+
+        <FieldBlock labelEn="POSTAL CODE" labelJp="郵便番号">
+          <input
+            type="text"
+            inputMode="numeric"
+            autoComplete="postal-code"
+            value={postalCode}
+            onChange={(e) => setPostalCode(e.target.value)}
+            className={inputCls}
+            placeholder="4180101（ハイフンなし7桁）"
+          />
+        </FieldBlock>
+
+        <div className={isBusiness ? "sm:col-span-2" : ""}>
+          <FieldBlock
+            labelEn="ADDRESS"
+            labelJp={isBusiness ? "所在地・お届け先" : "お届け先住所"}
+          >
+            <input
+              type="text"
+              autoComplete="street-address"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              className={inputCls}
+              placeholder="静岡県〇〇市…（建物名・部屋番号まで）"
+            />
+          </FieldBlock>
+        </div>
       </div>
 
       <div className="mt-8 flex flex-wrap items-center gap-5">
@@ -150,14 +173,12 @@ export function ProfileEditForm({
         )}
       </div>
 
-      {!isBusiness && (
-        <p className="mt-5 text-[11.5px] leading-[1.7] text-[#0B1A2E]/55">
-          <L
-            en="Email changes require support. Contact us if you need to update your address on file."
-            ja="メールアドレスの変更はサポート対応が必要です。ご希望の場合はお問い合わせください。"
-          />
-        </p>
-      )}
+      <p className="mt-5 text-[11.5px] leading-[1.7] text-[#0B1A2E]/55">
+        <L
+          en="Save your postal code and address here to skip the address form at checkout — we'll ship to the address on file."
+          ja="郵便番号と住所を登録しておくと、ご注文時の住所入力を省略し、登録のお届け先へ発送します。メールアドレスの変更はお問い合わせください。"
+        />
+      </p>
     </form>
   );
 }
