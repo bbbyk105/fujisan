@@ -214,6 +214,52 @@ export default async function AccountPage() {
           <AccountSidebar items={sidebar} />
 
           <div className="flex flex-col gap-14 md:gap-16">
+            {/* ===== 管理者への入り口（対象者のみ・最上部） ===== */}
+            {isAdmin && (
+              <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border border-[#0B1A2E]/30 bg-[#0B1A2E] px-6 py-5 text-[#F2E4C7]">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] font-semibold tracking-[0.3em] text-[#E2C97E]">
+                    {isOwnerUser
+                      ? "KURAMOTO · 蔵元（オーナー）"
+                      : "KURA STAFF · 蔵スタッフ"}
+                  </span>
+                  <span className="text-[12.5px] tracking-[0.02em] text-[#F2E4C7]/82">
+                    {isOwnerUser
+                      ? "注文・配送の更新に加えて、メンバーの招待・削除ができます。"
+                      : "注文・配送ステータスの更新ができます。"}
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <Link
+                    href="/admin/orders"
+                    className="group/admin inline-flex items-center gap-3 border border-[#E2C97E]/55 bg-[#E2C97E]/[0.08] px-6 py-3 text-[10.5px] font-semibold tracking-[0.32em] text-[#E2C97E] no-underline transition-colors hover:border-[#E2C97E] hover:bg-[#E2C97E]/15"
+                  >
+                    注文管理へ
+                    <span
+                      aria-hidden
+                      className="transition-transform duration-500 group-hover/admin:translate-x-1"
+                    >
+                      →
+                    </span>
+                  </Link>
+                  {isOwnerUser && (
+                    <Link
+                      href="/admin/team"
+                      className="group/team inline-flex items-center gap-3 border border-[#E2C97E]/55 bg-transparent px-6 py-3 text-[10.5px] font-semibold tracking-[0.32em] text-[#E2C97E] no-underline transition-colors hover:border-[#E2C97E] hover:bg-[#E2C97E]/10"
+                    >
+                      メンバー管理
+                      <span
+                        aria-hidden
+                        className="transition-transform duration-500 group-hover/team:translate-x-1"
+                      >
+                        →
+                      </span>
+                    </Link>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* ===== OVERVIEW ===== */}
             <Section id="overview" labelEn="OVERVIEW" labelJa="概要">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -233,13 +279,51 @@ export default async function AccountPage() {
                   }
                   tone={user.emailVerified ? "good" : "warn"}
                 />
-                <SummaryCard
-                  num="02"
-                  titleEn="Account in good standing"
-                  titleJa="アカウントは有効です"
-                  bodyEn="Your registration is active. Use the navigation on the left to update details or manage your session."
-                  bodyJa="ご登録は有効です。左のメニューから登録情報の確認や、ログアウト・退会の操作ができます。"
-                />
+                {orders.length > 0 ? (
+                  <div className="flex flex-col gap-4 border border-[#0B1A2E]/12 bg-[#F1E6CB]/40 px-7 py-7">
+                    <div className="flex items-center justify-between">
+                      <span className="font-serif text-[11px] font-medium tracking-[0.34em] text-[#C9A84C]">
+                        02
+                      </span>
+                      <StatusPill status={orders[0].status} />
+                    </div>
+                    <div>
+                      <h3 className="font-serif text-[15px] font-semibold tracking-[0.04em] text-[#0B1A2E]">
+                        <L en="Your latest order" ja="直近のご注文" />
+                      </h3>
+                      <p className="mt-2 text-[12px] leading-[1.75] text-[#1D2432]/72">
+                        {orders[0].orderRef} ·{" "}
+                        {formatOrderDate(orders[0].createdAt)} ·{" "}
+                        {orders[0].itemsCount} <L en="bottle(s)" ja="本" /> · ¥
+                        {yen.format(orders[0].total)}
+                      </p>
+                      <a
+                        href="#orders"
+                        className="group/latest mt-3 inline-flex items-center gap-2 text-[10.5px] font-semibold tracking-[0.28em] text-[#0B1A2E] no-underline"
+                      >
+                        <span className="relative pb-0.5">
+                          <L en="TRACK PROGRESS" ja="配送状況を見る" />
+                          <span className="absolute inset-x-0 bottom-0 h-px bg-[#0B1A2E]/45 transition-colors duration-500 group-hover/latest:bg-[#C9A84C]" />
+                        </span>
+                        <span
+                          aria-hidden
+                          className="transition-transform duration-500 group-hover/latest:translate-x-1 group-hover/latest:text-[#C9A84C]"
+                        >
+                          →
+                        </span>
+                      </a>
+                    </div>
+                  </div>
+                ) : (
+                  <ActionCard
+                    num="02"
+                    href={isBusiness ? "/shop/business" : "/products"}
+                    titleEn="Find your first bottle"
+                    titleJp="最初の一本を選ぶ"
+                    descEn="Five expressions of Fujisan, brewed at the foot of the mountain."
+                    descJp="富士の麓で醸す、五つの銘柄からお選びください。"
+                  />
+                )}
               </div>
             </Section>
 
@@ -436,51 +520,6 @@ export default async function AccountPage() {
 
             {/* ===== SECURITY ===== */}
             <Section id="security" labelEn="SECURITY" labelJa="セキュリティ">
-              {isAdmin && (
-                <div className="mb-6 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border border-[#0B1A2E]/30 bg-[#0B1A2E] px-6 py-5 text-[#F2E4C7]">
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[10px] font-semibold tracking-[0.3em] text-[#E2C97E]">
-                      {isOwnerUser
-                        ? "KURAMOTO · 蔵元（オーナー）"
-                        : "KURA STAFF · 蔵スタッフ"}
-                    </span>
-                    <span className="text-[12.5px] tracking-[0.02em] text-[#F2E4C7]/82">
-                      {isOwnerUser
-                        ? "注文・配送の更新に加えて、メンバーの招待・削除ができます。"
-                        : "注文・配送ステータスの更新ができます。"}
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap gap-3">
-                    <Link
-                      href="/admin/orders"
-                      className="group/admin inline-flex items-center gap-3 border border-[#E2C97E]/55 bg-[#E2C97E]/[0.08] px-6 py-3 text-[10.5px] font-semibold tracking-[0.32em] text-[#E2C97E] no-underline transition-colors hover:border-[#E2C97E] hover:bg-[#E2C97E]/15"
-                    >
-                      注文管理へ
-                      <span
-                        aria-hidden
-                        className="transition-transform duration-500 group-hover/admin:translate-x-1"
-                      >
-                        →
-                      </span>
-                    </Link>
-                    {isOwnerUser && (
-                      <Link
-                        href="/admin/team"
-                        className="group/team inline-flex items-center gap-3 border border-[#E2C97E]/55 bg-transparent px-6 py-3 text-[10.5px] font-semibold tracking-[0.32em] text-[#E2C97E] no-underline transition-colors hover:border-[#E2C97E] hover:bg-[#E2C97E]/10"
-                      >
-                        メンバー管理
-                        <span
-                          aria-hidden
-                          className="transition-transform duration-500 group-hover/team:translate-x-1"
-                        >
-                          →
-                        </span>
-                      </Link>
-                    )}
-                  </div>
-                </div>
-              )}
-
               <div className="border border-[#0B1A2E]/12 bg-paper/65 px-7 py-8 md:px-10 md:py-10">
                 <h3 className="font-serif text-[16px] font-semibold tracking-[0.04em] text-[#0B1A2E]">
                   <L en="Sign out" ja="ログアウト" />
