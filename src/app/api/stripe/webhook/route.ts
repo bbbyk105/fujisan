@@ -110,16 +110,18 @@ async function fulfillOrder(
     .limit(1);
   if (!row) return; // 注文が見つからない → 受領のみ
 
-  // Stripe が収集したお届け先を取得（最新の完全な状態を取りに行く）
+  // Stripe が収集したお届け先を取得（最新の完全な状態を取りに行く）。
+  // 登録住所を使った注文では Stripe は住所を収集しない（ship = null）ため、
+  // pending 時点で書き込まれた注文行の値を必ずフォールバックとして残す。
   const full = await stripe.checkout.sessions.retrieve(session.id);
   const ship = full.collected_information?.shipping_details;
   const cust = full.customer_details;
-  const addr = ship?.address ?? cust?.address ?? null;
+  const addr = ship?.address ?? null;
   const customerName = (ship?.name || cust?.name || row.customerName || "").trim();
   const customerEmail = (cust?.email || row.customerEmail || "").trim();
-  const phone = (cust?.phone || "").trim();
-  const postalCode = (addr?.postal_code || "").trim();
-  const address = formatJpAddress(addr);
+  const phone = (cust?.phone || row.phone || "").trim();
+  const postalCode = (addr?.postal_code || row.postalCode || "").trim();
+  const address = formatJpAddress(addr) || row.address;
 
   // 返金に使う PaymentIntent id を保存しておく（後で Session を引き直さずに返金できる）。
   const paymentIntentId =

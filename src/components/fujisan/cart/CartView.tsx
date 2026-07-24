@@ -611,8 +611,8 @@ export function CartView() {
 
           <p className="mt-4 text-[10.5px] leading-[1.7] text-[#0B1A2E]/55">
             <L
-              en="Name, address and payment are entered securely on the next screen (Stripe)."
-              ja="お名前・ご住所・お支払いは、次の画面（Stripe の安全な決済ページ）でご入力いただきます。"
+              en="Payment is completed securely on the next screen (Stripe). We ship to the address on your account — if none is saved, you'll enter it at checkout."
+              ja="お支払いは次の画面（Stripe の安全な決済ページ）で行います。お届け先はご登録の住所へ。未登録の場合は決済画面でご入力いただきます。"
             />
           </p>
         </aside>

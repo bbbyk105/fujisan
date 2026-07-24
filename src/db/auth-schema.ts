@@ -21,6 +21,8 @@ export const user = sqliteTable("user", {
   adminRole: text("admin_role"),
   companyName: text("company_name"),
   phone: text("phone"),
+  /** 郵便番号（ハイフンなし7桁）。住所とセットで登録すると Stripe の住所収集を省略できる。 */
+  postalCode: text("postal_code"),
   address: text("address"),
 });
 
