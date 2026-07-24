@@ -57,3 +57,4 @@ cloudflare-env.d.ts
 skills/
 skills-lock.json
 .claude/skills/
+.gstack/
