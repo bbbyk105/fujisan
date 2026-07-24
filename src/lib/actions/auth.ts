@@ -216,14 +216,19 @@ export async function resetPasswordAction(input: {
   }
 }
 
-/** Google OAuth の開始 URL をサーバーで生成して返す。クライアントはこの URL へ遷移する。 */
+/**
+ * Google OAuth の開始 URL をサーバーで生成して返す。クライアントはこの URL へ遷移する。
+ * errorCallbackURL を指定すると、OAuth 失敗時に Better Auth の素のエラーページではなく
+ * そのパスへ ?error=... 付きで戻される。
+ */
 export async function googleStartAction(
   callbackURL: string,
+  errorCallbackURL?: string,
 ): Promise<{ url: string | null }> {
   const auth = await getAuth();
   try {
     const res = await auth.api.signInSocial({
-      body: { provider: "google", callbackURL },
+      body: { provider: "google", callbackURL, errorCallbackURL },
       headers: await headers(),
     });
     return { url: (res as { url?: string })?.url ?? null };
