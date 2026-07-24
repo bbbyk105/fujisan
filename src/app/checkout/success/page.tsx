@@ -74,8 +74,8 @@ export default async function CheckoutSuccessPage({
               />
             ) : (
               <L
-                en="We've received your order and emailed a confirmation. Bottles are hand-checked at the kura and dispatched within two business days. We'll send tracking when it ships."
-                ja="ご注文を承り、確認メールをお送りしました。蔵でひとつずつ検品し、原則 2 営業日以内に発送いたします。発送時に追跡番号をメールでお知らせします。"
+                en="We've received your order and emailed a confirmation. Bottles are hand-checked one by one and dispatched within two business days. We'll send tracking when it ships."
+                ja="ご注文を承り、確認メールをお送りしました。ひとつずつ検品し、原則 2 営業日以内に発送いたします。発送時に追跡番号をメールでお知らせします。"
               />
             )}
           </p>

@@ -28,7 +28,7 @@ const stories: Story[] = [
       "Fujisan is a winter sake. Cold air keeps fermentation slow and clean, so brewing runs from late autumn into the coldest weeks of the year. The mornings start early, and a lot of the work is judged by smell and touch.",
     excerptJp:
       "富士山は冬の酒です。冷たい空気が発酵をゆっくり、澄んだものに保つので、仕込みは晩秋から一年で最も寒い時期にかけて行います。朝は早く、多くは香りと手ざわりで見極めます。",
-    image: "/images/fujisan/toji.webp",
+    image: "/images/fujisan/tohji.webp",
     position: "object-[50%_28%]",
     href: "/craft/brewing",
     ctaEn: "READ THE FULL CRAFT",
@@ -46,7 +46,7 @@ const stories: Story[] = [
       "The daiginjo leans on Yamadanishiki, blended with Homarefuji, a sake rice bred here in Shizuoka. Polish away the outer grain and mostly the starchy heart is left. That is where the clean, quiet sweetness comes from.",
     excerptJp:
       "大吟醸の軸は山田錦。静岡で生まれた酒米、誉富士を合わせます。米の外側を削ると、でんぷん質の中心が残る。澄んだ静かな甘みは、そこから生まれます。",
-    image: "/images/fujisan/features/ricebox.webp",
+    image: "/images/fujisan/features/rice-inaho.png",
     position: "object-[50%_46%]",
     href: "/craft/rice",
     ctaEn: "READ THE FULL STORY",
@@ -141,8 +141,8 @@ export default function StoriesPage() {
           labelJa: s.tocJa,
           labelEn: s.tocEn,
         }))}
-        bgSrc="/images/afternoon-fuji.webp"
-        bgPosition="object-[50%_50%]"
+        bgSrc="/images/torii-fuji.webp"
+        bgPosition="object-[55%_62%]"
       />
 
       <StoriesNarrative stories={stories} />

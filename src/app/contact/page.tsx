@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import FujisanNav from "@/components/fujisan/FujisanNav";
 import FujisanFooter from "@/components/fujisan/FujisanFooter";
@@ -96,7 +95,7 @@ export default function ContactPage() {
               className="mt-5 max-w-[560px] font-serif text-[clamp(24px,2.6vw,34px)] font-semibold leading-[1.18] tracking-[0.06em] text-[#0B1A2E]"
               delay={revealDelays.d1}
             >
-              <L en="Write to the brewhouse." ja="蔵元へ、お便りを。" />
+              <L en="Write to us." ja="私たちへ、お便りを。" />
             </Reveal>
 
             <Reveal delay={revealDelays.d2}>
@@ -200,39 +199,7 @@ export default function ContactPage() {
           aria-hidden
           className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-[#D7B46A]/40 to-transparent"
         />
-        <div className="mx-auto grid max-w-[1280px] grid-cols-1 lg:grid-cols-[1fr_1fr]">
-          <div className="relative min-h-[300px] overflow-hidden md:min-h-[440px]">
-            <Image
-              src="/images/fujisan/hero/mtfuji.webp"
-              alt="Mt. Fuji at the foot of the brewery"
-              fill
-              priority
-              loading="eager"
-              fetchPriority="high"
-              sizes="(min-width: 1024px) 50vw, 100vw"
-              className="object-cover object-[50%_46%]"
-            />
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0 bg-linear-to-r from-transparent via-transparent to-[#0F1D30]/60"
-            />
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0 bg-linear-to-t from-[#0F1D30]/45 via-transparent to-transparent"
-            />
-            <div className="absolute bottom-6 left-6 max-w-[320px] sm:bottom-10 sm:left-10">
-              <p className="font-jp text-[11px] tracking-[0.32em] text-[#D7B46A]/85">
-                ― 蔵元の所在 ―
-              </p>
-              <p className="mt-3 font-serif text-[clamp(18px,1.8vw,22px)] font-semibold leading-[1.35] tracking-[0.06em] text-[#F2E4C7]">
-                FUJISAN BREWHOUSE
-              </p>
-              <p className="mt-1 font-serif text-[12px] tracking-[0.22em] text-[#F2E4C7]/72">
-                富士山酒造
-              </p>
-            </div>
-          </div>
-
+        <div className="mx-auto max-w-[1280px]">
           <div className="fujisan-dark-panel relative px-7 py-16 sm:px-10 md:px-14 md:py-20">
             <span
               aria-hidden

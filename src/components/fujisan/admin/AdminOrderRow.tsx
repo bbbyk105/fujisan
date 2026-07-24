@@ -13,7 +13,7 @@ const yen = new Intl.NumberFormat("ja-JP");
 const STATUS_LABELS_JA: Record<OrderStatus, string> = {
   pending: "受付済",
   confirmed: "注文確定",
-  preparing: "蔵で準備中",
+  preparing: "発送準備中",
   shipped: "発送済み",
   delivered: "お届け済",
   cancelled: "キャンセル",

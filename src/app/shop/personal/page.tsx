@@ -28,7 +28,7 @@ const steps = [
     ja: "一本を選ぶ",
     desc: {
       en: "Browse five expressions of Fujisan and open the bottle that calls to you. Each detail page shows its temperature and brewer notes.",
-      ja: "五種の銘柄から、気になる一本をお選びください。各商品ページに、おすすめの温度・蔵元の言葉を記しています。",
+      ja: "五種の銘柄から、気になる一本をお選びください。各商品ページに、おすすめの温度・造り手の言葉を記しています。",
     },
   },
   {
@@ -45,8 +45,8 @@ const steps = [
     en: "Receive it at home",
     ja: "ご自宅でお受け取り",
     desc: {
-      en: "Hand-checked at the kura, shipped within two business days. Cool-chain available on request — the courier will verify age again at the door.",
-      ja: "蔵でひとつずつ検品し、原則 2 営業日以内に発送します。クール便も承ります。お受け取りの際にも、年齢の確認をお願いいたします。",
+      en: "Hand-checked one by one, shipped within two business days. Cool-chain available on request — the courier will verify age again at the door.",
+      ja: "ひとつずつ検品し、原則 2 営業日以内に発送します。クール便も承ります。お受け取りの際にも、年齢の確認をお願いいたします。",
     },
   },
 ];
@@ -69,8 +69,8 @@ export default function ShopPersonalPage() {
         jp="― 一本から、家へ ―"
         lead={
           <L
-            en="Single bottles in 300 ml and 180 ml, gift-ready, shipped from our small brewhouse in Shizuoka. We hand-check every order — and verify age at order and at delivery."
-            ja="300ml・180ml の単品を、贈り物にも。静岡の小さな蔵から、ひとつずつ検品してお届けします。ご注文時とお届け時に、年齢を確認します。"
+            en="Single bottles in 300 ml and 180 ml, gift-ready, shipped with care from Shizuoka. We hand-check every order — and verify age at order and at delivery."
+            ja="300ml・180ml の単品を、贈り物にも。静岡から、ひとつずつ検品してお届けします。ご注文時とお届け時に、年齢を確認します。"
           />
         }
         crumbs={[
@@ -104,8 +104,8 @@ export default function ShopPersonalPage() {
             delay={revealDelays.d1}
           >
             <L
-              en="Three quiet steps, from the kura to your door."
-              ja="蔵から、玄関先まで。三つの静かな手順。"
+              en="Three quiet steps, from Shizuoka to your door."
+              ja="静岡から、玄関先まで。三つの静かな手順。"
             />
           </Reveal>
 

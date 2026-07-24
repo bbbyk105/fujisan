@@ -32,8 +32,8 @@ const sections: InfoSection[] = [
     body: [
       <L
         key="b"
-        en="Your information is used to fulfill orders, respond to enquiries, send transactional emails, and — when you opt in — share occasional news from the brewhouse."
-        ja="取得した情報は、ご注文の履行、お問い合わせへの対応、取引上のメール送信、そしてご希望いただいた場合に限り、蔵元からのお知らせの配信に利用します。"
+        en="Your information is used to fulfill orders, respond to enquiries, send transactional emails, and — when you opt in — share occasional news from us."
+        ja="取得した情報は、ご注文の履行、お問い合わせへの対応、取引上のメール送信、そしてご希望いただいた場合に限り、当店からのお知らせの配信に利用します。"
       />,
     ],
     bullets: [
@@ -88,8 +88,8 @@ const sections: InfoSection[] = [
     body: [
       <L
         key="b"
-        en="You may request a copy of the personal data we hold about you, ask us to correct inaccuracies, or request deletion. Contact us at privacy@fujisan-sake.com and we will respond within thirty days."
-        ja="当社が保有するお客様の個人データの開示・訂正・削除をご請求いただけます。privacy@fujisan-sake.com までご連絡ください。30日以内にご対応いたします。"
+        en="You may request a copy of the personal data we hold about you, ask us to correct inaccuracies, or request deletion. Contact us at mtfujipharmacy@gmail.com and we will respond within thirty days."
+        ja="当社が保有するお客様の個人データの開示・訂正・削除をご請求いただけます。mtfujipharmacy@gmail.com までご連絡ください。30日以内にご対応いたします。"
       />,
     ],
   },

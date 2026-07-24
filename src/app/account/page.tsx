@@ -255,8 +255,8 @@ export default async function AccountPage() {
                   </p>
                   <p className="mx-auto mt-3 max-w-[42ch] text-[12.5px] leading-[1.75] text-[#1D2432]/70">
                     <L
-                      en="Once you place your first order, you'll be able to track its progress here — from the kura to your door."
-                      ja="ご注文後は、蔵での準備から発送・お届けまでの進行をこちらでご覧いただけます。"
+                      en="Once you place your first order, you'll be able to track its progress here — from preparation to your door."
+                      ja="ご注文後は、発送準備からお届けまでの進行をこちらでご覧いただけます。"
                     />
                   </p>
                   <Link
@@ -675,7 +675,7 @@ function StatusPill({ status }: { status: string }) {
     preparing: {
       cls: "border-[#C9A84C]/60 bg-[#F1E6CB]/65 text-[#0B1A2E]",
       en: "Preparing",
-      ja: "蔵で準備中",
+      ja: "発送準備中",
       dot: "bg-[#C9A84C]",
     },
     shipped: {

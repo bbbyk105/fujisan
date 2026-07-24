@@ -56,13 +56,14 @@ export const fujisanCraftPillars: CraftPillar[] = [
     title: "FROM MT. FUJI",
     jp: "富士の水",
     catchJp: "山が静かに、水を磨く。",
-    lead: "Snowmelt that has slept inside Mt. Fuji for half a century reaches our brewhouse soft, pure, and almost weightless on the tongue.",
-    leadJp: "半世紀のあいだ富士山の内に眠った雪解け水が、やわらかく澄んで、舌の上で重さを感じさせないほど軽やかに蔵へと届きます。",
+    lead: "Snowmelt that has slept inside Mt. Fuji for half a century reaches the brewhouse soft, pure, and almost weightless on the tongue.",
+    leadJp:
+      "半世紀のあいだ富士山の内に眠った雪解け水が、やわらかく澄んで、舌の上で重さを感じさせないほど軽やかに蔵へと届きます。",
     storyTitle: "A river that began in the snow",
     storyTitleJp: "雪から始まる、一筋の水",
     storyEn: [
       "Every drop of Fujisan sake begins with snow that fell on Mt. Fuji long before our brewers were born. Slowly, year after year, it filters down through layers of porous volcanic rock — basalt, scoria, and andesite — losing impurities and gaining minerals at a measured, patient rhythm.",
-      "By the time the water surfaces in the springs surrounding our brewhouse, it has spent forty to sixty years inside the mountain. The result is what brewers call ‘soft water’ — low in iron, low in manganese, gentle in calcium — the ideal canvas for koji and yeast to bloom slowly and cleanly.",
+      "By the time the water surfaces in the springs surrounding the brewhouse, it has spent forty to sixty years inside the mountain. The result is what brewers call ‘soft water’ — low in iron, low in manganese, gentle in calcium — the ideal canvas for koji and yeast to bloom slowly and cleanly.",
       "We never treat it. We never alter its mineral balance. We simply receive it, and let the mountain decide the temper of every batch.",
     ],
     storyJp: [
@@ -113,28 +114,32 @@ export const fujisanCraftPillars: CraftPillar[] = [
         en: "Snowfall",
         jp: "降雪",
         desc: "Fresh snow settles on the slopes between 1,500m and 3,776m through long Fuji winters.",
-        descJp: "長い富士の冬を通じて、標高1,500m〜3,776mの斜面に新雪が降り積もります。",
+        descJp:
+          "長い富士の冬を通じて、標高1,500m〜3,776mの斜面に新雪が降り積もります。",
       },
       {
         num: "Ⅱ",
         en: "Filtration",
         jp: "濾過",
         desc: "Decades of slow descent through volcanic strata strip impurities from the meltwater.",
-        descJp: "火山岩の層を数十年かけてゆっくり下る間に、雪解け水から不純物が取り除かれます。",
+        descJp:
+          "火山岩の層を数十年かけてゆっくり下る間に、雪解け水から不純物が取り除かれます。",
       },
       {
         num: "Ⅲ",
         en: "Spring",
         jp: "湧出",
         desc: "Cool, soft, mineral-balanced water rises in the foothills around the brewhouse.",
-        descJp: "冷たく、やわらかく、ミネラルの整った水が、蔵の周りの麓に湧き出します。",
+        descJp:
+          "冷たく、やわらかく、ミネラルの整った水が、蔵の周りの麓に湧き出します。",
       },
       {
         num: "Ⅳ",
         en: "Brewing",
         jp: "醸造",
         desc: "Used unaltered to wash, steam, and brew — every Fujisan bottle carries the mountain.",
-        descJp: "手を加えずに洗米・蒸し・仕込みへ。富士山の一本一本が、山を宿します。",
+        descJp:
+          "手を加えずに洗米・蒸し・仕込みへ。富士山の一本一本が、山を宿します。",
       },
     ],
     pullQuote: "“The water is the silence that lets the rice speak.”",
@@ -149,17 +154,18 @@ export const fujisanCraftPillars: CraftPillar[] = [
     jp: "厳選米",
     catchJp: "粒の中心に、酒の真ん中がある。",
     lead: "Yamadanishiki and Homarefuji — heirloom sakamai grown by partner farms whose families have polished their craft alongside ours for generations.",
-    leadJp: "山田錦と誉富士。代々にわたり蔵とともに技を磨いてきた契約農家が育てる、由緒ある酒造好適米です。",
+    leadJp:
+      "山田錦と誉富士。代々にわたり蔵とともに技を磨いてきた契約農家が育てる、由緒ある酒造好適米です。",
     storyTitle: "Rice grown for sake, not for the table",
     storyTitleJp: "食べるためでなく、醸すための米",
     storyEn: [
       "Sake-rice is not the rice you eat at dinner. The grains are larger, the starch core (shinpaku) sits clearly at the heart of each kernel, and the outer layers — fats and proteins that would muddy the brew — are gently polished away.",
-      "We work directly with terraced farms in Hyogo and Shizuoka. Their soil, their water, and their hands shape the ingredient long before it ever reaches our tanks. Some plots have been brewing for us across three generations.",
+      "The kura works directly with terraced farms in Hyogo and Shizuoka. Their soil, their water, and their hands shape the ingredient long before it ever reaches the tanks. Some plots have supplied the brewery across three generations.",
       "Polishing rates of 40–60% strip the kernels back to their starchy heart. What remains is essence: clean sugars that the koji will translate into the soul of the sake.",
     ],
     storyJp: [
       "酒米は食用米とは別物です。粒は大きく、中心には心白という白い澱粉の塊があり、外側に多い脂質や蛋白質は、丁寧に磨いて削ぎ落とします。",
-      "兵庫・静岡の契約農家とともに、土と水と人の仕事から米を選びます。三代にわたり弊蔵に米を届けてくださる田もあります。",
+      "兵庫・静岡の契約農家とともに、土と水と人の仕事から米を選びます。三代にわたり、蔵に米を届けてくださる田もあります。",
       "精米歩合四十%から六十%。残るのは粒の真ん中、澱粉の核だけ。麹はこの清らかな糖を、酒の魂へと翻訳していきます。",
     ],
     heroImage: "/images/fujisan/features/ricebox.webp",
@@ -212,21 +218,24 @@ export const fujisanCraftPillars: CraftPillar[] = [
         en: "Polish",
         jp: "精米",
         desc: "Outer bran is gradually removed; only the starchy heart remains for the brewer.",
-        descJp: "外側の糠を少しずつ削り、澱粉質の芯だけを蔵人のために残します。",
+        descJp:
+          "外側の糠を少しずつ削り、澱粉質の芯だけを蔵人のために残します。",
       },
       {
         num: "Ⅲ",
         en: "Wash & Steep",
         jp: "洗米",
         desc: "Each batch is washed and timed to the second to absorb just enough water.",
-        descJp: "一仕込みごとに洗い、秒単位で時間を計って、必要なだけの水を吸わせます。",
+        descJp:
+          "一仕込みごとに洗い、秒単位で時間を計って、必要なだけの水を吸わせます。",
       },
       {
         num: "Ⅳ",
         en: "Steam",
         jp: "蒸米",
         desc: "Slow steaming firms the outside while keeping the core soft for the koji.",
-        descJp: "じっくり蒸すことで外側を締め、麹のために芯はやわらかく保ちます。",
+        descJp:
+          "じっくり蒸すことで外側を締め、麹のために芯はやわらかく保ちます。",
       },
     ],
     pullQuote:
@@ -243,22 +252,23 @@ export const fujisanCraftPillars: CraftPillar[] = [
     jp: "伝統醸造",
     catchJp: "蔵人の手、季節の声。",
     lead: "Across a hundred winter days the toji and his kurabito coax water, rice, and koji into a sake that carries Mt. Fuji’s stillness.",
-    leadJp: "百日に及ぶ冬のあいだ、杜氏と蔵人が水と米と麹に寄り添い、富士山の静けさを宿す一献へと導きます。",
+    leadJp:
+      "百日に及ぶ冬のあいだ、杜氏と蔵人が水と米と麹に寄り添い、富士山の静けさを宿す一献へと導きます。",
     storyTitle: "A hundred days of winter",
     storyTitleJp: "冬の、百日",
     storyEn: [
-      "Brewing season opens in late autumn, when the first frost descends from the upper slopes. From that morning the toji — our master brewer — leads the kurabito in an unbroken hundred-day rhythm of washing, steaming, and tending.",
+      "The Bushido series is brewed at Makino Shuzo Goshi Kaisha, a kura at the foot of Mt. Fuji. Brewing season opens in late autumn, when the first frost descends from the upper slopes. From that morning the toji — the master brewer — leads the kurabito in an unbroken hundred-day rhythm of washing, steaming, and tending.",
       "Koji is grown on cedar trays in a warm, humid muro for forty hours, checked by eye and palm. The shubo, the seed mash, is built slowly so that yeast multiplies without strain. The main mash, moromi, ferments for three to four weeks at low temperature, every change noted by hand.",
       "Pressing is done gently, often by airbag, sometimes by the slow drip of fukurozuri for our most delicate cuvées. Then the sake rests in the darkness of the brewery — listening, settling, becoming itself.",
     ],
     storyJp: [
-      "仕込みは初霜の頃に始まります。杜氏のもと、蔵人たちは百日の冬を、洗い・蒸し・育てるという連続したリズムで通り抜けます。",
+      "武士道シリーズは、富士山麓の蔵・牧野酒造合資会社で醸されます。仕込みは初霜の頃に始まります。杜氏のもと、蔵人たちは百日の冬を、洗い・蒸し・育てるという連続したリズムで通り抜けます。",
       "麹は四十時間、麹室で育てられ、手と目で温度と湿度を確かめます。酒母は無理をせず、酵母が静かに増えるよう導きます。本仕込みは三〜四週間、低温で進めながら、毎日の変化を一手に記録します。",
       "搾りはやさしく。最も繊細な銘柄には、袋に詰めて雫を集める袋吊りも。酒は蔵の闇でしばらく休み、自分自身になっていきます。",
     ],
-    heroImage: "/images/fujisan/toji.webp",
+    heroImage: "/images/fujisan/tohji.webp",
     heroPosition: "object-[50%_28%]",
-    detailImage: "/images/fujisan/toji.webp",
+    detailImage: "/images/fujisan/tohji.webp",
     stats: [
       {
         label: "BREW SEASON",
@@ -299,7 +309,8 @@ export const fujisanCraftPillars: CraftPillar[] = [
         en: "Koji",
         jp: "麹造り",
         desc: "Steamed rice is cultured with koji-kin for forty hours in a warm cedar muro.",
-        descJp: "蒸した米に麹菌をつけ、温かい杉の麹室で四十時間かけて育てます。",
+        descJp:
+          "蒸した米に麹菌をつけ、温かい杉の麹室で四十時間かけて育てます。",
       },
       {
         num: "Ⅱ",
@@ -313,7 +324,8 @@ export const fujisanCraftPillars: CraftPillar[] = [
         en: "Moromi",
         jp: "本仕込み",
         desc: "Three additions of rice, water, and koji over four days build the main mash.",
-        descJp: "四日間に三度、米・水・麹を加える三段仕込みで、もろみを仕立てます。",
+        descJp:
+          "四日間に三度、米・水・麹を加える三段仕込みで、もろみを仕立てます。",
       },
       {
         num: "Ⅳ",
@@ -323,9 +335,9 @@ export const fujisanCraftPillars: CraftPillar[] = [
         descJp: "もろみをやさしく搾り、若い酒は蔵の寒さの中で静かに休みます。",
       },
     ],
-    pullQuote: "“We do not make sake. We listen, and the season makes it for us.”",
-    pullQuoteJp:
-      "「私たちは酒を造らない。耳を澄ませば、季節が醸してくれる。」",
+    pullQuote:
+      "“We do not make sake. We listen, and the season makes it for us.”",
+    pullQuoteJp: "「私たちは酒を造らない。耳を澄ませば、季節が醸してくれる。」",
   },
 ];
 

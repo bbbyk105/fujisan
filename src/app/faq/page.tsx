@@ -101,8 +101,8 @@ const sections: InfoSection[] = [
     body: [
       <L
         key="b"
-        en="We welcome small groups by appointment. Visits run from November through March, when the brewhouse is at work. Please write to visit@fujisan-sake.com to enquire."
-        ja="ご予約制で、少人数の見学を承っております。仕込みの行われる11月〜3月に実施しています。visit@fujisan-sake.com までお問い合わせください。"
+        en="Small-group visits to Makino Shuzo, the kura that brews the Bushido series, can be arranged by appointment. Visits run from November through March, when the brewhouse is at work. Please write to mtfujipharmacy@gmail.com to enquire."
+        ja="武士道シリーズを醸す牧野酒造合資会社の蔵見学を、ご予約制・少人数で承っております。仕込みの行われる11月〜3月に実施しています。mtfujipharmacy@gmail.com までお問い合わせください。"
       />,
     ],
   },
@@ -118,8 +118,8 @@ const sections: InfoSection[] = [
     body: [
       <L
         key="b"
-        en="We work with a small, considered list of restaurants and retailers. If our sake fits your programme, please contact trade@fujisan-sake.com with a brief introduction to your venue."
-        ja="限られた数の飲食店・小売店さまとお取引しています。貴店に合いそうでしたら、お店のご紹介を添えて trade@fujisan-sake.com までご連絡ください。"
+        en="We work with a small, considered list of restaurants and retailers. If our sake fits your programme, please contact mtfujipharmacy@gmail.com with a brief introduction to your venue."
+        ja="限られた数の飲食店・小売店さまとお取引しています。貴店に合いそうでしたら、お店のご紹介を添えて mtfujipharmacy@gmail.com までご連絡ください。"
       />,
     ],
   },
@@ -132,8 +132,8 @@ const sections: InfoSection[] = [
     body: [
       <L
         key="b"
-        en="Email care@fujisan-sake.com. Our small team is in Shizuoka and replies in Japanese or English, usually within one business day."
-        ja="care@fujisan-sake.com までメールをお送りください。静岡の小さなチームが、通常1営業日以内に日本語または英語でご返信します。"
+        en="Email mtfujipharmacy@gmail.com. Our small team is in Shizuoka and replies in Japanese or English, usually within one business day."
+        ja="mtfujipharmacy@gmail.com までメールをお送りください。静岡の小さなチームが、通常1営業日以内に日本語または英語でご返信します。"
       />,
     ],
   },

@@ -7,7 +7,7 @@ type Step = { key: OrderStatus; en: string; ja: string };
 const STEPS: Step[] = [
   { key: "pending", en: "Received", ja: "受付済" },
   { key: "confirmed", en: "Confirmed", ja: "注文確定" },
-  { key: "preparing", en: "Preparing at kura", ja: "蔵で準備中" },
+  { key: "preparing", en: "Preparing", ja: "発送準備中" },
   { key: "shipped", en: "Shipped", ja: "発送済み" },
   { key: "delivered", en: "Delivered", ja: "お届け済" },
 ];

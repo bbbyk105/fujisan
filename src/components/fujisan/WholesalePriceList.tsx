@@ -12,11 +12,23 @@ export async function WholesalePriceList() {
 
   if (!isBusiness) {
     return (
-      <div className="border border-[#0B1A2E]/14 bg-[#F1E6CB]/45 px-7 py-12 text-center md:px-12 md:py-16">
+      <div className="relative overflow-hidden border border-[#0B1A2E]/14 bg-[#F1E6CB]/45 px-7 py-14 text-center md:px-12 md:py-20">
+        <svg
+          aria-hidden
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.4"
+          strokeLinecap="round"
+          className="mx-auto h-6 w-6 text-[#C9A84C]"
+        >
+          <rect x="5" y="11" width="14" height="9" rx="1" />
+          <path d="M8 11V7a4 4 0 1 1 8 0v4" />
+        </svg>
         <span className="font-jp text-[12px] tracking-[0.3em] text-[#C9A84C]">
           ― ログインで卸価格を表示 ―
         </span>
-        <h3 className="mx-auto mt-5 max-w-[520px] font-serif text-[clamp(20px,2.2vw,28px)] font-semibold leading-[1.3] tracking-[0.05em] text-[#0B1A2E]">
+        <h3 className="mx-auto mt-4 max-w-[520px] font-serif text-[clamp(20px,2.2vw,28px)] font-semibold leading-[1.3] tracking-[0.05em] text-[#0B1A2E]">
           <L
             en="Wholesale pricing is shown to signed-in trade accounts."
             ja="卸価格は、ログインした取扱店のみに表示されます。"
@@ -48,50 +60,54 @@ export async function WholesalePriceList() {
   }
 
   return (
-    <div className="border-t border-[#0B1A2E]/15">
-      {/* Header row */}
-      <div className="hidden grid-cols-[1.6fr_1fr_1fr] items-end gap-4 border-b border-[#0B1A2E]/12 py-4 sm:grid">
-        <span className="text-[10px] font-semibold tracking-[0.3em] text-[#0B1A2E]/60">
-          PRODUCT · 銘柄
-        </span>
-        <span className="text-right text-[10px] font-semibold tracking-[0.3em] text-[#0B1A2E]/60">
-          PER BOTTLE · 1本
-        </span>
-        <span className="text-right text-[10px] font-semibold tracking-[0.3em] text-[#0B1A2E]/60">
-          PER CASE · 1ケース
-        </span>
-      </div>
+    <div>
+      <div className="border border-[#0B1A2E]/14 bg-paper-card">
+        {/* Header row — モバイルでも出して列の意味を常に示す */}
+        <div className="grid grid-cols-[1fr_auto_auto] items-end gap-x-5 border-b border-[#0B1A2E]/14 px-4 py-3.5 sm:gap-x-8 sm:px-6">
+          <span className="text-[10px] font-semibold tracking-[0.3em] text-[#0B1A2E]/60">
+            <L en="PRODUCT" ja="銘柄" />
+          </span>
+          <span className="text-right text-[10px] font-semibold tracking-[0.24em] text-[#0B1A2E]/60">
+            <L en="PER BOTTLE" ja="1本" />
+          </span>
+          <span className="text-right text-[10px] font-semibold tracking-[0.24em] text-[#0B1A2E]/60">
+            <L en="PER CASE" ja="1ケース" />
+          </span>
+        </div>
 
-      {fujisanProducts.flatMap((p) =>
-        p.volumes.map((v) => (
-          <div
-            key={`${p.slug}-${v.ml}`}
-            className="grid grid-cols-2 items-baseline gap-x-4 gap-y-1 border-b border-[#0B1A2E]/10 py-5 sm:grid-cols-[1.6fr_1fr_1fr] sm:items-center"
-          >
-            <div className="col-span-2 sm:col-span-1">
-              <span className="font-serif text-[14px] font-semibold tracking-[0.12em] text-[#0B1A2E]">
+        {fujisanProducts.map((p, pi) => (
+          <div key={p.slug} className={pi > 0 ? "border-t border-[#0B1A2E]/14" : ""}>
+            {/* 銘柄のグループヘッダー */}
+            <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 bg-[#F1E6CB]/50 px-4 py-3 sm:px-6">
+              <span className="font-serif text-[13.5px] font-semibold tracking-[0.12em] text-[#0B1A2E]">
                 {p.name} · {p.variant.replace(/\n/g, " ")}
               </span>
-              <span className="mt-0.5 block font-jp text-[10.5px] tracking-[0.18em] text-[#C9A84C]/85">
-                {p.variantLineJp} · {v.ml}ml
+              <span className="font-jp text-[10.5px] tracking-[0.18em] text-[#C9A84C]/90">
+                {p.variantJp} ／ {p.variantLineJp}
               </span>
             </div>
-            <div className="text-left sm:text-right">
-              <span className="font-serif text-[15px] text-[#0B1A2E]">
-                {yen(v.wholesalePriceJpy)}
-              </span>
-            </div>
-            <div className="text-right">
-              <span className="font-serif text-[15px] text-[#0B1A2E]">
-                {yen(v.wholesalePriceJpy * v.caseSize)}
-              </span>
-              <span className="ml-1.5 text-[10px] text-[#0B1A2E]/55">
-                ×{v.caseSize}
-              </span>
-            </div>
+            {p.volumes.map((v) => (
+              <div
+                key={`${p.slug}-${v.ml}`}
+                className="grid grid-cols-[1fr_auto_auto] items-baseline gap-x-5 border-t border-[#0B1A2E]/8 px-4 py-4 transition-colors duration-150 hover:bg-[#F1E6CB]/35 sm:gap-x-8 sm:px-6"
+              >
+                <span className="text-[12px] tracking-[0.1em] text-[#0B1A2E]/70">
+                  {v.ml} ml
+                </span>
+                <span className="text-right font-serif text-[15px] text-[#0B1A2E]">
+                  {yen(v.wholesalePriceJpy)}
+                </span>
+                <span className="text-right font-serif text-[15px] text-[#0B1A2E]">
+                  {yen(v.wholesalePriceJpy * v.caseSize)}
+                  <span className="ml-1.5 align-baseline text-[10px] tracking-[0.06em] text-[#0B1A2E]/55">
+                    ×{v.caseSize}
+                  </span>
+                </span>
+              </div>
+            ))}
           </div>
-        )),
-      )}
+        ))}
+      </div>
 
       <p className="mt-6 text-[11px] leading-[1.7] text-[#0B1A2E]/55">
         <L

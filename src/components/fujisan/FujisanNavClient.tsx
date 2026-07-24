@@ -195,6 +195,13 @@ export function FujisanNavClient({ links }: Props) {
     }, 120);
   };
 
+  // 遷移ローディング中（view transition で header が保持される間）に
+  // 開いたままのドロップダウンが残らないよう、クリック即時で閉じる
+  const closeMenuNow = () => {
+    cancelClose();
+    setOpenMenu(null);
+  };
+
   return (
     <header
       ref={headerRef}
@@ -268,6 +275,7 @@ export function FujisanNavClient({ links }: Props) {
               >
                 <Link
                   href={link.href}
+                  onClick={closeMenuNow}
                   aria-haspopup="true"
                   aria-expanded={menuOpen}
                   className={`relative inline-flex items-center gap-1.5 text-[12px] font-semibold tracking-[0.06em] no-underline transition-colors duration-300 ${
@@ -316,6 +324,7 @@ export function FujisanNavClient({ links }: Props) {
                         <li key={child.href}>
                           <Link
                             href={child.href}
+                            onClick={closeMenuNow}
                             className="group/sub flex items-start gap-4 px-6 py-3.5 no-underline transition-colors hover:bg-[#F1E6CB]/64"
                           >
                             <span className="mt-1 font-serif text-[10px] font-medium tracking-[0.32em] text-[#C9A84C]">
