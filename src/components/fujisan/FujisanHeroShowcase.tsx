@@ -97,12 +97,9 @@ export function FujisanHeroShowcase({ products }: Props) {
         className="fujisan-rise relative z-20 mx-auto flex max-w-[1330px] flex-col items-center gap-4 px-4 pb-8 pt-4 md:flex-row md:justify-center md:gap-8 md:pb-14 md:pt-8 xl:max-w-[1660px]"
         style={{ animationDelay: "1900ms" }}
       >
-        <span
-          aria-hidden
-          className="h-px w-16 bg-[#0B1A2E]/22 md:w-24"
-        />
+        <span aria-hidden className="h-px w-16 bg-[#0B1A2E]/22 md:w-24" />
         <Link
-          href="/shop/personal"
+          href="/products"
           className="group/all inline-flex items-center gap-3 border border-[#0B1A2E]/35 bg-paper/65 px-7 py-3.5 text-[10.5px] font-semibold tracking-[0.34em] text-[#0B1A2E] no-underline backdrop-blur-sm transition-colors hover:border-[#0B1A2E] hover:bg-[#F1E6CB]/80 hover:text-[#0B1A2E] md:px-9 md:py-4"
         >
           <span className="relative">
@@ -115,10 +112,7 @@ export function FujisanHeroShowcase({ products }: Props) {
             →
           </span>
         </Link>
-        <span
-          aria-hidden
-          className="h-px w-16 bg-[#0B1A2E]/22 md:w-24"
-        />
+        <span aria-hidden className="h-px w-16 bg-[#0B1A2E]/22 md:w-24" />
       </div>
     </>
   );
