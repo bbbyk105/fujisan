@@ -62,7 +62,7 @@ function CollectionRow({
       className="border-b border-[#0B1A2E]/12"
     >
       <div
-        className={`mx-auto grid max-w-[1280px] items-center gap-10 px-7 py-16 md:px-12 md:py-20 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)] lg:gap-20 ${
+        className={`mx-auto grid max-w-[1280px] items-center gap-10 px-7 py-16 md:px-12 md:py-20 lg:grid-cols-[minmax(0,520px)_minmax(0,1fr)] lg:gap-16 ${
           reversed ? "lg:grid-flow-dense" : ""
         }`}
       >
@@ -79,14 +79,14 @@ function CollectionRow({
           >
             {product.variantJp}
           </span>
-          <div className="relative mx-auto flex h-[340px] w-full max-w-[300px] items-end justify-center md:h-[400px]">
-            <div className="relative h-full w-[62%] transition-transform duration-700 ease-out group-hover:-translate-y-2">
+          <div className="relative mx-auto flex h-[340px] w-full max-w-[300px] items-end justify-center md:h-[460px] md:max-w-[380px] lg:h-[540px] lg:max-w-[440px]">
+            <div className="relative h-full w-[62%] transition-transform duration-700 ease-out group-hover:-translate-y-2 md:w-[70%]">
               <ViewTransition name={`bottle-${product.slug}`} share="morph">
                 <Image
                   src={product.img}
                   alt={`${product.name} ${product.variant} — ${product.variantLine}`}
                   fill
-                  sizes="(min-width: 1024px) 300px, 60vw"
+                  sizes="(min-width: 1024px) 440px, (min-width: 768px) 380px, 60vw"
                   className="object-contain object-bottom"
                 />
               </ViewTransition>
