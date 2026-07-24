@@ -149,28 +149,58 @@ export function AdminOrderRow({ order, canRefund }: Props) {
 
   return (
     <li className="border border-[#0B1A2E]/12 bg-white">
-      {/* Header (toggle) */}
+      {/* Header (toggle) — モバイルはカード状、md 以上はテーブル行 */}
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="grid w-full cursor-pointer grid-cols-[120px_1fr_120px_100px_120px_28px] items-center gap-4 border-0 bg-transparent px-6 py-4 text-left hover:bg-paper/60"
+        className="w-full cursor-pointer border-0 bg-transparent px-5 py-4 text-left hover:bg-paper/60 md:px-6"
       >
-        <span className="font-serif text-[13px] font-semibold tracking-[0.04em] text-[#0B1A2E]">
-          {order.orderRef}
+        {/* Mobile card */}
+        <span className="flex flex-col gap-1.5 md:hidden">
+          <span className="flex items-center justify-between gap-3">
+            <span className="font-serif text-[13px] font-semibold tracking-[0.04em] text-[#0B1A2E]">
+              {order.orderRef}
+            </span>
+            <span className="flex items-center gap-2.5">
+              <StatusPill status={order.status} />
+              <span aria-hidden className="text-[#0B1A2E]/50">
+                {open ? "▾" : "▸"}
+              </span>
+            </span>
+          </span>
+          <span className="truncate text-[12px] text-[#0B1A2E]/80">
+            {order.customerName}
+            <span className="ml-2 text-[#0B1A2E]/45">
+              {order.customerEmail}
+            </span>
+          </span>
+          <span className="text-[11.5px] text-[#0B1A2E]/65">
+            {fmt(order.createdAt).replace(/\s.+$/, "")} · {order.itemsCount}本 ·
+            ¥{yen.format(order.total)}
+          </span>
         </span>
-        <span className="text-[12px] text-[#0B1A2E]/80">
-          {order.customerName}
-          <span className="ml-2 text-[#0B1A2E]/45">{order.customerEmail}</span>
-        </span>
-        <span className="text-[11.5px] text-[#0B1A2E]/65">
-          {fmt(order.createdAt).replace(/\s.+$/, "")}
-        </span>
-        <span className="text-right font-serif text-[13px] tracking-[0.02em] text-[#0B1A2E]">
-          ¥{yen.format(order.total)}
-        </span>
-        <StatusPill status={order.status} />
-        <span aria-hidden className="text-[#0B1A2E]/50">
-          {open ? "▾" : "▸"}
+
+        {/* Desktop table row（見出し行と同じカラム幅） */}
+        <span className="hidden items-center gap-4 md:grid md:grid-cols-[120px_minmax(0,1fr)_110px_100px_130px_24px]">
+          <span className="font-serif text-[13px] font-semibold tracking-[0.04em] text-[#0B1A2E]">
+            {order.orderRef}
+          </span>
+          <span className="min-w-0 truncate text-[12px] text-[#0B1A2E]/80">
+            {order.customerName}
+            <span className="ml-2 text-[#0B1A2E]/45">
+              {order.customerEmail}
+            </span>
+          </span>
+          <span className="text-[11.5px] text-[#0B1A2E]/65">
+            {fmt(order.createdAt).replace(/\s.+$/, "")}
+          </span>
+          <span className="text-right font-serif text-[13px] tracking-[0.02em] text-[#0B1A2E]">
+            ¥{yen.format(order.total)}
+          </span>
+          <StatusPill status={order.status} />
+          <span aria-hidden className="text-[#0B1A2E]/50">
+            {open ? "▾" : "▸"}
+          </span>
         </span>
       </button>
 
