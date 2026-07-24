@@ -9,13 +9,20 @@ type Props = {
   slug: string;
   name: string;
   ml: number;
+  /** 配置側のレイアウト調整用（余白・幅のみ）。見た目の本体は共通。 */
+  className?: string;
 };
 
 /**
  * 一覧カードの「カートに追加」ボタン（クライアント境界はここだけ）。
  * カード本体のマークアップは Server Component（ShopCollectionGrid）が持つ。
  */
-export function ShopAddToCart({ slug, name, ml }: Props) {
+export function ShopAddToCart({
+  slug,
+  name,
+  ml,
+  className = "mt-4 w-full",
+}: Props) {
   const { add } = useCart();
   const [added, setAdded] = useState(false);
 
@@ -49,7 +56,7 @@ export function ShopAddToCart({ slug, name, ml }: Props) {
       type="button"
       onClick={onAdd}
       aria-live="polite"
-      className="mt-4 inline-flex w-full cursor-pointer items-center justify-center gap-2 border border-[#0B1A2E] bg-[#0B1A2E] px-5 py-3.5 text-[10.5px] font-semibold tracking-[0.26em] text-paper-card transition-colors hover:bg-[#1D2432]"
+      className={`inline-flex cursor-pointer items-center justify-center gap-2 border border-[#0B1A2E] bg-[#0B1A2E] px-5 py-3.5 text-[10.5px] font-semibold tracking-[0.26em] text-paper-card transition-colors hover:bg-[#1D2432] ${className}`}
     >
       <span key={added ? "added" : "idle"} className="fujisan-swap gap-2">
         {added ? (

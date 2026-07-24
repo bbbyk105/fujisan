@@ -8,8 +8,11 @@ import { Reveal } from "@/components/reveal/Reveal";
 import { revealDelays } from "@/components/reveal/constants";
 import {
   fujisanProducts,
+  primaryVolume,
+  isProductSoldOut,
   type FujisanProduct,
 } from "@/data/fujisan-products";
+import { ShopAddToCart } from "@/components/fujisan/ShopAddToCart";
 import { L } from "@/i18n/Localized";
 
 export const metadata = {
@@ -32,6 +35,10 @@ function CollectionRow({
   index: number;
 }) {
   const reversed = index % 2 === 1;
+  const base = primaryVolume(product);
+  const multiVolume = product.volumes.length > 1;
+  const baseSoldOut = base.soldOut === true;
+  const allSoldOut = isProductSoldOut(product);
 
   const facts = [
     {
@@ -148,21 +155,55 @@ function CollectionRow({
             ))}
           </div>
 
-          <Link
-            href={`/products/${product.slug}`}
-            className="group/cta mt-9 inline-flex items-center gap-3 text-[10.5px] font-semibold tracking-[0.34em] text-[#0B1A2E] no-underline"
-          >
-            <span className="relative pb-1">
-              <L en="VIEW THE BOTTLE" ja="この銘柄を詳しく" />
-              <span className="absolute inset-x-0 -bottom-0 h-px bg-[#0B1A2E]/50 transition-all duration-500 group-hover/cta:bg-[#C9A84C]" />
-            </span>
-            <span
-              aria-hidden
-              className="transition-transform duration-500 group-hover/cta:translate-x-1 group-hover/cta:text-[#C9A84C]"
+          <div className="mt-9 flex flex-wrap items-center gap-x-8 gap-y-5">
+            {baseSoldOut ? (
+              <Link
+                href={`/products/${product.slug}`}
+                className="inline-flex items-center justify-center gap-2 border border-[#0B1A2E]/25 bg-[#0B1A2E]/6 px-8 py-3.5 text-[10.5px] font-semibold tracking-[0.26em] text-[#0B1A2E]/70 no-underline transition-colors hover:border-[#0B1A2E]/45"
+              >
+                {allSoldOut ? (
+                  <L en="SOLD OUT" ja="完売しました" />
+                ) : (
+                  <>
+                    <L en="OTHER SIZES" ja="他の容量を見る" />
+                    <span aria-hidden>→</span>
+                  </>
+                )}
+              </Link>
+            ) : (
+              <ShopAddToCart
+                slug={product.slug}
+                name={`${product.name} ${product.variant}`}
+                ml={base.ml}
+                className="w-full px-8 sm:w-auto"
+              />
+            )}
+
+            <Link
+              href={`/products/${product.slug}`}
+              className="group/cta inline-flex items-center gap-3 text-[10.5px] font-semibold tracking-[0.34em] text-[#0B1A2E] no-underline"
             >
-              →
-            </span>
-          </Link>
+              <span className="relative pb-1">
+                <L en="VIEW THE BOTTLE" ja="この銘柄を詳しく" />
+                <span className="absolute inset-x-0 -bottom-0 h-px bg-[#0B1A2E]/50 transition-all duration-500 group-hover/cta:bg-[#C9A84C]" />
+              </span>
+              <span
+                aria-hidden
+                className="transition-transform duration-500 group-hover/cta:translate-x-1 group-hover/cta:text-[#C9A84C]"
+              >
+                →
+              </span>
+            </Link>
+          </div>
+
+          {!baseSoldOut && multiVolume ? (
+            <p className="mt-3 text-[10.5px] tracking-[0.12em] text-[#0B1A2E]/60">
+              <L
+                ja={`カート追加は ${base.ml}ml。ほかの容量は商品ページからお選びいただけます。`}
+                en={`Adds the ${base.ml} ml bottle — other sizes are available on the product page.`}
+              />
+            </p>
+          ) : null}
         </div>
       </div>
     </Reveal>
