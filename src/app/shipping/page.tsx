@@ -72,7 +72,7 @@ const sections: InfoSection[] = [
       <L
         key="b"
         en="Orders are typically dispatched within two business days. You will receive a tracking link by email when your parcel leaves the brewhouse."
-        ja="ご注文確認後（銀行振込の場合は入金確認後）、原則2営業日以内に発送いたします。発送後、追跡番号付きの配送通知メールをお送りします。"
+        ja="ご注文確認後、原則2営業日以内に発送いたします。発送後、追跡番号付きの配送通知メールをお送りします。"
       />,
     ],
     bullets: [

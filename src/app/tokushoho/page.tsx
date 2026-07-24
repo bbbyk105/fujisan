@@ -75,7 +75,7 @@ const sections: InfoSection[] = [
     body: [
       <L
         key="p"
-        en="The amount shown on each product page (10% consumption tax included). Fees such as shipping and cash-on-delivery may apply in addition to the listed price."
+        en="The amount shown on each product page (10% consumption tax included). Fees such as shipping may apply in addition to the listed price."
         ja={FUJISAN_LEGAL.priceNote}
       />,
     ],
@@ -87,7 +87,7 @@ const sections: InfoSection[] = [
     body: [
       <L
         key="o"
-        en="The cool-chain surcharge, cash-on-delivery fee, and bank transfer fees are borne by the customer."
+        en="The cool-chain surcharge is borne by the customer."
         ja={FUJISAN_LEGAL.otherFees}
       />,
     ],
@@ -96,16 +96,6 @@ const sections: InfoSection[] = [
         key="1"
         en={`Shipping: ${FUJISAN_LEGAL.shippingFeeNoteEn}`}
         ja={`送料: ${FUJISAN_LEGAL.shippingFeeNote}`}
-      />,
-      <L
-        key="2"
-        en="Cash on delivery: ¥330 (tax incl.) per order"
-        ja="代引手数料: 330円（税込）／ご注文時"
-      />,
-      <L
-        key="3"
-        en="Bank transfer fee: borne by the customer"
-        ja="銀行振込手数料: お客様負担"
       />,
     ],
   },
