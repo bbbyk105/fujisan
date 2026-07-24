@@ -7,7 +7,7 @@ import {
 } from "@/components/fujisan/stories/StoriesNarrative";
 import { StoriesProgress } from "@/components/fujisan/stories/StoriesProgress";
 import { StoriesClosing } from "@/components/fujisan/stories/StoriesClosing";
-import { L } from "@/i18n/Localized";
+import { StoriesFx } from "@/components/fujisan/stories/StoriesFx";
 
 export const metadata = {
   title: "Stories of Fujisan — FUJISAN SAKE",
@@ -17,6 +17,9 @@ export const metadata = {
 
 const stories: Story[] = [
   {
+    kanji: "寒",
+    tocJa: "寒造り",
+    tocEn: "Winter",
     eyebrow: "WINTER WORK",
     eyebrowJp: "杜氏",
     title: "Brewed in the cold",
@@ -32,6 +35,9 @@ const stories: Story[] = [
     ctaJp: "酒造りの全文を読む",
   },
   {
+    kanji: "米",
+    tocJa: "酒米",
+    tocEn: "Rice",
     eyebrow: "THE RICE",
     eyebrowJp: "米",
     title: "How far the rice is polished",
@@ -47,6 +53,9 @@ const stories: Story[] = [
     ctaJp: "米の話を読む",
   },
   {
+    kanji: "水",
+    tocJa: "仕込み水",
+    tocEn: "Water",
     eyebrow: "THE WATER",
     eyebrowJp: "水",
     title: "Soft water off the mountain",
@@ -62,6 +71,9 @@ const stories: Story[] = [
     ctaJp: "水の話を読む",
   },
   {
+    kanji: "燗",
+    tocJa: "燗",
+    tocEn: "Warming",
     eyebrow: "AT THE TABLE",
     eyebrowJp: "食卓",
     title: "Warm it at the counter",
@@ -74,6 +86,9 @@ const stories: Story[] = [
     position: "object-[55%_50%]",
   },
   {
+    kanji: "温",
+    tocJa: "温度",
+    tocEn: "Temperature",
     eyebrow: "TEMPERATURE",
     eyebrowJp: "温度",
     title: "Cold or warm, your call",
@@ -86,6 +101,9 @@ const stories: Story[] = [
     position: "object-[42%_50%]",
   },
   {
+    kanji: "器",
+    tocJa: "酒器",
+    tocEn: "Vessels",
     eyebrow: "THE CUP",
     eyebrowJp: "うつわ",
     title: "The cup counts too",
@@ -104,27 +122,25 @@ export default function StoriesPage() {
     <main className="stories-page bg-paper text-[#0B1A2E] min-h-screen">
       <FujisanNav />
 
-      <StoriesProgress
-        trackSelector=".stories-page"
-        chapterCount={stories.length}
-      />
+      {/* 演出（GSAP）はこの Client Component だけが担う */}
+      <StoriesFx />
+
+      <StoriesProgress marks={stories.map((s) => s.kanji)} />
 
       <StoriesHero
-        eyebrow="HERITAGE · STORIES"
-        chapter="Ⅱ"
         titleEn="STORIES OF FUJISAN"
         titleJp="富士山酒物語"
-        jp="― 富士山酒物語 ―"
-        lead={
-          <L
-            en="A few honest notes on what is actually in the glass — the water and rice behind Fujisan, the cold months it is brewed in, and some easy ways to pour it."
-            ja="グラスの中身についての、正直な覚え書きを少しだけ。富士山の水と米のこと、仕込みの冬のこと、そして気軽な注ぎ方を。"
-          />
-        }
+        leadEn="A few honest notes on what is actually in the glass — the water and rice behind Fujisan, the cold months it is brewed in, and some easy ways to pour it. Read it like a handscroll: the making first, then the drinking."
+        leadJa="グラスの中身についての、正直な覚え書きを少しだけ。富士山の水と米のこと、仕込みの冬のこと、そして気軽な注ぎ方を。絵巻のように、造りから呑み方へと読み進めてください。"
         crumbs={[
           { label: "HOME", href: "/#top" },
           { label: "STORIES", href: "/stories" },
         ]}
+        chapters={stories.map((s) => ({
+          kanji: s.kanji,
+          labelJa: s.tocJa,
+          labelEn: s.tocEn,
+        }))}
         bgSrc="/images/afternoon-fuji.webp"
         bgPosition="object-[50%_50%]"
       />

@@ -47,27 +47,24 @@ export const FUJISAN_LEGAL = {
   ecManager: "通販責任者 近藤 弘人",
   // 価格・支払・引渡
   priceNote:
-    "各商品ページに表示の金額（消費税10%込）。表示価格以外に送料・代引手数料等が必要となる場合があります。",
+    "各商品ページに表示の金額（消費税10%込）。表示価格以外に送料等が必要となる場合があります。",
   shipping: SHIPPING_FEE,
   shippingFeeNote: `${SHIPPING_FEE.flat}。${SHIPPING_FEE.remote}。${SHIPPING_FEE.cool}。`,
   // 英語ロケール表示用（特商法ページは日本語のまま。EC 説明部分のみ英語へ切替）
   shippingFeeNoteEn: `${SHIPPING_FEE.flatEn}. ${SHIPPING_FEE.remoteEn}. ${SHIPPING_FEE.coolEn}.`,
+  // 個人（toC）のお支払いはクレジットカードのみ（Stripe Checkout）。銀行振込は法人（toB）専用。
   paymentMethods:
-    "クレジットカード（VISA / Mastercard / JCB / AMEX / Diners）、銀行振込",
+    "クレジットカード（VISA / Mastercard / JCB / AMEX / Diners）",
   paymentMethodsEn:
-    "Credit card (VISA / Mastercard / JCB / AMEX / Diners) and bank transfer.",
-  paymentTiming:
-    "クレジットカード: ご注文時に確定。銀行振込: ご注文後7日以内にお振込をお願いいたします。",
-  paymentTimingEn:
-    "Credit card: charged at order. Bank transfer: please remit within 7 days of ordering.",
-  deliveryTiming:
-    "ご注文確認後（銀行振込の場合は入金確認後）、原則2営業日以内に発送いたします。",
+    "Credit card (VISA / Mastercard / JCB / AMEX / Diners).",
+  paymentTiming: "クレジットカード: ご注文時に確定。",
+  paymentTimingEn: "Credit card: charged at order.",
+  deliveryTiming: "ご注文確認後、原則2営業日以内に発送いたします。",
   deliveryTimingEn:
-    "Dispatched within two business days of order confirmation (payment confirmation for bank transfers).",
+    "Dispatched within two business days of order confirmation.",
   returnsPolicy:
     "酒類は性質上、開栓後・お客様都合での返品交換はお受けできません。配送中の破損・誤配送・不良品については商品到着後7日以内にメールにてご連絡ください。",
-  otherFees:
-    "クール便指定時の追加料金、代引手数料、銀行振込手数料はお客様負担となります。",
+  otherFees: "クール便指定時の追加料金はお客様負担となります。",
   // 酒類関連免許・標識
   liquorLicense:
     "通信販売酒類小売業免許（〇〇税務署 酒類指令第〇〇号 [要確認]）",

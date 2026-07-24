@@ -59,8 +59,8 @@ const sections: InfoSection[] = [
     body: [
       <L
         key="b"
-        en="All prices are shown in JPY with consumption tax included, unless otherwise stated, and may be adjusted to reflect duties or shipping. Shipping and cash-on-delivery fees are borne by the customer; see the Tokutei Shōtorihiki notice for full sale conditions. We reserve the right to correct pricing errors and cancel affected orders, refunding any charges in full."
-        ja="商品ページに表示している販売価格はすべて日本円・消費税10%込みの税込価格です。送料・代引手数料等は別途お客様のご負担となります。詳しい販売条件は「特定商取引法に基づく表示」をご確認ください。価格の誤りがあった場合、当社は訂正のうえ該当注文をキャンセルし、お支払い済みの料金は全額返金いたします。"
+        en="All prices are shown in JPY with consumption tax included, unless otherwise stated, and may be adjusted to reflect duties or shipping. Shipping fees are borne by the customer; see the Tokutei Shōtorihiki notice for full sale conditions. We reserve the right to correct pricing errors and cancel affected orders, refunding any charges in full."
+        ja="商品ページに表示している販売価格はすべて日本円・消費税10%込みの税込価格です。送料等は別途お客様のご負担となります。詳しい販売条件は「特定商取引法に基づく表示」をご確認ください。価格の誤りがあった場合、当社は訂正のうえ該当注文をキャンセルし、お支払い済みの料金は全額返金いたします。"
       />,
     ],
   },
