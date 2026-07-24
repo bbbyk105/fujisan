@@ -1,52 +1,26 @@
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
-import { ViewTransition, useState } from "react";
+import { ViewTransition } from "react";
 import {
   primaryVolume,
   isProductSoldOut,
   type FujisanProduct,
 } from "@/data/fujisan-products";
-import { useCart } from "@/lib/cart/useCart";
-import { pushToast } from "@/lib/cart/toast-store";
+import { ShopAddToCart } from "./ShopAddToCart";
 import { L } from "@/i18n/Localized";
 
 const yen = new Intl.NumberFormat("ja-JP");
 
+/**
+ * 一覧カード。Server Component — カート追加ボタン（ShopAddToCart）だけが
+ * クライアント境界。
+ */
 function ShopBottleCard({ product }: { product: FujisanProduct }) {
-  const { add } = useCart();
-  const [added, setAdded] = useState(false);
   const base = primaryVolume(product);
   const multiVolume = product.volumes.length > 1;
   // 既定 SKU（表示中の容量）が完売か / 全 SKU が完売か。
   const baseSoldOut = base.soldOut === true;
   const allSoldOut = isProductSoldOut(product);
-
-  const onAdd = () => {
-    // 商品詳細ページと動線を揃える: サイト入場時の AgeGate と同じフラグを参照し、
-    // 未確認のままの即時追加を防ぐ（通常は AgeGate 通過済みなので素通り）
-    if (window.localStorage.getItem("fujisan-age-confirmed") !== "yes") {
-      pushToast({
-        ja: "ご購入には年齢確認が必要です。商品ページからお進みください",
-        en: "Age verification is required. Please continue from the product page",
-        action: {
-          href: `/products/${product.slug}`,
-          ja: "商品ページへ",
-          en: "VIEW PRODUCT",
-        },
-      });
-      return;
-    }
-    add(product.slug, base.ml, 1);
-    setAdded(true);
-    window.setTimeout(() => setAdded(false), 2200);
-    pushToast({
-      ja: `${product.name}をカートに追加しました`,
-      en: `${product.name} added to your cart`,
-      action: { href: "/cart", ja: "カートを見る", en: "VIEW CART" },
-    });
-  };
 
   return (
     <article className="group flex flex-col border border-[#0B1A2E]/12 bg-paper-card transition-colors hover:border-[#C9A84C]/55">
@@ -131,23 +105,11 @@ function ShopBottleCard({ product }: { product: FujisanProduct }) {
             )}
           </Link>
         ) : (
-          <button
-            type="button"
-            onClick={onAdd}
-            aria-live="polite"
-            className="mt-4 inline-flex w-full cursor-pointer items-center justify-center gap-2 border border-[#0B1A2E] bg-[#0B1A2E] px-5 py-3.5 text-[10.5px] font-semibold tracking-[0.26em] text-paper-card transition-colors hover:bg-[#1D2432]"
-          >
-            <span key={added ? "added" : "idle"} className="fujisan-swap gap-2">
-              {added ? (
-                <L en="ADDED ✓" ja="追加しました ✓" />
-              ) : (
-                <>
-                  <L en="ADD TO CART" ja="カートに追加" />
-                  <span aria-hidden>+</span>
-                </>
-              )}
-            </span>
-          </button>
+          <ShopAddToCart
+            slug={product.slug}
+            name={product.name}
+            ml={base.ml}
+          />
         )}
       </div>
     </article>

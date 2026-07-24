@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { fujisanProducts } from "@/data/fujisan-products";
 import { FujisanHeroShowcase } from "./FujisanHeroShowcase";
+import { FujisanHeroFx } from "./FujisanHeroFx";
 import { KineticFujisanTitle } from "./KineticFujisanTitle";
 import { L } from "@/i18n/Localized";
 
@@ -103,6 +104,9 @@ export default function FujisanHero() {
       </div>
 
       <FujisanHeroShowcase products={fujisanProducts} />
+
+      {/* 演出（GSAP）はこの Client Component だけが担う */}
+      <FujisanHeroFx />
     </section>
   );
 }
