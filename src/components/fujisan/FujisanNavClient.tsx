@@ -4,11 +4,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import type {
-  FujisanNavChild,
-  FujisanNavLinkItem,
-} from "./fujisan-nav-links";
+import type { FujisanNavLinkItem } from "./fujisan-nav-links";
+import { ensureGsap, gsap, useGSAP } from "./stories/gsap-setup";
 import { LocaleSwitch } from "@/i18n/LocaleSwitch";
+import { L } from "@/i18n/Localized";
 import { AccountNavLink } from "./auth/AccountNavLink";
 import { CartNavLink } from "./CartNavLink";
 
@@ -25,6 +24,90 @@ export function FujisanNavClient({ links }: Props) {
   const [hashSection, setHashSection] = useState<string>("#top");
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const closeTimer = useRef<number | null>(null);
+
+  const headerRef = useRef<HTMLElement>(null);
+  const panelRef = useRef<HTMLElement>(null);
+  const lineTopRef = useRef<HTMLSpanElement>(null);
+  const lineMidRef = useRef<HTMLSpanElement>(null);
+  const lineBotRef = useRef<HTMLSpanElement>(null);
+  const menuTlRef = useRef<ReturnType<typeof gsap.timeline> | null>(null);
+
+  ensureGsap();
+
+  // モバイルメニューの開閉タイムライン（パネル・スライド + 項目スタッガー）
+  useGSAP(
+    () => {
+      const panel = panelRef.current;
+      if (!panel) return;
+      const items = panel.querySelectorAll("[data-menu-item]");
+      const tl = gsap.timeline({ paused: true });
+      tl.fromTo(
+        panel,
+        { xPercent: 100 },
+        { xPercent: 0, duration: 0.55, ease: "power4.out" },
+        0,
+      ).fromTo(
+        items,
+        { y: 26, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.5,
+          ease: "power3.out",
+          stagger: 0.055,
+          immediateRender: false,
+        },
+        0.16,
+      );
+      tl.eventCallback("onReverseComplete", () => {
+        gsap.set(panel, { visibility: "hidden", pointerEvents: "none" });
+      });
+      menuTlRef.current = tl;
+      return () => {
+        tl.kill();
+        menuTlRef.current = null;
+      };
+    },
+    { scope: headerRef },
+  );
+
+  // open 状態 → タイムライン再生/逆再生 + ハンバーガーアイコンのモーフ
+  useEffect(() => {
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const dur = reduced ? 0 : 0.35;
+    gsap.to(lineTopRef.current, {
+      y: open ? 7 : 0,
+      rotate: open ? 45 : 0,
+      duration: dur,
+      ease: "power2.inOut",
+    });
+    gsap.to(lineMidRef.current, {
+      opacity: open ? 0 : 1,
+      scaleX: open ? 0.3 : 1,
+      duration: dur,
+      ease: "power2.inOut",
+    });
+    gsap.to(lineBotRef.current, {
+      y: open ? -7 : 0,
+      rotate: open ? -45 : 0,
+      duration: dur,
+      ease: "power2.inOut",
+    });
+
+    const tl = menuTlRef.current;
+    const panel = panelRef.current;
+    if (!tl || !panel) return;
+    if (open) {
+      gsap.set(panel, { visibility: "visible", pointerEvents: "auto" });
+      if (reduced) tl.progress(1);
+      else tl.timeScale(1).play();
+    } else if (reduced) {
+      tl.progress(0);
+      gsap.set(panel, { visibility: "hidden", pointerEvents: "none" });
+    } else {
+      tl.timeScale(1.4).reverse();
+    }
+  }, [open]);
 
   // Close mobile menu and any desktop dropdown when the route changes.
   // Storing the previous pathname in state (React's documented pattern) lets us
@@ -114,6 +197,7 @@ export function FujisanNavClient({ links }: Props) {
 
   return (
     <header
+      ref={headerRef}
       style={{ viewTransitionName: "site-header" }}
       className={`fixed top-0 inset-x-0 z-50 border-b border-[#0F1F36]/14 transition-shadow duration-500 ${
         scrolled
@@ -268,98 +352,112 @@ export function FujisanNavClient({ links }: Props) {
 
         {/* Mobile: カート常時露出 + toggle（カートをハンバーガー内に隠さない） */}
         <div className="flex items-center gap-2.5 lg:hidden">
-        <CartNavLink compact />
-        <button
-          type="button"
-          aria-label={open ? "Close menu" : "Open menu"}
-          aria-expanded={open}
-          aria-controls="fujisan-mobile-menu"
-          onClick={() => setOpen((v) => !v)}
-          className="relative z-[60] flex h-10 w-10 cursor-pointer flex-col items-center justify-center gap-[6px] border border-[#0F1F36]/20 bg-paper-card/80 p-0"
-        >
-          <span
-            className={`block h-px w-5 bg-[#0F1F36] transition-transform duration-300 ${
-              open ? "translate-y-[7px] rotate-45" : ""
-            }`}
-          />
-          <span
-            className={`block h-px w-5 bg-[#0F1F36] transition-opacity duration-300 ${
-              open ? "opacity-0" : ""
-            }`}
-          />
-          <span
-            className={`block h-px w-5 bg-[#0F1F36] transition-transform duration-300 ${
-              open ? "-translate-y-[7px] -rotate-45" : ""
-            }`}
-          />
-        </button>
+          <CartNavLink compact />
+          <button
+            type="button"
+            aria-label={open ? "Close menu" : "Open menu"}
+            aria-expanded={open}
+            aria-controls="fujisan-mobile-menu"
+            onClick={() => setOpen((v) => !v)}
+            className="relative z-[60] flex h-10 w-10 cursor-pointer flex-col items-center justify-center gap-[6px] border border-[#0F1F36]/20 bg-paper-card/80 p-0"
+          >
+            <span
+              ref={lineTopRef}
+              className="block h-px w-5 bg-[#0F1F36]"
+            />
+            <span
+              ref={lineMidRef}
+              className="block h-px w-5 bg-[#0F1F36]"
+            />
+            <span
+              ref={lineBotRef}
+              className="block h-px w-5 bg-[#0F1F36]"
+            />
+          </button>
         </div>
       </div>
 
-      {/* Mobile overlay */}
-      <button
-        type="button"
-        aria-label="Close menu overlay"
-        onClick={() => setOpen(false)}
-        className={`fixed inset-0 z-40 bg-[#0B1A2E]/35 transition-opacity duration-300 lg:hidden ${
-          open ? "opacity-100" : "pointer-events-none opacity-0"
-        }`}
-      />
-
-      {/* Mobile menu panel */}
+      {/* Mobile menu panel — 全画面エディトリアルメニュー（GSAP 駆動） */}
       <aside
+        ref={panelRef}
         id="fujisan-mobile-menu"
-        className={`fixed right-0 top-0 z-50 h-dvh w-[min(86vw,380px)] overflow-y-auto border-l border-[#0F1F36]/12 bg-[#F6F0E5] shadow-[-24px_0_55px_rgba(15,31,54,0.18)] transition-transform duration-500 ease-[cubic-bezier(.22,.61,.36,1)] lg:hidden ${
-          open ? "translate-x-0" : "translate-x-full"
-        }`}
+        aria-hidden={!open}
+        className="fujisan-paper fixed inset-0 z-50 flex flex-col bg-[#F6F0E5] lg:hidden"
+        style={{ visibility: "hidden", pointerEvents: "none" }}
       >
-        <nav className="flex min-h-full flex-col px-7 pb-10 pt-24">
-          <ul className="flex flex-col">
-            {links.map((link) => {
+        <div
+          aria-hidden
+          className="mt-[72px] h-px w-full shrink-0 bg-linear-to-r from-transparent via-[#C9A84C]/55 to-transparent md:mt-[86px]"
+        />
+        <nav
+          aria-label="Mobile"
+          className="flex min-h-0 flex-1 flex-col overflow-y-auto px-7 pb-8 pt-9 sm:px-9"
+        >
+          <p data-menu-item className="flex items-center gap-4">
+            <span className="font-serif text-[10px] font-medium tracking-[0.36em] text-[#C9A84C]">
+              MENU
+            </span>
+            <span className="h-px w-10 bg-[#C9A84C]/55" />
+            <span className="font-jp text-[10.5px] tracking-[0.3em] text-[#0F1F36]/55">
+              <L en="NAVIGATION" ja="メニュー" />
+            </span>
+          </p>
+
+          <ul className="mt-5 flex flex-col">
+            {links.map((link, i) => {
               const active = isActive(link);
               return (
-                <li key={link.href}>
+                <li
+                  key={link.href}
+                  data-menu-item
+                  className="border-b border-[#0F1F36]/10"
+                >
                   <Link
                     href={link.href}
                     onClick={() => setOpen(false)}
-                    className={`flex items-center justify-between border-b py-4 text-[13px] font-semibold tracking-[0.14em] no-underline transition-colors ${
-                      active
-                        ? "border-[#0F1F36]/30 text-[#0F1F36]"
-                        : "border-[#0F1F36]/10 text-[#0F1F36]/82 hover:text-[#0F1F36]"
-                    }`}
+                    className="group flex items-baseline gap-4 py-[18px] no-underline outline-none focus-visible:ring-2 focus-visible:ring-[#C9A84C]/60"
                   >
-                    <span>{link.label}</span>
-                    {active && (
+                    <span className="font-serif text-[10.5px] font-medium tracking-[0.3em] text-[#C9A84C]">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <span
+                      className={`font-serif text-[22px] font-semibold tracking-[0.1em] transition-colors duration-300 sm:text-[24px] ${
+                        active
+                          ? "text-[#0F1F36]"
+                          : "text-[#0F1F36]/85 group-hover:text-[#0F1F36]"
+                      }`}
+                    >
+                      {link.label}
+                    </span>
+                    {active ? (
                       <span
                         aria-hidden
-                        className="text-[10px] tracking-[0.3em] text-[#C9A84C]"
-                      >
-                        ●
-                      </span>
-                    )}
+                        className="ml-auto h-px w-10 self-center bg-[#C9A84C]"
+                      />
+                    ) : null}
                   </Link>
+
                   {link.children?.length ? (
-                    <ul className="border-b border-[#0F1F36]/10 bg-[#F1E6CB]/40">
-                      {link.children.map((child: FujisanNavChild) => (
+                    <ul className="flex flex-col pb-4 pl-10">
+                      {link.children.map((child) => (
                         <li key={child.href}>
                           <Link
                             href={child.href}
                             onClick={() => setOpen(false)}
-                            className="flex items-start gap-3 px-4 py-3 no-underline"
+                            className="group/sub flex items-baseline gap-3 py-2 no-underline outline-none focus-visible:ring-2 focus-visible:ring-[#C9A84C]/60"
                           >
-                            <span className="mt-0.5 font-serif text-[10px] font-medium tracking-[0.3em] text-[#C9A84C]">
-                              ／
+                            <span
+                              aria-hidden
+                              className="h-px w-4 self-center bg-[#C9A84C]/50 transition-all duration-300 group-hover/sub:w-6 group-hover/sub:bg-[#C9A84C]"
+                            />
+                            <span className="font-serif text-[12.5px] font-semibold tracking-[0.18em] text-[#0F1F36]/80 transition-colors duration-300 group-hover/sub:text-[#0F1F36]">
+                              {child.label}
                             </span>
-                            <span className="flex flex-col">
-                              <span className="font-serif text-[11.5px] font-semibold tracking-[0.18em] text-[#0F1F36]">
-                                {child.label}
+                            {child.jp ? (
+                              <span className="font-jp text-[10px] tracking-[0.22em] text-[#C9A84C]/85">
+                                {child.jp}
                               </span>
-                              {child.jp && (
-                                <span className="font-jp text-[10px] tracking-[0.24em] text-[#C9A84C]/80">
-                                  {child.jp}
-                                </span>
-                              )}
-                            </span>
+                            ) : null}
                           </Link>
                         </li>
                       ))}
@@ -370,20 +468,17 @@ export function FujisanNavClient({ links }: Props) {
             })}
           </ul>
 
-          <AccountNavLink mobile />
-          <CartNavLink mobile />
-
-          <div className="mt-8">
-            <LocaleSwitch />
-          </div>
-          <div className="relative mt-auto h-28 w-28 opacity-20">
-            <Image
-              src="/images/logo/logo-fuji.webp"
-              alt=""
-              fill
-              sizes="112px"
-              className="fujisan-fuji-logo-image object-contain"
-            />
+          <div data-menu-item className="mt-auto pt-8">
+            <div className="border-t border-[#0F1F36]/12">
+              <AccountNavLink mobile />
+              <CartNavLink mobile />
+            </div>
+            <div className="mt-6 flex items-center justify-between gap-4">
+              <LocaleSwitch />
+              <p className="font-jp text-[10px] tracking-[0.24em] text-[#0F1F36]/45">
+                <L en="SAKE FROM THE FOOT OF MT. FUJI" ja="富士山麓の日本酒" />
+              </p>
+            </div>
           </div>
         </nav>
       </aside>

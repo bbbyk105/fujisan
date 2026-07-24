@@ -23,8 +23,6 @@ export type Story = {
   ctaJp?: string;
 };
 
-const KANJI = ["一", "二", "三", "四", "五", "六"];
-
 type Props = {
   stories: Story[];
 };
@@ -33,10 +31,10 @@ type Props = {
  * /stories 本編。
  *
  * 演出のレイヤー:
- *  - 開幕 (opening) はピン留めシーン。巨大な漢字背景 + 画像 clip-path リビール +
- *    タイトルの行単位アニメで一気に世界観に入る。
- *  - 章ごとに番号カウンター（CountUp）、画像 clip-path、縦線の伸び、
- *    本文の split-by-line リビール、画像 parallax を組み合わせる。
+  *  - 開幕 (opening) は画像 clip-path リビール + タイトルの行単位アニメで
+  *    一気に世界観に入る。
+  *  - 章ごとに番号カウンター（CountUp）、画像 clip-path、縦線の伸び、
+  *    本文の split-by-line リビール、画像 parallax を組み合わせる。
  *  - 画像 hover で 4% scale + サブレイヤー。
  *  - reduced-motion 時はすべて即時表示。
  */
@@ -58,11 +56,9 @@ export function StoriesNarrative({ stories }: Props) {
             ".story-image-clip",
             ".story-line",
             ".story-text-line",
-            ".story-kanji-big",
             ".story-counter",
             ".section-eyebrow > *",
             ".section-title-line",
-            ".opening-kanji",
           ],
           { y: 0, opacity: 1, scaleX: 1, scaleY: 1, clipPath: "inset(0 0 0 0)" },
         );
@@ -134,20 +130,6 @@ export function StoriesNarrative({ stories }: Props) {
           },
         );
 
-        // Huge kanji that scales in
-        gsap.fromTo(
-          ".opening-kanji",
-          { scale: 0.4, opacity: 0, rotate: -8 },
-          {
-            scale: 1,
-            opacity: 1,
-            rotate: 0,
-            duration: 1.4,
-            ease: "expo.out",
-            scrollTrigger: { trigger: opening, start: "top 72%" },
-          },
-        );
-
         // Image parallax over its section
         gsap.to(".opening-image-inner", {
           yPercent: -14,
@@ -181,7 +163,6 @@ export function StoriesNarrative({ stories }: Props) {
         const text = item.querySelector(".story-excerpt");
         const meta = item.querySelectorAll(".story-meta > *");
         const line = item.querySelector(".story-line");
-        const kanjiBig = item.querySelector(".story-kanji-big");
         const counter = item.querySelector<HTMLElement>(".story-counter");
 
         // Image clip-path reveal
@@ -281,32 +262,6 @@ export function StoriesNarrative({ stories }: Props) {
           );
         }
 
-        // Background giant kanji scales in
-        if (kanjiBig) {
-          gsap.fromTo(
-            kanjiBig,
-            { scale: 0.5, opacity: 0, rotate: i % 2 === 0 ? -6 : 6 },
-            {
-              scale: 1,
-              opacity: 1,
-              rotate: 0,
-              duration: 1.4,
-              ease: "expo.out",
-              scrollTrigger: { trigger: item, start: "top 78%" },
-            },
-          );
-          gsap.to(kanjiBig, {
-            yPercent: -10,
-            ease: "none",
-            scrollTrigger: {
-              trigger: item,
-              start: "top bottom",
-              end: "bottom top",
-              scrub: 0.5,
-            },
-          });
-        }
-
         // Number counter (00 → NN)
         if (counter) {
           const target = i + 2;
@@ -342,14 +297,6 @@ export function StoriesNarrative({ stories }: Props) {
           className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-[#0B1A2E]/15 to-transparent"
         />
 
-        {/* Oversized background kanji (typography as art) */}
-        <span
-          aria-hidden
-          className="opening-kanji pointer-events-none absolute -left-8 top-[8%] z-0 select-none font-serif text-[clamp(180px,26vw,400px)] leading-none text-[#0B1A2E]/[0.05] md:-left-16"
-        >
-          {KANJI[0]}
-        </span>
-
         <article className="relative z-10 mx-auto grid max-w-[1480px] grid-cols-1 items-stretch gap-0 lg:grid-cols-[1.2fr_1fr]">
           {/* Image */}
           <div className="relative min-h-[460px] overflow-hidden md:min-h-[720px]">
@@ -380,9 +327,6 @@ export function StoriesNarrative({ stories }: Props) {
                 }}
               />
               <div className="absolute left-7 top-7 flex items-baseline gap-3 text-paper/95">
-                <span className="font-serif text-[48px] leading-none">
-                  {KANJI[0]}
-                </span>
                 <span className="text-[10px] font-semibold tracking-[0.34em]">
                   CHAPTER 01
                 </span>
@@ -399,8 +343,8 @@ export function StoriesNarrative({ stories }: Props) {
 
             <div className="opening-meta flex flex-col gap-7">
               <div className="flex items-center gap-3 md:pl-7">
-                <span className="font-serif text-[14px] leading-none text-[#C9A84C]">
-                  {KANJI[0]}
+                <span className="font-serif text-[11px] font-medium tracking-[0.3em] text-[#C9A84C]">
+                  01
                 </span>
                 <span className="h-px w-9 bg-[#C9A84C]/55" />
                 <span className="text-[10px] font-semibold uppercase tracking-[0.34em] text-[#0B1A2E]/65">
@@ -470,25 +414,12 @@ export function StoriesNarrative({ stories }: Props) {
           <div className="mt-24 flex flex-col gap-28 md:mt-32 md:gap-40">
             {rest.map((story, i) => {
               const imageRight = i % 2 === 1;
-              const kanji = KANJI[i + 1];
               const wideImage = i === 0 || i === 3;
               return (
                 <article
                   key={story.title}
                   className="story-item is-alt group/item relative grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-20"
                 >
-                  {/* Giant background kanji */}
-                  <span
-                    aria-hidden
-                    className={`story-kanji-big pointer-events-none absolute z-0 select-none font-serif text-[clamp(160px,22vw,340px)] leading-none text-[#0B1A2E]/[0.05] ${
-                      imageRight
-                        ? "right-[-2vw] top-[-6%]"
-                        : "left-[-2vw] top-[-6%]"
-                    }`}
-                  >
-                    {kanji}
-                  </span>
-
                   {/* Image */}
                   <div
                     className={`relative z-10 overflow-hidden ${
@@ -527,10 +458,7 @@ export function StoriesNarrative({ stories }: Props) {
                         }}
                       />
                       <div className="absolute left-5 top-5 flex items-baseline gap-2 text-paper/92">
-                        <span className="font-serif text-[32px] leading-none">
-                          {kanji}
-                        </span>
-                        <span className="story-counter font-serif text-[11px] tracking-[0.32em]">
+                        <span className="story-counter font-serif text-[12px] tracking-[0.32em]">
                           00
                         </span>
                       </div>
@@ -553,8 +481,8 @@ export function StoriesNarrative({ stories }: Props) {
                     />
 
                     <div className="story-meta flex items-center gap-3 md:px-7">
-                      <span className="font-serif text-[13px] leading-none text-[#C9A84C]">
-                        {kanji}
+                      <span className="font-serif text-[11px] font-medium tracking-[0.3em] text-[#C9A84C]">
+                        {String(i + 2).padStart(2, "0")}
                       </span>
                       <span className="h-px w-7 bg-[#C9A84C]/50" />
                       <span className="text-[10px] font-semibold uppercase tracking-[0.32em] text-[#0B1A2E]/55">

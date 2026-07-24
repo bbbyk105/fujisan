@@ -481,7 +481,8 @@ export function CartView() {
           </p>
 
           {/* 年齢確認（酒類のため法令上必須） */}
-          <label className="mt-5 flex cursor-pointer items-start gap-3 text-[12.5px] leading-[1.6] text-[#0B1A2E]/85 select-none">
+          {/* 国税局の指導に基づき、年齢確認表示は拡大・明確化している。縮小しないこと。 */}
+          <label className="mt-6 flex cursor-pointer items-start gap-4 border border-[#0B1A2E]/30 bg-paper-tint/70 px-5 py-5 select-none">
             <input
               type="checkbox"
               checked={ageConfirmed}
@@ -490,14 +491,14 @@ export function CartView() {
                 if (e.target.checked) setCheckoutError(null);
               }}
               aria-invalid={checkoutError === "age" ? "true" : undefined}
-              className="mt-[3px] h-4 w-4 cursor-pointer border-[#0B1A2E]/40 accent-[#0B1A2E]"
+              className="mt-0.5 h-[22px] w-[22px] shrink-0 cursor-pointer border-[#0B1A2E]/50 accent-[#0B1A2E]"
             />
-            <span>
+            <span className="text-[15px] leading-[1.75] text-[#0B1A2E] md:text-[16px]">
               <L
                 en={
                   <>
                     I confirm that I am{" "}
-                    <strong className="font-semibold">
+                    <strong className="font-bold">
                       20 years of age or older
                     </strong>{" "}
                     and that purchasing alcohol is permitted under applicable
@@ -506,7 +507,7 @@ export function CartView() {
                 }
                 ja={
                   <>
-                    私は<strong className="font-semibold">20歳以上</strong>
+                    私は<strong className="font-bold">20歳以上</strong>
                     であり、本商品の購入が法令上認められていることを確認しました。
                   </>
                 }
@@ -514,7 +515,7 @@ export function CartView() {
             </span>
           </label>
           {checkoutError === "age" ? (
-            <p role="alert" className="mt-2 text-[11px] text-crimson">
+            <p role="alert" className="mt-2 text-[12.5px] font-semibold text-crimson">
               <L
                 en="Please confirm you are 20 or older to continue."
                 ja="20歳以上であることをご確認ください。"

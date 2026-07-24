@@ -2,8 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRef } from "react";
 import { ViewTransition } from "react";
 import type { FujisanProduct } from "@/data/fujisan-products";
+import { ensureGsap, gsap, useGSAP } from "./stories/gsap-setup";
 import { L } from "@/i18n/Localized";
 
 type Props = {
@@ -22,23 +24,73 @@ function stagger(i: number) {
   return base;
 }
 
-/**
- * md 以上でボトル列を稜線状（中央峰）に持ち上げる。
- * ヒーロー背景の富士・FUJISAN タイポと同じシグネチャーの反復。
- */
-const RIDGE_LIFT = [
-  "md:translate-y-0",
-  "md:-translate-y-[22px]",
-  "md:-translate-y-[46px]",
-  "md:-translate-y-[26px]",
-  "md:-translate-y-[2px]",
-];
-
 /** View Transition とホバー演出が必要なボトルショーケース（クライアント境界） */
 export function FujisanHeroShowcase({ products }: Props) {
+  const showcaseRef = useRef<HTMLDivElement>(null);
+  ensureGsap();
+
+  // ボトルの出現演出: 下方からぼかしを伴って立ち上がり、
+  // 左右わずかな傾きを戻しながら整列 → 最後に一拍浮いて落ち着く。
+  useGSAP(
+    () => {
+      const bottles = gsap.utils.toArray<HTMLElement>("[data-hero-bottle]");
+      const shadows = gsap.utils.toArray<HTMLElement>("[data-hero-shadow]");
+      if (!bottles.length) return;
+
+      const reduced = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+      if (reduced) {
+        gsap.set([...bottles, ...shadows], { opacity: 1 });
+        return;
+      }
+
+      gsap.set(bottles, {
+        opacity: 0,
+        y: 64,
+        scale: 0.96,
+        rotate: (i: number) => (i % 2 === 0 ? -2.2 : 2.2),
+        filter: "blur(8px)",
+        transformOrigin: "50% 100%",
+      });
+      gsap.set(shadows, { opacity: 0 });
+
+      const tl = gsap.timeline({
+        delay: 0.7,
+        defaults: { ease: "power3.out" },
+      });
+      tl.to(bottles, {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        rotate: 0,
+        filter: "blur(0px)",
+        duration: 1.3,
+        stagger: 0.13,
+      })
+        .to(
+          shadows,
+          { opacity: 1, duration: 0.8, stagger: 0.13, ease: "power2.out" },
+          0.3,
+        )
+        .to(
+          bottles,
+          { y: -7, duration: 0.55, ease: "sine.inOut", stagger: 0.07 },
+          "-=0.3",
+        )
+        .to(
+          bottles,
+          { y: 0, duration: 0.75, ease: "sine.inOut", stagger: 0.07 },
+          "-=0.1",
+        );
+    },
+    { scope: showcaseRef },
+  );
+
   return (
     <>
       <div
+        ref={showcaseRef}
         id="showcase"
         className="relative z-20 mt-8 scroll-mt-[86px] px-2 sm:px-4 md:mt-4 md:px-7 lg:mt-0 xl:mt-10"
       >
@@ -48,7 +100,7 @@ export function FujisanHeroShowcase({ products }: Props) {
               key={`${p.slug}-bottle`}
               href={`/products/${p.slug}`}
               aria-label={`${p.name} ${p.variantLine}`}
-              className={`group relative flex h-[270px] items-end justify-center overflow-visible no-underline outline-none focus-visible:ring-2 focus-visible:ring-[#C9A84C]/60 sm:h-[330px] md:h-[390px] lg:h-[430px] xl:h-[455px] ${stagger(i)} ${RIDGE_LIFT[i] ?? ""}`}
+              className={`group relative flex h-[270px] items-end justify-center overflow-visible no-underline outline-none focus-visible:ring-2 focus-visible:ring-[#C9A84C]/60 sm:h-[330px] md:h-[390px] lg:h-[430px] xl:h-[455px] ${stagger(i)}`}
               style={{ zIndex: 20 - i }}
             >
               <div
@@ -57,10 +109,8 @@ export function FujisanHeroShowcase({ products }: Props) {
               >
                 <div className="fujisan-bottle-drop relative h-full w-full">
                   <div
-                    className="fujisan-bottle relative h-full w-full"
-                    style={{
-                      animationDelay: `${800 + i * 150}ms, ${2300 + i * 150}ms`,
-                    }}
+                    data-hero-bottle
+                    className="relative h-full w-full opacity-0"
                   >
                     <ViewTransition name={`bottle-${p.slug}`} share="morph">
                       <Image
@@ -75,7 +125,10 @@ export function FujisanHeroShowcase({ products }: Props) {
                   </div>
                 </div>
               </div>
-              <span className="absolute bottom-0 left-1/2 h-5 w-[66%] -translate-x-1/2 rounded-[50%] bg-[#0B1A2E]/18 blur-[10px]" />
+              <span
+                data-hero-shadow
+                className="absolute bottom-0 left-1/2 h-5 w-[66%] -translate-x-1/2 rounded-[50%] bg-[#0B1A2E]/18 opacity-0 blur-[10px]"
+              />
             </Link>
           ))}
         </div>

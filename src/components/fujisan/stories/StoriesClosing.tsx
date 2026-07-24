@@ -11,7 +11,6 @@ ensureGsap();
  * 暮れ際の CTA セクション。
  * - 見出しを SplitText で 1 行ずつせり上げ
  * - 金色のゴールデンライン（左→右）が文字下を走る
- * - CTA はマグネット効果（カーソル位置に向かって 0.3s で寄る）
  * - 背景にゆっくり流れる縦のグラデ
  */
 export function StoriesClosing() {
@@ -84,33 +83,6 @@ export function StoriesClosing() {
         yoyo: true,
       });
 
-      // Magnetic CTA
-      const cta = root.current?.querySelector<HTMLElement>(".closing-cta");
-      if (cta) {
-        const xTo = gsap.quickTo(cta, "x", { duration: 0.4, ease: "power3" });
-        const yTo = gsap.quickTo(cta, "y", { duration: 0.4, ease: "power3" });
-        const onMove = (e: PointerEvent) => {
-          const rect = cta.getBoundingClientRect();
-          const cx = rect.left + rect.width / 2;
-          const cy = rect.top + rect.height / 2;
-          const dx = (e.clientX - cx) * 0.25;
-          const dy = (e.clientY - cy) * 0.25;
-          xTo(dx);
-          yTo(dy);
-        };
-        const onLeave = () => {
-          xTo(0);
-          yTo(0);
-        };
-        cta.addEventListener("pointermove", onMove);
-        cta.addEventListener("pointerleave", onLeave);
-        return () => {
-          cta.removeEventListener("pointermove", onMove);
-          cta.removeEventListener("pointerleave", onLeave);
-          splits.forEach((s) => s.revert());
-        };
-      }
-
       return () => {
         splits.forEach((s) => s.revert());
       };
@@ -135,14 +107,6 @@ export function StoriesClosing() {
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-[#D7B46A]/40 to-transparent"
       />
-
-      {/* Oversized background kanji */}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute -left-12 bottom-[-40px] z-0 select-none font-serif text-[clamp(200px,28vw,420px)] leading-none text-[#F2E4C7]/[0.05]"
-      >
-        宵
-      </span>
 
       <div className="relative z-10 mx-auto flex max-w-[1280px] flex-col items-start justify-between gap-10 px-7 py-24 md:flex-row md:items-end md:px-12 md:py-28">
         <div className="max-w-[600px]">

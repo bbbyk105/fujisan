@@ -3,7 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRef, type ReactNode } from "react";
-import { L } from "@/i18n/Localized";
 import { ensureGsap, gsap, SplitText, useGSAP } from "./gsap-setup";
 
 ensureGsap();
@@ -28,7 +27,6 @@ type Props = {
  * - 日本語タイトルは 1 文字ずつ縦書きで stagger
  * - 富士山背景: clip-path で下から立ち上がる + 雲が横スクロール + 長押しで parallax
  * - カーソル追従の柔らかいスポット（パフォーマンスのため quickTo を使用）
- * - スクロールキューは縦線が伸び縮みする loop
  */
 export function StoriesHero({
   eyebrow,
@@ -79,7 +77,6 @@ export function StoriesHero({
             ".hero-crumb",
             ".hero-jp",
             ".hero-lead",
-            ".hero-scroll-cue",
             ".hero-meta",
           ],
           { y: 0, opacity: 1, clipPath: "inset(0% 0% 0% 0%)" },
@@ -153,20 +150,6 @@ export function StoriesHero({
 
         // 登場シーケンス全体が ~1.95s と長いため、~1.45s に圧縮（NN/g 基準）
         tl.timeScale(1.35);
-
-        // Scroll cue: looping pulse
-        gsap.fromTo(
-          ".scroll-cue-bar",
-          { scaleY: 0.3, transformOrigin: "top" },
-          {
-            scaleY: 1,
-            duration: 1.4,
-            ease: "power2.out",
-            repeat: -1,
-            yoyo: true,
-          },
-        );
-        gsap.from(".hero-scroll-cue", { opacity: 0, duration: 0.8, delay: 1.4 });
 
         // Parallax on scroll
         gsap.to(".hero-bg-image", {
@@ -261,14 +244,6 @@ export function StoriesHero({
         />
       </div>
 
-      {/* Giant background kanji (oversized typography) */}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute -right-12 top-[180px] z-0 select-none font-serif text-[clamp(220px,30vw,440px)] leading-none text-[#0B1A2E]/[0.04] md:-right-24"
-      >
-        物語
-      </span>
-
       <div className="relative z-10 mx-auto max-w-[1440px] px-7 pb-32 pt-12 sm:px-8 md:px-12 md:pb-44 md:pt-24">
         {/* Crumbs */}
         {crumbs.length > 0 && (
@@ -333,7 +308,7 @@ export function StoriesHero({
             {lead}
           </p>
 
-          {/* Meta row — chapter count + scroll cue */}
+          {/* Meta row — chapter count */}
           <div className="hero-meta mt-10 flex flex-wrap items-end gap-x-12 gap-y-6">
             <div className="flex items-baseline gap-3">
               <span className="font-serif text-[11px] font-medium tracking-[0.32em] text-[#0B1A2E]/55">
@@ -344,15 +319,6 @@ export function StoriesHero({
               </span>
               <span className="text-[11px] tracking-[0.3em] text-[#0B1A2E]/40">
                 / 六章
-              </span>
-            </div>
-
-            <div className="hero-scroll-cue flex items-center gap-3">
-              <span className="flex h-12 w-px overflow-hidden bg-[#0B1A2E]/15">
-                <span className="scroll-cue-bar inline-block h-full w-full bg-[#C9A84C]" />
-              </span>
-              <span className="text-[10px] font-semibold tracking-[0.34em] text-[#0B1A2E]/60">
-                <L en="SCROLL" ja="スクロール" />
               </span>
             </div>
           </div>

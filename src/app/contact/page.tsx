@@ -16,41 +16,36 @@ export const metadata = {
 
 const CONTACT_EMAIL = "mtfujipharmacy@gmail.com";
 
-const channels = [
+const promises = [
   {
-    num: "Ⅰ",
-    eyebrow: "GENERAL CARE",
-    jp: "一般のお問い合わせ",
-    desc: "Orders, deliveries, gifting, and anything we can help with around your bottle.",
-    descJa: "ご注文・配送・ギフトのご相談など、一本にまつわることなら何でも。",
+    label: <L en="REPLY TIME" ja="返信目安" />,
+    value: <L en="Within one business day" ja="通常1営業日以内にご返信" />,
   },
   {
-    num: "Ⅱ",
-    eyebrow: "TRADE & WHOLESALE",
-    jp: "卸・取扱店",
-    desc: "For restaurants, bars, and retailers considering Fujisan for their programme.",
-    descJa: "飲食店・バー・小売店で、富士山の採用をご検討の方へ。",
-  },
-  {
-    num: "Ⅲ",
-    eyebrow: "BREWERY VISITS",
-    jp: "蔵見学",
-    desc: "Small group visits to the kura, by appointment, between November and March.",
-    descJa: "11月〜3月、ご予約制での少人数の蔵見学を承ります。",
-  },
-  {
-    num: "Ⅳ",
-    eyebrow: "PRESS & MEDIA",
-    jp: "取材・メディア",
-    desc: "Editorial features, photography requests, and review samples.",
-    descJa: "記事掲載・撮影のご依頼、レビュー用サンプルについて。",
+    label: <L en="LANGUAGES" ja="対応言語" />,
+    value: <L en="Japanese & English" ja="日本語・英語" />,
   },
 ];
 
 const hours = [
-  { day: "MON — FRI", dayJa: "月 — 金", value: "09:00 — 17:00 JST", valueJa: "09:00 — 17:00 JST" },
-  { day: "SATURDAY", dayJa: "土曜", value: "10:00 — 15:00 JST", valueJa: "10:00 — 15:00 JST" },
-  { day: "SUNDAY · HOLIDAYS", dayJa: "日曜・祝日", value: "Closed", valueJa: "休業" },
+  {
+    day: "MON — FRI",
+    dayJa: "月 — 金",
+    value: "09:00 — 17:00 JST",
+    valueJa: "09:00 — 17:00 JST",
+  },
+  {
+    day: "SATURDAY",
+    dayJa: "土曜",
+    value: "10:00 — 15:00 JST",
+    valueJa: "10:00 — 15:00 JST",
+  },
+  {
+    day: "SUNDAY · HOLIDAYS",
+    dayJa: "日曜・祝日",
+    value: "Closed",
+    valueJa: "休業",
+  },
 ];
 
 export default function ContactPage() {
@@ -104,7 +99,15 @@ export default function ContactPage() {
               <L en="Write to the brewhouse." ja="蔵元へ、お便りを。" />
             </Reveal>
 
-            <Reveal as="p" className="mt-4 max-w-[520px] text-[14px] font-light leading-[1.78] text-[#1D2432]/82" delay={revealDelays.d2}>
+            <Reveal delay={revealDelays.d2}>
+              <span className="fujisan-hairline mt-6 block h-px w-16 bg-[#C9A84C]" />
+            </Reveal>
+
+            <Reveal
+              as="p"
+              className="mt-4 max-w-[520px] text-[14px] font-light leading-[1.78] text-[#1D2432]/82"
+              delay={revealDelays.d2}
+            >
               <L
                 en="We reply, in Japanese or English, usually within one business day."
                 ja="日本語・英語のどちらでも、通常1営業日以内にご返信します。"
@@ -136,6 +139,10 @@ export default function ContactPage() {
               <L en="Or write to us directly." ja="メールでも、直接どうぞ。" />
             </Reveal>
 
+            <Reveal delay={revealDelays.d2}>
+              <span className="fujisan-hairline mt-6 block h-px w-16 bg-[#C9A84C]" />
+            </Reveal>
+
             {/* 窓口は一つのメールアドレスに集約。用件はメール本文でお知らせください。 */}
             <Reveal as="div" delay={revealDelays.d2} className="mt-7">
               <a
@@ -161,31 +168,28 @@ export default function ContactPage() {
               </p>
             </Reveal>
 
-            <ul className="mt-9 flex flex-col gap-5">
-              {channels.map((c, i) => (
-                <Reveal
-                  key={c.num}
-                  delay={0.18 + i * 0.06}
-                  as="li"
-                  className="border-t border-[#0B1A2E]/12 pt-4"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="font-serif text-[10.5px] font-medium tracking-[0.32em] text-[#C9A84C]">
-                      {c.num}
-                    </span>
-                    <span className="text-[10px] font-semibold tracking-[0.32em] text-[#0B1A2E]/65">
-                      {c.eyebrow}
-                    </span>
-                    <span className="font-jp text-[11px] tracking-[0.22em] text-[#C9A84C]/85">
-                      {c.jp}
-                    </span>
+            {/* 返信の約束 — 窓口の安心材料を3行で */}
+            <Reveal as="div" delay={revealDelays.d3} className="mt-10">
+              <p className="flex items-center gap-4 text-[10px] font-semibold uppercase tracking-[0.36em] text-[#0B1A2E]/65">
+                <L en="Our promise" ja="お返事の約束" />
+                <span aria-hidden className="h-px flex-1 bg-[#0B1A2E]/12" />
+              </p>
+              <dl className="mt-5 flex flex-col">
+                {promises.map((p, i) => (
+                  <div
+                    key={i}
+                    className="flex flex-col gap-1 border-t border-[#0B1A2E]/12 py-3.5 last:border-b sm:flex-row sm:items-baseline sm:justify-between sm:gap-6"
+                  >
+                    <dt className="text-[10px] font-semibold tracking-[0.28em] text-[#C9A84C]">
+                      {p.label}
+                    </dt>
+                    <dd className="font-serif text-[13px] tracking-[0.04em] text-[#0B1A2E] sm:text-right">
+                      {p.value}
+                    </dd>
                   </div>
-                  <p className="mt-2 max-w-[360px] text-[12.5px] font-light leading-[1.7] text-[#1D2432]/76">
-                    <L en={c.desc} ja={c.descJa} />
-                  </p>
-                </Reveal>
-              ))}
-            </ul>
+                ))}
+              </dl>
+            </Reveal>
           </aside>
         </div>
       </section>
@@ -253,6 +257,10 @@ export default function ContactPage() {
               delay={revealDelays.d1}
             >
               <L en="At the foot of Fujisan." ja="富士山の麓で。" />
+            </Reveal>
+
+            <Reveal delay={revealDelays.d2}>
+              <span className="fujisan-hairline mt-6 block h-px w-16 bg-[#D7B46A]" />
             </Reveal>
 
             <Reveal as="div" className="mt-9" delay={revealDelays.d2}>

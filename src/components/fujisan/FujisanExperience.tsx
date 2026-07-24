@@ -1,34 +1,29 @@
-import type { ComponentType } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import { Reveal } from "@/components/reveal/Reveal";
 import { revealDelays } from "@/components/reveal/constants";
 import FujisanFooter from "./FujisanFooter";
 import { L } from "@/i18n/Localized";
 
-type IconProps = { className?: string };
-
 const essences: {
-  Icon: ComponentType<IconProps>;
   label: string;
   labelJp: string;
   sub: string;
   subJp: string;
 }[] = [
   {
-    Icon: IconFuji,
     label: "BLESSINGS OF FUJI",
     labelJp: "富士の恵み",
     sub: "Pure water and the clean air it hides",
     subJp: "清らかな水と潜んだ空気",
   },
   {
-    Icon: IconBowl,
     label: "THE CRAFT",
     labelJp: "匠の技",
     sub: "Artisan techniques, passed down",
     subJp: "受け継がれる職人の技",
   },
   {
-    Icon: IconBottle,
     label: "JAPANESE AESTHETIC",
     labelJp: "日本の美意識",
     sub: "Heart and culture in every drop",
@@ -38,37 +33,36 @@ const essences: {
 
 export default function FujisanExperience() {
   return (
-    <section className="relative scroll-mt-[86px] overflow-hidden bg-paper" id="about">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -right-24 top-0 bottom-[72px] w-[640px] opacity-[0.07]"
-        style={{
-          backgroundImage:
-            "repeating-linear-gradient(45deg, #C9A84C 0 1px, transparent 1px 16px), repeating-linear-gradient(-45deg, #C9A84C 0 1px, transparent 1px 16px)",
-        }}
-      />
-
+    <section className="relative scroll-mt-[86px] bg-paper" id="about">
+      {/* シネマティックバナー: 夕景の富士にステートメントを重ねる */}
       <div
         id="experience"
-        className="relative mx-auto max-w-[1360px] scroll-mt-[86px] px-7 pt-20 pb-16 md:px-12 md:pt-24 md:pb-20"
+        className="relative flex h-[460px] scroll-mt-[86px] items-center justify-center overflow-hidden md:h-[560px]"
       >
+        <Image
+          src="/images/afternoon-fuji.webp"
+          alt="Mt. Fuji reflected on a still lake at dusk"
+          fill
+          sizes="100vw"
+          className="fujisan-grade object-cover object-[50%_58%]"
+        />
         <div
           aria-hidden
-          className="absolute inset-x-7 top-10 h-px bg-linear-to-r from-transparent via-[#C9A84C]/40 to-transparent md:inset-x-12"
+          className="pointer-events-none absolute inset-0 bg-linear-to-b from-[#0B1A2E]/45 via-[#0B1A2E]/20 to-[#0B1A2E]/60"
         />
 
-        <div className="flex flex-col items-center text-center">
+        <div className="relative z-10 flex flex-col items-center px-6 text-center">
           <Reveal className="flex items-center gap-3">
-            <span className="h-px w-10 bg-[#C9A84C]/55" />
-            <span className="font-jp text-[12px] tracking-[0.38em] text-[#C9A84C]">
+            <span className="h-px w-10 bg-[#E2C97E]/70" />
+            <span className="font-jp text-[11.5px] tracking-[0.38em] text-[#E2C97E] md:text-[12px]">
               富士の酒
             </span>
-            <span className="h-px w-10 bg-[#C9A84C]/55" />
+            <span className="h-px w-10 bg-[#E2C97E]/70" />
           </Reveal>
 
           <Reveal
             as="h3"
-            className="mt-7 font-serif text-[clamp(22px,2.6vw,34px)] font-semibold leading-[1.15] tracking-[0.16em] text-[#0B1A2E]"
+            className="mt-7 font-serif text-[clamp(26px,3.4vw,46px)] font-semibold leading-[1.2] tracking-[0.14em] text-[#F8F3E7] [text-shadow:0_2px_28px_rgba(11,26,46,0.45)]"
             delay={revealDelays.d1}
           >
             <L
@@ -86,7 +80,7 @@ export default function FujisanExperience() {
 
           <Reveal
             as="p"
-            className="mt-6 max-w-[560px] text-[14px] font-light leading-[1.8] text-[#2B2419]/75 md:text-[15px]"
+            className="mt-6 max-w-[540px] text-[13px] font-light leading-[1.85] text-[#F8F3E7]/85 md:text-[14px]"
             delay={revealDelays.d2}
           >
             <L
@@ -94,46 +88,23 @@ export default function FujisanExperience() {
               ja="一本一本に、土地と人、そして時を超えて受け継がれる酒造りの物語が息づいています。よく冷やして、日本の真髄をお楽しみください。"
             />
           </Reveal>
-
-          <Reveal className="mt-10 flex items-center gap-3" delay={revealDelays.d3}>
-            <span className="h-px w-12 bg-[#C9A84C]/55" />
-            <svg
-              viewBox="0 0 64 44"
-              fill="none"
-              className="h-auto w-[48px] text-[#0B1A2E]"
-            >
-              <path
-                d="M3 38L22 12L30 22L40 8L61 38H3Z"
-                stroke="currentColor"
-                strokeWidth="1.1"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M18 24L22 12L27 20L24 24H18Z"
-                fill="currentColor"
-                fillOpacity="0.14"
-              />
-              <path
-                d="M35 16L40 8L46 18L42.5 21H38L35 16Z"
-                fill="currentColor"
-                fillOpacity="0.14"
-              />
-            </svg>
-            <span className="h-px w-12 bg-[#C9A84C]/55" />
-          </Reveal>
         </div>
+      </div>
 
-        <div className="mt-16 grid grid-cols-1 gap-10 sm:grid-cols-3 md:gap-8">
-          {essences.map(({ Icon, label, labelJp, sub, subJp }, i) => (
+      {/* エッセンス: 3つの柱と物語への動線 */}
+      <div className="mx-auto max-w-[1160px] px-7 py-16 md:px-12 md:py-24">
+        <div className="grid grid-cols-1 gap-12 sm:grid-cols-3 sm:gap-0">
+          {essences.map(({ label, labelJp, sub, subJp }, i) => (
             <Reveal
               key={labelJp}
-              className="group flex flex-col items-center gap-4 text-center"
+              className={`group flex flex-col items-center gap-5 text-center sm:px-8 ${
+                i > 0 ? "sm:border-l sm:border-[#0B1A2E]/12" : ""
+              }`}
               delay={0.12 + i * 0.1}
             >
-              <Icon className="h-9 w-9 text-[#0B1A2E]/85 transition-colors duration-500 group-hover:text-[#C9A84C]" />
               <span
                 aria-hidden
-                className="h-px w-8 bg-[#C9A84C]/45 transition-all duration-500 group-hover:w-12 group-hover:bg-[#C9A84C]"
+                className="h-px w-10 bg-[#C9A84C]/60 transition-all duration-500 group-hover:w-16 group-hover:bg-[#C9A84C]"
               />
               <div>
                 <p className="font-serif text-[15px] font-semibold tracking-[0.22em] text-[#0B1A2E] md:text-[16px]">
@@ -146,61 +117,28 @@ export default function FujisanExperience() {
             </Reveal>
           ))}
         </div>
+
+        <Reveal
+          className="mt-16 flex flex-col items-center gap-4 md:mt-20"
+          delay={revealDelays.d2}
+        >
+          <span aria-hidden className="h-px w-24 bg-[#0B1A2E]/18" />
+          <Link
+            href="/stories"
+            className="group/stories inline-flex items-center gap-3 border border-[#0B1A2E]/35 bg-paper/65 px-7 py-3.5 text-[10.5px] font-semibold tracking-[0.34em] text-[#0B1A2E] no-underline transition-colors hover:border-[#0B1A2E] hover:bg-[#F1E6CB]/80 md:px-9 md:py-4"
+          >
+            <L en="READ THE STORIES" ja="物語を読む" />
+            <span
+              aria-hidden
+              className="transition-transform duration-500 group-hover/stories:translate-x-1 group-hover/stories:text-[#C9A84C]"
+            >
+              →
+            </span>
+          </Link>
+        </Reveal>
       </div>
 
       <FujisanFooter />
     </section>
-  );
-}
-
-function IconFuji({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 48 40" fill="none" className={className}>
-      <path
-        d="M3 33L18 11L23.5 18.5L30 8L45 33H3Z"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinejoin="round"
-      />
-      <path d="M14 22L18 11L21.5 17L19 22H14Z" fill="currentColor" fillOpacity="0.6" />
-      <path d="M26 14L30 8L34 15L31.5 17.5H28L26 14Z" fill="currentColor" fillOpacity="0.6" />
-    </svg>
-  );
-}
-
-function IconBowl({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 40 40" fill="none" className={className}>
-      <path
-        d="M5 18H35C35 27 28.5 33 20 33C11.5 33 5 27 5 18Z"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinejoin="round"
-      />
-      <path d="M3 18H37" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-      <path
-        d="M16 12C16 9 18 8 18 6M22 13C22 10.5 24 9.5 24 7.5"
-        stroke="currentColor"
-        strokeWidth="1"
-        strokeLinecap="round"
-        opacity="0.7"
-      />
-    </svg>
-  );
-}
-
-function IconBottle({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 40 40" fill="none" className={className}>
-      <path
-        d="M16 4H24V10L27 14V34C27 35.1 26.1 36 25 36H15C13.9 36 13 35.1 13 34V14L16 10V4Z"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinejoin="round"
-      />
-      <path d="M13 22H27" stroke="currentColor" strokeWidth="1" />
-      <path d="M16 7H24" stroke="currentColor" strokeWidth="1" />
-      <circle cx="20" cy="28" r="1.3" fill="currentColor" />
-    </svg>
   );
 }
