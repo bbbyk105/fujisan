@@ -108,8 +108,8 @@ const sections: InfoSection[] = [
     body: [
       <L
         key="b"
-        en="Photograph the outer box and the bottle as soon as you notice damage, and contact us within seven days at care@fujisan-sake.com. We will replace damaged bottles or refund the order."
-        ja="破損に気づかれたら、すぐに外箱とボトルを撮影し、7日以内に care@fujisan-sake.com までご連絡ください。破損品の交換、またはご返金で対応いたします。"
+        en="Photograph the outer box and the bottle as soon as you notice damage, and contact us within seven days at mtfujipharmacy@gmail.com. We will replace damaged bottles or refund the order."
+        ja="破損に気づかれたら、すぐに外箱とボトルを撮影し、7日以内に mtfujipharmacy@gmail.com までご連絡ください。破損品の交換、またはご返金で対応いたします。"
       />,
     ],
   },

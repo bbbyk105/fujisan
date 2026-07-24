@@ -47,9 +47,9 @@ const features = [
     jp: "物語",
     desc: "Each bottle carries a story — of the land, the people, and the traditions that live on in every drop.",
     descJp: "一本一本に、土地と人、そして一滴に息づく伝統の物語が宿ります。",
-    image: "/images/fujisan/toji.webp",
-    imagePosition: "object-[50%_28%]",
-    alt: "杜氏 — 蔵の仕込みを見守る",
+    image: "/images/fujisan/features/story-kura.webp",
+    imagePosition: "object-[72%_50%]",
+    alt: "雪の朝、富士山を望む蔵",
     href: "/stories",
   },
 ];

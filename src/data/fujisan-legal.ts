@@ -45,6 +45,9 @@ export const FUJISAN_LEGAL = {
   phoneHours: "平日 10:00 – 17:00（土日祝・年末年始を除く）",
   email: "mtfujipharmacy@gmail.com",
   ecManager: "通販責任者 近藤 弘人",
+  // 製造者（醸造元）。武士道シリーズは牧野酒造合資会社による醸造（販売者は近藤薬局の OEM 商品）。
+  brewer: "牧野酒造合資会社",
+  brewerEn: "Makino Shuzo Goshi Kaisha (Makino Sake Brewery)",
   // 価格・支払・引渡
   priceNote:
     "各商品ページに表示の金額（消費税10%込）。表示価格以外に送料等が必要となる場合があります。",

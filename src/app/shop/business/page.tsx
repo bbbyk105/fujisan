@@ -1,10 +1,10 @@
 import Image from "next/image";
+import Link from "next/link";
 import FujisanNav from "@/components/fujisan/FujisanNav";
 import FujisanFooter from "@/components/fujisan/FujisanFooter";
 import { FujisanInnerHero } from "@/components/fujisan/FujisanInnerHero";
-import { WholesaleInquiryForm } from "@/components/fujisan/WholesaleInquiryForm";
-import { getSession } from "@/lib/session";
 import { WholesalePriceList } from "@/components/fujisan/WholesalePriceList";
+import { FUJISAN_LEGAL } from "@/data/fujisan-legal";
 import { TradeAccessBand } from "@/components/fujisan/TradeAccessBand";
 import { Reveal } from "@/components/reveal/Reveal";
 import { revealDelays } from "@/components/reveal/constants";
@@ -25,9 +25,9 @@ const benefits = [
   },
   {
     num: "Ⅱ",
-    eyebrow: { en: "BREWER SUPPORT", ja: "蔵元のサポート" },
-    en: "Tasting notes, serving guides, and an on-site staff training session at major rollouts.",
-    ja: "テイスティングノート、提供時の資料、本格導入時の店舗研修まで、蔵元がお手伝いします。",
+    eyebrow: { en: "BREWER SUPPORT", ja: "醸造元との連携" },
+    en: "Tasting notes, serving guides, and staff training at major rollouts — arranged with Makino Shuzo, the kura that brews the Bushido series.",
+    ja: "テイスティングノート、提供時の資料、本格導入時の店舗研修まで、醸造元の牧野酒造合資会社と連携してお手伝いします。",
   },
   {
     num: "Ⅲ",
@@ -49,8 +49,8 @@ const process = [
     en: "Submit the enquiry",
     ja: "お問い合わせ",
     desc: {
-      en: "Tell us about your programme, volume, and target launch in the form below. We respond within two business days.",
-      ja: "フォームから、お店の構想・取扱量・開始のご希望時期をお知らせください。2 営業日以内にご返信します。",
+      en: "Tell us about your programme, volume, and target launch via the contact form. We respond within two business days.",
+      ja: "お問い合わせフォームから、業態・想定される取扱量・導入のご希望時期をお知らせください。2 営業日以内に担当よりご返信します。",
     },
   },
   {
@@ -59,7 +59,7 @@ const process = [
     ja: "サンプルとお見積り",
     desc: {
       en: "We share trade pricing, lead times, and — where appropriate — sample bottles for your team to taste.",
-      ja: "卸価格と納期をお伝えし、必要に応じてサンプルもご用意します。実際に味わったうえで、ご検討いただけます。",
+      ja: "内容を伺ったうえで、卸価格と納期をご提示します。ご希望に応じてサンプルもお送りしますので、実際に味わってからご検討ください。",
     },
   },
   {
@@ -67,8 +67,8 @@ const process = [
     en: "Open the account",
     ja: "口座開設",
     desc: {
-      en: "On agreement, we open a trade account and confirm payment terms, licence verification, and the first delivery.",
-      ja: "条件が整いましたら、お取引口座を開設します。お支払い条件・免許の確認・初回の出荷まで、まとめてご案内します。",
+      en: "Once licence verification and payment terms are agreed, we open your trade account and arrange the first delivery.",
+      ja: "酒類販売免許とお支払い条件を確認のうえ、お取引口座を開設します。開設後は、初回のご注文からすみやかに出荷いたします。",
     },
   },
   {
@@ -77,7 +77,7 @@ const process = [
     ja: "メニューへの導入",
     desc: {
       en: "Menus, training, and shelf-talkers — we equip your team so the bottle is poured with the kura behind it.",
-      ja: "メニューづくり・研修・販促物まで。一本一本に蔵の物語を添えられるよう、お店とともに整えます。",
+      ja: "メニューへの掲載からスタッフ研修、販促物のご用意まで、導入後も私たちがお手伝いします。お客様に銘柄の背景まで伝えられるお店づくりを、ともに進めます。",
     },
   },
 ];
@@ -125,28 +125,7 @@ const faqs = [
   },
 ];
 
-export default async function ShopBusinessPage() {
-  // 法人ログイン中なら、登録情報でお見積りフォームを自動入力する。
-  const session = await getSession();
-  const su = session?.user as
-    | {
-        name?: string;
-        email?: string;
-        role?: string;
-        companyName?: string | null;
-        phone?: string | null;
-      }
-    | undefined;
-  const wholesaleDefaults =
-    su?.role === "business"
-      ? {
-          company: su.companyName ?? "",
-          contactName: su.name ?? "",
-          email: su.email ?? "",
-          phone: su.phone ?? "",
-        }
-      : undefined;
-
+export default function ShopBusinessPage() {
   return (
     <main className="bg-paper text-[#0B1A2E] min-h-screen">
       <FujisanNav />
@@ -195,25 +174,30 @@ export default async function ShopBusinessPage() {
             className="mt-6 max-w-[720px] font-serif text-[clamp(24px,2.8vw,36px)] font-semibold leading-[1.18] tracking-[0.06em] text-[#0B1A2E]"
           >
             <L
-              en="Not a wholesaler. A small brewhouse, with a single trade desk."
-              ja="卸業者ではなく、ひとつの蔵元と、ひとつの担当窓口。"
+              en="One kura's sake, one trade desk."
+              ja="ひとつの蔵で醸した酒を、ひとつの窓口から。"
             />
           </Reveal>
 
-          <div className="mt-14 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-14 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {benefits.map((b, i) => (
               <Reveal
                 key={b.num}
+                as="article"
                 delay={revealDelays.d2 + i * 0.06}
-                className="flex flex-col gap-3 border-t border-[#0B1A2E]/15 pt-6"
+                className="group flex flex-col border border-[#0B1A2E]/12 bg-paper-card px-7 py-9 transition-[transform,border-color,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:border-[#C9A84C]/55 hover:shadow-[0_20px_44px_-28px_rgba(11,26,46,0.4)]"
               >
-                <span className="font-serif text-[11px] font-medium tracking-[0.36em] text-[#C9A84C]">
+                <span className="font-serif text-[30px] font-semibold leading-none tracking-[0.06em] text-[#C9A84C]">
                   {b.num}
                 </span>
-                <p className="text-[10px] font-semibold tracking-[0.3em] text-[#0B1A2E]/65">
+                <span
+                  aria-hidden
+                  className="mt-6 h-px w-8 bg-[#C9A84C]/55 transition-[width,background-color] duration-500 group-hover:w-14 group-hover:bg-[#C9A84C]"
+                />
+                <h3 className="mt-5 text-[10px] font-semibold tracking-[0.3em] text-[#0B1A2E]/70">
                   <L en={b.eyebrow.en} ja={b.eyebrow.ja} />
-                </p>
-                <p className="text-[13px] leading-[1.78] text-[#1D2432]/82">
+                </h3>
+                <p className="mt-4 text-[13px] leading-[1.78] text-[#1D2432]/82">
                   <L en={b.en} ja={b.ja} />
                 </p>
               </Reveal>
@@ -250,17 +234,32 @@ export default async function ShopBusinessPage() {
             />
           </Reveal>
 
-          <ol className="mt-14 grid grid-cols-1 gap-10 md:grid-cols-2 md:gap-x-12 lg:grid-cols-4 lg:gap-x-8">
+          <ol className="relative mt-16 grid grid-cols-1 gap-10 md:grid-cols-2 md:gap-x-12 lg:grid-cols-4 lg:gap-x-8">
+            {/* デスクトップでは全ステップを貫く進行ライン */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -top-8 inset-x-0 hidden h-px bg-linear-to-r from-[#D7B46A]/50 via-[#F2E4C7]/16 to-[#F2E4C7]/8 lg:block"
+            />
             {process.map((s, i) => (
               <Reveal
                 key={s.num}
                 as="li"
                 delay={revealDelays.d2 + i * 0.06}
-                className="relative flex flex-col gap-4 border-t border-[#F2E4C7]/14 pt-7"
+                className="relative flex flex-col gap-4 border-t border-[#F2E4C7]/14 pt-7 lg:border-t-0 lg:pt-0"
               >
-                <span className="font-serif text-[11px] font-medium tracking-[0.36em] text-[#D7B46A]">
-                  {s.num}
-                </span>
+                <span
+                  aria-hidden
+                  className="absolute -top-[35px] left-0 hidden h-[7px] w-[7px] rotate-45 border border-[#D7B46A]/70 bg-[#0F1D30] lg:block"
+                />
+                <div className="flex items-baseline gap-4">
+                  <span className="font-serif text-[38px] font-semibold leading-none text-[#D7B46A]/35">
+                    {s.num}
+                  </span>
+                  <span
+                    aria-hidden
+                    className="mb-1 h-px w-6 shrink-0 bg-[#D7B46A]/45"
+                  />
+                </div>
                 <h3 className="font-serif text-[clamp(17px,1.6vw,21px)] font-semibold leading-[1.3] tracking-[0.04em] text-[#F2E4C7]">
                   <L en={s.en} ja={s.ja} />
                 </h3>
@@ -307,7 +306,7 @@ export default async function ShopBusinessPage() {
         </div>
       </section>
 
-      {/* ===== Inquiry form ===== */}
+      {/* ===== Contact ===== */}
       <section className="relative bg-paper">
         <div
           aria-hidden
@@ -321,7 +320,7 @@ export default async function ShopBusinessPage() {
               </span>
               <span className="h-px w-10 bg-[#C9A84C]/55" />
               <span className="text-[10px] font-semibold uppercase tracking-[0.36em] text-[#0B1A2E]/65">
-                REQUEST A QUOTE · お見積り依頼
+                CONTACT · お問い合わせ
               </span>
             </Reveal>
 
@@ -342,18 +341,29 @@ export default async function ShopBusinessPage() {
               className="mt-4 max-w-[520px] text-[13.5px] leading-[1.78] text-[#1D2432]/78"
             >
               <L
-                en="A few minutes is enough. We reply within two business days, in Japanese or English, with pricing tailored to your business."
-                ja="数分でご記入いただけます。2 営業日以内に、日本語または英語にて貴社向けのご提案をお送りします。"
+                en="Share your programme, volume, and target launch via the contact form, or reach the trade desk directly by email or phone. We reply within two business days, in Japanese or English."
+                ja="業態や想定される取扱量、開始のご希望時期を、お問い合わせフォーム、または取扱店専用窓口（メール・お電話）よりお知らせください。2 営業日以内に、日本語または英語でご返信します。"
               />
             </Reveal>
 
             <Reveal className="mt-10" delay={revealDelays.d3}>
-              <WholesaleInquiryForm defaults={wholesaleDefaults} />
+              <Link
+                href="/contact"
+                className="group inline-flex items-center gap-3 border border-[#0B1A2E]/25 bg-paper-card px-8 py-4 text-[12px] font-semibold tracking-[0.22em] text-[#0B1A2E] no-underline transition-colors duration-300 hover:border-[#C9A84C] hover:text-[#C9A84C]"
+              >
+                <L en="GO TO CONTACT" ja="お問い合わせフォームへ" />
+                <span
+                  aria-hidden
+                  className="transition-transform duration-300 group-hover:translate-x-1"
+                >
+                  →
+                </span>
+              </Link>
             </Reveal>
           </div>
 
           {/* Side: photo + direct contact */}
-          <aside className="lg:border-l lg:border-[#0B1A2E]/12 lg:pl-14">
+          <aside className="self-start lg:sticky lg:top-28 lg:border-l lg:border-[#0B1A2E]/12 lg:pl-14">
             <Reveal className="relative h-[260px] w-full overflow-hidden md:h-[320px]">
               <Image
                 src="/images/direct-to-cus.webp"
@@ -372,46 +382,15 @@ export default async function ShopBusinessPage() {
             </Reveal>
 
             <Reveal as="div" delay={revealDelays.d1} className="mt-10">
-              <p className="text-[10px] font-semibold tracking-[0.32em] text-[#0B1A2E]/65">
-                DIRECT · 取扱店専用窓口
+              <p className="text-[11px] tracking-[0.12em] text-[#0B1A2E]/60">
+                <L en="Trade desk" ja="取扱店窓口" />
               </p>
-              <div className="mt-4 h-px w-10 bg-[#C9A84C]/55" />
               <a
-                href="mailto:trade@fujisan-sake.com"
-                className="group/email mt-6 inline-flex items-center gap-2 font-serif text-[16px] text-[#0B1A2E] no-underline transition-colors hover:text-[#C9A84C]"
+                href={`mailto:${FUJISAN_LEGAL.email}`}
+                className="mt-3 block font-serif text-[16px] text-[#0B1A2E] underline decoration-[#0B1A2E]/30 underline-offset-4 transition-colors hover:text-[#C9A84C]"
               >
-                <span className="relative pb-0.5">
-                  trade@fujisan-sake.com
-                  <span className="absolute inset-x-0 -bottom-0 h-px bg-[#0B1A2E]/35 transition-all duration-500 group-hover/email:bg-[#C9A84C]" />
-                </span>
-                <span
-                  aria-hidden
-                  className="text-[12px] transition-transform duration-500 group-hover/email:translate-x-1"
-                >
-                  ↗
-                </span>
+                {FUJISAN_LEGAL.email}
               </a>
-              <p className="mt-4 max-w-[360px] text-[12.5px] leading-[1.7] text-[#1D2432]/76">
-                <L
-                  en="For listings, retail buying, and brewery visits — our trade desk replies in JA / EN within two business days."
-                  ja="お取扱いのご相談・仕入れ・蔵見学のご依頼まで、専任の担当が 2 営業日以内に、日本語・英語で対応します。"
-                />
-              </p>
-            </Reveal>
-
-            <Reveal as="div" delay={revealDelays.d2} className="mt-10 border-t border-[#0B1A2E]/12 pt-8">
-              <p className="text-[10px] font-semibold tracking-[0.32em] text-[#0B1A2E]/65">
-                PHONE · 電話
-              </p>
-              <p className="mt-3 font-serif text-[16px] text-[#0B1A2E]">
-                070-9323-4144
-              </p>
-              <p className="mt-2 text-[11.5px] leading-[1.7] text-[#0B1A2E]/60">
-                <L
-                  en="Weekdays 10:00 – 17:00 JST (excl. holidays)"
-                  ja="平日 10:00 – 17:00（土日祝・年末年始を除く）"
-                />
-              </p>
             </Reveal>
           </aside>
         </div>
@@ -441,22 +420,34 @@ export default async function ShopBusinessPage() {
             />
           </Reveal>
 
-          <dl className="mt-14 grid grid-cols-1 gap-10 md:grid-cols-2 md:gap-x-16">
+          <div className="mt-14 border-t border-[#0B1A2E]/15">
             {faqs.map((f, i) => (
-              <Reveal
-                key={f.q.en}
-                delay={revealDelays.d2 + i * 0.06}
-                className="border-t border-[#0B1A2E]/15 pt-7"
-              >
-                <dt className="font-serif text-[clamp(16px,1.5vw,19px)] font-semibold leading-[1.4] tracking-[0.04em] text-[#0B1A2E]">
-                  <L en={f.q.en} ja={f.q.ja} />
-                </dt>
-                <dd className="mt-4 text-[13px] leading-[1.78] text-[#1D2432]/80">
-                  <L en={f.a.en} ja={f.a.ja} />
-                </dd>
+              <Reveal key={f.q.en} delay={revealDelays.d2 + i * 0.05}>
+                <details className="group border-b border-[#0B1A2E]/15">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-6 transition-colors hover:bg-[#F1E6CB]/35 md:py-7 [&::-webkit-details-marker]:hidden">
+                    <span className="flex items-baseline gap-5 px-1 md:px-2">
+                      <span className="w-7 shrink-0 font-serif text-[11px] font-medium tracking-[0.2em] text-[#C9A84C]">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <span className="font-serif text-[clamp(16px,1.5vw,19px)] font-semibold leading-[1.4] tracking-[0.04em] text-[#0B1A2E]">
+                        <L en={f.q.en} ja={f.q.ja} />
+                      </span>
+                    </span>
+                    <span
+                      aria-hidden
+                      className="relative mr-1 h-3.5 w-3.5 shrink-0 text-[#0B1A2E]/55 transition-[transform,color] duration-300 group-open:rotate-45 group-open:text-[#C9A84C] md:mr-2"
+                    >
+                      <span className="absolute left-0 top-1/2 h-px w-full -translate-y-1/2 bg-current" />
+                      <span className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-current" />
+                    </span>
+                  </summary>
+                  <p className="max-w-[760px] px-1 pb-7 text-[13px] leading-[1.82] text-[#1D2432]/80 md:px-2 md:pl-[60px]">
+                    <L en={f.a.en} ja={f.a.ja} />
+                  </p>
+                </details>
               </Reveal>
             ))}
-          </dl>
+          </div>
         </div>
       </section>
 

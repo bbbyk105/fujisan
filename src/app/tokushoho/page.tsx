@@ -30,7 +30,14 @@ const sections: InfoSection[] = [
     num: "01",
     heading: "Seller · 販売業者",
     jp: "販売業者",
-    body: [FUJISAN_LEGAL.sellerName],
+    body: [
+      FUJISAN_LEGAL.sellerName,
+      <L
+        key="brewer"
+        en={`Brewer (manufacturer): ${FUJISAN_LEGAL.brewerEn}`}
+        ja={`醸造元（製造者）: ${FUJISAN_LEGAL.brewer}`}
+      />,
+    ],
   },
   {
     num: "02",

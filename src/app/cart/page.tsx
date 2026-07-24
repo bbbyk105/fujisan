@@ -25,8 +25,8 @@ export default function CartPage() {
         jp="― ご注文の確認 ―"
         lead={
           <L
-            en="Review your bottles before checkout. Prices include tax, and every order is hand-checked at the kura."
-            ja="お手続きの前に、お選びいただいた一本一本をご確認ください。価格は税込、すべてのご注文を蔵でひとつずつ検品します。"
+            en="Review your bottles before checkout. Prices include tax, and every order is hand-checked before it ships."
+            ja="お手続きの前に、お選びいただいた一本一本をご確認ください。価格は税込、すべてのご注文をひとつずつ検品します。"
           />
         }
         crumbs={[

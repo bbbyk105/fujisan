@@ -43,8 +43,8 @@ const paths = [
     image: "/images/restaurant.webp",
     imagePos: "object-[50%_46%]",
     lead: {
-      en: "For restaurants, bars, retailers, and hospitality programmes. Account pricing, dedicated brewer support, and case quantities, by appointment.",
-      ja: "レストラン・バー・小売店・ホテルのみなさまへ。卸価格、ケース単位でのお届け、蔵元によるサポートを、ご相談のうえでご用意します。",
+      en: "For restaurants, bars, retailers, and hospitality programmes. Account pricing, dedicated support, and case quantities, by appointment.",
+      ja: "レストラン・バー・小売店・ホテルのみなさまへ。卸価格、ケース単位でのお届け、専任担当によるサポートを、ご相談のうえでご用意します。",
     },
     bullets: [
       { en: "Case pricing (6 / 12 bottles)", ja: "ケース単位（6本／12本）" },
