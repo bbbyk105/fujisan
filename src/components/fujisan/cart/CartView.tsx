@@ -425,7 +425,8 @@ export function CartView() {
             <p className="text-[11px] font-semibold tracking-[0.2em] text-[#0B1A2E]/70">
               <L en="TOTAL" ja="合計" />
             </p>
-            <p className="font-serif text-[24px] font-semibold tracking-[0.02em] text-[#0B1A2E]">
+            {/* 金額は年齢確認より小さくする（国税局指導）。拡大しないこと。 */}
+            <p className="font-serif text-[18px] font-semibold tracking-[0.02em] text-[#0B1A2E]">
               ¥{yen.format(total)}
             </p>
           </div>
@@ -481,7 +482,7 @@ export function CartView() {
           </p>
 
           {/* 年齢確認（酒類のため法令上必須） */}
-          {/* 国税局の指導に基づき、年齢確認表示は拡大・明確化している。縮小しないこと。 */}
+          {/* 国税局の指導: 「20歳以上」は金額より大きく。縮小しないこと。 */}
           <label className="mt-6 flex cursor-pointer items-start gap-4 border border-[#0B1A2E]/30 bg-paper-tint/70 px-5 py-5 select-none">
             <input
               type="checkbox"
@@ -491,14 +492,14 @@ export function CartView() {
                 if (e.target.checked) setCheckoutError(null);
               }}
               aria-invalid={checkoutError === "age" ? "true" : undefined}
-              className="mt-0.5 h-[22px] w-[22px] shrink-0 cursor-pointer border-[#0B1A2E]/50 accent-[#0B1A2E]"
+              className="mt-1.5 h-[22px] w-[22px] shrink-0 cursor-pointer border-[#0B1A2E]/50 accent-[#0B1A2E]"
             />
-            <span className="text-[15px] leading-[1.75] text-[#0B1A2E] md:text-[16px]">
+            <span className="text-[22px] leading-[1.7] text-[#0B1A2E] md:text-[24px]">
               <L
                 en={
                   <>
                     I confirm that I am{" "}
-                    <strong className="font-bold">
+                    <strong className="text-[1.15em] font-bold">
                       20 years of age or older
                     </strong>{" "}
                     and that purchasing alcohol is permitted under applicable
@@ -507,7 +508,7 @@ export function CartView() {
                 }
                 ja={
                   <>
-                    私は<strong className="font-bold">20歳以上</strong>
+                    私は<strong className="text-[1.15em] font-bold">20歳以上</strong>
                     であり、本商品の購入が法令上認められていることを確認しました。
                   </>
                 }

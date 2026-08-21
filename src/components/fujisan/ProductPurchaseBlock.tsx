@@ -94,7 +94,8 @@ export default function ProductPurchaseBlock({
             <span className="text-[#0B1A2E]/60">/ {variantLine}</span>
           </h2>
 
-          <p className="mt-6 font-serif text-[clamp(28px,3.2vw,38px)] font-semibold leading-[1.15] tracking-[0.02em] text-[#0B1A2E]">
+          {/* 金額は年齢確認より小さくする（国税局指導）。拡大しないこと。 */}
+          <p className="mt-6 font-serif text-[22px] font-semibold leading-[1.15] tracking-[0.02em] text-[#0B1A2E] md:text-[24px]">
             ¥{yen.format(selected.priceJpy)}
             <span className="ml-2 align-middle text-[12px] font-medium tracking-[0.18em] text-[#0B1A2E]/60">
               <L en="(tax incl.)" ja="（税込）" />
@@ -237,7 +238,7 @@ export default function ProductPurchaseBlock({
           <div
             role="note"
             aria-label="未成年飲酒防止のお知らせ"
-            className="mt-7 border border-[#C9A84C]/35 bg-paper-tint/80 px-5 py-5 text-[clamp(18px,2vw,22px)] font-medium leading-[1.55] text-[#1D2432]/86"
+            className="mt-7 border border-[#C9A84C]/35 bg-paper-tint/80 px-5 py-5 text-[22px] font-medium leading-[1.55] text-[#1D2432]/86 md:text-[24px]"
           >
             <L
               ja={
@@ -261,8 +262,9 @@ export default function ProductPurchaseBlock({
             />
           </div>
 
+          {/* 国税局の指導: 「20歳以上」は金額より大きく。縮小しないこと。 */}
           <label
-            className={`mt-6 flex cursor-pointer items-start gap-3 text-[13px] leading-[1.6] text-[#0B1A2E]/85 select-none ${
+            className={`mt-6 flex cursor-pointer items-start gap-4 text-[24px] leading-[1.7] text-[#0B1A2E] select-none md:text-[26px] ${
               needsConfirm
                 ? "outline outline-2 outline-offset-8 outline-[#8B1A1A]/65"
                 : ""
@@ -276,7 +278,7 @@ export default function ProductPurchaseBlock({
                 setConfirmed(e.target.checked);
                 if (e.target.checked) setNeedsConfirm(false);
               }}
-              className="mt-[3px] h-4 w-4 cursor-pointer border-[#0B1A2E]/40 accent-[#0B1A2E]"
+              className="mt-1.5 h-[22px] w-[22px] shrink-0 cursor-pointer border-[#0B1A2E]/50 accent-[#0B1A2E]"
               aria-describedby="age-check-note"
               aria-invalid={needsConfirm}
             />
@@ -285,7 +287,7 @@ export default function ProductPurchaseBlock({
                 en={
                   <>
                     I confirm that I am{" "}
-                    <strong className="font-semibold">
+                    <strong className="text-[1.15em] font-bold">
                       20 years of age or older
                     </strong>{" "}
                     and that purchasing alcohol is permitted under applicable
@@ -294,7 +296,7 @@ export default function ProductPurchaseBlock({
                 }
                 ja={
                   <>
-                    私は<strong className="font-semibold">20歳以上</strong>
+                    私は<strong className="text-[1.15em] font-bold">20歳以上</strong>
                     であり、本商品の購入が法令上認められていることを確認しました。
                   </>
                 }
