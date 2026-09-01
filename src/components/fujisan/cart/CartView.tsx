@@ -9,6 +9,11 @@ import {
   shippingFee,
 } from "@/lib/cart/cart-core";
 import { useCart } from "@/lib/cart/useCart";
+import {
+  useLiveCatalog,
+  liveKey,
+  type LiveSkuLite,
+} from "@/lib/cart/useLiveCatalog";
 import { pushToast } from "@/lib/cart/toast-store";
 import { useSession } from "@/lib/auth-client";
 import { startCheckoutAction } from "@/lib/actions/checkout";
@@ -28,7 +33,8 @@ type CheckoutError =
   | "db"
   | "soldout"
   | "login"
-  | "age";
+  | "age"
+  | "stock";
 
 function QtyStepper({
   qty,
@@ -69,8 +75,57 @@ function QtyStepper({
   );
 }
 
+/** カート行の在庫に関する注意書き。完売・在庫不足のときだけ表示する。 */
+function LineStockNotice({
+  live,
+  qty,
+}: {
+  live: LiveSkuLite | undefined;
+  qty: number;
+}) {
+  if (!live) return null;
+  if (live.soldOut) {
+    return (
+      <p
+        role="alert"
+        className="mt-2 text-[11px] font-semibold tracking-[0.08em] text-crimson"
+      >
+        <L
+          ja="完売しました。削除してからお進みください。"
+          en="Sold out — please remove this line to continue."
+        />
+      </p>
+    );
+  }
+  if (live.stock !== null && live.stock < qty) {
+    return (
+      <p
+        role="alert"
+        className="mt-2 text-[11px] font-semibold tracking-[0.08em] text-crimson"
+      >
+        <L
+          ja={`残り${live.stock}本です。数量を減らしてください。`}
+          en={`Only ${live.stock} left — please reduce the quantity.`}
+        />
+      </p>
+    );
+  }
+  return null;
+}
+
 export function CartView() {
-  const { ready, lines, count, subtotal, add, setQty, remove } = useCart();
+  const { ready, lines, count, add, setQty, remove } = useCart();
+
+  // カートは静的ページで描画されるため、価格と在庫はハイドレーション後に
+  // /api/catalog から取り直す。未取得のあいだはコードのカタログ価格で表示し、
+  // 実際の請求額は startCheckoutAction が D1 から引き直して確定する。
+  const { catalog } = useLiveCatalog();
+  const unitPriceOf = (slug: string, ml: number, fallback: number) =>
+    catalog[liveKey(slug, ml)]?.price ?? fallback;
+  const subtotal = lines.reduce(
+    (sum, l) => sum + unitPriceOf(l.slug, l.ml, l.volume.priceJpy) * l.qty,
+    0,
+  );
   const { data: session, isPending } = useSession();
   const locale = useLocale();
   // 削除確認中の行（`${slug}-${ml}`）。null のときは確認テロップを出していない。
@@ -109,6 +164,7 @@ export function CartView() {
     const res = await startCheckoutAction({
       items: lines.map((l) => ({ slug: l.slug, ml: l.ml, qty: l.qty })),
       locale,
+      ageConfirmed,
     });
     if (res.ok) {
       // Stripe ホスト型決済ページへ。遷移するので submitting は解除しない。
@@ -297,9 +353,14 @@ export function CartView() {
                       </p>
                     </div>
                     <p className="shrink-0 font-serif text-[15px] font-semibold tracking-[0.02em] text-[#0B1A2E]">
-                      ¥{yen.format(volume.priceJpy * qty)}
+                      ¥{yen.format(unitPriceOf(slug, ml, volume.priceJpy) * qty)}
                     </p>
                   </div>
+
+                  <LineStockNotice
+                    live={catalog[liveKey(slug, ml)]}
+                    qty={qty}
+                  />
 
                   <div className="mt-auto flex items-center justify-between gap-4 pt-5">
                     <QtyStepper
@@ -566,11 +627,25 @@ export function CartView() {
             </p>
           ) : null}
 
-          {/* 決済開始エラー（ログイン・年齢・完売以外） */}
+          {/* 在庫不足エラー: 注文本数が現在の在庫を超えている */}
+          {checkoutError === "stock" ? (
+            <p
+              role="alert"
+              className="mt-5 border border-crimson/40 bg-crimson/6 px-4 py-3 text-[11.5px] leading-[1.7] text-crimson"
+            >
+              <L
+                en="One of the bottles in your cart is no longer available in that quantity. Please reduce the quantity and try again."
+                ja="カート内の商品が、ご指定の本数分ご用意できませんでした。数量を減らしてから、もう一度お試しください。"
+              />
+            </p>
+          ) : null}
+
+          {/* 決済開始エラー（ログイン・年齢・完売・在庫不足以外） */}
           {checkoutError &&
           checkoutError !== "login" &&
           checkoutError !== "age" &&
-          checkoutError !== "soldout" ? (
+          checkoutError !== "soldout" &&
+          checkoutError !== "stock" ? (
             <p
               role="alert"
               className="mt-5 border border-crimson/40 bg-crimson/6 px-4 py-3 text-[11.5px] leading-[1.7] text-crimson"

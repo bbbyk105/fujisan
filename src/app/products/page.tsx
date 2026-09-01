@@ -6,6 +6,7 @@ import FujisanFooter from "@/components/fujisan/FujisanFooter";
 import { FujisanInnerHero } from "@/components/fujisan/FujisanInnerHero";
 import { Reveal } from "@/components/reveal/Reveal";
 import { revealDelays } from "@/components/reveal/constants";
+import { LivePrice } from "@/components/fujisan/LivePrice";
 import {
   fujisanProducts,
   primaryVolume,
@@ -20,8 +21,6 @@ export const metadata = {
   description:
     "The five bottles of the Bushido series — Shogun, Tenka, Samurai, Ninja, and Kokoro. Grades, tasting notes, serving temperatures, and prices in one place.",
 };
-
-const yen = new Intl.NumberFormat("ja-JP");
 
 function specValue(product: FujisanProduct, label: string) {
   return product.specs.find((s) => s.label === label)?.value ?? "—";
@@ -147,7 +146,7 @@ function CollectionRow({
                 key={v.ml}
                 className="font-serif text-[18px] font-semibold tracking-[0.02em] text-[#0B1A2E]"
               >
-                ¥{yen.format(v.priceJpy)}
+                <LivePrice slug={product.slug} ml={v.ml} fallback={v.priceJpy} />
                 <span className="ml-1.5 align-middle text-[10px] font-medium tracking-[0.14em] text-[#0B1A2E]/70">
                   <L en={`${v.ml}ml · tax incl.`} ja={`${v.ml}ml・税込`} />
                 </span>

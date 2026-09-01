@@ -5,6 +5,7 @@ import FujisanFooter from "@/components/fujisan/FujisanFooter";
 import { AdminTeamRow } from "@/components/fujisan/admin/AdminTeamRow";
 import { AdminInviteForm } from "@/components/fujisan/admin/AdminInviteForm";
 import { LogoutButton } from "@/components/fujisan/auth/LogoutButton";
+import { AdminNav } from "@/components/fujisan/admin/AdminChrome";
 import { getSession } from "@/lib/session";
 import { getEffectiveAdminRole, isOwner } from "@/lib/admin";
 import { adminListTeamAction } from "@/lib/actions/admin-team";
@@ -66,6 +67,7 @@ export default async function AdminTeamPage() {
             <p className="mt-4 max-w-[44ch] text-[13px] leading-[1.85] tracking-[0.02em] text-[#F2E4C7]/72">
               注文・配送を扱う蔵人を、メールでお招きします。招待した方が登録すると、自動で権限が付きます。
             </p>
+            <AdminNav current="team" isOwnerUser />
           </div>
 
           <dl className="grid grid-cols-2 gap-x-10 gap-y-2">

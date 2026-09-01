@@ -13,6 +13,7 @@ import {
   getEffectiveAdminRole,
   isOwner,
   isEnvOwnerEmail,
+  getOwnerEmailsFromEnv,
   type AdminRole,
 } from "@/lib/admin";
 
@@ -85,9 +86,12 @@ export async function adminListTeamAction(input?: {
       .orderBy(desc(userTable.createdAt))
       .limit(200);
 
+    // env の owner 一覧はループの外で1回だけ引く。行ごとに isEnvOwnerEmail を
+    // 呼ぶと、行数ぶん dynamic import と Cloudflare コンテキスト取得が走る。
+    const ownerEmails = await getOwnerEmailsFromEnv();
     const members: TeamMember[] = [];
     for (const row of rows) {
-      const envOwner = await isEnvOwnerEmail(row.email);
+      const envOwner = ownerEmails.includes(row.email.trim().toLowerCase());
       const role: AdminRole | null = envOwner
         ? "owner"
         : row.adminRole === "owner" || row.adminRole === "staff"

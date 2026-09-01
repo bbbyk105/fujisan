@@ -72,3 +72,26 @@ export function isStaffOrAbove(role: AdminRole | null): role is AdminRole {
 export function isOwner(role: AdminRole | null): role is "owner" {
   return role === "owner";
 }
+
+/** 管理者ゲートの結果。Server Action の先頭で使う。 */
+export type AdminGate =
+  | { ok: true; userId: string; email: string; role: AdminRole }
+  | { ok: false; reason: "unauth" | "forbidden" };
+
+/**
+ * セッションから実効ロールを引き、必要な権限を満たすか判定する。
+ * middleware を置かない方針のため、Server Action は必ずこれを先頭で呼ぶ。
+ */
+export async function requireAdmin(need: "staff" | "owner"): Promise<AdminGate> {
+  const { headers } = await import("next/headers");
+  const { getAuth } = await import("@/lib/auth");
+  const auth = await getAuth();
+  const session = await auth.api.getSession({ headers: await headers() });
+  const u = session?.user as { id?: string; email?: string } | undefined;
+  if (!u?.email || !u.id) return { ok: false, reason: "unauth" };
+
+  const role = await getEffectiveAdminRole({ userId: u.id, email: u.email });
+  const allowed = need === "owner" ? isOwner(role) : isStaffOrAbove(role);
+  if (!allowed || !role) return { ok: false, reason: "forbidden" };
+  return { ok: true, userId: u.id, email: u.email, role };
+}

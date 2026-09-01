@@ -1,9 +1,10 @@
 import type Stripe from "stripe";
-import { and, eq } from "drizzle-orm";
+import { and, eq, gte, sql } from "drizzle-orm";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getStripe, verifyStripeSignature } from "@/lib/stripe";
 import { getDb } from "@/db";
 import { order as orderTable, type OrderLine } from "@/db/orders-schema";
+import { productSku, skuId } from "@/db/products-schema";
 import {
   sendOrderConfirmedEmail,
   type OrderEmailData,
@@ -82,7 +83,39 @@ export async function POST(request: Request): Promise<Response> {
     }
   }
 
+  // 非同期決済の失敗・セッションの期限切れ。入金されないまま残る pending 注文を
+  // 掃除する（放置すると未払いの注文行が溜まり続ける）。
+  if (
+    event.type === "checkout.session.expired" ||
+    event.type === "checkout.session.async_payment_failed"
+  ) {
+    const session = event.data.object as Stripe.Checkout.Session;
+    try {
+      await discardPendingOrder(session);
+    } catch (err) {
+      // 掃除の失敗で Stripe に再送させる必要はない（残るだけで実害は無い）。
+      console.error("[stripe:webhook] pending 注文の掃除に失敗:", err);
+    }
+  }
+
   return Response.json({ received: true });
+}
+
+/**
+ * 支払いに至らなかったセッションに紐づく pending 注文を削除する。
+ * `status = 'pending'` の行だけを対象にし、確定済み（confirmed 以降）には
+ * 絶対に触れない。イベントの順序が入れ替わっても確定注文を消さないため。
+ */
+async function discardPendingOrder(
+  session: Stripe.Checkout.Session,
+): Promise<void> {
+  const orderId = session.metadata?.orderId;
+  if (!orderId) return; // 当方が発行したセッションでなければ無視
+
+  const db = await getDb();
+  await db
+    .delete(orderTable)
+    .where(and(eq(orderTable.id, orderId), eq(orderTable.status, "pending")));
 }
 
 /**
@@ -149,11 +182,15 @@ async function fulfillOrder(
 
   if (updated.length === 0) return; // 二重配信 → 確定もメールもしない
 
+  // ここから先はこの配信が初回のときだけ通る＝在庫を二重に減らさない。
+  const orderedItems = safeParseItems(row.itemsJson);
+  await decrementStock(db, orderedItems, row.orderRef);
+
   const data: OrderEmailData = {
     orderRef: row.orderRef,
     customerName,
     customerEmail,
-    items: safeParseItems(row.itemsJson),
+    items: orderedItems,
     itemsCount: row.itemsCount,
     subtotal: row.subtotal,
     shipping: row.shipping,
@@ -169,6 +206,59 @@ async function fulfillOrder(
   } catch (err) {
     console.error("[stripe:webhook] 確定メール送信に失敗:", err);
   }
+}
+
+/**
+ * 確定した注文の本数ぶん在庫を減らす。
+ *
+ * `stock_qty >= qty` を条件に入れた UPDATE で原子的に引く。同時購入で在庫を
+ * 割った場合は更新行が 0 になるが、**入金は既に成立しているので注文は取り消さない**。
+ * 返金するか取り寄せるかは人の判断なので、管理者にアラートを送るだけに留める。
+ *
+ * product_sku に行が無い SKU は「在庫管理の対象外」として黙って読み飛ばす。
+ */
+async function decrementStock(
+  db: Awaited<ReturnType<typeof getDb>>,
+  items: OrderLine[],
+  orderRef: string,
+): Promise<void> {
+  const shortages: string[] = [];
+
+  for (const it of items) {
+    const id = skuId(it.slug, it.ml);
+    try {
+      const dec = await db
+        .update(productSku)
+        .set({ stockQty: sql`${productSku.stockQty} - ${it.qty}` })
+        .where(and(eq(productSku.id, id), gte(productSku.stockQty, it.qty)))
+        .returning({ id: productSku.id });
+      if (dec.length > 0) continue;
+
+      // 引けなかった理由が「在庫不足」なのか「在庫管理外（行が無い）」なのかを分ける。
+      const [exists] = await db
+        .select({ id: productSku.id })
+        .from(productSku)
+        .where(eq(productSku.id, id))
+        .limit(1);
+      if (exists) shortages.push(`${id} ×${it.qty}`);
+    } catch (err) {
+      console.error("[stripe:webhook] 在庫の減算に失敗:", err);
+      shortages.push(`${id} ×${it.qty}（更新エラー）`);
+    }
+  }
+
+  if (shortages.length === 0) return;
+
+  await alertOps(
+    "在庫が不足したまま注文が確定しました",
+    [
+      `注文番号: ${orderRef}`,
+      `不足した SKU: ${shortages.join(" / ")}`,
+      "",
+      "入金は成立しています。在庫を補充して発送するか、返金するかを判断してください。",
+      "管理画面 /admin/products で現在の在庫を確認できます。",
+    ].join("\n"),
+  );
 }
 
 /** Stripe の Address を日本語の1行住所に整形する（都道府県＋市区町村＋番地＋建物）。 */

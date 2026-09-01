@@ -19,3 +19,10 @@ export const teamInvite = sqliteTable("team_invite", {
     .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
     .notNull(),
 });
+
+/**
+ * 招待の有効期限（14日）。これを過ぎた招待では管理ロールを付与しない。
+ * 期限が無いと、退職者向けなどの古い招待メールのアドレスが後から登録された
+ * 際に、意図せず管理権限が付いてしまう。
+ */
+export const TEAM_INVITE_TTL_MS = 14 * 24 * 60 * 60 * 1000;

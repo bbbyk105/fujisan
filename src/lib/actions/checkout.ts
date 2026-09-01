@@ -8,6 +8,9 @@ import { getDb } from "@/db";
 import { order as orderTable, type OrderLine } from "@/db/orders-schema";
 import { user as userTable } from "@/db/auth-schema";
 import { getFujisanProductBySlug, findVolume } from "@/data/fujisan-products";
+import { skuId } from "@/db/products-schema";
+import { getLiveSkuMap } from "@/lib/catalog";
+import { MAX_QTY_PER_LINE } from "@/lib/cart/cart-core";
 import { SHIPPING_FEE } from "@/data/fujisan-legal";
 import { getStripe } from "@/lib/stripe";
 
@@ -21,6 +24,7 @@ type StartCheckoutEnv = {
 
 /** 税込小計から送料を算出（cart-core.shippingFee と同じ規則。サーバー専用に再掲）。 */
 function calcShipping(subtotal: number): number {
+  if (subtotal <= 0) return 0;
   const threshold = SHIPPING_FEE.freeThresholdJpy;
   if (threshold > 0 && subtotal >= threshold) return 0;
   return SHIPPING_FEE.flatJpy;
@@ -54,11 +58,25 @@ export async function startCheckoutAction(input: {
   items: CartInput[];
   /** サイトの表示言語。Stripe 決済ページの言語をこれに合わせる（既定: ja）。 */
   locale?: "ja" | "en";
+  /**
+   * 20歳以上であることの確認（カートのチェックボックス）。
+   * Server Action は URL さえ判れば直接呼べるため、クライアント側の
+   * 無効化だけでは法令上の確認として成立しない。ここで true を必須にする。
+   */
+  ageConfirmed: boolean;
 }): Promise<
   | { ok: true; url: string }
   | {
       ok: false;
-      error: "unauth" | "invalid" | "config" | "stripe" | "db" | "soldout";
+      error:
+        | "unauth"
+        | "invalid"
+        | "config"
+        | "stripe"
+        | "db"
+        | "soldout"
+        | "stock"
+        | "age";
     }
 > {
   // 認証チェック
@@ -69,31 +87,52 @@ export async function startCheckoutAction(input: {
     | undefined;
   if (!user?.id) return { ok: false, error: "unauth" };
 
+  // 年齢確認（未成年者飲酒禁止法）。カートの checkbox と二重で担保する。
+  if (input.ageConfirmed !== true) return { ok: false, error: "age" };
+
   if (!Array.isArray(input.items) || input.items.length === 0) {
     return { ok: false, error: "invalid" };
   }
 
-  // 価格をサーバー側で引き直して明細を組み立てる（改ざん防止）
-  const items: OrderLine[] = [];
+  // 価格と在庫は D1（product_sku）を正とする。クライアント申告は一切信用しない。
+  const skuMap = await getLiveSkuMap();
+
+  // 同一 SKU が複数行に分かれて届いても在庫チェックをすり抜けないよう、
+  // まず (slug, ml) 単位に本数を合算してから検証する。
+  const merged = new Map<string, number>();
   for (const ci of input.items) {
     const product = getFujisanProductBySlug(ci.slug);
     if (!product) return { ok: false, error: "invalid" };
     const volume = findVolume(product, ci.ml);
     if (!volume) return { ok: false, error: "invalid" };
-    // 完売 SKU は決済に進ませない（UI で無効化していても最後の砦としてここで拒否）。
-    if (volume.soldOut) return { ok: false, error: "soldout" };
     const qty = Math.floor(ci.qty);
-    if (!Number.isInteger(qty) || qty < 1 || qty > 12) {
+    if (!Number.isInteger(qty) || qty < 1 || qty > MAX_QTY_PER_LINE) {
       return { ok: false, error: "invalid" };
     }
+    const key = skuId(product.slug, volume.ml);
+    merged.set(key, (merged.get(key) ?? 0) + qty);
+  }
+
+  const items: OrderLine[] = [];
+  for (const [key, qty] of merged) {
+    const sku = skuMap.get(key);
+    if (!sku) return { ok: false, error: "invalid" };
+    if (qty > MAX_QTY_PER_LINE) return { ok: false, error: "invalid" };
+    // 完売 SKU は決済に進ませない（UI で無効化していても最後の砦としてここで拒否）。
+    if (sku.soldOut) return { ok: false, error: "soldout" };
+    // 在庫管理対象（stockQty が数値）なら、注文本数が在庫を超えていないか見る。
+    // 在庫の確定的な引き落としは決済確定時（Webhook）に原子的に行う。
+    if (sku.stockQty !== null && qty > sku.stockQty) {
+      return { ok: false, error: "stock" };
+    }
     items.push({
-      slug: product.slug,
-      name: product.name,
-      variant: product.variant,
-      ml: volume.ml,
+      slug: sku.slug,
+      name: sku.name,
+      variant: sku.variant,
+      ml: sku.ml,
       qty,
-      unitPrice: volume.priceJpy,
-      lineTotal: volume.priceJpy * qty,
+      unitPrice: sku.priceJpy,
+      lineTotal: sku.priceJpy * qty,
     });
   }
 
@@ -106,10 +145,10 @@ export async function startCheckoutAction(input: {
   const { env } = await getCloudflareContext({ async: true });
   const e = env as StartCheckoutEnv;
   if (!e.STRIPE_SECRET_KEY) return { ok: false, error: "config" };
-  const baseUrl = (e.BETTER_AUTH_URL || "http://localhost:3000").replace(
-    /\/$/,
-    "",
-  );
+  // success_url / cancel_url の基底。未設定のまま localhost に落とすと
+  // 本番で決済後に戻れなくなるため、黙って握らず設定エラーとして弾く。
+  const baseUrl = (e.BETTER_AUTH_URL ?? "").trim().replace(/\/$/, "");
+  if (!baseUrl) return { ok: false, error: "config" };
 
   // 登録済みのお届け先（アカウントの登録情報）。郵便番号7桁＋住所が揃っていれば
   // それを注文に使い、Stripe 決済ページでの住所収集を省略する。

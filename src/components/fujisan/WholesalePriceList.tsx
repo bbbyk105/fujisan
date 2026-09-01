@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { fujisanProducts } from "@/data/fujisan-products";
+import { skuId } from "@/db/products-schema";
+import { getLiveSkus } from "@/lib/catalog";
 import { getSession } from "@/lib/session";
 import { L } from "@/i18n/Localized";
 
@@ -59,6 +61,13 @@ export async function WholesalePriceList() {
     );
   }
 
+  // ここまで来た＝取扱店（business）確定。卸価格・入数・完売は D1 の現在値を使う。
+  // 蔵元が管理画面で卸価格を変えたら、次のアクセスから反映される。
+  const bySku = new Map(
+    (await getLiveSkus()).map((s) => [skuId(s.slug, s.ml), s]),
+  );
+  const products = fujisanProducts;
+
   return (
     <div>
       <div className="border border-[#0B1A2E]/14 bg-paper-card">
@@ -75,7 +84,7 @@ export async function WholesalePriceList() {
           </span>
         </div>
 
-        {fujisanProducts.map((p, pi) => (
+        {products.map((p, pi) => (
           <div key={p.slug} className={pi > 0 ? "border-t border-[#0B1A2E]/14" : ""}>
             {/* 銘柄のグループヘッダー */}
             <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 bg-[#F1E6CB]/50 px-4 py-3 sm:px-6">
@@ -86,25 +95,36 @@ export async function WholesalePriceList() {
                 {p.variantJp} ／ {p.variantLineJp}
               </span>
             </div>
-            {p.volumes.map((v) => (
-              <div
-                key={`${p.slug}-${v.ml}`}
-                className="grid grid-cols-[1fr_auto_auto] items-baseline gap-x-5 border-t border-[#0B1A2E]/8 px-4 py-4 transition-colors duration-150 hover:bg-[#F1E6CB]/35 sm:gap-x-8 sm:px-6"
-              >
-                <span className="text-[12px] tracking-[0.1em] text-[#0B1A2E]/70">
-                  {v.ml} ml
-                </span>
-                <span className="text-right font-serif text-[15px] text-[#0B1A2E]">
-                  {yen(v.wholesalePriceJpy)}
-                </span>
-                <span className="text-right font-serif text-[15px] text-[#0B1A2E]">
-                  {yen(v.wholesalePriceJpy * v.caseSize)}
-                  <span className="ml-1.5 align-baseline text-[10px] tracking-[0.06em] text-[#0B1A2E]/55">
-                    ×{v.caseSize}
+            {p.volumes.map((v) => {
+              // 卸価格・入数・完売は D1（product_sku）の現在値を正とする。
+              const live = bySku.get(skuId(p.slug, v.ml));
+              const wholesale = live?.wholesalePriceJpy ?? v.wholesalePriceJpy;
+              const caseSize = live?.caseSize ?? v.caseSize;
+              return (
+                <div
+                  key={`${p.slug}-${v.ml}`}
+                  className="grid grid-cols-[1fr_auto_auto] items-baseline gap-x-5 border-t border-[#0B1A2E]/8 px-4 py-4 transition-colors duration-150 hover:bg-[#F1E6CB]/35 sm:gap-x-8 sm:px-6"
+                >
+                  <span className="text-[12px] tracking-[0.1em] text-[#0B1A2E]/70">
+                    {v.ml} ml
+                    {live?.soldOut ? (
+                      <span className="ml-2 text-[10px] font-semibold tracking-[0.16em] text-crimson">
+                        <L en="SOLD OUT" ja="完売" />
+                      </span>
+                    ) : null}
                   </span>
-                </span>
-              </div>
-            ))}
+                  <span className="text-right font-serif text-[15px] text-[#0B1A2E]">
+                    {yen(wholesale)}
+                  </span>
+                  <span className="text-right font-serif text-[15px] text-[#0B1A2E]">
+                    {yen(wholesale * caseSize)}
+                    <span className="ml-1.5 align-baseline text-[10px] tracking-[0.06em] text-[#0B1A2E]/55">
+                      ×{caseSize}
+                    </span>
+                  </span>
+                </div>
+              );
+            })}
           </div>
         ))}
       </div>

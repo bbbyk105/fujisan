@@ -45,6 +45,23 @@ type AdminOrderListItem = {
   updatedAt: Date;
 };
 
+/**
+ * ステータス遷移の許可表。値として正しいだけでは足りず、「今の状態から
+ * 進める先か」を検証する。誤操作を1段戻す遷移は運用上必要なので許可する。
+ *
+ * - `refunded` / `cancelled` は終端。ここから他の状態へは戻さない。
+ * - `refunded` へは adminRefundOrderAction（Stripe 返金成功）からのみ到達する。
+ */
+const ALLOWED_TRANSITIONS: Record<OrderStatus, readonly OrderStatus[]> = {
+  pending: ["confirmed", "cancelled"],
+  confirmed: ["preparing", "shipped", "cancelled"],
+  preparing: ["confirmed", "shipped", "cancelled"],
+  shipped: ["preparing", "delivered"],
+  delivered: ["shipped"],
+  cancelled: [],
+  refunded: [],
+};
+
 async function requireStaff(): Promise<
   | { ok: true; userId: string; email: string }
   | { ok: false; reason: "unauth" | "forbidden" }
@@ -144,7 +161,11 @@ export async function adminUpdateOrderAction(input: {
   trackingCarrier?: string;
   trackingNumber?: string;
 }): Promise<
-  { ok: true } | { ok: false; error: "unauth" | "forbidden" | "invalid" | "db" }
+  | { ok: true }
+  | {
+      ok: false;
+      error: "unauth" | "forbidden" | "invalid" | "invalid_transition" | "db";
+    }
 > {
   const gate = await requireStaff();
   if (!gate.ok) return { ok: false, error: gate.reason };
@@ -165,6 +186,14 @@ export async function adminUpdateOrderAction(input: {
     if (!current) return { ok: false, error: "invalid" };
 
     const prevStatus = current.status as OrderStatus;
+    // 業務上あり得ない遷移（返金済み→発送済み 等）を弾く。
+    // 追跡番号だけの更新（ステータス据え置き）は常に許可する。
+    if (
+      input.status !== prevStatus &&
+      !ALLOWED_TRANSITIONS[prevStatus].includes(input.status)
+    ) {
+      return { ok: false, error: "invalid_transition" };
+    }
     const now = new Date();
     const carrier = (input.trackingCarrier ?? "").trim();
     const number = (input.trackingNumber ?? "").trim();

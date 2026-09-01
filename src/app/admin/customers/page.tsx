@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import FujisanNav from "@/components/fujisan/FujisanNav";
 import FujisanFooter from "@/components/fujisan/FujisanFooter";
 import { LogoutButton } from "@/components/fujisan/auth/LogoutButton";
+import { AdminNav } from "@/components/fujisan/admin/AdminChrome";
 import { getSession } from "@/lib/session";
 import { getEffectiveAdminRole, isStaffOrAbove, isOwner } from "@/lib/admin";
 import { adminListBusinessAccountsAction } from "@/lib/actions/admin-customers";
@@ -56,6 +57,7 @@ export default async function AdminCustomersPage(props: {
             <p className="mt-4 max-w-[46ch] text-[13px] leading-[1.85] tracking-[0.02em] text-[#F2E4C7]/72">
               法人登録された会社情報の一覧です。会社名・ご担当者・連絡先・所在地を確認できます。
             </p>
+            <AdminNav current="customers" isOwnerUser={isOwnerUser} />
           </div>
 
           <dl className="grid grid-cols-1 gap-y-2">

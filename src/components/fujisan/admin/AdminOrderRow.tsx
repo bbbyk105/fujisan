@@ -116,9 +116,17 @@ export function AdminOrderRow({ order, canRefund }: Props) {
         setMessage("保存しました");
         setTimeout(() => setMessage(null), 2500);
       } else {
-        setMessage(`保存失敗: ${res.error}`);
+        setMessage(`保存失敗: ${SAVE_ERRORS[res.error] ?? res.error}`);
       }
     });
+  };
+
+  const SAVE_ERRORS: Record<string, string> = {
+    unauth: "権限がありません（再ログイン）",
+    forbidden: "この操作の権限がありません",
+    invalid: "注文が見つかりません",
+    invalid_transition: "このステータスへは変更できません",
+    db: "保存に失敗しました",
   };
 
   const REFUND_ERRORS: Record<string, string> = {

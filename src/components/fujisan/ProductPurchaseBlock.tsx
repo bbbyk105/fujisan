@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 import { UNDERAGE_NOTICE_EN, UNDERAGE_NOTICE_JP } from "@/data/fujisan-legal";
 import type { FujisanVolume } from "@/data/fujisan-products";
 import { useCart } from "@/lib/cart/useCart";
+import { useLiveCatalog, liveKey } from "@/lib/cart/useLiveCatalog";
 import { pushToast } from "@/lib/cart/toast-store";
 import { L } from "@/i18n/Localized";
 
@@ -47,7 +48,24 @@ export default function ProductPurchaseBlock({
   const [selectedMl, setSelectedMl] = useState(volumes[0].ml);
 
   const selected = volumes.find((v) => v.ml === selectedMl) ?? volumes[0];
-  const soldOut = selected.soldOut === true;
+
+  // 商品ページは静的配信（Worker の CPU 制限対策）なので、価格と在庫だけを
+  // ハイドレーション後に /api/catalog から取り直して上書きする。
+  // 取得前・取得失敗時はコードのカタログ値で表示し、最終判定はサーバーが行う。
+  const { catalog } = useLiveCatalog();
+  const liveOf = (v: FujisanVolume) => catalog[liveKey(slug, v.ml)];
+  const priceOf = (v: FujisanVolume) => liveOf(v)?.price ?? v.priceJpy;
+  const soldOutOf = (v: FujisanVolume) =>
+    liveOf(v)?.soldOut ?? v.soldOut === true;
+
+  const live = liveOf(selected);
+  const price = priceOf(selected);
+  const soldOut = soldOutOf(selected);
+  /** 数量の上限。在庫管理外（stock が null）や未取得なら従来どおり 12 本。 */
+  const maxQty = Math.max(1, Math.min(12, live?.stock ?? 12));
+  /** 在庫が減って上限を割り込んだ場合に備え、表示・加算とも丸めた値を使う。 */
+  const qtyCapped = Math.min(qty, maxQty);
+  const remaining = live?.low && live.stock !== null ? live.stock : null;
 
   const onAddToCart = () => {
     // 完売 SKU は追加不可（選択中の容量が品切れならここで止める）。
@@ -63,12 +81,12 @@ export default function ProductPurchaseBlock({
       });
       return;
     }
-    add(slug, selected.ml, qty);
+    add(slug, selected.ml, qtyCapped);
     setSubmitted(true);
     window.setTimeout(() => setSubmitted(false), 3500);
     pushToast({
-      ja: `${productName}（${selected.ml}ml）を${qty}本カートに追加しました`,
-      en: `${productName} ${selected.ml}ml ×${qty} added to your cart`,
+      ja: `${productName}（${selected.ml}ml）を${qtyCapped}本カートに追加しました`,
+      en: `${productName} ${selected.ml}ml ×${qtyCapped} added to your cart`,
       action: { href: "/cart", ja: "カートを見る", en: "VIEW CART" },
     });
   };
@@ -96,7 +114,7 @@ export default function ProductPurchaseBlock({
 
           {/* 金額は年齢確認より小さくする（国税局指導）。拡大しないこと。 */}
           <p className="mt-6 font-serif text-[22px] font-semibold leading-[1.15] tracking-[0.02em] text-[#0B1A2E] md:text-[24px]">
-            ¥{yen.format(selected.priceJpy)}
+            ¥{yen.format(price)}
             <span className="ml-2 align-middle text-[12px] font-medium tracking-[0.18em] text-[#0B1A2E]/60">
               <L en="(tax incl.)" ja="（税込）" />
             </span>
@@ -110,7 +128,7 @@ export default function ProductPurchaseBlock({
             <div className="mt-3 flex flex-wrap gap-3">
               {volumes.map((v) => {
                 const active = v.ml === selected.ml;
-                const vSoldOut = v.soldOut === true;
+                const vSoldOut = soldOutOf(v);
                 return (
                   <button
                     key={v.ml}
@@ -130,7 +148,7 @@ export default function ProductPurchaseBlock({
                         vSoldOut ? "line-through" : ""
                       } ${active ? "text-paper-card/75" : "text-[#0B1A2E]/70"}`}
                     >
-                      ¥{yen.format(v.priceJpy)}
+                      ¥{yen.format(priceOf(v))}
                     </span>
                     {vSoldOut ? (
                       <span
@@ -202,7 +220,7 @@ export default function ProductPurchaseBlock({
               <button
                 type="button"
                 aria-label="数量を減らす"
-                onClick={() => setQty((q) => Math.max(1, q - 1))}
+                onClick={() => setQty(Math.max(1, qtyCapped - 1))}
                 className="flex h-11 w-11 cursor-pointer items-center justify-center text-[18px] font-light text-[#0B1A2E]/45 transition-colors hover:text-[#0B1A2E]"
               >
                 −
@@ -210,20 +228,28 @@ export default function ProductPurchaseBlock({
               <span
                 id="qty"
                 aria-live="polite"
-                aria-label={`数量 ${qty}`}
+                aria-label={`数量 ${qtyCapped}`}
                 className="w-9 border-b border-[#0B1A2E]/30 pb-0.5 text-center text-[13px] font-semibold tracking-[0.1em] text-[#0B1A2E]"
               >
-                {qty}
+                {qtyCapped}
               </span>
               <button
                 type="button"
                 aria-label="数量を増やす"
-                onClick={() => setQty((q) => Math.min(12, q + 1))}
+                onClick={() => setQty(Math.min(maxQty, qtyCapped + 1))}
                 className="flex h-11 w-11 cursor-pointer items-center justify-center text-[18px] font-light text-[#0B1A2E]/45 transition-colors hover:text-[#0B1A2E]"
               >
                 ＋
               </button>
             </div>
+            {remaining !== null && !soldOut ? (
+              <span className="text-[11.5px] font-medium tracking-[0.08em] text-crimson">
+                <L
+                  ja={`残りわずか（あと${remaining}本）`}
+                  en={`Only ${remaining} left`}
+                />
+              </span>
+            ) : null}
           </div>
         </div>
 
