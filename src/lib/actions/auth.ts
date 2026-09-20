@@ -21,20 +21,10 @@ function isValid(schema: Parameters<typeof getFieldErrors>[0], data: unknown) {
 
 export type AuthActionResult = { ok: true } | { ok: false; error: AuthErrorKey };
 
-/** 新規登録時の重複チェック。同名（前後空白除去で完全一致）が既にあれば "name-taken" を返す。 */
-async function findDuplicate(
-  name: string,
-): Promise<"name-taken" | null> {
-  const db = await getDb();
-  const normalized = name.trim();
-  const hits = await db
-    .select({ id: userTable.id, name: userTable.name })
-    .from(userTable)
-    .where(eq(userTable.name, normalized))
-    .limit(1);
-  if (hits.length > 0) return "name-taken";
-  return null;
-}
+// 氏名の重複チェックは行わない。
+// 以前は同姓同名を "name-taken" で弾いていたが、氏名は本来一意ではなく、
+// 「佐藤 健」さんが 2 人目から登録できなかった。アカウントの一意性は
+// メールアドレスで担保する（Better Auth が USER_ALREADY_EXISTS を返す）。
 
 /** メール+パスワードのログイン。成功時は nextCookies がセッション cookie を設定する。 */
 export async function signInAction(input: {
@@ -62,8 +52,6 @@ export async function registerPersonalAction(input: {
 }): Promise<AuthActionResult> {
   if (!isValid(registerPersonalSchema, input))
     return { ok: false, error: "generic" };
-  const dup = await findDuplicate(input.name);
-  if (dup) return { ok: false, error: dup };
   const auth = await getAuth();
   try {
     await auth.api.signUpEmail({
@@ -92,8 +80,6 @@ export async function registerBusinessAction(input: {
 }): Promise<AuthActionResult> {
   if (!isValid(registerBusinessSchema, input))
     return { ok: false, error: "generic" };
-  const dup = await findDuplicate(input.contactName);
-  if (dup) return { ok: false, error: dup };
   const auth = await getAuth();
   try {
     await auth.api.signUpEmail({

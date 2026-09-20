@@ -1,6 +1,7 @@
 import dynamic from "next/dynamic";
 import FujisanNav from "@/components/fujisan/FujisanNav";
 import FujisanHero from "@/components/fujisan/FujisanHero";
+import { jsonLdScript, organizationJsonLd } from "@/lib/seo";
 
 const FujisanDiscover = dynamic(
   () => import("@/components/fujisan/FujisanDiscover"),
@@ -31,6 +32,13 @@ const FujisanExperience = dynamic(
 export default function Home() {
   return (
     <main className="bg-paper text-ink min-h-screen">
+      {/* 構造化データ: 事業者情報（サイト全体で 1 回、トップページにだけ出す） */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLdScript(organizationJsonLd()),
+        }}
+      />
       <FujisanNav />
       <FujisanHero />
       <FujisanDiscover />

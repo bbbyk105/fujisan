@@ -12,6 +12,12 @@ import {
 } from "@/data/fujisan-products";
 import { FUJISAN_LEGAL } from "@/data/fujisan-legal";
 import { L } from "@/i18n/Localized";
+import {
+  buildMetadata,
+  breadcrumbJsonLd,
+  jsonLdScript,
+  productJsonLd,
+} from "@/lib/seo";
 
 type Params = { slug: string };
 
@@ -48,10 +54,11 @@ export async function generateMetadata({
   const { slug } = await params;
   const product = getFujisanProductBySlug(slug);
   if (!product) return { title: "FUJISAN SAKE" };
-  return {
-    title: `${product.name} ${product.variant} ${product.variantJp} — ${product.variantLine} — FUJISAN SAKE`,
+  return buildMetadata({
+    title: `${product.name} ${product.variant} ${product.variantJp} — ${product.variantLine}`,
     description: product.desc.replace(/\n/g, " "),
-  };
+    path: `/products/${product.slug}`,
+  });
 }
 
 export default async function ProductDetailPage({
@@ -73,6 +80,26 @@ export default async function ProductDetailPage({
 
   return (
     <main className="bg-paper text-[#0B1A2E] min-h-screen">
+      {/* 構造化データ: 商品リッチリザルト用 */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(productJsonLd(product)) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLdScript(
+            breadcrumbJsonLd([
+              { name: "HOME", path: "/" },
+              { name: "COLLECTION", path: "/products" },
+              {
+                name: `${product.name} ${product.variant}`,
+                path: `/products/${product.slug}`,
+              },
+            ]),
+          ),
+        }}
+      />
       <FujisanNav />
 
       {/* ===== Hero ===== */}

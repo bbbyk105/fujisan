@@ -6,12 +6,14 @@ import { FujisanContactForm } from "@/components/fujisan/FujisanContactForm";
 import { Reveal } from "@/components/reveal/Reveal";
 import { revealDelays } from "@/components/reveal/constants";
 import { L } from "@/i18n/Localized";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Contact — FUJISAN SAKE",
+export const metadata = buildMetadata({
+  title: "Contact",
   description:
     "Reach our small team in Shizuoka for general enquiries, trade and wholesale, brewery visits, or press requests.",
-};
+  path: "/contact",
+});
 
 const CONTACT_EMAIL = "mtfujipharmacy@gmail.com";
 

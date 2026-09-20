@@ -8,7 +8,7 @@ import { getDb } from "@/db";
 import { order as orderTable, type OrderLine } from "@/db/orders-schema";
 import { user as userTable } from "@/db/auth-schema";
 import { getFujisanProductBySlug, findVolume } from "@/data/fujisan-products";
-import { SHIPPING_FEE } from "@/data/fujisan-legal";
+import { MAX_QTY_PER_LINE, shippingFee } from "@/lib/cart/cart-core";
 import { getStripe } from "@/lib/stripe";
 
 /** カートから送られてくる最小限の行（価格はサーバーで引き直す）。 */
@@ -19,14 +19,12 @@ type StartCheckoutEnv = {
   BETTER_AUTH_URL?: string;
 };
 
-/** 税込小計から送料を算出（cart-core.shippingFee と同じ規則。サーバー専用に再掲）。 */
-function calcShipping(subtotal: number): number {
-  const threshold = SHIPPING_FEE.freeThresholdJpy;
-  if (threshold > 0 && subtotal >= threshold) return 0;
-  return SHIPPING_FEE.flatJpy;
-}
+// 送料は cart-core.shippingFee を直接使う。
+// 以前はサーバー用に同じ規則を再実装していたが、空カート（小計0円）の扱いが
+// 食い違っていた（cart-core は 0 円、こちらは 1,100 円）。規則が 2 か所にあると
+// 必ずずれるので、カート表示と決済で同じ関数を共有する。
 
-/** "FJ-…" 形式の注文番号（orders.ts と同形式）。 */
+/** "FJ-…" 形式の注文番号。 */
 function makeOrderRef(): string {
   const ts = Date.now().toString(36).toUpperCase();
   const rand = Math.floor(Math.random() * 36 ** 3)
@@ -82,8 +80,11 @@ export async function startCheckoutAction(input: {
     if (!volume) return { ok: false, error: "invalid" };
     // 完売 SKU は決済に進ませない（UI で無効化していても最後の砦としてここで拒否）。
     if (volume.soldOut) return { ok: false, error: "soldout" };
-    const qty = Math.floor(ci.qty);
-    if (!Number.isInteger(qty) || qty < 1 || qty > 12) {
+    // 申告値をそのまま検証する。以前は Math.floor() してから
+    // Number.isInteger() を見ていたため、小数（1.5 → 1）が常に整数判定を
+    // 通り抜けて黙って切り捨てられていた。上限はカート UI と同じ定数を使う。
+    const qty = ci.qty;
+    if (!Number.isInteger(qty) || qty < 1 || qty > MAX_QTY_PER_LINE) {
       return { ok: false, error: "invalid" };
     }
     items.push({
@@ -99,7 +100,7 @@ export async function startCheckoutAction(input: {
 
   const itemsCount = items.reduce((n, it) => n + it.qty, 0);
   const subtotal = items.reduce((n, it) => n + it.lineTotal, 0);
-  const shipping = calcShipping(subtotal);
+  const shipping = shippingFee(subtotal);
   const total = subtotal + shipping;
 
   // 環境（Stripe 秘密鍵・サイト URL）

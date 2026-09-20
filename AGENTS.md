@@ -14,9 +14,9 @@ BtoC（個人）と BtoB（法人取扱店・卸価格表示）の二系統の�
 ## アーキテクチャ
 
 - **デプロイ**: `@opennextjs/cloudflare` で Cloudflare Workers へ。`wrangler.jsonc` が正（worker 名 `fujisan`、D1 バインディング `DB` = `fujisan-db`）。Vercel ではない。
-- **DB**: Cloudflare D1 (SQLite) + Drizzle ORM。スキーマは `src/db/`（auth / orders / invite に分割、`schema.ts` が re-export）。マイグレーション SQL は `drizzle/`（`wrangler d1 migrations apply fujisan-db [--local|--remote]` で適用）。D1 バインディングはリクエスト時にしか取れないため、必ず `getDb()`（`src/db/index.ts`）経由で毎回取得する。
-- **認証**: Better Auth + Drizzle アダプタ。メール認証必須・Google ログインは env 設定時のみ有効。`user.role` は `personal | business`（法人は companyName 等の追加フィールドあり）。管理者は `owner | staff` の2階層（`src/lib/admin.ts`。`ADMIN_EMAILS` env が owner のブートストラップ、メール招待 `teamInvite` → 登録時に `databaseHooks.user.create.after` でロール付与）。
-- **Server Actions 中心**: ミューテーションは `src/lib/actions/`（checkout / orders / account / admin-*）。API Route は Better Auth の `/api/auth/[...all]` と Stripe Webhook のみ。middleware は無く、ガードは各ページ/アクション内で `getSession()` / `getEffectiveAdminRole()`。
+- **DB**: Cloudflare D1 (SQLite) + Drizzle ORM。スキーマは `src/db/`（auth / orders / invite / contact に分割、`schema.ts` が re-export）。マイグレーション SQL は `drizzle/`（`wrangler d1 migrations apply fujisan-db [--local|--remote]` で適用）。D1 バインディングはリクエスト時にしか取れないため、必ず `getDb()`（`src/db/index.ts`）経由で毎回取得する。
+- **認証**: Better Auth + Drizzle アダプタ。メール認証必須・Google ログインは env 設定時のみ有効。`user.role` は `personal | business`（法人は companyName 等の追加フィールドあり）。管理者は `owner | staff` の2階層（`src/lib/admin.ts`。**`ADMIN_EMAILS` env は必須**（未設定だと env owner は 0 人。ソースにフォールバックのアドレスは置かない）、メール招待 `teamInvite` → 登録時に `databaseHooks.user.create.after` でロール付与）。
+- **Server Actions 中心**: ミューテーションは `src/lib/actions/`（checkout / orders / account / contact / admin-*）。API Route は Better Auth の `/api/auth/[...all]` と Stripe Webhook のみ。middleware は無く、ガードは各ページ/アクション内で `getSession()` / `getEffectiveAdminRole()`。
 - **商品データはコード内カタログ**: `src/data/fujisan-products.ts`（小売価格・卸価格・容量 SKU）。DB に商品テーブルは無い。価格変更＝このファイルの編集。
 - **command-center/** はダッシュボード用の別 Vite アプリ（jest 対象外）。本体とはビルドも独立。
 
@@ -39,6 +39,20 @@ BtoC（個人）と BtoB（法人取扱店・卸価格表示）の二系統の�
 - Webhook 署名検証は `constructEventAsync` + `createSubtleCryptoProvider()`（Web Crypto）。同期版 `constructEvent` は動かない。
 - Webhook では **生ボディ（`request.text()`）のまま検証**。先に JSON パースすると署名不一致になる。
 - JPY の `unit_amount` は円の整数をそのまま渡す（×100 しない）。
+
+## お問い合わせ
+
+- フォーム（`FujisanContactForm`）→ Server Action `submitContactAction`（`src/lib/actions/contact.ts`）。
+- **受領の正は D1 の `contact_message` 表**。まず保存してからメールを送るので、Resend が落ちても問い合わせは失われず `/admin/contacts` から拾える。DB 保存に失敗したときだけお客様にエラーを返す。
+- スパム対策は 2 段: ハニーポット（`website` の隠し入力。値が入っていたら成功を装って静かに捨てる）＋ 同一 IP の連投制限（10 分に 5 件）。**生 IP は保存せず SHA-256 の先頭16文字だけ**を持つ。
+- 用件・対応状況のコードは `src/data/fujisan-contact.ts` が唯一の出どころ。サーバー依存を持たないのでクライアントからも読める（`src/lib/emails/contact-emails.ts` は `server-only` に依存するため、ラベルをそこに置かないこと）。
+
+## SEO
+
+- ページの Metadata は必ず `buildMetadata()`（`src/lib/seo.ts`）を通す。Next.js は `openGraph` のような入れ子フィールドを「最後に定義したセグメントが丸ごと上書き」するため、layout に置いても各ページの og:title には効かない。
+- 正規 URL はビルド時に確定する必要がある（ほぼ静的書き出しのため）。Cloudflare env ではなく build-time の `NEXT_PUBLIC_SITE_URL`（未設定なら本番ドメイン）を使う。
+- `sitemap.ts` / `robots.ts` / `manifest.ts` / `icon.svg` / `apple-icon.png` は `src/app/` 直下の file convention。OG 画像は `public/images/og/fujisan-og.jpg`（1200×630、`.webp` は OG に使えない）。
+- 構造化データは `jsonLdScript()` 経由で出す（`<` をエスケープして `</script>` 脱出を防ぐ）。
 
 ## 酒類販売の法令対応
 
@@ -66,6 +80,9 @@ BtoC（個人）と BtoB（法人取扱店・卸価格表示）の二系統の�
 
 ## 落とし穴
 
+- **`drizzle/` の journal はずれている**: `0006_user_postal_code.sql` は手書きで追加されており `drizzle/meta/_journal.json` に載っていない。`drizzle-kit generate` を実行すると 0005 のスナップショットから差分を出すため、既に適用済みの列を二重に出力する。当面はマイグレーション SQL を手書きで足す（`wrangler d1 migrations apply` は journal ではなくファイル名順で適用するので動作には影響しない）。
+- **Next.js 16 の `error.js` は `reset` ではなく `unstable_retry`**。旧 API 名のままだと再試行ボタンが動かない。`global-error.js` も同じ。
+- **`cloudflare-env.d.ts` は生成物で `.gitignore` 済み**。`prebuild` が `cf-typegen` を走らせるので `npm run build` は clone 直後でも通るが、エディタの型エラーを消すには一度 `npm run cf-typegen` が要る。
 - **dev は `next dev --webpack`**（Turbopack ではない）。`initOpenNextCloudflareForDev()` により dev でも D1/env バインディングが `.dev.vars` から供給される。
 - **`.dev.vars` が真の env ファイル**（BETTER_AUTH_SECRET / BETTER_AUTH_URL / ADMIN_EMAILS / RESEND_API_KEY / GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET / STRIPE_SECRET_KEY / STRIPE_WEBHOOK_SECRET）。本番は `wrangler secret put <NAME>`。`.env.example` は古いテンプレで一部実態と乖離あり。
 - STRIPE_SECRET_KEY 未設定だと checkout は `config` エラーを返す。Webhook のローカル検証は Stripe CLI の forward が必要（`STRIPE_WEBHOOK_SECRET` を合わせる）。

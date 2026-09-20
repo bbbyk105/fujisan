@@ -1,9 +1,14 @@
 import { AuthShell, AuthHeading } from "@/components/fujisan/auth/AuthShell";
 import { RegisterBusinessForm } from "@/components/fujisan/auth/RegisterBusinessForm";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Open a Trade Account — FUJISAN SAKE",
-};
+export const metadata = buildMetadata({
+  title: "Open a Trade Account",
+  description:
+    "取扱店さまの新規登録ページです。",
+  path: "/register/business",
+  noIndex: true,
+});
 
 export default function RegisterBusinessPage() {
   return (

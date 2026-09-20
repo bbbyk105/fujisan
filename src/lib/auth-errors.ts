@@ -2,7 +2,6 @@ export type AuthErrorKey =
   | "invalid"
   | "unverified"
   | "exists"
-  | "name-taken"
   | "weak"
   | "generic";
 

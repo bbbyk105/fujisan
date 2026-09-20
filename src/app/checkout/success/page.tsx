@@ -5,11 +5,15 @@ import FujisanFooter from "@/components/fujisan/FujisanFooter";
 import { ClearCartOnMount } from "@/components/fujisan/cart/ClearCartOnMount";
 import { getStripe } from "@/lib/stripe";
 import { L } from "@/i18n/Localized";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Order Confirmed — FUJISAN SAKE",
-  robots: { index: false },
-};
+export const metadata = buildMetadata({
+  title: "Order Confirmed",
+  description:
+    "ご注文の受付完了ページです。",
+  path: "/checkout/success",
+  noIndex: true,
+});
 
 // session_id を読み Stripe を参照するため動的レンダー。
 export const dynamic = "force-dynamic";

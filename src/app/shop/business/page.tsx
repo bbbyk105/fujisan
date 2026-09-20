@@ -9,12 +9,14 @@ import { TradeAccessBand } from "@/components/fujisan/TradeAccessBand";
 import { Reveal } from "@/components/reveal/Reveal";
 import { revealDelays } from "@/components/reveal/constants";
 import { L } from "@/i18n/Localized";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Wholesale & Trade — FUJISAN SAKE",
+export const metadata = buildMetadata({
+  title: "Wholesale & Trade",
   description:
     "Wholesale and trade enquiries for restaurants, bars, retailers, and hospitality programmes. Account pricing, training, and brewer support from Shizuoka.",
-};
+  path: "/shop/business",
+});
 
 const benefits = [
   {

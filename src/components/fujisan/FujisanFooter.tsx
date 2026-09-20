@@ -11,6 +11,21 @@ const FOOTER_LINKS = [
   { label: "FAQ", href: "/faq" },
 ];
 
+/**
+ * SNS アカウントの URL。
+ *
+ * **空文字のアイコンは描画しない。** 以前は href="#" のダミーリンクが並んでいて、
+ * 押すとページ先頭に飛ぶだけだった。アカウントを開設したらここに URL を入れる。
+ */
+const SOCIAL_LINKS: Array<{ label: string; href: string; icon: "instagram" | "facebook" }> = [
+  { label: "Instagram", href: "", icon: "instagram" },
+  { label: "Facebook", href: "", icon: "facebook" },
+].filter((s) => s.href.length > 0) as Array<{
+  label: string;
+  href: string;
+  icon: "instagram" | "facebook";
+}>;
+
 export default function FujisanFooter() {
   return (
     <footer
@@ -82,22 +97,22 @@ export default function FujisanFooter() {
           ))}
         </ul>
 
-        <div className="flex items-center gap-1 text-[#F4EBD5]/72">
-          <a
-            href="#"
-            aria-label="Instagram"
-            className="p-3 transition-colors hover:text-[#D7B46A]"
-          >
-            <IconInstagram />
-          </a>
-          <a
-            href="#"
-            aria-label="Facebook"
-            className="p-3 transition-colors hover:text-[#D7B46A]"
-          >
-            <IconFacebook />
-          </a>
-        </div>
+        {SOCIAL_LINKS.length > 0 && (
+          <div className="flex items-center gap-1 text-[#F4EBD5]/72">
+            {SOCIAL_LINKS.map((s) => (
+              <a
+                key={s.label}
+                href={s.href}
+                aria-label={s.label}
+                target="_blank"
+                rel="noopener noreferrer me"
+                className="p-3 transition-colors hover:text-[#D7B46A]"
+              >
+                {s.icon === "instagram" ? <IconInstagram /> : <IconFacebook />}
+              </a>
+            ))}
+          </div>
+        )}
       </div>
     </footer>
   );

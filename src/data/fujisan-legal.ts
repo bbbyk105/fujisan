@@ -16,7 +16,12 @@ export const UNDERAGE_NOTICE_EN = [
 
 /**
  * 送料表記の唯一の出どころ。全ページ・特商法表示はこのトークンを参照し、
- * 「全国一律 1,100円（税込）」「クール便指定時 +330円（税込）」の表記を統一する。
+ * 「全国一律 1,100円（税込）」「15,000円以上で送料無料」の表記を統一する。
+ *
+ * ※ ここに書いてよいのは **実際に決済で課金される料金だけ**。
+ *    選択 UI が無い追加オプション（クール便の加算など）を書くと、
+ *    表示と請求額が食い違い景表法上の問題になる。追加する場合は
+ *    Stripe の shipping_options とカートの合計計算を先に実装すること。
  */
 export const SHIPPING_FEE = {
   /** 全国一律送料（税込・円）。カート/チェックアウトの合計計算はこの数値を唯一の出どころとする。 */
@@ -24,11 +29,9 @@ export const SHIPPING_FEE = {
   /** この税込小計（円）以上で送料無料。0 で無効化。 */
   freeThresholdJpy: 15000,
   flat: "全国一律 1,100円（税込）",
-  cool: "クール便指定時 +330円（税込）",
   remote: "北海道・沖縄・離島は別途追加料金がかかる場合があります",
   free: "15,000円（税込）以上のご購入で送料無料",
   flatEn: "Flat ¥1,100 nationwide (tax incl.)",
-  coolEn: "Cool-chain delivery +¥330 (tax incl.)",
   remoteEn:
     "Surcharges may apply for Hokkaido, Okinawa, and remote islands",
   freeEn: "Free shipping on orders of ¥15,000 (tax incl.) or more",
@@ -52,9 +55,9 @@ export const FUJISAN_LEGAL = {
   priceNote:
     "各商品ページに表示の金額（消費税10%込）。表示価格以外に送料等が必要となる場合があります。",
   shipping: SHIPPING_FEE,
-  shippingFeeNote: `${SHIPPING_FEE.flat}。${SHIPPING_FEE.remote}。${SHIPPING_FEE.cool}。`,
+  shippingFeeNote: `${SHIPPING_FEE.flat}。${SHIPPING_FEE.free}。${SHIPPING_FEE.remote}。`,
   // 英語ロケール表示用（特商法ページは日本語のまま。EC 説明部分のみ英語へ切替）
-  shippingFeeNoteEn: `${SHIPPING_FEE.flatEn}. ${SHIPPING_FEE.remoteEn}. ${SHIPPING_FEE.coolEn}.`,
+  shippingFeeNoteEn: `${SHIPPING_FEE.flatEn}. ${SHIPPING_FEE.freeEn}. ${SHIPPING_FEE.remoteEn}.`,
   // 個人（toC）のお支払いはクレジットカードのみ（Stripe Checkout）。銀行振込は法人（toB）専用。
   paymentMethods:
     "クレジットカード（VISA / Mastercard / JCB / AMEX / Diners）",
@@ -67,7 +70,9 @@ export const FUJISAN_LEGAL = {
     "Dispatched within two business days of order confirmation.",
   returnsPolicy:
     "酒類は性質上、開栓後・お客様都合での返品交換はお受けできません。配送中の破損・誤配送・不良品については商品到着後7日以内にメールにてご連絡ください。",
-  otherFees: "クール便指定時の追加料金はお客様負担となります。",
+  // 商品代金以外にお客様へご負担いただくのは送料のみ（決済で実際に加算されるもの）。
+  otherFees:
+    "商品代金以外には送料のみを申し受けます。北海道・沖縄・離島は別途追加料金がかかる場合があり、その場合は発送前にご連絡いたします。",
   // 酒類関連免許・標識
   liquorLicense:
     "通信販売酒類小売業免許（〇〇税務署 酒類指令第〇〇号 [要確認]）",

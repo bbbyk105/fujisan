@@ -1,9 +1,14 @@
 import { AuthShell, AuthHeading } from "@/components/fujisan/auth/AuthShell";
 import { ForgotPasswordForm } from "@/components/fujisan/auth/ForgotPasswordForm";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Reset Trade Password — FUJISAN SAKE",
-};
+export const metadata = buildMetadata({
+  title: "Reset Trade Password",
+  description:
+    "取扱店さま向けのパスワード再設定ページです。",
+  path: "/forgot-password/business",
+  noIndex: true,
+});
 
 export default function ForgotPasswordBusinessPage() {
   return (

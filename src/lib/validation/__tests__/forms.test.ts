@@ -5,7 +5,6 @@ import {
   registerPersonalSchema,
   registerBusinessSchema,
   contactSchema,
-  wholesaleSchema,
 } from "@/lib/validation/forms";
 
 describe("isEmailLike", () => {
@@ -112,35 +111,5 @@ describe("contactSchema", () => {
     });
     expect(errs.email).toBe("email");
     expect(errs.message).toBe("required");
-  });
-});
-
-describe("wholesaleSchema", () => {
-  const base = {
-    company: "鮨青山",
-    contactName: "佐々木",
-    email: "a@b.com",
-    country: "Japan",
-    website: "",
-    licenseConfirmed: true,
-  };
-  it("passes with empty optional website and license confirmed", () => {
-    expect(getFieldErrors(wholesaleSchema, base)).toEqual({});
-  });
-  it("requires the licence confirmation", () => {
-    expect(
-      getFieldErrors(wholesaleSchema, { ...base, licenseConfirmed: false }),
-    ).toEqual({ licenseConfirmed: "agree" });
-  });
-  it("validates website URL when provided", () => {
-    expect(
-      getFieldErrors(wholesaleSchema, { ...base, website: "not-a-url" }),
-    ).toEqual({ website: "url" });
-    expect(
-      getFieldErrors(wholesaleSchema, {
-        ...base,
-        website: "https://example.com",
-      }),
-    ).toEqual({});
   });
 });

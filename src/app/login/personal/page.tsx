@@ -2,10 +2,15 @@ import { Suspense } from "react";
 import { AuthShell, AuthHeading } from "@/components/fujisan/auth/AuthShell";
 import { LoginForm } from "@/components/fujisan/auth/LoginForm";
 import { isGoogleEnabled } from "@/lib/auth";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Member Sign In — FUJISAN SAKE",
-};
+export const metadata = buildMetadata({
+  title: "Member Sign In",
+  description:
+    "個人のお客様のログインページです。",
+  path: "/login/personal",
+  noIndex: true,
+});
 
 export default async function LoginPersonalPage() {
   const googleEnabled = await isGoogleEnabled();

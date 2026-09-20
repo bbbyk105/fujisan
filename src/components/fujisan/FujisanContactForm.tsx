@@ -10,15 +10,23 @@ import {
 } from "@/lib/validation/forms";
 import { FieldError } from "@/components/fujisan/FieldError";
 import { scrollToFirstError } from "@/lib/scrollToFirstError";
+import { submitContactAction } from "@/lib/actions/contact";
+import { FUJISAN_LEGAL } from "@/data/fujisan-legal";
+import {
+  CONTACT_SUBJECTS,
+  CONTACT_SUBJECT_LABELS,
+} from "@/data/fujisan-contact";
 
 type Status = "idle" | "submitting" | "sent";
 
-const SUBJECTS = [
-  { value: "general", label: "General enquiry · 一般のお問い合わせ" },
-  { value: "trade", label: "Trade & Wholesale · 卸・取扱店" },
-  { value: "visit", label: "Brewery Visit · 蔵見学" },
-  { value: "press", label: "Press & Media · 取材" },
-];
+/** 送信の失敗理由。サーバーアクションの error をそのまま受ける。 */
+type SubmitError = "invalid" | "rate" | "db";
+
+/** 用件は src/data/fujisan-contact.ts を唯一の出どころにする（サーバー側の検証と一致させる）。 */
+const SUBJECTS = CONTACT_SUBJECTS.map((value) => ({
+  value,
+  label: `${CONTACT_SUBJECT_LABELS[value].en} · ${CONTACT_SUBJECT_LABELS[value].ja}`,
+}));
 
 const MESSAGE_MAX = 1000;
 
@@ -28,9 +36,12 @@ export function FujisanContactForm() {
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState<string>(SUBJECTS[0].value);
   const [message, setMessage] = useState("");
+  // ハニーポット。CSS で隠してあり、人間が触ることはない。
+  const [website, setWebsite] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Record<string, FieldErrorKey>>(
     {},
   );
+  const [submitError, setSubmitError] = useState<SubmitError | null>(null);
   const locale = useLocale();
 
   const clearError = (field: string) =>
@@ -41,8 +52,9 @@ export function FujisanContactForm() {
       return next;
     });
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setSubmitError(null);
     const errors = getFieldErrors(contactSchema, {
       name,
       email,
@@ -55,8 +67,21 @@ export function FujisanContactForm() {
       return;
     }
     setStatus("submitting");
-    // No backend yet — settle on a brand-coherent acknowledgement state.
-    window.setTimeout(() => setStatus("sent"), 700);
+    const res = await submitContactAction({
+      name,
+      email,
+      subject,
+      message,
+      locale,
+      website,
+    });
+    if (res.ok) {
+      setStatus("sent");
+      return;
+    }
+    // 失敗したら入力はそのまま残して、もう一度送れるようにする。
+    setStatus("idle");
+    setSubmitError(res.error);
   };
 
   if (status === "sent") {
@@ -106,6 +131,8 @@ export function FujisanContactForm() {
             setName("");
             setEmail("");
             setMessage("");
+            setWebsite("");
+            setSubmitError(null);
             setSubject(SUBJECTS[0].value);
           }}
           className="group/link mt-10 inline-flex items-center gap-3 cursor-pointer border-0 bg-transparent p-0 text-[10.5px] font-semibold tracking-[0.34em] text-[#0B1A2E]"
@@ -129,6 +156,22 @@ export function FujisanContactForm() {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-8" noValidate>
+      {/*
+        ハニーポット。スクリーンリーダーとタブ順からも外し、人間には到達させない。
+        値が入って送られてきたら bot と判断してサーバー側で静かに捨てる。
+      */}
+      <div aria-hidden className="absolute left-[-9999px] h-0 w-0 overflow-hidden">
+        <label htmlFor="contact-website">Website</label>
+        <input
+          id="contact-website"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          value={website}
+          onChange={(e) => setWebsite(e.target.value)}
+        />
+      </div>
+
       <div className="grid grid-cols-1 gap-7 sm:grid-cols-2">
         <Field id="contact-name" label="NAME" jp="お名前" required>
           <div className="relative">
@@ -251,7 +294,8 @@ export function FujisanContactForm() {
               >
                 privacy policy
               </a>
-              . We never share your details.
+              . We use your details only to reply to you — never to sell or
+              rent.
             </>
           }
           ja={
@@ -263,11 +307,36 @@ export function FujisanContactForm() {
               >
                 プライバシーポリシー
               </a>
-              に同意したものとみなします。お客様の情報を第三者と共有することはありません。
+              に同意したものとみなします。いただいた情報はご返信のためにのみ利用し、販売・貸与は行いません。
             </>
           }
         />
       </p>
+
+      {submitError ? (
+        <p
+          role="alert"
+          className="border border-[#8B1A1A]/40 bg-[#8B1A1A]/6 px-4 py-3 text-[12px] leading-[1.75] text-[#8B1A1A]"
+        >
+          {submitError === "rate" ? (
+            <L
+              en="You've sent several messages in a short time. Please wait a few minutes and try again, or email us directly."
+              ja="短時間に複数回送信されています。数分おいてからもう一度お試しいただくか、メールにて直接ご連絡ください。"
+            />
+          ) : (
+            <L
+              en="We couldn't send your message. Please try again in a moment, or email us directly."
+              ja="メッセージを送信できませんでした。しばらくしてからもう一度お試しいただくか、メールにて直接ご連絡ください。"
+            />
+          )}{" "}
+          <a
+            href={`mailto:${FUJISAN_LEGAL.email}`}
+            className="font-semibold underline underline-offset-2"
+          >
+            {FUJISAN_LEGAL.email}
+          </a>
+        </p>
+      ) : null}
 
       <div className="mt-1 flex items-center justify-between gap-6">
         <button

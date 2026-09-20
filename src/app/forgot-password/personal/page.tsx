@@ -1,9 +1,14 @@
 import { AuthShell, AuthHeading } from "@/components/fujisan/auth/AuthShell";
 import { ForgotPasswordForm } from "@/components/fujisan/auth/ForgotPasswordForm";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Reset Password — FUJISAN SAKE",
-};
+export const metadata = buildMetadata({
+  title: "Reset Password",
+  description:
+    "パスワード再設定メールの送信ページです。",
+  path: "/forgot-password/personal",
+  noIndex: true,
+});
 
 export default function ForgotPasswordPersonalPage() {
   return (

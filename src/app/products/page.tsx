@@ -14,12 +14,14 @@ import {
 } from "@/data/fujisan-products";
 import { ShopAddToCart } from "@/components/fujisan/ShopAddToCart";
 import { L } from "@/i18n/Localized";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Collection — FUJISAN SAKE",
+export const metadata = buildMetadata({
+  title: "Collection",
   description:
     "The five bottles of the Bushido series — Shogun, Tenka, Samurai, Ninja, and Kokoro. Grades, tasting notes, serving temperatures, and prices in one place.",
-};
+  path: "/products",
+});
 
 const yen = new Intl.NumberFormat("ja-JP");
 

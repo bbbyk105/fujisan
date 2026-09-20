@@ -8,12 +8,14 @@ import {
 import { StoriesProgress } from "@/components/fujisan/stories/StoriesProgress";
 import { StoriesClosing } from "@/components/fujisan/stories/StoriesClosing";
 import { StoriesFx } from "@/components/fujisan/stories/StoriesFx";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Stories of Fujisan — FUJISAN SAKE",
+export const metadata = buildMetadata({
+  title: "Stories of Fujisan",
   description:
     "A few honest notes on what's in the glass — the water and rice behind Fujisan, the cold months it is brewed in, and some easy ways to pour it.",
-};
+  path: "/stories",
+});
 
 const stories: Story[] = [
   {

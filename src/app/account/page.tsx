@@ -15,12 +15,17 @@ import { user as userTable } from "@/db/auth-schema";
 import { listMyOrdersAction } from "@/lib/actions/orders";
 import { getEffectiveAdminRole, isOwner, isStaffOrAbove } from "@/lib/admin";
 import { L } from "@/i18n/Localized";
+import { buildMetadata } from "@/lib/seo";
 
 const yen = new Intl.NumberFormat("ja-JP");
 
-export const metadata = {
-  title: "Account — FUJISAN SAKE",
-};
+export const metadata = buildMetadata({
+  title: "Account",
+  description:
+    "ご注文の状況、お届け先の登録情報、アカウント設定をご確認いただけます。",
+  path: "/account",
+  noIndex: true,
+});
 
 type AccountSession = {
   id: string;
@@ -240,6 +245,18 @@ export default async function AccountPage() {
                     <span
                       aria-hidden
                       className="transition-transform duration-500 group-hover/admin:translate-x-1"
+                    >
+                      →
+                    </span>
+                  </Link>
+                  <Link
+                    href="/admin/contacts"
+                    className="group/contacts inline-flex items-center gap-3 border border-[#E2C97E]/55 bg-transparent px-6 py-3 text-[10.5px] font-semibold tracking-[0.32em] text-[#E2C97E] no-underline transition-colors hover:border-[#E2C97E] hover:bg-[#E2C97E]/10"
+                  >
+                    お問い合わせ
+                    <span
+                      aria-hidden
+                      className="transition-transform duration-500 group-hover/contacts:translate-x-1"
                     >
                       →
                     </span>

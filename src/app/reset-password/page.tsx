@@ -1,10 +1,15 @@
 import { Suspense } from "react";
 import { AuthShell, AuthHeading } from "@/components/fujisan/auth/AuthShell";
 import { ResetPasswordForm } from "@/components/fujisan/auth/ResetPasswordForm";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Set a New Password — FUJISAN SAKE",
-};
+export const metadata = buildMetadata({
+  title: "Set a New Password",
+  description:
+    "新しいパスワードの設定ページです。",
+  path: "/reset-password",
+  noIndex: true,
+});
 
 export default function ResetPasswordPage() {
   return (

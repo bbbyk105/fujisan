@@ -1,10 +1,15 @@
 import { AuthShell, AuthHeading } from "@/components/fujisan/auth/AuthShell";
 import { RegisterPersonalForm } from "@/components/fujisan/auth/RegisterPersonalForm";
 import { isGoogleEnabled } from "@/lib/auth";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Create Account — FUJISAN SAKE",
-};
+export const metadata = buildMetadata({
+  title: "Create Account",
+  description:
+    "個人のお客様の新規登録ページです。",
+  path: "/register/personal",
+  noIndex: true,
+});
 
 export default async function RegisterPersonalPage() {
   const googleEnabled = await isGoogleEnabled();

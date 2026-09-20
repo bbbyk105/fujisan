@@ -3,12 +3,15 @@ import FujisanFooter from "@/components/fujisan/FujisanFooter";
 import { FujisanInnerHero } from "@/components/fujisan/FujisanInnerHero";
 import { CartView } from "@/components/fujisan/cart/CartView";
 import { L } from "@/i18n/Localized";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Cart — FUJISAN SAKE",
+export const metadata = buildMetadata({
+  title: "Cart",
   description:
     "Review the bottles in your cart before checkout. Prices include tax; age verification at every step.",
-};
+  path: "/cart",
+  noIndex: true,
+});
 
 // 静的に書き出し、カートの状態はクライアント（localStorage）で持つ
 export const dynamic = "force-static";

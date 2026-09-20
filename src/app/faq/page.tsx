@@ -2,12 +2,14 @@ import FujisanInfoPage, {
   type InfoSection,
 } from "@/components/fujisan/FujisanInfoPage";
 import { L } from "@/i18n/Localized";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "FAQ — FUJISAN SAKE",
+export const metadata = buildMetadata({
+  title: "FAQ",
   description:
     "Answers to common questions about Fujisan sake — storing, serving, ordering, and gifting.",
-};
+  path: "/faq",
+});
 
 const sections: InfoSection[] = [
   {
@@ -87,8 +89,8 @@ const sections: InfoSection[] = [
     body: [
       <L
         key="b"
-        en="Yes. Each bottle ships in a presentation box wrapped in washi paper. At checkout you can add a handwritten note and request that the invoice be sent to a separate billing address."
-        ja="はい。各ボトルは和紙で包んだ化粧箱でお届けします。ご購入手続きの際に、手書きのメッセージの追加や、請求書を別住所へお送りするご指定も可能です。"
+        en="Each bottle ships in a presentation box wrapped in washi paper, so it arrives ready to give. Gift options such as noshi wrapping or a message card are not yet available at checkout — if you need them, please contact us before ordering and we will do what we can."
+        ja="各ボトルは和紙で包んだ化粧箱でお届けしますので、そのまま贈り物としてお使いいただけます。のし紙やメッセージカードなどのギフト対応は、現在ご購入手続きの中では承っておりません。ご希望の場合はご注文前にお問い合わせください。できる限り対応いたします。"
       />,
     ],
   },
@@ -153,7 +155,7 @@ export default function FaqPage() {
         />
       }
       crumb={{ label: "FAQ", href: "/faq" }}
-      updated="2026.04"
+      updated="2026.09"
       sections={sections}
     />
   );
