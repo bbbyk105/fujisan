@@ -8,6 +8,7 @@ import {
   type ContactStatus,
   type ContactSubject,
 } from "@/data/fujisan-contact";
+import { formatDateTimeJp } from "@/lib/format-date";
 
 const ERROR_MESSAGES: Record<string, string> = {
   unauth: "ログインが切れています。再度ログインしてください。",
@@ -34,16 +35,6 @@ type Message = {
   handledAt: Date | null;
   createdAt: Date;
 };
-
-function fmtDateTime(d: Date): string {
-  return new Intl.DateTimeFormat("ja-JP", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(d);
-}
 
 /**
  * お問い合わせ 1 件の行。
@@ -91,7 +82,7 @@ export function AdminContactRow({ message }: { message: Message }) {
           </span>
         </div>
         <span className="text-[11px] tabular-nums text-[#0B1A2E]/55">
-          {fmtDateTime(message.createdAt)}
+          {formatDateTimeJp(message.createdAt)}
         </span>
       </div>
 
@@ -138,7 +129,7 @@ export function AdminContactRow({ message }: { message: Message }) {
         {status === "done" && message.handledByEmail && (
           <span className="text-[11px] text-[#0B1A2E]/55">
             {message.handledByEmail}
-            {message.handledAt ? ` / ${fmtDateTime(message.handledAt)}` : ""}
+            {message.handledAt ? ` / ${formatDateTimeJp(message.handledAt)}` : ""}
           </span>
         )}
       </div>

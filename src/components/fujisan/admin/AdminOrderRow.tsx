@@ -74,6 +74,8 @@ type Props = {
 
 function fmt(d: Date): string {
   return new Intl.DateTimeFormat("ja-JP", {
+    // Workers は UTC で動くため、指定しないと JST 00:00〜09:00 が前日になる
+    timeZone: "Asia/Tokyo",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",

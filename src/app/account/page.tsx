@@ -18,6 +18,7 @@ import { listMyOrdersAction } from "@/lib/actions/orders";
 import { getEffectiveAdminRole, isOwner, isStaffOrAbove } from "@/lib/admin";
 import { L } from "@/i18n/Localized";
 import { buildMetadata } from "@/lib/seo";
+import { formatDateShortJp, formatMonthEn, formatMonthJp } from "@/lib/format-date";
 
 const yen = new Intl.NumberFormat("ja-JP");
 
@@ -103,14 +104,8 @@ export default async function AccountPage() {
     }
     if (rec?.createdAt) {
       const d = new Date(rec.createdAt);
-      memberSinceJp = new Intl.DateTimeFormat("ja-JP", {
-        year: "numeric",
-        month: "long",
-      }).format(d);
-      memberSinceEn = new Intl.DateTimeFormat("en-US", {
-        year: "numeric",
-        month: "long",
-      }).format(d);
+      memberSinceJp = formatMonthJp(d);
+      memberSinceEn = formatMonthEn(d);
     }
   } catch {
     /* DB 失敗時はダッシュを残す */
@@ -337,7 +332,7 @@ export default async function AccountPage() {
                             {o.orderRef}
                           </Link>
                           <span className="text-[11.5px] tracking-[0.04em] text-[#1D2432]/70">
-                            {formatOrderDate(o.createdAt)} · {o.itemsCount}{" "}
+                            {formatDateShortJp(o.createdAt)} · {o.itemsCount}{" "}
                             <L en="bottle(s)" ja="本" /> · ¥
                             {yen.format(o.total)}
                           </span>
@@ -397,7 +392,7 @@ export default async function AccountPage() {
                               {o.shippedAt && (
                                 <p className="mt-1 text-[11px] text-[#1D2432]/65">
                                   <L en="Shipped" ja="発送日" />:{" "}
-                                  {formatOrderDate(o.shippedAt)}
+                                  {formatDateShortJp(o.shippedAt)}
                                 </p>
                               )}
                             </div>
@@ -530,11 +525,4 @@ function Section({
 }
 
 
-function formatOrderDate(d: Date): string {
-  return new Intl.DateTimeFormat("ja-JP", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  }).format(d);
-}
 

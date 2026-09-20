@@ -6,6 +6,7 @@ import { LogoutButton } from "@/components/fujisan/auth/LogoutButton";
 import { getSession } from "@/lib/session";
 import { getEffectiveAdminRole, isStaffOrAbove, isOwner } from "@/lib/admin";
 import { adminListBusinessAccountsAction } from "@/lib/actions/admin-customers";
+import { formatDateShortJp } from "@/lib/format-date";
 
 export const metadata = {
   title: "Admin · Trade Accounts — FUJISAN SAKE",
@@ -138,7 +139,7 @@ export default async function AdminCustomersPage(props: {
                   <Field label="ご担当者" value={a.contactName} />
                   <Field label="メール" value={a.email} />
                   <Field label="電話" value={a.phone} />
-                  <Field label="ご登録" value={fmtDate(a.createdAt)} />
+                  <Field label="ご登録" value={formatDateShortJp(a.createdAt)} />
                   <div className="sm:col-span-2 lg:col-span-4">
                     <Field label="所在地" value={a.address} />
                   </div>
@@ -192,14 +193,6 @@ function Field({ label, value }: { label: string; value?: string | null }) {
       </span>
     </div>
   );
-}
-
-function fmtDate(d: Date): string {
-  return new Intl.DateTimeFormat("ja-JP", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  }).format(d);
 }
 
 function ForbiddenView({ email }: { email: string | undefined }) {

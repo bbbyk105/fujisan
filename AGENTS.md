@@ -105,6 +105,7 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 ## 落とし穴
 
 - **`drizzle/` の journal はずれている**: `0006_user_postal_code.sql` は手書きで追加されており `drizzle/meta/_journal.json` に載っていない。`drizzle-kit generate` を実行すると 0005 のスナップショットから差分を出すため、既に適用済みの列を二重に出力する。当面はマイグレーション SQL を手書きで足す（`wrangler d1 migrations apply` は journal ではなくファイル名順で適用するので動作には影響しない）。
+- **日付は必ず `src/lib/format-date.ts` のヘルパーで出す**。Workers は UTC で動くため `Intl.DateTimeFormat` に `timeZone: "Asia/Tokyo"` を指定しないと、JST 00:00〜09:00 の出来事が前日の日付になる（領収書の発行日がずれる）。ローカルの OS が JST だと気づけない。
 - **Next.js 16 の `error.js` は `reset` ではなく `unstable_retry`**。旧 API 名のままだと再試行ボタンが動かない。`global-error.js` も同じ。
 - **`cloudflare-env.d.ts` は生成物で `.gitignore` 済み**。`prebuild` が `cf-typegen` を走らせるので `npm run build` は clone 直後でも通るが、エディタの型エラーを消すには一度 `npm run cf-typegen` が要る。
 - **dev は `next dev --webpack`**（Turbopack ではない）。`initOpenNextCloudflareForDev()` により dev でも D1/env バインディングが `.dev.vars` から供給される。
@@ -127,6 +128,11 @@ npm run preview    # opennextjs-cloudflare build && preview（Workers 実環境�
 npm run deploy     # opennextjs-cloudflare build && deploy（人間の承認後）
 npm run cf-typegen # cloudflare-env.d.ts 再生成（バインディング変更時）
 ```
+
+## 未対応事項
+
+公開前に必要な作業（免許番号・Stripe の Webhook 設定・本番マイグレーション）と
+フェーズ3 の積み残しは [`docs/TODO.md`](./docs/TODO.md) にまとめてある。
 
 ## スキル参照
 

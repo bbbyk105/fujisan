@@ -9,9 +9,11 @@ import { CancelOrderButton } from "@/components/fujisan/auth/CancelOrderButton";
 import { ReorderButton } from "@/components/fujisan/auth/ReorderButton";
 import { getSession } from "@/lib/session";
 import { getMyOrderByRefAction } from "@/lib/actions/orders";
+import { isReceiptIssuable } from "@/db/orders-schema";
 import { getFujisanProductBySlug } from "@/data/fujisan-products";
 import { L } from "@/i18n/Localized";
 import { buildMetadata } from "@/lib/seo";
+import { formatDateJp } from "@/lib/format-date";
 
 export const metadata = buildMetadata({
   title: "Order detail",
@@ -27,14 +29,6 @@ const yen = new Intl.NumberFormat("ja-JP");
 
 /** 発送前＝まだキャンセルを受け付けられる状態。 */
 const CANCELLABLE = new Set(["confirmed", "preparing"]);
-
-function fmtDate(d: Date): string {
-  return new Intl.DateTimeFormat("ja-JP", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  }).format(d);
-}
 
 export default async function OrderDetailPage({
   params,
@@ -53,7 +47,8 @@ export default async function OrderDetailPage({
 
   const canCancel =
     CANCELLABLE.has(order.status) && order.cancelRequestedAt === null;
-  const receiptAvailable = order.status !== "cancelled";
+  // 返金済み・キャンセル済みには領収書を出さない（発行条件はスキーマ側に集約）。
+  const receiptAvailable = isReceiptIssuable(order.status);
 
   return (
     <main className="flex min-h-screen flex-col bg-paper text-[#0B1A2E]">
@@ -83,7 +78,7 @@ export default async function OrderDetailPage({
                 {order.orderRef}
               </h1>
               <p className="mt-3 text-[12.5px] text-[#F2E4C7]/70">
-                <L en="Ordered on" ja="ご注文日" /> {fmtDate(order.createdAt)}
+                <L en="Ordered on" ja="ご注文日" /> {formatDateJp(order.createdAt)}
               </p>
             </div>
             <OrderStatusPill status={order.status} />
@@ -103,8 +98,8 @@ export default async function OrderDetailPage({
             className="mt-4 border border-[#C9A84C]/60 bg-[#F1E6CB]/55 px-5 py-4 text-[12.5px] leading-[1.75] text-[#0B1A2E]"
           >
             <L
-              en={`We received your cancellation request on ${fmtDate(order.cancelRequestedAt)}. Our team will contact you by email shortly.`}
-              ja={`${fmtDate(order.cancelRequestedAt)}にキャンセルのご依頼を承りました。担当より追ってメールにてご連絡いたします。`}
+              en={`We received your cancellation request on ${formatDateJp(order.cancelRequestedAt)}. Our team will contact you by email shortly.`}
+              ja={`${formatDateJp(order.cancelRequestedAt)}にキャンセルのご依頼を承りました。担当より追ってメールにてご連絡いたします。`}
             />
           </p>
         )}
@@ -121,7 +116,7 @@ export default async function OrderDetailPage({
             </p>
             {order.shippedAt && (
               <p className="mt-1 text-[11.5px] text-[#0B1A2E]/60">
-                <L en="Shipped" ja="発送日" />: {fmtDate(order.shippedAt)}
+                <L en="Shipped" ja="発送日" />: {formatDateJp(order.shippedAt)}
               </p>
             )}
           </div>

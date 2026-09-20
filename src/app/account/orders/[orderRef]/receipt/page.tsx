@@ -3,11 +3,13 @@ import { notFound, redirect } from "next/navigation";
 import { PrintButton } from "@/components/fujisan/auth/PrintButton";
 import { getSession } from "@/lib/session";
 import { getMyOrderByRefAction } from "@/lib/actions/orders";
+import { isReceiptIssuable } from "@/db/orders-schema";
 import {
   FUJISAN_LEGAL,
   INVOICE_REGISTRATION_NUMBER,
 } from "@/data/fujisan-legal";
 import { buildMetadata } from "@/lib/seo";
+import { formatDateJp } from "@/lib/format-date";
 
 export const metadata = buildMetadata({
   title: "Receipt",
@@ -19,14 +21,6 @@ export const metadata = buildMetadata({
 export const dynamic = "force-dynamic";
 
 const yen = new Intl.NumberFormat("ja-JP");
-
-function fmtDate(d: Date): string {
-  return new Intl.DateTimeFormat("ja-JP", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  }).format(d);
-}
 
 /**
  * 領収書。
@@ -50,8 +44,10 @@ export default async function ReceiptPage({
 
   const order = await getMyOrderByRefAction(orderRef);
   if (!order) notFound();
-  // キャンセル済みの注文には領収書を出さない（支払いが無い、または返金済み）。
-  if (order.status === "cancelled") notFound();
+  // 領収書は「代金を受け取って保持している」ことの証明なので、
+  // キャンセル（未入金）と返金済み（代金を返した）には発行しない。
+  // 返金済みに全額の「上記正に領収いたしました」を出すと事実と食い違う。
+  if (!isReceiptIssuable(order.status)) notFound();
 
   // 発行日は支払い確定日。Webhook 前の古い注文に備えて注文日をフォールバックにする。
   const issuedAt = order.paidAt ?? order.createdAt;
@@ -91,7 +87,7 @@ export default async function ReceiptPage({
           <dl className="text-right text-[12px] leading-[1.9] text-[#0B1A2E]/75">
             <div>
               <dt className="inline">発行日：</dt>
-              <dd className="inline">{fmtDate(issuedAt)}</dd>
+              <dd className="inline">{formatDateJp(issuedAt)}</dd>
             </div>
             <div>
               <dt className="inline">注文番号：</dt>

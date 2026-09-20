@@ -25,12 +25,14 @@ export function ChangePasswordForm() {
     Record<string, FieldErrorKey>
   >({});
   const [errorKey, setErrorKey] = useState<AuthErrorKey | null>(null);
+  const [mismatch, setMismatch] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setErrorKey(null);
+    setMismatch(false);
     setDone(false);
 
     const errors: Record<string, FieldErrorKey> = {};
@@ -41,9 +43,10 @@ export function ChangePasswordForm() {
     setFieldErrors(errors);
     if (Object.keys(errors).length > 0) return;
 
+    // 確認入力の不一致はクライアント側で分かる。サーバーの
+    // 「現在のパスワードが違う」と混ぜず、専用の文言で返す。
     if (next !== confirm) {
-      setErrorKey("invalid");
-      setFieldErrors({ confirm: "required" });
+      setMismatch(true);
       return;
     }
 
@@ -59,6 +62,7 @@ export function ChangePasswordForm() {
       setNext("");
       setConfirm("");
       setFieldErrors({});
+      setMismatch(false);
       setDone(true);
       return;
     }
@@ -93,6 +97,18 @@ export function ChangePasswordForm() {
         </p>
       )}
 
+      {mismatch && (
+        <p
+          role="alert"
+          className="mt-5 border border-[#8B1A1A]/40 bg-[#8B1A1A]/[0.06] px-4 py-3 text-[12.5px] leading-[1.7] text-[#8B1A1A]"
+        >
+          <L
+            en="The two new password fields don't match."
+            ja="新しいパスワードの確認入力が一致していません。"
+          />
+        </p>
+      )}
+
       {errorKey && (
         <p
           role="alert"
@@ -103,10 +119,20 @@ export function ChangePasswordForm() {
               en="The new password must be at least 8 characters."
               ja="新しいパスワードは8文字以上で設定してください。"
             />
+          ) : errorKey === "too-long" ? (
+            <L
+              en="The new password is too long. Please use 128 characters or fewer."
+              ja="新しいパスワードが長すぎます。128文字以内で設定してください。"
+            />
+          ) : errorKey === "no-password" ? (
+            <L
+              en="This account signs in with Google, so it has no password to change. You can manage it from your Google account."
+              ja="このアカウントは Google ログインでご利用中のため、変更できるパスワードがありません。Google アカウント側でご管理ください。"
+            />
           ) : errorKey === "invalid" ? (
             <L
-              en="Please check your current password and that both new password fields match."
-              ja="現在のパスワード、および新しいパスワードの確認入力をご確認ください。"
+              en="Your current password isn't correct."
+              ja="現在のパスワードが正しくありません。"
             />
           ) : (
             <L
