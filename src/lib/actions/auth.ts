@@ -234,6 +234,39 @@ export async function resetPasswordAction(input: {
 }
 
 /**
+ * ログイン中のユーザーが自分でパスワードを変更する。
+ *
+ * 現在のパスワードの確認を Better Auth 側に任せる（誤りなら例外 → "invalid"）。
+ * 変更に成功したら **他端末のセッションを失効させる**。パスワードを変えたい
+ * 動機の多くは「乗っ取られたかもしれない」なので、今の端末だけ残すのが安全。
+ */
+export async function changeMyPasswordAction(input: {
+  currentPassword: string;
+  newPassword: string;
+}): Promise<AuthActionResult> {
+  const auth = await getAuth();
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session?.user?.id) return { ok: false, error: "invalid" };
+
+  if (input.newPassword.length < 8) return { ok: false, error: "weak" };
+  if (!input.currentPassword) return { ok: false, error: "invalid" };
+
+  try {
+    await auth.api.changePassword({
+      body: {
+        currentPassword: input.currentPassword,
+        newPassword: input.newPassword,
+        revokeOtherSessions: true,
+      },
+      headers: await headers(),
+    });
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, error: classifyAuthError(error) };
+  }
+}
+
+/**
  * Google OAuth の開始 URL をサーバーで生成して返す。クライアントはこの URL へ遷移する。
  * errorCallbackURL を指定すると、OAuth 失敗時に Better Auth の素のエラーページではなく
  * そのパスへ ?error=... 付きで戻される。

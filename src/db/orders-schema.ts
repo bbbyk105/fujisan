@@ -65,6 +65,10 @@ export const order = sqliteTable(
     /** 返金完了日時。 */
     refundedAt: integer("refunded_at", { mode: "timestamp_ms" }),
 
+    /** お客様からのキャンセル依頼（発送前のみ受け付ける）。返金の実行は owner が行う。 */
+    cancelRequestedAt: integer("cancel_requested_at", { mode: "timestamp_ms" }),
+    cancelReason: text("cancel_reason"),
+
     /** 追跡情報（発送後に蔵側で記入） */
     trackingCarrier: text("tracking_carrier"),
     trackingNumber: text("tracking_number"),

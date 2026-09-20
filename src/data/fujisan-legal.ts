@@ -62,6 +62,15 @@ export const LIQUOR_LICENCE: {
   number: null,
 };
 
+/**
+ * 適格請求書発行事業者の登録番号（インボイス制度。"T" + 13桁）。
+ *
+ * 未登録なら `null`。領収書には登録番号の行を出さない（無い番号を書けないし、
+ * 未登録なのに欄だけあると登録済みに見える）。登録したらここを埋めるだけで
+ * 領収書に反映される。
+ */
+export const INVOICE_REGISTRATION_NUMBER: string | null = null;
+
 /** 免許番号を掲示できる状態か（税務署名と番号が両方そろっているか）。 */
 export function isLiquorLicenceDisclosed(): boolean {
   return Boolean(LIQUOR_LICENCE.taxOffice?.trim() && LIQUOR_LICENCE.number?.trim());

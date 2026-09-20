@@ -41,6 +41,9 @@ type AdminOrderListItem = {
   shippedAt: Date | null;
   deliveredAt: Date | null;
   refundedAt: Date | null;
+  /** お客様からのキャンセル依頼（発送前のみ）。未依頼なら null。 */
+  cancelRequestedAt: Date | null;
+  cancelReason: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -120,6 +123,8 @@ export async function adminListOrdersAction(): Promise<
       shippedAt: row.shippedAt ?? null,
       deliveredAt: row.deliveredAt ?? null,
       refundedAt: row.refundedAt ?? null,
+      cancelRequestedAt: row.cancelRequestedAt ?? null,
+      cancelReason: row.cancelReason,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     }));

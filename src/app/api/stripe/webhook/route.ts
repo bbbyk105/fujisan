@@ -1,11 +1,12 @@
 import type Stripe from "stripe";
-import { and, eq } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getStripe, verifyStripeSignature } from "@/lib/stripe";
 import { getDb } from "@/db";
 import { order as orderTable, type OrderLine } from "@/db/orders-schema";
 import {
   sendOrderConfirmedEmail,
+  sendOrderRefundedEmail,
   type OrderEmailData,
 } from "@/lib/emails/order-emails";
 import { alertOps } from "@/lib/ops-alert";
@@ -53,36 +54,199 @@ export async function POST(request: Request): Promise<Response> {
     });
   }
 
-  // 同期決済（カード等）＝completed、非同期決済（コンビニ等）の後追い成功＝async_payment_succeeded
-  if (
-    event.type === "checkout.session.completed" ||
-    event.type === "checkout.session.async_payment_succeeded"
-  ) {
-    const session = event.data.object as Stripe.Checkout.Session;
-    try {
-      await fulfillOrder(stripe, session);
-    } catch (err) {
-      // 確定（DB 更新）で落ちた場合のみ 500 を返す → Stripe が再送（冪等なので二重確定なし）。
-      const msg = err instanceof Error ? err.message : "unknown";
-      // 入金済みなのに注文確定できていない＝人が気づくべき事象。管理者へアラート。
-      // アラート自体の失敗で Webhook を落とさないよう内部で握りつぶす（alertOps はベストエフォート）。
+  switch (event.type) {
+    // 同期決済（カード等）＝completed、非同期決済（コンビニ等）の後追い成功＝async_payment_succeeded
+    case "checkout.session.completed":
+    case "checkout.session.async_payment_succeeded": {
+      const session = event.data.object as Stripe.Checkout.Session;
+      try {
+        await fulfillOrder(stripe, session);
+      } catch (err) {
+        // 確定（DB 更新）で落ちた場合のみ 500 を返す → Stripe が再送（冪等なので二重確定なし）。
+        const msg = err instanceof Error ? err.message : "unknown";
+        // 入金済みなのに注文確定できていない＝人が気づくべき事象。管理者へアラート。
+        // アラート自体の失敗で Webhook を落とさないよう内部で握りつぶす（alertOps はベストエフォート）。
+        await alertOps(
+          "Stripe Webhook で注文確定に失敗",
+          [
+            `event: ${event.type}`,
+            `session: ${session.id}`,
+            `orderId: ${session.metadata?.orderId ?? "(なし)"}`,
+            `orderRef: ${session.metadata?.orderRef ?? "(なし)"}`,
+            `error: ${msg}`,
+            "",
+            "入金は成立している可能性があります。Stripe Dashboard と D1 の orders を確認してください（Stripe は自動再送します）。",
+          ].join("\n"),
+        );
+        return new Response(`fulfillment error: ${msg}`, { status: 500 });
+      }
+      break;
+    }
+
+    // 決済されないまま Session が期限切れ／後払いが失敗した。
+    // pending のまま残しても誰にも見えず溜まり続けるだけなので掃除する。
+    case "checkout.session.expired":
+    case "checkout.session.async_payment_failed": {
+      const session = event.data.object as Stripe.Checkout.Session;
+      try {
+        await discardPendingOrder(session);
+      } catch (err) {
+        // 掃除に失敗しても入金には影響しない。再送を促すほどではないのでログのみ。
+        console.error("[stripe:webhook] pending 注文の掃除に失敗:", err);
+      }
+      break;
+    }
+
+    // Stripe ダッシュボードから返金された場合、こちらの DB は何も知らない。
+    // 管理画面の返金ボタン以外の経路で返金されても状態が揃うように同期する。
+    case "charge.refunded": {
+      const charge = event.data.object as Stripe.Charge;
+      try {
+        await syncRefundFromStripe(charge);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "unknown";
+        // 返金済みなのに DB が confirmed のままだと二重返金の危険がある。再送させる。
+        await alertOps(
+          "Stripe Webhook で返金の同期に失敗",
+          [
+            `charge: ${charge.id}`,
+            `paymentIntent: ${paymentIntentIdOf(charge.payment_intent)}`,
+            `error: ${msg}`,
+            "",
+            "Stripe 側では返金が成立している可能性があります。D1 の orders と突き合わせてください。",
+          ].join("\n"),
+        );
+        return new Response(`refund sync error: ${msg}`, { status: 500 });
+      }
+      break;
+    }
+
+    // チャージバック。期限内に証拠を提出しないと自動的に売上が引かれる。
+    // 自動でできることは無いので、確実に人へ知らせることに徹する。
+    case "charge.dispute.created": {
+      const dispute = event.data.object as Stripe.Dispute;
       await alertOps(
-        "Stripe Webhook で注文確定に失敗",
+        "チャージバックが申し立てられました",
         [
-          `event: ${event.type}`,
-          `session: ${session.id}`,
-          `orderId: ${session.metadata?.orderId ?? "(なし)"}`,
-          `orderRef: ${session.metadata?.orderRef ?? "(なし)"}`,
-          `error: ${msg}`,
+          `dispute: ${dispute.id}`,
+          `charge: ${typeof dispute.charge === "string" ? dispute.charge : dispute.charge?.id}`,
+          `金額: ¥${dispute.amount.toLocaleString("ja-JP")}`,
+          `理由: ${dispute.reason}`,
+          `ステータス: ${dispute.status}`,
+          dispute.evidence_details?.due_by
+            ? `証拠提出期限: ${new Date(dispute.evidence_details.due_by * 1000).toLocaleString("ja-JP")}`
+            : "証拠提出期限: 不明",
           "",
-          "入金は成立している可能性があります。Stripe Dashboard と D1 の orders を確認してください（Stripe は自動再送します）。",
+          "Stripe Dashboard から期限内に対応してください。放置すると売上が引き落とされます。",
         ].join("\n"),
       );
-      return new Response(`fulfillment error: ${msg}`, { status: 500 });
+      break;
     }
+
+    default:
+      // 購読していないイベントは受領のみ（Stripe 側の設定変更で増えても落とさない）。
+      break;
   }
 
   return Response.json({ received: true });
+}
+
+/** Stripe の payment_intent フィールド（文字列 or オブジェクト）から id を取り出す。 */
+function paymentIntentIdOf(
+  pi: string | Stripe.PaymentIntent | null | undefined,
+): string | null {
+  if (!pi) return null;
+  return typeof pi === "string" ? pi : pi.id;
+}
+
+/**
+ * 未払いのまま終わった Session に対応する pending 注文を削除する。
+ *
+ * 冪等: `status='pending'` 付きの DELETE なので、確定済みの注文は決して消えない
+ * （期限切れイベントが確定イベントより後に届いても安全）。
+ */
+async function discardPendingOrder(
+  session: Stripe.Checkout.Session,
+): Promise<void> {
+  const orderId = session.metadata?.orderId;
+  if (!orderId) return; // 当方が発行したセッションでなければ無視
+
+  const db = await getDb();
+  await db
+    .delete(orderTable)
+    .where(and(eq(orderTable.id, orderId), eq(orderTable.status, "pending")));
+}
+
+/**
+ * Stripe 側で成立した返金を注文に反映する。
+ *
+ * - 対象は PaymentIntent で引き当てる（管理画面経由なら保存済み）。
+ * - **全額返金のときだけ** status を refunded にする。部分返金はこのスキーマで
+ *   表現できないため、勝手に「全額返金済み」にせず人へ知らせる。
+ * - 冪等: `status != 'refunded'` 付きの UPDATE。管理画面の返金ボタンから来た
+ *   場合は既に refunded なので更新行ゼロとなり、返金メールも重複しない。
+ */
+async function syncRefundFromStripe(charge: Stripe.Charge): Promise<void> {
+  const paymentIntentId = paymentIntentIdOf(charge.payment_intent);
+  if (!paymentIntentId) return;
+
+  const db = await getDb();
+  const [row] = await db
+    .select()
+    .from(orderTable)
+    .where(eq(orderTable.stripePaymentIntentId, paymentIntentId))
+    .limit(1);
+  if (!row) return; // 当方の注文に紐づかない charge は無視
+
+  // 部分返金: 金額の一部だけ戻っている状態。スキーマに持てないので人に委ねる。
+  if (!charge.refunded || charge.amount_refunded < charge.amount) {
+    await alertOps(
+      "部分返金が行われました（手動対応が必要）",
+      [
+        `注文番号: ${row.orderRef}`,
+        `charge: ${charge.id}`,
+        `返金額: ¥${charge.amount_refunded.toLocaleString("ja-JP")} / ¥${charge.amount.toLocaleString("ja-JP")}`,
+        "",
+        "部分返金は注文ステータスに反映されません（全額返金のみ対応）。必要なら手動で調整してください。",
+      ].join("\n"),
+    );
+    return;
+  }
+
+  const refundId = charge.refunds?.data?.[0]?.id ?? null;
+  const updated = await db
+    .update(orderTable)
+    .set({
+      status: "refunded",
+      refundedAt: new Date(),
+      // 既に控えがある場合は上書きしない（管理画面経由の返金 id を残す）。
+      ...(refundId && !row.stripeRefundId ? { stripeRefundId: refundId } : {}),
+    })
+    .where(
+      and(eq(orderTable.id, row.id), ne(orderTable.status, "refunded")),
+    )
+    .returning({ id: orderTable.id });
+
+  if (updated.length === 0) return; // 既に反映済み（管理画面から返金した等）
+
+  // 返金メールはベストエフォート。返金自体は Stripe 側で成立している。
+  try {
+    await sendOrderRefundedEmail({
+      orderRef: row.orderRef,
+      customerName: row.customerName,
+      customerEmail: row.customerEmail,
+      items: safeParseItems(row.itemsJson),
+      itemsCount: row.itemsCount,
+      subtotal: row.subtotal,
+      shipping: row.shipping,
+      total: row.total,
+      postalCode: row.postalCode,
+      address: row.address,
+      refundAmount: charge.amount_refunded,
+    });
+  } catch (err) {
+    console.error("[stripe:webhook] 返金メール送信に失敗:", err);
+  }
 }
 
 /**

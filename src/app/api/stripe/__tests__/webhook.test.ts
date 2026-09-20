@@ -27,7 +27,10 @@ jest.mock("@/lib/stripe", () => ({
 let orderRow: Record<string, unknown> | undefined;
 let updateReturns: Array<{ id: string }> = [];
 let updateShouldThrow = false;
+let deleteShouldThrow = false;
 const updateCalls: Array<Record<string, unknown>> = [];
+/** delete().where() が呼ばれた回数（pending 掃除の検証用）。 */
+let deleteCount = 0;
 
 jest.mock("@/db", () => ({
   getDb: async () => ({
@@ -49,13 +52,22 @@ jest.mock("@/db", () => ({
         };
       },
     }),
+    delete: () => ({
+      where: async () => {
+        if (deleteShouldThrow) throw new Error("d1 unavailable");
+        deleteCount += 1;
+      },
+    }),
   }),
 }));
 
 const sendOrderConfirmedEmail = jest.fn();
+const sendOrderRefundedEmail = jest.fn();
 jest.mock("@/lib/emails/order-emails", () => ({
   sendOrderConfirmedEmail: (...args: unknown[]) =>
     sendOrderConfirmedEmail(...args),
+  sendOrderRefundedEmail: (...args: unknown[]) =>
+    sendOrderRefundedEmail(...args),
 }));
 
 const alertOps = jest.fn();
@@ -148,6 +160,8 @@ beforeEach(() => {
   updateCalls.length = 0;
   updateReturns = [{ id: ORDER_ID }];
   updateShouldThrow = false;
+  deleteShouldThrow = false;
+  deleteCount = 0;
   orderRow = baseOrderRow();
   env.STRIPE_SECRET_KEY = "sk_test_123";
   env.STRIPE_WEBHOOK_SECRET = "whsec_test";
@@ -324,6 +338,157 @@ describe("Stripe Webhook — お届け先の書き戻し", () => {
     givenEvent("checkout.session.completed");
     await postWebhook();
     expect(updateCalls[0].stripePaymentIntentId).toBe("pi_object_1");
+  });
+});
+
+describe("Stripe Webhook — 未払いのまま終わった注文の掃除", () => {
+  it("Session が期限切れになったら pending 注文を削除する", async () => {
+    givenEvent("checkout.session.expired", { id: "cs_test_1" });
+    const res = await postWebhook();
+    expect(res.status).toBe(200);
+    expect(deleteCount).toBe(1);
+  });
+
+  it("後払いが失敗したときも pending 注文を削除する", async () => {
+    givenEvent("checkout.session.async_payment_failed", { id: "cs_test_1" });
+    const res = await postWebhook();
+    expect(res.status).toBe(200);
+    expect(deleteCount).toBe(1);
+  });
+
+  it("当方が発行していないセッションの期限切れでは何もしない", async () => {
+    verifyStripeSignature.mockResolvedValue({
+      type: "checkout.session.expired",
+      data: { object: { id: "cs_other" } },
+    });
+    await postWebhook();
+    expect(deleteCount).toBe(0);
+  });
+
+  it("掃除に失敗しても 200 を返す（入金には影響しないので再送させない）", async () => {
+    const errSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    deleteShouldThrow = true;
+    givenEvent("checkout.session.expired", { id: "cs_test_1" });
+
+    const res = await postWebhook();
+    errSpy.mockRestore();
+
+    expect(res.status).toBe(200);
+  });
+});
+
+describe("Stripe Webhook — Stripe 側で行われた返金の同期", () => {
+  /** charge.refunded イベントを組み立てる。 */
+  function givenCharge(overrides: Record<string, unknown> = {}) {
+    verifyStripeSignature.mockResolvedValue({
+      type: "charge.refunded",
+      data: {
+        object: {
+          id: "ch_test_1",
+          payment_intent: "pi_test_1",
+          amount: 3850,
+          amount_refunded: 3850,
+          refunded: true,
+          refunds: { data: [{ id: "re_test_1" }] },
+          ...overrides,
+        },
+      },
+    });
+  }
+
+  beforeEach(() => {
+    orderRow = baseOrderRow({ status: "confirmed", stripePaymentIntentId: "pi_test_1" });
+  });
+
+  it("ダッシュボードからの全額返金を refunded として反映し、返金メールを送る", async () => {
+    givenCharge();
+    const res = await postWebhook();
+
+    expect(res.status).toBe(200);
+    expect(updateCalls[0]).toMatchObject({
+      status: "refunded",
+      stripeRefundId: "re_test_1",
+    });
+    expect(updateCalls[0].refundedAt).toBeInstanceOf(Date);
+    expect(sendOrderRefundedEmail).toHaveBeenCalledTimes(1);
+  });
+
+  it("管理画面から返金済みの注文には二重反映しない（更新行ゼロ）", async () => {
+    updateReturns = [];
+    givenCharge();
+    const res = await postWebhook();
+
+    expect(res.status).toBe(200);
+    expect(sendOrderRefundedEmail).not.toHaveBeenCalled();
+  });
+
+  it("既に返金 id を控えている場合は上書きしない", async () => {
+    orderRow = baseOrderRow({
+      status: "confirmed",
+      stripePaymentIntentId: "pi_test_1",
+      stripeRefundId: "re_existing",
+    });
+    givenCharge();
+    await postWebhook();
+
+    expect(updateCalls[0]).toMatchObject({ status: "refunded" });
+    expect(updateCalls[0].stripeRefundId).toBeUndefined();
+  });
+
+  it("部分返金は「全額返金済み」にせず、人に知らせる", async () => {
+    givenCharge({ amount_refunded: 1000, refunded: false });
+    const res = await postWebhook();
+
+    expect(res.status).toBe(200);
+    // ステータスは動かさない（スキーマが部分返金を表現できないため）
+    expect(updateCalls).toHaveLength(0);
+    expect(sendOrderRefundedEmail).not.toHaveBeenCalled();
+    expect(alertOps).toHaveBeenCalledTimes(1);
+    expect(String(alertOps.mock.calls[0][0])).toContain("部分返金");
+  });
+
+  it("当方の注文に紐づかない charge は無視する", async () => {
+    orderRow = undefined;
+    givenCharge();
+    const res = await postWebhook();
+    expect(res.status).toBe(200);
+    expect(updateCalls).toHaveLength(0);
+  });
+
+  it("同期に失敗したら 500 を返してアラートする（二重返金を防ぐため再送させる）", async () => {
+    updateShouldThrow = true;
+    givenCharge();
+    const res = await postWebhook();
+
+    expect(res.status).toBe(500);
+    expect(alertOps).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("Stripe Webhook — チャージバック", () => {
+  it("dispute.created は期限つきでアラートする", async () => {
+    verifyStripeSignature.mockResolvedValue({
+      type: "charge.dispute.created",
+      data: {
+        object: {
+          id: "dp_test_1",
+          charge: "ch_test_1",
+          amount: 3850,
+          reason: "fraudulent",
+          status: "needs_response",
+          evidence_details: { due_by: 1800000000 },
+        },
+      },
+    });
+
+    const res = await postWebhook();
+
+    expect(res.status).toBe(200);
+    expect(alertOps).toHaveBeenCalledTimes(1);
+    const [subject, body] = alertOps.mock.calls[0] as [string, string];
+    expect(subject).toContain("チャージバック");
+    expect(body).toContain("fraudulent");
+    expect(body).toContain("証拠提出期限");
   });
 });
 

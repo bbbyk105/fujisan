@@ -9,6 +9,8 @@ import { DeleteAccountButton } from "@/components/fujisan/auth/DeleteAccountButt
 import { AccountSidebar } from "@/components/fujisan/auth/AccountSidebar";
 import { ProfileEditForm } from "@/components/fujisan/auth/ProfileEditForm";
 import { OrderTimeline } from "@/components/fujisan/auth/OrderTimeline";
+import { OrderStatusPill } from "@/components/fujisan/auth/OrderStatusPill";
+import { ChangePasswordForm } from "@/components/fujisan/auth/ChangePasswordForm";
 import { getSession } from "@/lib/session";
 import { getDb } from "@/db";
 import { user as userTable } from "@/db/auth-schema";
@@ -50,8 +52,12 @@ export default async function AccountPage() {
 
   // 自分の注文一覧（DBから）
   const orders = await listMyOrdersAction(10);
+  // 「進行中」は発送を待っている注文のこと。完了・取消・返金は含めない。
   const activeOrdersCount = orders.filter(
-    (o) => o.status !== "delivered" && o.status !== "cancelled",
+    (o) =>
+      o.status !== "delivered" &&
+      o.status !== "cancelled" &&
+      o.status !== "refunded",
   ).length;
 
   // 管理者なら admin 動線を表示。owner と staff で文言を出し分ける。
@@ -324,16 +330,19 @@ export default async function AccountPage() {
                           <span className="text-[10px] font-semibold tracking-[0.32em] text-[#0B1A2E]/55">
                             <L en="ORDER" ja="注文番号" />
                           </span>
-                          <span className="font-serif text-[16px] font-semibold tracking-[0.04em] text-[#0B1A2E]">
+                          <Link
+                            href={`/account/orders/${o.orderRef}`}
+                            className="font-serif text-[16px] font-semibold tracking-[0.04em] text-[#0B1A2E] underline decoration-[#0B1A2E]/25 underline-offset-4 transition-colors hover:text-[#C9A84C]"
+                          >
                             {o.orderRef}
-                          </span>
+                          </Link>
                           <span className="text-[11.5px] tracking-[0.04em] text-[#1D2432]/70">
                             {formatOrderDate(o.createdAt)} · {o.itemsCount}{" "}
                             <L en="bottle(s)" ja="本" /> · ¥
                             {yen.format(o.total)}
                           </span>
                         </div>
-                        <StatusPill status={o.status} />
+                        <OrderStatusPill status={o.status} />
                       </div>
 
                       {/* timeline */}
@@ -395,6 +404,21 @@ export default async function AccountPage() {
                           )}
                         </div>
                       </div>
+
+                      <div className="mt-6 flex items-center justify-end border-t border-[#0B1A2E]/10 pt-5">
+                        <Link
+                          href={`/account/orders/${o.orderRef}`}
+                          className="group/detail inline-flex items-center gap-2 text-[10.5px] font-semibold tracking-[0.28em] text-[#0B1A2E] no-underline transition-colors hover:text-[#C9A84C]"
+                        >
+                          <L en="ORDER DETAIL & RECEIPT" ja="詳細・領収書" />
+                          <span
+                            aria-hidden
+                            className="transition-transform duration-500 group-hover/detail:translate-x-1"
+                          >
+                            →
+                          </span>
+                        </Link>
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -411,6 +435,10 @@ export default async function AccountPage() {
 
             {/* ===== SECURITY ===== */}
             <Section id="security" labelEn="SECURITY" labelJa="セキュリティ">
+              <div className="mb-6">
+                <ChangePasswordForm />
+              </div>
+
               <div className="border border-[#0B1A2E]/12 bg-paper/65 px-7 py-8 md:px-10 md:py-10">
                 <h3 className="font-serif text-[16px] font-semibold tracking-[0.04em] text-[#0B1A2E]">
                   <L en="Sign out" ja="ログアウト" />
@@ -501,58 +529,6 @@ function Section({
   );
 }
 
-function StatusPill({ status }: { status: string }) {
-  const STYLES: Record<
-    string,
-    { cls: string; en: string; ja: string; dot: string }
-  > = {
-    pending: {
-      cls: "border-[#0B1A2E]/30 bg-paper text-[#0B1A2E]",
-      en: "Received",
-      ja: "受付済",
-      dot: "bg-[#0B1A2E]/55",
-    },
-    confirmed: {
-      cls: "border-[#C9A84C]/60 bg-[#F1E6CB]/55 text-[#0B1A2E]",
-      en: "Confirmed",
-      ja: "注文確定",
-      dot: "bg-[#C9A84C]",
-    },
-    preparing: {
-      cls: "border-[#C9A84C]/60 bg-[#F1E6CB]/65 text-[#0B1A2E]",
-      en: "Preparing",
-      ja: "発送準備中",
-      dot: "bg-[#C9A84C]",
-    },
-    shipped: {
-      cls: "border-[#5C8A5C]/60 bg-[#5C8A5C]/[0.10] text-[#2F5A2F]",
-      en: "Shipped",
-      ja: "発送済み",
-      dot: "bg-[#5C8A5C]",
-    },
-    delivered: {
-      cls: "border-[#5C8A5C]/70 bg-[#5C8A5C]/[0.16] text-[#2F5A2F]",
-      en: "Delivered",
-      ja: "お届け済",
-      dot: "bg-[#5C8A5C]",
-    },
-    cancelled: {
-      cls: "border-[#8B1A1A]/45 bg-[#8B1A1A]/[0.08] text-[#8B1A1A]",
-      en: "Cancelled",
-      ja: "キャンセル",
-      dot: "bg-[#8B1A1A]",
-    },
-  };
-  const s = STYLES[status] ?? STYLES.pending;
-  return (
-    <span
-      className={`inline-flex items-center gap-2 border px-3 py-1.5 text-[10px] font-semibold tracking-[0.26em] ${s.cls}`}
-    >
-      <span aria-hidden className={`h-[6px] w-[6px] rounded-full ${s.dot}`} />
-      <L en={s.en} ja={s.ja} />
-    </span>
-  );
-}
 
 function formatOrderDate(d: Date): string {
   return new Intl.DateTimeFormat("ja-JP", {

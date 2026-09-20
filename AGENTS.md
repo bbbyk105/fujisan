@@ -34,11 +34,35 @@ BtoC（個人）と BtoB（法人取扱店・卸価格表示）の二系統の�
    - **メール失敗は 500 にしない**（ログのみ）。500 を返すのは DB 確定失敗時だけ（Stripe が再送）。
 3. `/checkout/success` は `force-dynamic`。session_id で Stripe を参照し、`payment_status !== "paid"` なら「お支払い手続き中」を表示。マウント時にカートを空にする。
 
+### 購読すべき Webhook イベント
+
+Stripe ダッシュボードで以下を有効にする。どれか欠けると状態が揃わない。
+
+| イベント | 役割 |
+| --- | --- |
+| `checkout.session.completed` | カード決済の確定（注文確定・メール送信） |
+| `checkout.session.async_payment_succeeded` | コンビニ等の後追い入金の確定 |
+| `checkout.session.expired` | 未払いのまま期限切れ → pending 注文を掃除 |
+| `checkout.session.async_payment_failed` | 後払い失敗 → pending 注文を掃除 |
+| `charge.refunded` | **ダッシュボードから返金したとき** DB へ同期（全額のみ。部分返金は ops 通知） |
+| `charge.dispute.created` | チャージバックを ops 通知（自動対応は不可、人が期限内に対応する） |
+
+500 を返して Stripe に再送させるのは「注文確定の DB 失敗」と「返金同期の DB 失敗」だけ。
+pending の掃除失敗はログのみ（入金に影響しないため）。
+
 ### Workers 上の Stripe（`src/lib/stripe.ts`）
 - Node の `http` が無いため `Stripe.createFetchHttpClient()` を必ず使う。
 - Webhook 署名検証は `constructEventAsync` + `createSubtleCryptoProvider()`（Web Crypto）。同期版 `constructEvent` は動かない。
 - Webhook では **生ボディ（`request.text()`）のまま検証**。先に JSON パースすると署名不一致になる。
 - JPY の `unit_amount` は円の整数をそのまま渡す（×100 しない）。
+
+## 注文の顧客向け機能
+
+- `/account/orders/[orderRef]` が注文詳細、`/account/orders/[orderRef]/receipt` が領収書。
+- **注文の取得は必ず userId でも絞る**（`getMyOrderByRefAction`）。orderRef は推測しにくいだけで秘密ではないので、番号だけで引くと他人の注文が見える。
+- 領収書は PDF を生成せず、印刷（ブラウザの「PDF として保存」）に最適化したページとして出す。電子発行のため収入印紙は不要。適格請求書の登録番号は `INVOICE_REGISTRATION_NUMBER` が null のあいだ行ごと出さない。
+- **キャンセルは「依頼」であって実行ではない**。`requestOrderCancellationAction` は発送前（confirmed / preparing）に `cancel_requested_at` を刻んで ops へ通知するだけ。返金の実行は従来どおり owner だけが `adminRefundOrderAction` から行う（お客様の操作でお金が動く経路は作らない）。
+- 注文ステータスの表示は `OrderStatusPill`（`Record<OrderStatus, …>` なので新ステータス追加時に型で漏れが出る）と `OrderTimeline`（cancelled / refunded は進行段階ではないので専用表示）。
 
 ## お問い合わせ
 
@@ -59,7 +83,7 @@ BtoC（個人）と BtoB（法人取扱店・卸価格表示）の二系統の�
 - **年齢確認は二重**:
   1. `AgeGate.tsx`（layout.tsx で全ページに配置）— 20歳確認モーダル。localStorage `fujisan-age-confirmed`、「いいえ」で東京都の未成年飲酒防止ページへ強制遷移。SSR は「確認済み」を返してハイドレーション不整合を回避。
   2. 決済開始前のチェックボックス（`CartView` + `checkoutSchema.ageConfirmed`、Zod で true 必須）。
-- **法令情報の唯一の出どころ**: `src/data/fujisan-legal.ts`。未成年飲酒防止表示（`UNDERAGE_NOTICE_JP/EN`、フッター・商品ページ・特商法ページで参照）、送料 `SHIPPING_FEE`（一律1,100円 / 15,000円以上無料 — カート計算・全ページ表記がこの定数を参照）、特商法・通販酒類小売業免許・酒類販売管理者標識。**`[要確認]` ラベルの免許番号が未確定**なので本番公開前に差し替えること。
+- **法令情報の唯一の出どころ**: `src/data/fujisan-legal.ts`。未成年飲酒防止表示（`UNDERAGE_NOTICE_JP/EN`、フッター・商品ページ・特商法ページで参照）、送料 `SHIPPING_FEE`（一律1,100円 / 15,000円以上無料 — カート計算・全ページ表記がこの定数を参照）、特商法・通販酒類小売業免許・酒類販売管理者標識。**未確定の値はダミー文字列で埋めず `null` にする**（`LIQUOR_LICENCE` / `INVOICE_REGISTRATION_NUMBER`）。それらしい伏せ字は本物に見えたまま公開されうる。`npm run deploy` は predeploy で `scripts/check-legal-disclosure.mjs` を実行し、未確定が残っていればデプロイを止める（dev / build / CI は止めない）。
 - 発送は日本国内のみ（Stripe の `allowed_countries: ["JP"]` と checkout の郵便番号7桁バリデーションで担保）。
 
 ## i18n（ja/en）
@@ -95,8 +119,10 @@ BtoC（個人）と BtoB（法人取扱店・卸価格表示）の二系統の�
 ```bash
 npm run dev        # localhost:3000（--webpack、.dev.vars 読込）
 npm run lint       # eslint
-npm run build      # next build（デプロイ前に必須）
-npm test           # jest（cart-core / validation / i18n / auth コンポーネント）
+npm run typecheck  # cf-typegen + tsc --noEmit
+npm run build      # next build（prebuild で cloudflare-env.d.ts を自動生成）
+npm test           # jest
+npm run check:legal # 法令表示の埋め忘れ検査（predeploy で自動実行）
 npm run preview    # opennextjs-cloudflare build && preview（Workers 実環境相当）
 npm run deploy     # opennextjs-cloudflare build && deploy（人間の承認後）
 npm run cf-typegen # cloudflare-env.d.ts 再生成（バインディング変更時）
