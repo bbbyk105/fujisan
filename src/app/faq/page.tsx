@@ -134,8 +134,8 @@ const sections: InfoSection[] = [
     body: [
       <L
         key="b"
-        en="Email mtfujipharmacy@gmail.com. Our small team is in Shizuoka and replies in Japanese or English, usually within one business day."
-        ja="mtfujipharmacy@gmail.com までメールをお送りください。静岡の小さなチームが、通常1営業日以内に日本語または英語でご返信します。"
+        en="Email mtfujipharmacy@gmail.com. Our small team is in Shizuoka and replies in Japanese or English, usually within two business days."
+        ja="mtfujipharmacy@gmail.com までメールをお送りください。静岡の小さなチームが、通常2営業日以内に日本語または英語でご返信します。"
       />,
     ],
   },

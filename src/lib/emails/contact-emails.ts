@@ -115,7 +115,7 @@ export async function sendContactAcknowledgement(
     `${data.name} 様`,
     "",
     "お問い合わせをいただきありがとうございます。",
-    "内容を確認のうえ、通常 1 営業日以内に担当よりご返信いたします。",
+    "内容を確認のうえ、通常 2 営業日以内に担当よりご返信いたします。",
     "",
     "── いただいた内容 ──",
     data.message,
@@ -128,7 +128,7 @@ export async function sendContactAcknowledgement(
     `Dear ${data.name},`,
     "",
     "Thank you for contacting us. We read every enquiry by hand and will reply",
-    "within one business day, in Japanese or English.",
+    "within two business days, in Japanese or English.",
     "",
     "This is an automated acknowledgement — no reply is needed.",
     "",
@@ -143,12 +143,12 @@ export async function sendContactAcknowledgement(
     <p style="font-size:15px;line-height:1.9;">${escapeHtml(data.name)} 様</p>
     <p style="font-size:14px;line-height:1.9;">
       お問い合わせをいただきありがとうございます。<br />
-      内容を確認のうえ、通常 1 営業日以内に担当よりご返信いたします。
+      内容を確認のうえ、通常 2 営業日以内に担当よりご返信いたします。
     </p>
     <div style="margin:20px 0;padding:16px;background:#F7F1E3;border-left:2px solid #C9A84C;font-size:14px;line-height:1.8;white-space:pre-wrap;">${escapeHtml(data.message)}</div>
     <p style="font-size:13px;line-height:1.9;color:#0B1A2E99;">
       Thank you for contacting us. We read every enquiry by hand and will reply
-      within one business day, in Japanese or English.<br />
+      within two business days, in Japanese or English.<br />
       This is an automated acknowledgement — no reply is needed.
     </p>
     <hr style="border:none;border-top:1px solid #eee2c8;margin:24px 0;" />

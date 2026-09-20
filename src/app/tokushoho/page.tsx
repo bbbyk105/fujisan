@@ -5,6 +5,7 @@ import {
   FUJISAN_LEGAL,
   UNDERAGE_NOTICE_JP,
   UNDERAGE_NOTICE_EN,
+  liquorLicenceLine,
 } from "@/data/fujisan-legal";
 import { L } from "@/i18n/Localized";
 import { buildMetadata } from "@/lib/seo";
@@ -163,8 +164,8 @@ const sections: InfoSection[] = [
     body: [
       <L
         key="l"
-        en="Mail-order liquor retail licence (issued by the [TBD] Tax Office, Liquor Directive No. [TBD])"
-        ja={FUJISAN_LEGAL.liquorLicense}
+        en={liquorLicenceLine("en")}
+        ja={liquorLicenceLine("ja")}
       />,
     ],
   },

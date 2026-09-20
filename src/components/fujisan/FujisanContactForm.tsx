@@ -120,8 +120,8 @@ export function FujisanContactForm() {
         </h3>
         <p className="mx-auto mt-5 max-w-[460px] text-[14px] font-light leading-[1.85] text-[#1D2432]/82">
           <L
-            en="Your message has reached our small team in Shizuoka. We read every enquiry by hand and will reply, in Japanese or English, usually within one business day."
-            ja="メッセージは静岡のチームに届きました。いただいたお問い合わせはひとつずつ拝読し、通常1営業日以内に日本語または英語でご返信します。"
+            en="Your message has reached our small team in Shizuoka. We read every enquiry by hand and will reply, in Japanese or English, usually within two business days."
+            ja="メッセージは静岡のチームに届きました。いただいたお問い合わせはひとつずつ拝読し、通常2営業日以内に日本語または英語でご返信します。"
           />
         </p>
         <button

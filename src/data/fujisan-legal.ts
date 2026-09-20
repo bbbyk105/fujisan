@@ -1,6 +1,10 @@
 /**
- * 酒類通信販売の法令対応情報。
- * 値は実在の事業者情報に置き換えてから本番運用してください（[要確認] のラベル参照）。
+ * 酒類通信販売の法令対応情報。全ページ・特商法表示はここを唯一の出どころにする。
+ *
+ * 未確定の値はダミー文字列で埋めず、`null` として型で表すこと。
+ * それらしい伏せ字（〇〇 など）を置くと、本物のように見えたまま公開されうる。
+ * `npm run deploy` は predeploy で `scripts/check-legal-disclosure.mjs` を実行し、
+ * 未確定の項目が残っていればデプロイを止める。
  */
 
 export const UNDERAGE_NOTICE_JP = [
@@ -37,7 +41,47 @@ export const SHIPPING_FEE = {
   freeEn: "Free shipping on orders of ¥15,000 (tax incl.) or more",
 } as const;
 
-/** ご注意: [要確認] が残っている項目は本番公開前に必ず差し替えてください */
+/**
+ * 通信販売酒類小売業免許。
+ *
+ * **番号が未着のため未確定**。ダミーの番号を置くと本物に見えてしまうため、
+ * 「未確定」を `null` として型で表す。判明したら両方を埋めること
+ * （例: taxOffice に所轄税務署名、number に酒類指令の番号）。
+ *
+ * 埋まるまで `npm run deploy` は predeploy の検査
+ * （`scripts/check-legal-disclosure.mjs`）で止まる。酒類の通信販売は
+ * 免許番号の表示が必須なので、この状態で本番公開してはならない。
+ */
+export const LIQUOR_LICENCE: {
+  /** 免許を付与した税務署名。未確定なら null。 */
+  taxOffice: string | null;
+  /** 酒類指令番号。未確定なら null。 */
+  number: string | null;
+} = {
+  taxOffice: null,
+  number: null,
+};
+
+/** 免許番号を掲示できる状態か（税務署名と番号が両方そろっているか）。 */
+export function isLiquorLicenceDisclosed(): boolean {
+  return Boolean(LIQUOR_LICENCE.taxOffice?.trim() && LIQUOR_LICENCE.number?.trim());
+}
+
+/**
+ * 特商法ページに出す免許の表記。
+ * 未確定のあいだは、番号をでっち上げずに「確認中」であることをそのまま書く。
+ */
+export function liquorLicenceLine(locale: "ja" | "en"): string {
+  if (!isLiquorLicenceDisclosed()) {
+    return locale === "ja"
+      ? "通信販売酒類小売業免許（免許番号は確認中です。確認でき次第、本ページに掲示いたします）"
+      : "Mail-order liquor retail licence (licence number is being confirmed and will be published on this page once available)";
+  }
+  return locale === "ja"
+    ? `通信販売酒類小売業免許（${LIQUOR_LICENCE.taxOffice} ${LIQUOR_LICENCE.number}）`
+    : `Mail-order liquor retail licence (issued by the ${LIQUOR_LICENCE.taxOffice}, ${LIQUOR_LICENCE.number})`;
+}
+
 export const FUJISAN_LEGAL = {
   // 特商法
   sellerName: "株式会社 近藤薬局",
@@ -74,8 +118,7 @@ export const FUJISAN_LEGAL = {
   otherFees:
     "商品代金以外には送料のみを申し受けます。北海道・沖縄・離島は別途追加料金がかかる場合があり、その場合は発送前にご連絡いたします。",
   // 酒類関連免許・標識
-  liquorLicense:
-    "通信販売酒類小売業免許（〇〇税務署 酒類指令第〇〇号 [要確認]）",
+  liquorLicense: LIQUOR_LICENCE,
   // 酒類販売管理者標識（5項目）— 受講証より転記
   liquorManager: {
     storeName: "株式会社 近藤薬局",
