@@ -59,6 +59,15 @@ jest.mock("@/lib/stripe", () => ({
   getStripe: () => ({ checkout: { sessions: { create: sessionsCreate } } }),
 }));
 
+// 在庫の中身は inventory.test.ts が実 SQL で見る。ここでは
+// 「決済の流れの正しい位置で呼ばれるか」だけを確かめたいのでモックする。
+const reserveStock = jest.fn();
+const releaseStock = jest.fn();
+jest.mock("@/lib/inventory", () => ({
+  reserveStock: (...a: unknown[]) => reserveStock(...a),
+  releaseStock: (...a: unknown[]) => releaseStock(...a),
+}));
+
 import { startCheckoutAction } from "@/lib/actions/checkout";
 
 const SHOGUN = getFujisanProductBySlug("shogun")!;
@@ -85,6 +94,8 @@ beforeEach(() => {
     id: "cs_test_1",
     url: "https://checkout.stripe.com/c/pay/cs_test_1",
   });
+  reserveStock.mockResolvedValue({ ok: true });
+  releaseStock.mockResolvedValue(undefined);
 });
 
 describe("startCheckoutAction — ガード", () => {
@@ -316,8 +327,58 @@ describe("startCheckoutAction — Stripe セッション", () => {
   });
 });
 
+describe("startCheckoutAction — 在庫の引き当て", () => {
+  it("Stripe へ送り出す前に在庫を押さえる", async () => {
+    await startCheckoutAction({ items: [{ slug: "shogun", ml: 300, qty: 2 }] });
+
+    expect(reserveStock).toHaveBeenCalledTimes(1);
+    // 引き当てるのはカタログから引き直した明細
+    expect(reserveStock.mock.calls[0][0]).toEqual([
+      expect.objectContaining({ slug: "shogun", ml: 300, qty: 2 }),
+    ]);
+    // 決済ページを出す前に押さえていること（順序が逆だと売り越す）
+    expect(reserveStock.mock.invocationCallOrder[0]).toBeLessThan(
+      sessionsCreate.mock.invocationCallOrder[0],
+    );
+  });
+
+  it("在庫が足りなければ soldout を返し、Stripe を呼ばず注文も残さない", async () => {
+    reserveStock.mockResolvedValue({
+      ok: false,
+      reason: "shortage",
+      shortages: [{ slug: "shogun", ml: 300, available: 1 }],
+    });
+
+    const res = await startCheckoutAction({
+      items: [{ slug: "shogun", ml: 300, qty: 2 }],
+    });
+
+    expect(res).toEqual({
+      ok: false,
+      error: "soldout",
+      shortages: [{ slug: "shogun", ml: 300, available: 1 }],
+    });
+    expect(sessionsCreate).not.toHaveBeenCalled();
+    expect(deleted).toHaveLength(1); // 作りかけの pending 注文は消す
+  });
+
+  it("在庫側が DB エラーなら db を返す", async () => {
+    reserveStock.mockResolvedValue({ ok: false, reason: "db" });
+    const res = await startCheckoutAction({
+      items: [{ slug: "shogun", ml: 300, qty: 1 }],
+    });
+    expect(res).toEqual({ ok: false, error: "db" });
+    expect(sessionsCreate).not.toHaveBeenCalled();
+  });
+
+  it("成功したら在庫は押さえたままにする（解放しない）", async () => {
+    await startCheckoutAction({ items: [{ slug: "shogun", ml: 300, qty: 1 }] });
+    expect(releaseStock).not.toHaveBeenCalled();
+  });
+});
+
 describe("startCheckoutAction — 失敗時の後始末", () => {
-  it("Stripe が例外を投げたら pending 注文を削除して stripe を返す", async () => {
+  it("Stripe が例外を投げたら pending 注文を削除し、押さえた在庫も戻す", async () => {
     sessionsCreate.mockRejectedValue(new Error("stripe down"));
     const res = await startCheckoutAction({
       items: [{ slug: "shogun", ml: 300, qty: 1 }],
@@ -326,6 +387,8 @@ describe("startCheckoutAction — 失敗時の後始末", () => {
     // 孤立した pending 注文を残さない
     expect(inserted).toHaveLength(1);
     expect(deleted).toHaveLength(1);
+    // 売れていないのに在庫だけ減ったままにしない
+    expect(releaseStock).toHaveBeenCalledTimes(1);
   });
 
   it("Session に url が無い場合も pending 注文を削除する", async () => {
@@ -335,6 +398,7 @@ describe("startCheckoutAction — 失敗時の後始末", () => {
     });
     expect(res).toEqual({ ok: false, error: "stripe" });
     expect(deleted).toHaveLength(1);
+    expect(releaseStock).toHaveBeenCalledTimes(1);
   });
 });
 

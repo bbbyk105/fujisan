@@ -112,6 +112,18 @@ export default async function AdminOrdersPage(props: {
             </p>
             <div className="mt-5 flex flex-wrap items-center gap-3">
               <Link
+                href="/admin/inventory"
+                className="group/inv inline-flex items-center gap-3 border border-[#E2C97E]/45 px-5 py-3 text-[10.5px] font-semibold tracking-[0.3em] text-[#E2C97E] no-underline transition-colors hover:border-[#E2C97E] hover:bg-[#E2C97E]/[0.08]"
+              >
+                在庫
+                <span
+                  aria-hidden
+                  className="transition-transform duration-500 group-hover/inv:translate-x-1"
+                >
+                  →
+                </span>
+              </Link>
+              <Link
                 href="/admin/contacts"
                 className="group/enq inline-flex items-center gap-3 border border-[#E2C97E]/45 px-5 py-3 text-[10.5px] font-semibold tracking-[0.3em] text-[#E2C97E] no-underline transition-colors hover:border-[#E2C97E] hover:bg-[#E2C97E]/[0.08]"
               >

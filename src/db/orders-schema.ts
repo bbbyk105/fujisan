@@ -19,6 +19,16 @@ export const ORDER_STATUSES = [
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
 /**
+ * 品物が蔵を出たか。
+ *
+ * 返金・取消のときに在庫を戻してよいかの判断に使う。発送後は品物が手元に
+ * 戻っていないので、返金しても在庫は増やさない（返品を受け取ったら手で足す）。
+ */
+export function hasLeftTheKura(status: OrderStatus): boolean {
+  return status === "shipped" || status === "delivered";
+}
+
+/**
  * 領収書を発行してよいステータスか。
  *
  * 領収書は「代金を受け取って保持している」ことの証明なので、

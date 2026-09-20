@@ -43,7 +43,8 @@ export const LIQUOR_LICENCE = {
 npx wrangler d1 migrations apply fujisan-db --remote
 ```
 
-未適用: `0007_contact_message.sql`（お問い合わせ）、`0008_order_cancel_request.sql`（キャンセル依頼）。
+未適用: `0007_contact_message.sql`（お問い合わせ）、`0008_order_cancel_request.sql`（キャンセル依頼）、
+`0009_inventory.sql`（在庫）。
 `--local` と `--remote` は別の DB なので、ローカルで通っていても本番には反映されない。
 
 ### 4. 本番 secret を確認する
@@ -59,7 +60,13 @@ npx wrangler secret put BETTER_AUTH_URL     # Stripe の戻り先の基底にな
 
 `ADMIN_EMAILS` はソースのフォールバックを撤去したため**必須**。全項目は `.env.example` 参照。
 
-### 5. 決めれば埋まるもの
+### 5. 在庫の初期設定（任意）
+
+`/admin/inventory` で SKU ごとに本数を入れると在庫管理が始まる。入れないあいだは
+従来どおり数量無制限で売れるので、公開のブロッカーではない。
+売り越しを防ぎたい SKU から順に設定する。
+
+### 6. 決めれば埋まるもの
 
 - **SNS アカウント** — `FujisanFooter.tsx` の `SOCIAL_LINKS` に URL を入れるとアイコンが出る（空なら非表示）
 - **適格請求書（インボイス）登録番号** — `INVOICE_REGISTRATION_NUMBER`。未登録なら `null` のままでよい（領収書に行が出ない）
@@ -79,9 +86,18 @@ npx wrangler secret put BETTER_AUTH_URL     # Stripe の戻り先の基底にな
 - 銀行振込／掛売の決済分岐（現状はカードのみ）
 - **法人アカウントの承認フロー** — 今は自己申告で即 `role: "business"` が付き、酒類販売免許の確認なしに卸価格が見える。`/shop/business` の Process 03 が謳う「免許確認のうえ口座開設」が未実装
 
-### 在庫管理
+### ~~在庫管理~~（実装済み）
 
-`soldOut` が `src/data/fujisan-products.ts` の手動フラグ。同時注文で売り越す。商品追加・価格変更にデプロイが必要。D1 に在庫テーブルを持たせるのが本筋。
+D1 の `inventory` 表で SKU ごとに管理するようにした。`/admin/inventory` で本数を入れると
+その SKU の管理が始まる（オプトイン方式なので、入れるまでは従来どおり無制限）。
+
+残っているのは以下。
+
+- **商品の追加・価格変更は引き続きデプロイが必要**（カタログがコード内のため）
+- 入荷予定・ロット・賞味期限の管理は無い
+- 在庫切れ間近の通知が無い（`/admin/inventory` を見に行く必要がある）
+- 商品ページは静的書き出しのため、リアルタイムの残数を出していない（Worker の CPU 制限を避けるため）。
+  在庫切れはカート／決済開始時に判明する
 
 ### 管理ダッシュボード
 
@@ -106,7 +122,7 @@ Better Auth の `changeEmail` は使えるが、`user.changeEmail.enabled` の�
 
 当面はマイグレーション SQL を手書きで追加する。`wrangler d1 migrations apply` は journal ではなくファイル名順で適用するので動作には影響しない。
 
-直すなら、現在のスキーマから snapshot を作り直して journal を 0008 まで揃える。
+直すなら、現在のスキーマから snapshot を作り直して journal を 0009 まで揃える。
 
 ### 日付フォーマット
 

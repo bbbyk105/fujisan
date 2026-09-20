@@ -159,6 +159,12 @@ export default async function AdminCustomersPage(props: {
               ← 注文管理へ
             </Link>
             <Link
+              href="/admin/inventory"
+              className="text-[11px] font-semibold tracking-[0.3em] text-[#0B1A2E]/75 no-underline hover:text-[#0B1A2E]"
+            >
+              在庫へ
+            </Link>
+            <Link
               href="/admin/contacts"
               className="text-[11px] font-semibold tracking-[0.3em] text-[#0B1A2E]/75 no-underline hover:text-[#0B1A2E]"
             >

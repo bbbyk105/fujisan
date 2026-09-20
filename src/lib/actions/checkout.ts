@@ -9,6 +9,11 @@ import { order as orderTable, type OrderLine } from "@/db/orders-schema";
 import { user as userTable } from "@/db/auth-schema";
 import { getFujisanProductBySlug, findVolume } from "@/data/fujisan-products";
 import { MAX_QTY_PER_LINE, shippingFee } from "@/lib/cart/cart-core";
+import {
+  releaseStock,
+  reserveStock,
+  type ShortageLine,
+} from "@/lib/inventory";
 import { getStripe } from "@/lib/stripe";
 
 /** カートから送られてくる最小限の行（価格はサーバーで引き直す）。 */
@@ -57,6 +62,8 @@ export async function startCheckoutAction(input: {
   | {
       ok: false;
       error: "unauth" | "invalid" | "config" | "stripe" | "db" | "soldout";
+      /** soldout のとき、どの SKU が何本まで買えるか。UI で名指しするのに使う。 */
+      shortages?: ShortageLine[];
     }
 > {
   // 認証チェック
@@ -167,6 +174,19 @@ export async function startCheckoutAction(input: {
     return { ok: false, error: "db" };
   }
 
+  // 在庫を引き当てる（注文を保存した直後、Stripe へ送り出す前）。
+  // 決済ページに滞在している数分のあいだ押さえておかないと、同じ最後の 1 本を
+  // 複数人が同時に買えてしまう。管理対象外の SKU は素通りする。
+  const reservation = await reserveStock(items);
+  if (!reservation.ok) {
+    // 押さえられなかったので、作りかけの pending 注文を消して引き返す。
+    await deletePendingOrder(id);
+    if (reservation.reason === "shortage") {
+      return { ok: false, error: "soldout", shortages: reservation.shortages };
+    }
+    return { ok: false, error: "db" };
+  }
+
   // Stripe Checkout Session を生成
   const stripe = getStripe(e.STRIPE_SECRET_KEY);
   const lineItems = items.map((it) => ({
@@ -217,19 +237,35 @@ export async function startCheckoutAction(input: {
     });
 
     if (!checkout.url) {
-      const db = await getDb();
-      await db.delete(orderTable).where(eq(orderTable.id, id));
+      await deletePendingOrder(id);
+      await releaseReservation(items);
       return { ok: false, error: "stripe" };
     }
     return { ok: true, url: checkout.url };
   } catch {
-    // Stripe 失敗時は孤立した pending 注文を掃除する
-    try {
-      const db = await getDb();
-      await db.delete(orderTable).where(eq(orderTable.id, id));
-    } catch {
-      // 掃除に失敗しても致命的ではない（pending のまま残るだけ）
-    }
+    // Stripe 失敗時は孤立した pending 注文を掃除し、押さえた在庫も戻す
+    // （戻さないと、売れていないのに在庫だけ減ったままになる）。
+    await deletePendingOrder(id);
+    await releaseReservation(items);
     return { ok: false, error: "stripe" };
+  }
+}
+
+/** 作りかけの pending 注文を消す。失敗しても致命的ではない（pending が残るだけ）。 */
+async function deletePendingOrder(orderId: string): Promise<void> {
+  try {
+    const db = await getDb();
+    await db.delete(orderTable).where(eq(orderTable.id, orderId));
+  } catch (err) {
+    console.error("[checkout] pending 注文の掃除に失敗:", err);
+  }
+}
+
+/** 押さえた在庫を戻す。失敗してもここで決済を止めはしない（ログのみ）。 */
+async function releaseReservation(items: OrderLine[]): Promise<void> {
+  try {
+    await releaseStock(items);
+  } catch (err) {
+    console.error("[checkout] 在庫引き当ての解放に失敗:", err);
   }
 }

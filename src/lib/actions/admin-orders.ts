@@ -8,11 +8,13 @@ import { getAuth } from "@/lib/auth";
 import { getEffectiveAdminRole, isOwner, isStaffOrAbove } from "@/lib/admin";
 import { getStripe } from "@/lib/stripe";
 import { getDb } from "@/db";
+import { restockCommitted } from "@/lib/inventory";
 import {
   order as orderTable,
   ORDER_STATUSES,
   type OrderLine,
   type OrderStatus,
+  hasLeftTheKura,
 } from "@/db/orders-schema";
 import {
   sendOrderShippedEmail,
@@ -346,6 +348,16 @@ export async function adminRefundOrderAction(input: {
   revalidatePath("/account");
 
   if (updated.length === 0) return { ok: true }; // 既に返金済み。メールは重複送信しない。
+
+  // 未発送のまま返金したなら品物は蔵にあるので在庫に戻す。
+  // 発送後は手元に無いので戻さない（返品を受け取ったら /admin/inventory で足す）。
+  if (!hasLeftTheKura(current.status as OrderStatus)) {
+    try {
+      await restockCommitted(safeParseItems(current.itemsJson));
+    } catch (err) {
+      console.error("[admin:refund] 返金に伴う在庫の戻しに失敗:", err);
+    }
+  }
 
   // 返金メール（ベストエフォート。失敗しても返金自体は成立している）。
   try {

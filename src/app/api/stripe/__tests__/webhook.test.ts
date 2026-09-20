@@ -28,6 +28,8 @@ let orderRow: Record<string, unknown> | undefined;
 let updateReturns: Array<{ id: string }> = [];
 let updateShouldThrow = false;
 let deleteShouldThrow = false;
+/** delete().returning() が返す行（在庫の解放対象）。 */
+let deleteReturns: Array<{ itemsJson: string }> = [];
 const updateCalls: Array<Record<string, unknown>> = [];
 /** delete().where() が呼ばれた回数（pending 掃除の検証用）。 */
 let deleteCount = 0;
@@ -53,10 +55,14 @@ jest.mock("@/db", () => ({
       },
     }),
     delete: () => ({
-      where: async () => {
-        if (deleteShouldThrow) throw new Error("d1 unavailable");
-        deleteCount += 1;
-      },
+      where: () => ({
+        returning: async () => {
+          if (deleteShouldThrow) throw new Error("d1 unavailable");
+          deleteCount += 1;
+          // 削除できた行（在庫の解放に使われる）
+          return deleteReturns;
+        },
+      }),
     }),
   }),
 }));
@@ -73,6 +79,17 @@ jest.mock("@/lib/emails/order-emails", () => ({
 const alertOps = jest.fn();
 jest.mock("@/lib/ops-alert", () => ({
   alertOps: (...args: unknown[]) => alertOps(...args),
+}));
+
+// 在庫の中身は inventory.test.ts が実 SQL で見る。ここでは
+// 「どのイベントでどれが呼ばれるか」だけを確かめたいのでモックする。
+const commitStock = jest.fn();
+const releaseStock = jest.fn();
+const restockCommitted = jest.fn();
+jest.mock("@/lib/inventory", () => ({
+  commitStock: (...a: unknown[]) => commitStock(...a),
+  releaseStock: (...a: unknown[]) => releaseStock(...a),
+  restockCommitted: (...a: unknown[]) => restockCommitted(...a),
 }));
 
 import { POST } from "@/app/api/stripe/webhook/route";
@@ -162,6 +179,7 @@ beforeEach(() => {
   updateShouldThrow = false;
   deleteShouldThrow = false;
   deleteCount = 0;
+  deleteReturns = [{ itemsJson: baseOrderRow().itemsJson as string }];
   orderRow = baseOrderRow();
   env.STRIPE_SECRET_KEY = "sk_test_123";
   env.STRIPE_WEBHOOK_SECRET = "whsec_test";
@@ -260,6 +278,104 @@ describe("Stripe Webhook — 注文確定", () => {
     expect(res.status).toBe(200);
     expect(updateCalls).toHaveLength(0);
     expect(sendOrderConfirmedEmail).not.toHaveBeenCalled();
+  });
+});
+
+describe("Stripe Webhook — 在庫の反映", () => {
+  it("入金確定で押さえていた在庫を確定する", async () => {
+    givenEvent("checkout.session.completed");
+    await postWebhook();
+
+    expect(commitStock).toHaveBeenCalledTimes(1);
+    expect(commitStock.mock.calls[0][0]).toEqual([
+      expect.objectContaining({ slug: "shogun", ml: 300, qty: 1 }),
+    ]);
+  });
+
+  it("二重配信では在庫を二重に減らさない", async () => {
+    givenEvent("checkout.session.completed");
+    updateReturns = [{ id: ORDER_ID }];
+    await postWebhook();
+    expect(commitStock).toHaveBeenCalledTimes(1);
+
+    // 2 回目は pending が残っていないので更新行ゼロ
+    updateReturns = [];
+    await postWebhook();
+    expect(commitStock).toHaveBeenCalledTimes(1);
+  });
+
+  it("期限切れで pending を消したら在庫を解放する", async () => {
+    givenEvent("checkout.session.expired", { id: "cs_test_1" });
+    await postWebhook();
+
+    expect(releaseStock).toHaveBeenCalledTimes(1);
+    expect(releaseStock.mock.calls[0][0]).toEqual([
+      expect.objectContaining({ slug: "shogun", qty: 1 }),
+    ]);
+  });
+
+  it("消せる pending が無ければ在庫も解放しない（確定済みを二重に戻さない）", async () => {
+    deleteReturns = [];
+    givenEvent("checkout.session.expired", { id: "cs_test_1" });
+    await postWebhook();
+
+    expect(releaseStock).not.toHaveBeenCalled();
+  });
+
+  it("在庫の確定に失敗しても 200 を返し、人に知らせる", async () => {
+    const errSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    commitStock.mockRejectedValue(new Error("d1 unavailable"));
+    givenEvent("checkout.session.completed");
+
+    const res = await postWebhook();
+    errSpy.mockRestore();
+
+    // 入金は成立しているので再送させない
+    expect(res.status).toBe(200);
+    expect(alertOps).toHaveBeenCalledTimes(1);
+    // 確定メールは通常どおり送る
+    expect(sendOrderConfirmedEmail).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("Stripe Webhook — 返金時の在庫", () => {
+  function givenFullRefund() {
+    verifyStripeSignature.mockResolvedValue({
+      type: "charge.refunded",
+      data: {
+        object: {
+          id: "ch_test_1",
+          payment_intent: "pi_test_1",
+          amount: 3850,
+          amount_refunded: 3850,
+          refunded: true,
+          refunds: { data: [{ id: "re_test_1" }] },
+        },
+      },
+    });
+  }
+
+  it("未発送のまま返金したら在庫に戻す", async () => {
+    orderRow = baseOrderRow({
+      status: "confirmed",
+      stripePaymentIntentId: "pi_test_1",
+    });
+    givenFullRefund();
+    await postWebhook();
+
+    expect(restockCommitted).toHaveBeenCalledTimes(1);
+  });
+
+  it("発送後の返金では在庫に戻さない（品物が手元に無い）", async () => {
+    for (const status of ["shipped", "delivered"]) {
+      jest.clearAllMocks();
+      orderRow = baseOrderRow({ status, stripePaymentIntentId: "pi_test_1" });
+      updateReturns = [{ id: ORDER_ID }];
+      givenFullRefund();
+      await postWebhook();
+
+      expect(restockCommitted).not.toHaveBeenCalled();
+    }
   });
 });
 

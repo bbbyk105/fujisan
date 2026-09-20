@@ -3,13 +3,19 @@ import { and, eq, ne } from "drizzle-orm";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getStripe, verifyStripeSignature } from "@/lib/stripe";
 import { getDb } from "@/db";
-import { order as orderTable, type OrderLine } from "@/db/orders-schema";
+import {
+  order as orderTable,
+  type OrderLine,
+  type OrderStatus,
+  hasLeftTheKura,
+} from "@/db/orders-schema";
 import {
   sendOrderConfirmedEmail,
   sendOrderRefundedEmail,
   type OrderEmailData,
 } from "@/lib/emails/order-emails";
 import { alertOps } from "@/lib/ops-alert";
+import { commitStock, releaseStock, restockCommitted } from "@/lib/inventory";
 
 // 署名検証のため生ボディを読む。プリレンダ・キャッシュは一切しない。
 export const dynamic = "force-dynamic";
@@ -172,9 +178,16 @@ async function discardPendingOrder(
   if (!orderId) return; // 当方が発行したセッションでなければ無視
 
   const db = await getDb();
-  await db
+  // 削除できた行だけ在庫を解放する。確定済み（pending でない）の注文は
+  // WHERE に弾かれて 0 行となり、解放もされない — 期限切れイベントが
+  // 確定イベントより後に届いても在庫が二重に戻ることはない。
+  const deleted = await db
     .delete(orderTable)
-    .where(and(eq(orderTable.id, orderId), eq(orderTable.status, "pending")));
+    .where(and(eq(orderTable.id, orderId), eq(orderTable.status, "pending")))
+    .returning({ itemsJson: orderTable.itemsJson });
+
+  if (deleted.length === 0) return;
+  await releaseStock(safeParseItems(deleted[0].itemsJson));
 }
 
 /**
@@ -228,6 +241,17 @@ async function syncRefundFromStripe(charge: Stripe.Charge): Promise<void> {
     .returning({ id: orderTable.id });
 
   if (updated.length === 0) return; // 既に反映済み（管理画面から返金した等）
+
+  // 未発送のまま返金したなら品物は蔵にあるので在庫に戻す。
+  // 発送後（shipped / delivered）は手元に戻っていないので戻さない
+  // （返品を受け取ったら /admin/inventory で手で足す）。
+  if (!hasLeftTheKura(row.status as OrderStatus)) {
+    try {
+      await restockCommitted(safeParseItems(row.itemsJson));
+    } catch (err) {
+      console.error("[stripe:webhook] 返金に伴う在庫の戻しに失敗:", err);
+    }
+  }
 
   // 返金メールはベストエフォート。返金自体は Stripe 側で成立している。
   try {
@@ -312,6 +336,25 @@ async function fulfillOrder(
     .returning({ id: orderTable.id });
 
   if (updated.length === 0) return; // 二重配信 → 確定もメールもしない
+
+  // 押さえていた在庫を確定する（reserved → onHand から差し引き）。
+  // commitStock は冪等ではないので、**実際に pending → confirmed へ
+  // 更新できた初回だけ**呼ぶこと（この位置より上で return していると二重に減る）。
+  // 在庫の反映に失敗しても入金は成立しているので、例外で 500 にせず記録に留める。
+  try {
+    await commitStock(safeParseItems(row.itemsJson));
+  } catch (err) {
+    console.error("[stripe:webhook] 在庫の確定に失敗:", err);
+    await alertOps(
+      "入金は確定したが在庫を減らせませんでした",
+      [
+        `注文番号: ${row.orderRef}`,
+        `error: ${err instanceof Error ? err.message : "unknown"}`,
+        "",
+        "/admin/inventory で実在庫を突き合わせてください。",
+      ].join("\n"),
+    );
+  }
 
   const data: OrderEmailData = {
     orderRef: row.orderRef,

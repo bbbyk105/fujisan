@@ -14,10 +14,10 @@ BtoC（個人）と BtoB（法人取扱店・卸価格表示）の二系統の�
 ## アーキテクチャ
 
 - **デプロイ**: `@opennextjs/cloudflare` で Cloudflare Workers へ。`wrangler.jsonc` が正（worker 名 `fujisan`、D1 バインディング `DB` = `fujisan-db`）。Vercel ではない。
-- **DB**: Cloudflare D1 (SQLite) + Drizzle ORM。スキーマは `src/db/`（auth / orders / invite / contact に分割、`schema.ts` が re-export）。マイグレーション SQL は `drizzle/`（`wrangler d1 migrations apply fujisan-db [--local|--remote]` で適用）。D1 バインディングはリクエスト時にしか取れないため、必ず `getDb()`（`src/db/index.ts`）経由で毎回取得する。
+- **DB**: Cloudflare D1 (SQLite) + Drizzle ORM。スキーマは `src/db/`（auth / orders / invite / contact / inventory に分割、`schema.ts` が re-export）。マイグレーション SQL は `drizzle/`（`wrangler d1 migrations apply fujisan-db [--local|--remote]` で適用）。D1 バインディングはリクエスト時にしか取れないため、必ず `getDb()`（`src/db/index.ts`）経由で毎回取得する。
 - **認証**: Better Auth + Drizzle アダプタ。メール認証必須・Google ログインは env 設定時のみ有効。`user.role` は `personal | business`（法人は companyName 等の追加フィールドあり）。管理者は `owner | staff` の2階層（`src/lib/admin.ts`。**`ADMIN_EMAILS` env は必須**（未設定だと env owner は 0 人。ソースにフォールバックのアドレスは置かない）、メール招待 `teamInvite` → 登録時に `databaseHooks.user.create.after` でロール付与）。
 - **Server Actions 中心**: ミューテーションは `src/lib/actions/`（checkout / orders / account / contact / admin-*）。API Route は Better Auth の `/api/auth/[...all]` と Stripe Webhook のみ。middleware は無く、ガードは各ページ/アクション内で `getSession()` / `getEffectiveAdminRole()`。
-- **商品データはコード内カタログ**: `src/data/fujisan-products.ts`（小売価格・卸価格・容量 SKU）。DB に商品テーブルは無い。価格変更＝このファイルの編集。
+- **商品データはコード内カタログ**: `src/data/fujisan-products.ts`（小売価格・卸価格・容量 SKU）。DB に商品テーブルは無い。価格変更＝このファイルの編集。**在庫数だけは D1**（`inventory` 表、下記）。
 - **command-center/** はダッシュボード用の別 Vite アプリ（jest 対象外）。本体とはビルドも独立。
 
 ## Stripe 決済フロー（b86fa89 で統合）
@@ -55,6 +55,17 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 - Webhook 署名検証は `constructEventAsync` + `createSubtleCryptoProvider()`（Web Crypto）。同期版 `constructEvent` は動かない。
 - Webhook では **生ボディ（`request.text()`）のまま検証**。先に JSON パースすると署名不一致になる。
 - JPY の `unit_amount` は円の整数をそのまま渡す（×100 しない）。
+
+## 在庫
+
+- SKU（銘柄 × 容量）ごとに D1 の `inventory` 表で持つ。ロジックは `src/lib/inventory.ts`。
+- **オプトイン方式**: 行がある SKU だけが管理対象。行が無い SKU は数量無制限で売れる。全 SKU に 0 を入れるとデプロイした瞬間に販売が止まるため、初期データは入れない。蔵で数え終わった SKU から `/admin/inventory` で管理を開始する。
+- カタログの `soldOut` フラグは在庫数とは独立した「販売停止」スイッチとして残る。
+- **引き当ての流れ**: 決済開始で `reserved += qty` → 入金確定で `onHand -= qty; reserved -= qty` → 期限切れ・決済失敗・Session 生成失敗で `reserved -= qty`。決済ページに滞在している数分を押さえないと、同じ最後の 1 本を複数人が買えてしまう（「確定時に減らす」だけでは足りない）。
+- 売り越さないことを担保しているのは `UPDATE … WHERE on_hand - reserved >= qty` という **1 文の原子性**。D1 に対話的トランザクションは無いので、複数明細で途中が足りなければ、それまでに積んだ分を戻す（補償）。
+- `commitStock` は**冪等ではない**。Webhook からは「pending → confirmed に実際に更新できた初回だけ」呼ぶこと。
+- 未発送のまま返金すると `onHand` に自動で戻る（`hasLeftTheKura` で判定）。発送後は戻さない — 品物が手元に無いため、返品を受け取ってから管理画面で足す。
+- 在庫のテストは **node:sqlite のインメモリ DB に drizzle の実 SQL を流す**（`src/lib/__tests__/inventory.test.ts`）。スタブで戻り値を作ると、肝心の WHERE 句を検証したことにならない。`node:sqlite` の型は `@types/node@20` に無いので `src/types/node-sqlite.d.ts` で補っている。
 
 ## 注文の顧客向け機能
 

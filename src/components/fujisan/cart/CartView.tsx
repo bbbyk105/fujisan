@@ -80,6 +80,10 @@ export function CartView() {
   const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [checkoutError, setCheckoutError] = useState<CheckoutError | null>(null);
+  // 在庫が足りなかった SKU（決済開始時にサーバーが返す）。どれが買えないかを名指しする。
+  const [shortages, setShortages] = useState<
+    Array<{ slug: string; ml: number; available: number }>
+  >([]);
   const loggedIn = Boolean(session?.user?.id);
 
   // Stripe をキャンセルして /cart?canceled=1 に戻ってきた場合のお知らせ。
@@ -97,6 +101,7 @@ export function CartView() {
   const handleCheckout = async () => {
     if (submitting) return;
     setCheckoutError(null);
+    setShortages([]);
     if (!session?.user?.id) {
       setCheckoutError("login");
       return;
@@ -117,6 +122,7 @@ export function CartView() {
     }
     setSubmitting(false);
     setCheckoutError(res.error);
+    setShortages(res.shortages ?? []);
   };
 
   const quickAdd = (slug: string, ml: number, name: string) => {
@@ -553,17 +559,57 @@ export function CartView() {
             </div>
           ) : null}
 
-          {/* 完売エラー: カート内に品切れ SKU が混ざっている */}
+          {/* 在庫不足: どの銘柄が何本まで買えるかを名指しする */}
           {checkoutError === "soldout" ? (
-            <p
+            <div
               role="alert"
               className="mt-5 border border-crimson/40 bg-crimson/6 px-4 py-3 text-[11.5px] leading-[1.7] text-crimson"
             >
-              <L
-                en="One of the bottles in your cart has just sold out. Please remove it and try again."
-                ja="カート内の商品が完売しました。該当の商品を削除してから、もう一度お試しください。"
-              />
-            </p>
+              {shortages.length > 0 ? (
+                <>
+                  <p className="font-semibold">
+                    <L
+                      en="Some bottles are no longer available in the quantity you selected."
+                      ja="ご希望の本数をご用意できませんでした。"
+                    />
+                  </p>
+                  <ul className="mt-2 flex flex-col gap-1">
+                    {shortages.map((s) => {
+                      const product = fujisanProducts.find(
+                        (p) => p.slug === s.slug,
+                      );
+                      const name = product
+                        ? `${product.name} ${product.variant}`
+                        : s.slug;
+                      return (
+                        <li key={`${s.slug}-${s.ml}`}>
+                          {name}（{s.ml}ml）:{" "}
+                          {s.available === 0 ? (
+                            <L en="sold out" ja="完売" />
+                          ) : (
+                            <L
+                              en={`only ${s.available} left`}
+                              ja={`残り ${s.available} 本`}
+                            />
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  <p className="mt-2">
+                    <L
+                      en="Please adjust the quantity and try again."
+                      ja="数量を調整のうえ、もう一度お試しください。"
+                    />
+                  </p>
+                </>
+              ) : (
+                <L
+                  en="One of the bottles in your cart has just sold out. Please remove it and try again."
+                  ja="カート内の商品が完売しました。該当の商品を削除してから、もう一度お試しください。"
+                />
+              )}
+            </div>
           ) : null}
 
           {/* 決済開始エラー（ログイン・年齢・完売以外） */}
