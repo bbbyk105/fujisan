@@ -8,7 +8,7 @@ import { getAuth } from "@/lib/auth";
 import { getEffectiveAdminRole, isOwner, isStaffOrAbove } from "@/lib/admin";
 import { getStripe } from "@/lib/stripe";
 import { getDb } from "@/db";
-import { restockCommitted } from "@/lib/inventory";
+import { commitStock, releaseStock, restockCommitted } from "@/lib/inventory";
 import {
   order as orderTable,
   ORDER_STATUSES,
@@ -195,6 +195,30 @@ export async function adminUpdateOrderAction(input: {
 
     revalidatePath("/admin/orders");
     revalidatePath("/account");
+
+    // 手でステータスを動かしたときの在庫の辻褄合わせ。
+    // Webhook の自動経路だけを見ていると、管理画面から直接動かした分がずれる。
+    if (prevStatus !== input.status) {
+      const items = safeParseItems(current.itemsJson);
+      try {
+        if (prevStatus === "pending" && input.status === "confirmed") {
+          // 入金を手で確定した。押さえていた分を実在庫から落とす。
+          await commitStock(items);
+        } else if (input.status === "cancelled") {
+          if (prevStatus === "pending") {
+            // 未入金のまま取消。引き当てを戻すだけ（実在庫は減っていない）。
+            await releaseStock(items);
+          } else if (!hasLeftTheKura(prevStatus)) {
+            // 入金済みだが未発送のまま取消。品物は蔵にあるので実在庫へ戻す。
+            await restockCommitted(items);
+          }
+          // 発送後の取消は戻さない（品物が手元に無い）。返品を受け取ったら
+          // /admin/inventory で足す。
+        }
+      } catch (err) {
+        console.error("[admin:orders] 在庫の調整に失敗:", err);
+      }
+    }
 
     // ステータスが新たに shipped / delivered へ「変わった瞬間」だけ顧客へ通知する。
     // メール送信に失敗しても管理操作自体は成功させる（在庫・状態の更新は済んでいる）。

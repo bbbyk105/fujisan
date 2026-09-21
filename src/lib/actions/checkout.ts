@@ -1,7 +1,7 @@
 "use server";
 
 import { headers } from "next/headers";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getAuth } from "@/lib/auth";
 import { getDb } from "@/db";
@@ -28,6 +28,12 @@ type StartCheckoutEnv = {
 // 以前はサーバー用に同じ規則を再実装していたが、空カート（小計0円）の扱いが
 // 食い違っていた（cart-core は 0 円、こちらは 1,100 円）。規則が 2 か所にあると
 // 必ずずれるので、カート表示と決済で同じ関数を共有する。
+
+/**
+ * Stripe Checkout Session の有効期限（秒）。
+ * Stripe が許すのは 30 分〜24 時間。在庫の押さえっぱなしを短くしたいので下限にする。
+ */
+const CHECKOUT_EXPIRY_SECONDS = 30 * 60;
 
 /** "FJ-…" 形式の注文番号。 */
 function makeOrderRef(): string {
@@ -57,11 +63,24 @@ export async function startCheckoutAction(input: {
   items: CartInput[];
   /** サイトの表示言語。Stripe 決済ページの言語をこれに合わせる（既定: ja）。 */
   locale?: "ja" | "en";
+  /**
+   * カートの「20歳以上」チェック。酒類なのでサーバー側でも必須にする。
+   * 以前は checkoutSchema（Zod）で見ていたが、自前の住所フォーム廃止に伴い
+   * スキーマごと消えて、クライアントの state だけが残っていた。
+   */
+  ageConfirmed?: boolean;
 }): Promise<
   | { ok: true; url: string }
   | {
       ok: false;
-      error: "unauth" | "invalid" | "config" | "stripe" | "db" | "soldout";
+      error:
+        | "unauth"
+        | "invalid"
+        | "config"
+        | "stripe"
+        | "db"
+        | "soldout"
+        | "age";
       /** soldout のとき、どの SKU が何本まで買えるか。UI で名指しするのに使う。 */
       shortages?: ShortageLine[];
     }
@@ -73,6 +92,10 @@ export async function startCheckoutAction(input: {
     | { id?: string; email?: string; name?: string }
     | undefined;
   if (!user?.id) return { ok: false, error: "unauth" };
+
+  // 20歳以上の確認。酒類の販売なので、UI のチェックボックスだけに頼らず
+  // サーバー側でも必須にする（アクションは直接呼べるため）。
+  if (input.ageConfirmed !== true) return { ok: false, error: "age" };
 
   if (!Array.isArray(input.items) || input.items.length === 0) {
     return { ok: false, error: "invalid" };
@@ -229,11 +252,18 @@ export async function startCheckoutAction(input: {
             phone_number_collection: { enabled: true },
           }),
       billing_address_collection: "auto",
+      // 決済ページの有効期限。既定の 24 時間のままだと、決済を放棄した注文が
+      // まる 1 日ぶん在庫を押さえ続け、最後の 1 本が翌日まで買えなくなる。
+      // Stripe が許す下限の 30 分にして、放棄分を早く解放する
+      // （解放は checkout.session.expired の Webhook が行う）。
+      expires_at: Math.floor(Date.now() / 1000) + CHECKOUT_EXPIRY_SECONDS,
       // 注文の逆引きキー。Webhook はこれを使って確定する。
       metadata: { orderId: id, orderRef },
       payment_intent_data: { metadata: { orderId: id, orderRef } },
       success_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/cart?canceled=1`,
+      // 「戻る」で帰ってきたときは、期限切れを待たずにその場で在庫を解放する
+      // （orderId を持たせて、その注文だけを対象にする）。
+      cancel_url: `${baseUrl}/cart?canceled=1&order=${orderRef}`,
     });
 
     if (!checkout.url) {
@@ -267,5 +297,52 @@ async function releaseReservation(items: OrderLine[]): Promise<void> {
     await releaseStock(items);
   } catch (err) {
     console.error("[checkout] 在庫引き当ての解放に失敗:", err);
+  }
+}
+
+/**
+ * 決済ページから「戻る」で帰ってきたときに、その注文の引き当てを解放する。
+ *
+ * 期限切れ（30分）を待っても Webhook が解放するが、その間その在庫は誰も買えない。
+ * 自分で引き返したと分かっているなら、待たずに戻したほうがよい。
+ *
+ * 安全性:
+ * - **自分の pending 注文だけ**を対象にする（userId と status で絞る）。
+ *   他人の引き当てを解放させられる経路にはしない。
+ * - 冪等: 削除できた初回だけ解放する。連打しても在庫は二重に戻らない。
+ * - 支払いが既に成立していれば status は pending でないので、何も起きない。
+ */
+export async function releaseAbandonedCheckoutAction(input: {
+  orderRef: string;
+}): Promise<{ ok: boolean }> {
+  const auth = await getAuth();
+  const session = await auth.api.getSession({ headers: await headers() });
+  const userId = session?.user?.id;
+  if (!userId) return { ok: false };
+
+  const ref = input.orderRef.trim();
+  if (!ref) return { ok: false };
+
+  try {
+    const db = await getDb();
+    const deleted = await db
+      .delete(orderTable)
+      .where(
+        and(
+          eq(orderTable.orderRef, ref),
+          eq(orderTable.userId, userId),
+          eq(orderTable.status, "pending"),
+        ),
+      )
+      .returning({ itemsJson: orderTable.itemsJson });
+
+    if (deleted.length === 0) return { ok: false };
+
+    const items = JSON.parse(deleted[0].itemsJson) as OrderLine[];
+    await releaseStock(items);
+    return { ok: true };
+  } catch (err) {
+    console.error("[checkout] 放棄された決済の解放に失敗:", err);
+    return { ok: false };
   }
 }

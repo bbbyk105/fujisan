@@ -126,6 +126,8 @@ export const FUJISAN_LEGAL = {
   // 商品代金以外にお客様へご負担いただくのは送料のみ（決済で実際に加算されるもの）。
   otherFees:
     "商品代金以外には送料のみを申し受けます。北海道・沖縄・離島は別途追加料金がかかる場合があり、その場合は発送前にご連絡いたします。",
+  otherFeesEn:
+    "Shipping is the only charge in addition to the product price. Surcharges may apply for Hokkaido, Okinawa and remote islands; we contact you before dispatch if any apply.",
   // 酒類関連免許・標識
   liquorLicense: LIQUOR_LICENCE,
   // 酒類販売管理者標識（5項目）— 受講証より転記

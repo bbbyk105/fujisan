@@ -11,7 +11,10 @@ import {
 import { useCart } from "@/lib/cart/useCart";
 import { pushToast } from "@/lib/cart/toast-store";
 import { useSession } from "@/lib/auth-client";
-import { startCheckoutAction } from "@/lib/actions/checkout";
+import {
+  releaseAbandonedCheckoutAction,
+  startCheckoutAction,
+} from "@/lib/actions/checkout";
 import { fujisanProducts, primaryVolume } from "@/data/fujisan-products";
 import { SHIPPING_FEE } from "@/data/fujisan-legal";
 import { L } from "@/i18n/Localized";
@@ -91,10 +94,17 @@ export function CartView() {
   const [canceled, setCanceled] = useState(false);
   useEffect(() => {
     // クライアント専用の URL をマウント後に一度だけ反映（ハイドレーション不一致回避）。
+    const params = new URLSearchParams(window.location.search);
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setCanceled(
-      new URLSearchParams(window.location.search).get("canceled") === "1",
-    );
+    setCanceled(params.get("canceled") === "1");
+
+    // 決済を途中でやめて戻ってきたら、その注文が押さえていた在庫をすぐ解放する。
+    // Session の期限切れ（30分）を待っても Webhook が解放するが、
+    // その間その在庫は誰も買えない。引き返したと分かっているなら待つ必要はない。
+    const abandoned = params.get("order");
+    if (params.get("canceled") === "1" && abandoned) {
+      void releaseAbandonedCheckoutAction({ orderRef: abandoned });
+    }
   }, []);
 
   // 「お支払いへ進む」: 年齢確認・ログインを確認し、Stripe 決済ページへ遷移する。
@@ -114,6 +124,7 @@ export function CartView() {
     const res = await startCheckoutAction({
       items: lines.map((l) => ({ slug: l.slug, ml: l.ml, qty: l.qty })),
       locale,
+      ageConfirmed,
     });
     if (res.ok) {
       // Stripe ホスト型決済ページへ。遷移するので submitting は解除しない。

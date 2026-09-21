@@ -8,11 +8,15 @@ import { LogoutButton } from "@/components/fujisan/auth/LogoutButton";
 import { getSession } from "@/lib/session";
 import { getEffectiveAdminRole, isOwner } from "@/lib/admin";
 import { adminListTeamAction } from "@/lib/actions/admin-team";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Admin · Team — FUJISAN SAKE",
-  robots: { index: false, follow: false },
-};
+export const metadata = buildMetadata({
+  title: "Admin · Team",
+  description:
+    "管理メンバーの招待と権限。",
+  path: "/admin/team",
+  noIndex: true,
+});
 
 export const dynamic = "force-dynamic";
 

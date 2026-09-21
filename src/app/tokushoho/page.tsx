@@ -97,7 +97,7 @@ const sections: InfoSection[] = [
     body: [
       <L
         key="o"
-        en="The cool-chain surcharge is borne by the customer."
+        en={FUJISAN_LEGAL.otherFeesEn}
         ja={FUJISAN_LEGAL.otherFees}
       />,
     ],

@@ -10,7 +10,7 @@ import {
 const ERRORS: Record<string, string> = {
   unauth: "ログインが切れています。再度ログインしてください。",
   forbidden: "権限がありません。",
-  invalid: "本数は 0 以上の整数で入力してください。",
+  invalid: "本数を 0 以上の整数で入力してください（空欄は保存できません）。",
   reserved:
     "決済待ちの引き当てが残っているため、管理をやめられません（完了か期限切れをお待ちください）。",
   db: "保存に失敗しました。時間をおいて再度お試しください。",
@@ -29,14 +29,26 @@ export function AdminInventoryRow({ row }: { row: InventoryRow }) {
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
-  const dirty = row.tracked
-    ? value !== String(row.onHand)
-    : value.trim() !== "" && value !== "0";
+  const trimmed = value.trim();
+  // 空欄は「0 本」ではなく「未入力」。Number("") === 0 なので、これを弾かないと
+  // 欄を消して保存しただけで在庫が 0 に書き換わってしまう。
+  const empty = trimmed === "";
+  // 管理対象外の SKU は 0 本でも「管理を開始」できる必要がある
+  // （完売中の銘柄を在庫 0 として登録したいことがある）。
+  const dirty = empty
+    ? false
+    : row.tracked
+      ? trimmed !== String(row.onHand)
+      : true;
 
   const save = () => {
     setError(null);
     setMessage(null);
-    const onHand = Number(value);
+    if (empty) {
+      setError(ERRORS.invalid);
+      return;
+    }
+    const onHand = Number(trimmed);
     if (!Number.isInteger(onHand) || onHand < 0) {
       setError(ERRORS.invalid);
       return;

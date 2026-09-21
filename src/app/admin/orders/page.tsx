@@ -12,11 +12,15 @@ import {
 } from "@/lib/admin";
 import { adminListOrdersAction } from "@/lib/actions/admin-orders";
 import type { OrderStatus } from "@/db/orders-schema";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Admin · Orders — FUJISAN SAKE",
-  robots: { index: false, follow: false },
-};
+export const metadata = buildMetadata({
+  title: "Admin · Orders",
+  description:
+    "注文・配送の管理。",
+  path: "/admin/orders",
+  noIndex: true,
+});
 
 export const dynamic = "force-dynamic";
 

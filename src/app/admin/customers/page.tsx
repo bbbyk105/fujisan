@@ -7,11 +7,15 @@ import { getSession } from "@/lib/session";
 import { getEffectiveAdminRole, isStaffOrAbove, isOwner } from "@/lib/admin";
 import { adminListBusinessAccountsAction } from "@/lib/actions/admin-customers";
 import { formatDateShortJp } from "@/lib/format-date";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Admin · Trade Accounts — FUJISAN SAKE",
-  robots: { index: false, follow: false },
-};
+export const metadata = buildMetadata({
+  title: "Admin · Trade Accounts",
+  description:
+    "法人・取扱店アカウントの一覧。",
+  path: "/admin/customers",
+  noIndex: true,
+});
 
 export const dynamic = "force-dynamic";
 

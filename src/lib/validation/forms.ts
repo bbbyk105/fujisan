@@ -5,6 +5,8 @@ export type FieldErrorKey =
   | "required"
   | "email"
   | "min8"
+  /** 文字数が上限を超えている */
+  | "long"
   | "url"
   | "agree"
   | "postal";
@@ -58,11 +60,25 @@ export const resetPasswordSchema = z.object({
   password,
 });
 
+/**
+ * お問い合わせ。
+ *
+ * **上限はスキーマ側で持つ。** textarea の `maxLength` はブラウザの入力補助に
+ * すぎず、Server Action は直接呼べるため、これが無いと巨大な行を
+ * `contact_message` に書き込める。
+ */
+export const CONTACT_MESSAGE_MAX = 1000;
+const CONTACT_NAME_MAX = 100;
+const CONTACT_EMAIL_MAX = 254; // RFC 5321 のアドレス長上限
+
 export const contactSchema = z.object({
-  name: requiredString,
-  email: emailString,
+  name: requiredString.refine((v) => v.trim().length <= CONTACT_NAME_MAX, "long"),
+  email: emailString.refine((v) => v.trim().length <= CONTACT_EMAIL_MAX, "long"),
   subject: requiredString,
-  message: requiredString,
+  message: requiredString.refine(
+    (v) => v.trim().length <= CONTACT_MESSAGE_MAX,
+    "long",
+  ),
 });
 
 /**

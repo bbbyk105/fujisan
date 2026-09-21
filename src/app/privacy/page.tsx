@@ -79,6 +79,11 @@ const sections: InfoSection[] = [
         ja="お問い合わせ情報: お名前、メールアドレス、ご用件、本文"
       />,
       <L
+        key="3b"
+        en="Enquiries also store a one-way hash of your IP address, used only to block repeated automated submissions. The address itself is never stored."
+        ja="お問い合わせの際、連投による自動送信を防ぐ目的でのみ、IP アドレスを復元できない形に変換した値を保存します。IP アドレスそのものは保存しません。"
+      />,
+      <L
         key="4"
         en="Card details are entered on Stripe's payment page and are never sent to or stored on our servers"
         ja="クレジットカード情報は Stripe の決済ページで入力され、当社サーバーには送信も保存もされません"

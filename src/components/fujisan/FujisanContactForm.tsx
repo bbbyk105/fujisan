@@ -6,6 +6,7 @@ import { useLocale } from "@/i18n/useLocale";
 import {
   getFieldErrors,
   contactSchema,
+  CONTACT_MESSAGE_MAX,
   type FieldErrorKey,
 } from "@/lib/validation/forms";
 import { FieldError } from "@/components/fujisan/FieldError";
@@ -28,7 +29,7 @@ const SUBJECTS = CONTACT_SUBJECTS.map((value) => ({
   label: `${CONTACT_SUBJECT_LABELS[value].en} · ${CONTACT_SUBJECT_LABELS[value].ja}`,
 }));
 
-const MESSAGE_MAX = 1000;
+const MESSAGE_MAX = CONTACT_MESSAGE_MAX;
 
 export function FujisanContactForm() {
   const [status, setStatus] = useState<Status>("idle");

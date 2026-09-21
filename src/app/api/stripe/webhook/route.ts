@@ -16,6 +16,7 @@ import {
 } from "@/lib/emails/order-emails";
 import { alertOps } from "@/lib/ops-alert";
 import { commitStock, releaseStock, restockCommitted } from "@/lib/inventory";
+import { formatDateTimeJp } from "@/lib/format-date";
 
 // 署名検証のため生ボディを読む。プリレンダ・キャッシュは一切しない。
 export const dynamic = "force-dynamic";
@@ -140,7 +141,7 @@ export async function POST(request: Request): Promise<Response> {
           `理由: ${dispute.reason}`,
           `ステータス: ${dispute.status}`,
           dispute.evidence_details?.due_by
-            ? `証拠提出期限: ${new Date(dispute.evidence_details.due_by * 1000).toLocaleString("ja-JP")}`
+            ? `証拠提出期限: ${formatDateTimeJp(new Date(dispute.evidence_details.due_by * 1000))}`
             : "証拠提出期限: 不明",
           "",
           "Stripe Dashboard から期限内に対応してください。放置すると売上が引き落とされます。",

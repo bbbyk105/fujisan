@@ -5,6 +5,7 @@ import {
   registerPersonalSchema,
   registerBusinessSchema,
   contactSchema,
+  CONTACT_MESSAGE_MAX,
 } from "@/lib/validation/forms";
 
 describe("isEmailLike", () => {
@@ -102,6 +103,42 @@ describe("contactSchema", () => {
       }),
     ).toEqual({});
   });
+  it("caps the message length in the schema, not just the textarea", () => {
+    // textarea の maxLength はブラウザの入力補助でしかない。Server Action は
+    // 直接呼べるので、上限はスキーマ側で持っていないと巨大な行が保存できてしまう。
+    const base = {
+      name: "佐藤",
+      email: "a@b.com",
+      subject: "general",
+      message: "あ".repeat(CONTACT_MESSAGE_MAX),
+    };
+    expect(getFieldErrors(contactSchema, base)).toEqual({});
+    expect(
+      getFieldErrors(contactSchema, {
+        ...base,
+        message: "あ".repeat(CONTACT_MESSAGE_MAX + 1),
+      }),
+    ).toEqual({ message: "long" });
+  });
+
+  it("caps name and email length too", () => {
+    const base = {
+      name: "佐藤",
+      email: "a@b.com",
+      subject: "general",
+      message: "こんにちは",
+    };
+    expect(
+      getFieldErrors(contactSchema, { ...base, name: "あ".repeat(101) }),
+    ).toEqual({ name: "long" });
+    expect(
+      getFieldErrors(contactSchema, {
+        ...base,
+        email: `${"a".repeat(250)}@b.com`,
+      }),
+    ).toEqual({ email: "long" });
+  });
+
   it("flags empty message and bad email", () => {
     const errs = getFieldErrors(contactSchema, {
       name: "佐藤",

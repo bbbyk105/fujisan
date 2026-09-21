@@ -65,6 +65,8 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 - 売り越さないことを担保しているのは `UPDATE … WHERE on_hand - reserved >= qty` という **1 文の原子性**。D1 に対話的トランザクションは無いので、複数明細で途中が足りなければ、それまでに積んだ分を戻す（補償）。
 - `commitStock` は**冪等ではない**。Webhook からは「pending → confirmed に実際に更新できた初回だけ」呼ぶこと。
 - 未発送のまま返金すると `onHand` に自動で戻る（`hasLeftTheKura` で判定）。発送後は戻さない — 品物が手元に無いため、返品を受け取ってから管理画面で足す。
+- **管理画面から手でステータスを動かしたときも辻褄を合わせる**（`adminUpdateOrderAction`）: `pending → confirmed` で確定、`→ cancelled` は pending なら解放・入金済み未発送なら戻し、発送後は何もしない。Webhook の自動経路だけ見ていると手動操作の分がずれる。
+- Checkout Session には `expires_at` を 30 分（Stripe の下限）で入れている。既定の 24 時間のままだと、放棄された決済がまる 1 日ぶん在庫を押さえる。「戻る」で帰ってきた場合は `releaseAbandonedCheckoutAction` が期限切れを待たずに解放する（自分の pending 注文だけが対象）。
 - 在庫のテストは **node:sqlite のインメモリ DB に drizzle の実 SQL を流す**（`src/lib/__tests__/inventory.test.ts`）。スタブで戻り値を作ると、肝心の WHERE 句を検証したことにならない。`node:sqlite` の型は `@types/node@20` に無いので `src/types/node-sqlite.d.ts` で補っている。
 
 ## 注文の顧客向け機能
@@ -93,7 +95,7 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 
 - **年齢確認は二重**:
   1. `AgeGate.tsx`（layout.tsx で全ページに配置）— 20歳確認モーダル。localStorage `fujisan-age-confirmed`、「いいえ」で東京都の未成年飲酒防止ページへ強制遷移。SSR は「確認済み」を返してハイドレーション不整合を回避。
-  2. 決済開始前のチェックボックス（`CartView` + `checkoutSchema.ageConfirmed`、Zod で true 必須）。
+  2. 決済開始前のチェックボックス（`CartView`）。**クライアントの state だけに頼らず、`startCheckoutAction` が `ageConfirmed !== true` を `age` エラーで弾く**（Server Action は直接呼べるため）。以前ここにあった `checkoutSchema.ageConfirmed`（Zod）は自前の住所フォーム廃止と同時に消えている。
 - **法令情報の唯一の出どころ**: `src/data/fujisan-legal.ts`。未成年飲酒防止表示（`UNDERAGE_NOTICE_JP/EN`、フッター・商品ページ・特商法ページで参照）、送料 `SHIPPING_FEE`（一律1,100円 / 15,000円以上無料 — カート計算・全ページ表記がこの定数を参照）、特商法・通販酒類小売業免許・酒類販売管理者標識。**未確定の値はダミー文字列で埋めず `null` にする**（`LIQUOR_LICENCE` / `INVOICE_REGISTRATION_NUMBER`）。それらしい伏せ字は本物に見えたまま公開されうる。`npm run deploy` は predeploy で `scripts/check-legal-disclosure.mjs` を実行し、未確定が残っていればデプロイを止める（dev / build / CI は止めない）。
 - 発送は日本国内のみ（Stripe の `allowed_countries: ["JP"]` と checkout の郵便番号7桁バリデーションで担保）。
 

@@ -7,11 +7,15 @@ import { AdminContactRow } from "@/components/fujisan/admin/AdminContactRow";
 import { getSession } from "@/lib/session";
 import { getEffectiveAdminRole, isStaffOrAbove, isOwner } from "@/lib/admin";
 import { adminListContactsAction } from "@/lib/actions/admin-contacts";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Admin · Enquiries — FUJISAN SAKE",
-  robots: { index: false, follow: false },
-};
+export const metadata = buildMetadata({
+  title: "Admin · Enquiries",
+  description:
+    "お問い合わせの管理。",
+  path: "/admin/contacts",
+  noIndex: true,
+});
 
 export const dynamic = "force-dynamic";
 

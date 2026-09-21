@@ -11,6 +11,10 @@ const MESSAGES: Record<FieldErrorKey, { en: string; ja: string }> = {
     en: "Must be at least 8 characters.",
     ja: "8文字以上で入力してください。",
   },
+  long: {
+    en: "This is too long. Please shorten it.",
+    ja: "文字数が上限を超えています。短くしてください。",
+  },
   url: {
     en: "Enter a valid URL (https://…).",
     ja: "URL の形式が正しくありません（https://…）。",

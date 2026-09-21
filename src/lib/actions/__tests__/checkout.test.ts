@@ -75,6 +75,16 @@ const SHOGUN_300 = SHOGUN.volumes.find((v) => v.ml === 300)!;
 const KOKORO = getFujisanProductBySlug("kokoro")!;
 const KOKORO_300 = KOKORO.volumes.find((v) => v.ml === 300)!;
 
+/**
+ * 年齢確認済みを既定にした呼び出しヘルパー。
+ * 年齢ゲートそのものは専用の describe で検証する。
+ */
+const start = (
+  input: Parameters<typeof startCheckoutAction>[0] extends infer T
+    ? Omit<T & object, "ageConfirmed"> & { ageConfirmed?: boolean }
+    : never,
+) => startCheckoutAction({ ageConfirmed: true, ...input });
+
 /** 直近の insert 呼び出しで保存された注文行。 */
 const lastOrder = () => inserted[inserted.length - 1];
 /** Stripe に渡した Checkout Session の引数。 */
@@ -101,7 +111,7 @@ beforeEach(() => {
 describe("startCheckoutAction — ガード", () => {
   it("未ログインは unauth で拒否し、注文を作らない", async () => {
     getSession.mockResolvedValue(null);
-    const res = await startCheckoutAction({
+    const res = await start({
       items: [{ slug: "shogun", ml: 300, qty: 1 }],
     });
     expect(res).toEqual({ ok: false, error: "unauth" });
@@ -110,18 +120,18 @@ describe("startCheckoutAction — ガード", () => {
   });
 
   it("空カートは invalid で拒否する", async () => {
-    const res = await startCheckoutAction({ items: [] });
+    const res = await start({ items: [] });
     expect(res).toEqual({ ok: false, error: "invalid" });
     expect(inserted).toHaveLength(0);
   });
 
   it("存在しない銘柄・容量は invalid で拒否する", async () => {
     expect(
-      await startCheckoutAction({ items: [{ slug: "nope", ml: 300, qty: 1 }] }),
+      await start({ items: [{ slug: "nope", ml: 300, qty: 1 }] }),
     ).toEqual({ ok: false, error: "invalid" });
     // 720ml は全銘柄に存在しない
     expect(
-      await startCheckoutAction({ items: [{ slug: "shogun", ml: 720, qty: 1 }] }),
+      await start({ items: [{ slug: "shogun", ml: 720, qty: 1 }] }),
     ).toEqual({ ok: false, error: "invalid" });
     expect(inserted).toHaveLength(0);
   });
@@ -129,7 +139,7 @@ describe("startCheckoutAction — ガード", () => {
   it("数量が 1 未満・12 超・非整数なら invalid で拒否する", async () => {
     for (const qty of [0, -1, 13, 1.5, Number.NaN]) {
       expect(
-        await startCheckoutAction({ items: [{ slug: "shogun", ml: 300, qty }] }),
+        await start({ items: [{ slug: "shogun", ml: 300, qty }] }),
       ).toEqual({ ok: false, error: "invalid" });
     }
     expect(inserted).toHaveLength(0);
@@ -137,11 +147,34 @@ describe("startCheckoutAction — ガード", () => {
 
   it("STRIPE_SECRET_KEY 未設定なら config を返し、注文を作らない", async () => {
     env.STRIPE_SECRET_KEY = undefined;
-    const res = await startCheckoutAction({
+    const res = await start({
       items: [{ slug: "shogun", ml: 300, qty: 1 }],
     });
     expect(res).toEqual({ ok: false, error: "config" });
     expect(inserted).toHaveLength(0);
+  });
+
+  it("年齢確認が無ければ age で拒否する（UI を迂回した直接呼び出し対策）", async () => {
+    // Server Action は直接呼べるので、カートのチェックボックスだけでは守りにならない
+    for (const ageConfirmed of [undefined, false, "true" as never, 1 as never]) {
+      const res = await startCheckoutAction({
+        items: [{ slug: "shogun", ml: 300, qty: 1 }],
+        ageConfirmed,
+      });
+      expect(res).toEqual({ ok: false, error: "age" });
+    }
+    expect(inserted).toHaveLength(0);
+    expect(sessionsCreate).not.toHaveBeenCalled();
+  });
+
+  it("年齢確認は認証の後に見る（未ログインには unauth を返す）", async () => {
+    getSession.mockResolvedValue(null);
+    expect(
+      await startCheckoutAction({
+        items: [{ slug: "shogun", ml: 300, qty: 1 }],
+        ageConfirmed: false,
+      }),
+    ).toEqual({ ok: false, error: "unauth" });
   });
 
   it("完売 SKU は UI を迂回しても soldout で拒否する", async () => {
@@ -149,7 +182,7 @@ describe("startCheckoutAction — ガード", () => {
     const original = SHOGUN_300.soldOut;
     SHOGUN_300.soldOut = true;
     try {
-      const res = await startCheckoutAction({
+      const res = await start({
         items: [{ slug: "shogun", ml: 300, qty: 1 }],
       });
       expect(res).toEqual({ ok: false, error: "soldout" });
@@ -162,7 +195,7 @@ describe("startCheckoutAction — ガード", () => {
 
 describe("startCheckoutAction — 金額はサーバーで引き直す", () => {
   it("カタログ価格から明細・小計・合計を組み立てる", async () => {
-    const res = await startCheckoutAction({
+    const res = await start({
       items: [
         { slug: "shogun", ml: 300, qty: 2 },
         { slug: "kokoro", ml: 300, qty: 1 },
@@ -192,7 +225,7 @@ describe("startCheckoutAction — 金額はサーバーで引き直す", () => {
   });
 
   it("クライアントが価格を申告しても無視される（型外の細工を渡しても効かない）", async () => {
-    await startCheckoutAction({
+    await start({
       items: [
         { slug: "shogun", ml: 300, qty: 1, unitPrice: 1, priceJpy: 1 } as never,
       ],
@@ -204,7 +237,7 @@ describe("startCheckoutAction — 金額はサーバーで引き直す", () => {
 
   it("しきい値以上は送料無料になり、Stripe の明細にも送料行が乗らない", async () => {
     // 2,750円 × 6本 = 16,500円 ≧ 15,000円
-    await startCheckoutAction({ items: [{ slug: "shogun", ml: 300, qty: 6 }] });
+    await start({ items: [{ slug: "shogun", ml: 300, qty: 6 }] });
 
     const subtotal = SHOGUN_300.priceJpy * 6;
     expect(subtotal).toBeGreaterThanOrEqual(SHIPPING_FEE.freeThresholdJpy);
@@ -221,7 +254,7 @@ describe("startCheckoutAction — 金額はサーバーで引き直す", () => {
   });
 
   it("送料がかかる注文では Stripe の明細にも送料行を足す", async () => {
-    await startCheckoutAction({ items: [{ slug: "shogun", ml: 300, qty: 1 }] });
+    await start({ items: [{ slug: "shogun", ml: 300, qty: 1 }] });
     const lineItems = lastSessionArgs().line_items;
     const shippingLine = lineItems[lineItems.length - 1];
     expect(shippingLine.price_data.product_data.name).toContain("配送料");
@@ -240,7 +273,7 @@ describe("startCheckoutAction — Stripe セッション", () => {
       postalCode: "4170051",
       address: "静岡県富士市吉原2-8-21",
     };
-    await startCheckoutAction({ items: [{ slug: "shogun", ml: 300, qty: 1 }] });
+    await start({ items: [{ slug: "shogun", ml: 300, qty: 1 }] });
 
     const args = lastSessionArgs();
     expect(args.shipping_address_collection).toBeUndefined();
@@ -259,7 +292,7 @@ describe("startCheckoutAction — Stripe セッション", () => {
       postalCode: "417-0051", // ハイフン付きは 7 桁数字ではない
       address: "静岡県富士市吉原2-8-21",
     };
-    await startCheckoutAction({ items: [{ slug: "shogun", ml: 300, qty: 1 }] });
+    await start({ items: [{ slug: "shogun", ml: 300, qty: 1 }] });
 
     const args = lastSessionArgs();
     expect(args.shipping_address_collection).toEqual({
@@ -278,7 +311,7 @@ describe("startCheckoutAction — Stripe セッション", () => {
       postalCode: "4170051",
       address: "静岡県富士市吉原2-8-21",
     };
-    await startCheckoutAction({ items: [{ slug: "shogun", ml: 300, qty: 1 }] });
+    await start({ items: [{ slug: "shogun", ml: 300, qty: 1 }] });
 
     const args = lastSessionArgs();
     expect(args.shipping_address_collection).toBeUndefined();
@@ -286,14 +319,14 @@ describe("startCheckoutAction — Stripe セッション", () => {
   });
 
   it("発送先は日本国内のみに限定する", async () => {
-    await startCheckoutAction({ items: [{ slug: "shogun", ml: 300, qty: 1 }] });
+    await start({ items: [{ slug: "shogun", ml: 300, qty: 1 }] });
     expect(lastSessionArgs().shipping_address_collection).toEqual({
       allowed_countries: ["JP"],
     });
   });
 
   it("注文 id / 注文番号を metadata と payment_intent の両方に載せる", async () => {
-    await startCheckoutAction({ items: [{ slug: "shogun", ml: 300, qty: 1 }] });
+    await start({ items: [{ slug: "shogun", ml: 300, qty: 1 }] });
     const args = lastSessionArgs();
     const order = lastOrder();
     expect(args.metadata).toEqual({
@@ -305,18 +338,18 @@ describe("startCheckoutAction — Stripe セッション", () => {
   });
 
   it("サイトの表示言語を Stripe の決済ページへ引き継ぐ", async () => {
-    await startCheckoutAction({
+    await start({
       items: [{ slug: "shogun", ml: 300, qty: 1 }],
       locale: "en",
     });
     expect(lastSessionArgs().locale).toBe("en");
 
-    await startCheckoutAction({ items: [{ slug: "shogun", ml: 300, qty: 1 }] });
+    await start({ items: [{ slug: "shogun", ml: 300, qty: 1 }] });
     expect(lastSessionArgs().locale).toBe("ja");
   });
 
   it("成功時は Stripe の決済 URL を返す", async () => {
-    const res = await startCheckoutAction({
+    const res = await start({
       items: [{ slug: "shogun", ml: 300, qty: 1 }],
     });
     expect(res).toEqual({
@@ -329,7 +362,7 @@ describe("startCheckoutAction — Stripe セッション", () => {
 
 describe("startCheckoutAction — 在庫の引き当て", () => {
   it("Stripe へ送り出す前に在庫を押さえる", async () => {
-    await startCheckoutAction({ items: [{ slug: "shogun", ml: 300, qty: 2 }] });
+    await start({ items: [{ slug: "shogun", ml: 300, qty: 2 }] });
 
     expect(reserveStock).toHaveBeenCalledTimes(1);
     // 引き当てるのはカタログから引き直した明細
@@ -349,7 +382,7 @@ describe("startCheckoutAction — 在庫の引き当て", () => {
       shortages: [{ slug: "shogun", ml: 300, available: 1 }],
     });
 
-    const res = await startCheckoutAction({
+    const res = await start({
       items: [{ slug: "shogun", ml: 300, qty: 2 }],
     });
 
@@ -364,7 +397,7 @@ describe("startCheckoutAction — 在庫の引き当て", () => {
 
   it("在庫側が DB エラーなら db を返す", async () => {
     reserveStock.mockResolvedValue({ ok: false, reason: "db" });
-    const res = await startCheckoutAction({
+    const res = await start({
       items: [{ slug: "shogun", ml: 300, qty: 1 }],
     });
     expect(res).toEqual({ ok: false, error: "db" });
@@ -372,15 +405,32 @@ describe("startCheckoutAction — 在庫の引き当て", () => {
   });
 
   it("成功したら在庫は押さえたままにする（解放しない）", async () => {
-    await startCheckoutAction({ items: [{ slug: "shogun", ml: 300, qty: 1 }] });
+    await start({ items: [{ slug: "shogun", ml: 300, qty: 1 }] });
     expect(releaseStock).not.toHaveBeenCalled();
+  });
+
+  it("決済ページに 30 分の期限を付ける（放棄分の在庫を1日押さえない）", async () => {
+    const before = Math.floor(Date.now() / 1000);
+    await start({ items: [{ slug: "shogun", ml: 300, qty: 1 }] });
+
+    const expiresAt = lastSessionArgs().expires_at as number;
+    // Stripe が許す下限は 30 分。既定の 24 時間では在庫を丸1日押さえてしまう。
+    expect(expiresAt).toBeGreaterThanOrEqual(before + 30 * 60);
+    expect(expiresAt).toBeLessThanOrEqual(before + 30 * 60 + 5);
+  });
+
+  it("キャンセル時の戻り先に注文番号を載せる（その場で解放するため）", async () => {
+    await start({ items: [{ slug: "shogun", ml: 300, qty: 1 }] });
+    const cancelUrl = lastSessionArgs().cancel_url as string;
+    expect(cancelUrl).toContain("canceled=1");
+    expect(cancelUrl).toContain(`order=${lastOrder().orderRef}`);
   });
 });
 
 describe("startCheckoutAction — 失敗時の後始末", () => {
   it("Stripe が例外を投げたら pending 注文を削除し、押さえた在庫も戻す", async () => {
     sessionsCreate.mockRejectedValue(new Error("stripe down"));
-    const res = await startCheckoutAction({
+    const res = await start({
       items: [{ slug: "shogun", ml: 300, qty: 1 }],
     });
     expect(res).toEqual({ ok: false, error: "stripe" });
@@ -393,7 +443,7 @@ describe("startCheckoutAction — 失敗時の後始末", () => {
 
   it("Session に url が無い場合も pending 注文を削除する", async () => {
     sessionsCreate.mockResolvedValue({ id: "cs_test_2", url: null });
-    const res = await startCheckoutAction({
+    const res = await start({
       items: [{ slug: "shogun", ml: 300, qty: 1 }],
     });
     expect(res).toEqual({ ok: false, error: "stripe" });

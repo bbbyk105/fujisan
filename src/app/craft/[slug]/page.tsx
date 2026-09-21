@@ -11,6 +11,7 @@ import {
   getCraftPillarBySlug,
 } from "@/data/fujisan-craft";
 import { L } from "@/i18n/Localized";
+import { buildMetadata } from "@/lib/seo";
 
 type Params = { slug: string };
 
@@ -26,10 +27,11 @@ export async function generateMetadata({
   const { slug } = await params;
   const pillar = getCraftPillarBySlug(slug);
   if (!pillar) return { title: "FUJISAN SAKE" };
-  return {
-    title: `${pillar.title} — The Craft of FUJISAN SAKE`,
+  return buildMetadata({
+    title: `${pillar.title} — The Craft`,
     description: pillar.lead,
-  };
+    path: `/craft/${pillar.slug}`,
+  });
 }
 
 export default async function CraftPage({
