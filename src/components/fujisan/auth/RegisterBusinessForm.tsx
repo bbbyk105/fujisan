@@ -19,7 +19,13 @@ import {
   requiresLiquorLicence,
   type TradeBusinessType,
 } from "@/data/fujisan-trade";
-import { Field, inputCls, PrimaryButton, Notice } from "./ui";
+import {
+  Field,
+  inputCls,
+  PrimaryButton,
+  Notice,
+  RateLimitMessage,
+} from "./ui";
 import { ResendVerification } from "./ResendVerification";
 
 export function RegisterBusinessForm() {
@@ -108,7 +114,9 @@ export function RegisterBusinessForm() {
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-7">
       {errorKey && (
         <Notice tone="error">
-          {errorKey === "exists" ? (
+          {errorKey === "rate" ? (
+            <RateLimitMessage />
+          ) : errorKey === "exists" ? (
             <L
               en="An account with this email already exists. Try signing in instead."
               ja="このメールアドレスは既に登録されています。ログインをお試しください。"

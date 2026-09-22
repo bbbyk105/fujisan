@@ -14,6 +14,11 @@ import {
   registerPersonalSchema,
   registerBusinessSchema,
 } from "@/lib/validation/forms";
+import {
+  clientIpFrom,
+  consumeRateLimit,
+  type RateLimitBucket,
+} from "@/lib/rate-limit";
 import { createTradeApplication } from "@/lib/trade";
 import type { TradeBusinessType } from "@/data/fujisan-trade";
 import {
@@ -27,6 +32,22 @@ function isValid(schema: Parameters<typeof getFieldErrors>[0], data: unknown) {
 
 export type AuthActionResult = { ok: true } | { ok: false; error: AuthErrorKey };
 
+/**
+ * 送信元 IP でレート制限を 1 回ぶん消費する。
+ *
+ * **Better Auth 側の `rateLimit` は当てにできない。** あれが効くのは
+ * `auth.handler()`（`/api/auth/[...all]`）への HTTP リクエストだけで、
+ * ここのように Server Action から `auth.api.*` を直接呼ぶ経路は通らない。
+ * パスワードの総当たりも認証メールの大量送信も、ここで止める。
+ */
+async function limit(bucket: RateLimitBucket): Promise<boolean> {
+  const res = await consumeRateLimit({
+    bucket,
+    ip: clientIpFrom(await headers()),
+  });
+  return res.ok;
+}
+
 // 氏名の重複チェックは行わない。
 // 以前は同姓同名を "name-taken" で弾いていたが、氏名は本来一意ではなく、
 // 「佐藤 健」さんが 2 人目から登録できなかった。アカウントの一意性は
@@ -38,6 +59,7 @@ export async function signInAction(input: {
   password: string;
 }): Promise<AuthActionResult> {
   if (!isValid(loginSchema, input)) return { ok: false, error: "generic" };
+  if (!(await limit("signIn"))) return { ok: false, error: "rate" };
   const auth = await getAuth();
   try {
     await auth.api.signInEmail({
@@ -58,6 +80,7 @@ export async function registerPersonalAction(input: {
 }): Promise<AuthActionResult> {
   if (!isValid(registerPersonalSchema, input))
     return { ok: false, error: "generic" };
+  if (!(await limit("signUp"))) return { ok: false, error: "rate" };
   const auth = await getAuth();
   try {
     await auth.api.signUpEmail({
@@ -95,6 +118,7 @@ export async function registerBusinessAction(input: {
 }): Promise<AuthActionResult> {
   if (!isValid(registerBusinessSchema, input))
     return { ok: false, error: "generic" };
+  if (!(await limit("signUp"))) return { ok: false, error: "rate" };
   const businessType = input.businessType as TradeBusinessType;
   const auth = await getAuth();
   let userId: string | undefined;
@@ -220,6 +244,8 @@ export async function resendVerificationAction(input: {
 }): Promise<AuthActionResult> {
   const email = input.email.trim();
   if (!isEmailLike(email)) return { ok: false, error: "invalid" };
+  // 認証メールは「誰でも・何度でも」送れてしまうので、ここは必ず絞る。
+  if (!(await limit("sendEmail"))) return { ok: false, error: "rate" };
   const callbackURL = input.role === "business" ? "/shop/business" : "/account";
   const auth = await getAuth();
   try {
@@ -243,6 +269,7 @@ export async function requestPasswordResetAction(input: {
 }): Promise<AuthActionResult> {
   const email = input.email.trim();
   if (!isEmailLike(email)) return { ok: false, error: "invalid" };
+  if (!(await limit("sendEmail"))) return { ok: false, error: "rate" };
   const auth = await getAuth();
   try {
     await auth.api.requestPasswordReset({
@@ -266,6 +293,8 @@ export async function resetPasswordAction(input: {
   const token = input.token.trim();
   if (!token) return { ok: false, error: "invalid" };
   if (input.password.length < 8) return { ok: false, error: "weak" };
+  // トークンは推測しにくいだけなので、総当たりの回数自体を絞る。
+  if (!(await limit("verify"))) return { ok: false, error: "rate" };
   const auth = await getAuth();
   try {
     await auth.api.resetPassword({
@@ -295,6 +324,8 @@ export async function changeMyPasswordAction(input: {
 
   if (input.newPassword.length < 8) return { ok: false, error: "weak" };
   if (!input.currentPassword) return { ok: false, error: "invalid" };
+  // 端末を奪われたときに、現在のパスワードを総当たりされるのを防ぐ。
+  if (!(await limit("verify"))) return { ok: false, error: "rate" };
 
   try {
     await auth.api.changePassword({

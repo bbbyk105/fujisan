@@ -6,6 +6,7 @@ import type { AuthErrorKey } from "@/lib/auth-errors";
 import { FieldError } from "@/components/fujisan/FieldError";
 import type { FieldErrorKey } from "@/lib/validation/forms";
 import { L } from "@/i18n/Localized";
+import { RateLimitMessage } from "./ui";
 
 const inputCls =
   "w-full border-b border-[#0B1A2E]/25 bg-transparent py-2.5 text-[15px] text-[#0B1A2E] outline-none transition-colors placeholder:text-[#0B1A2E]/35 focus:border-[#C9A84C] aria-[invalid=true]:border-[#8B1A1A]";
@@ -114,7 +115,9 @@ export function ChangePasswordForm() {
           role="alert"
           className="mt-5 border border-[#8B1A1A]/40 bg-[#8B1A1A]/[0.06] px-4 py-3 text-[12.5px] leading-[1.7] text-[#8B1A1A]"
         >
-          {errorKey === "weak" ? (
+          {errorKey === "rate" ? (
+            <RateLimitMessage />
+          ) : errorKey === "weak" ? (
             <L
               en="The new password must be at least 8 characters."
               ja="新しいパスワードは8文字以上で設定してください。"

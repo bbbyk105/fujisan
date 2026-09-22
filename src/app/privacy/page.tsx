@@ -80,8 +80,13 @@ const sections: InfoSection[] = [
       />,
       <L
         key="3b"
-        en="Enquiries also store a one-way hash of your IP address, used only to block repeated automated submissions. The address itself is never stored."
-        ja="お問い合わせの際、連投による自動送信を防ぐ目的でのみ、IP アドレスを復元できない形に変換した値を保存します。IP アドレスそのものは保存しません。"
+        en="Enquiries store a one-way hash of your IP address — never the address itself — used only to block repeated automated submissions."
+        ja="お問い合わせの際、連投による自動送信を防ぐ目的でのみ、IP アドレスを復元できない形に変換した値を保存します（IP アドレスそのものは保存しません）。"
+      />,
+      <L
+        key="3c"
+        en="Sign-in and account pages count recent attempts per IP address to block password guessing and mass email sending. These counters hold the address for at most one hour and are then deleted."
+        ja="ログイン・アカウント関連のページでは、パスワードの総当たりやメールの大量送信を防ぐため、IP アドレスごとの試行回数を数えます。この記録は最長でも 1 時間で削除します。"
       />,
       <L
         key="4"

@@ -44,7 +44,8 @@ npx wrangler d1 migrations apply fujisan-db --remote
 ```
 
 未適用: `0007_contact_message.sql`（お問い合わせ）、`0008_order_cancel_request.sql`（キャンセル依頼）、
-`0009_inventory.sql`（在庫）、`0010_trade_account.sql`（取扱店の審査）。
+`0009_inventory.sql`（在庫）、`0010_trade_account.sql`（取扱店の審査）、
+`0011_rate_limit.sql`（レート制限）。
 `--local` と `--remote` は別の DB なので、ローカルで通っていても本番には反映されない。
 
 ### 4. 本番 secret を確認する
@@ -114,6 +115,17 @@ D1 の `inventory` 表で SKU ごとに管理するようにした。`/admin/inv
 - 商品ページは静的書き出しのため、リアルタイムの残数を出していない（Worker の CPU 制限を避けるため）。
   在庫切れはカート／決済開始時に判明する
 
+### ~~認証のレート制限~~（実装済み）
+
+カウンタは 2 つ（`0011`）。**守る面が違うので片方だけでは迂回される。**
+
+- `action_rate_limit` — Server Action 用。ログイン・登録・再設定は `auth.api.*` を直接呼ぶため Better Auth の制限が効かない
+- `rate_limit` — Better Auth 用。`/api/auth/*` は UI を経由せず HTTP で直接叩ける
+
+既定の `storage: "memory"` は Workers では機能しない（アイソレートが短命でカウンタを共有できない）ため、
+どちらも D1 に置いている。Better Auth 側は key に生 IP が入り自分では消さないので、
+1 時間より古い行を `sweepRateLimitCounters()` で掃除している（プライバシーポリシーの記載と対応）。
+
 ### 管理ダッシュボード
 
 `/admin` は `/admin/orders` へリダイレクトするだけ。売上集計、期間絞り込み、CSV エクスポート、納品書・送り状の印刷が無い。個人顧客の一覧も無い（`/admin/customers` は法人のみ）。
@@ -137,7 +149,7 @@ Better Auth の `changeEmail` は使えるが、`user.changeEmail.enabled` の�
 
 当面はマイグレーション SQL を手書きで追加する。`wrangler d1 migrations apply` は journal ではなくファイル名順で適用するので動作には影響しない。
 
-直すなら、現在のスキーマから snapshot を作り直して journal を 0010 まで揃える。
+直すなら、現在のスキーマから snapshot を作り直して journal を 0011 まで揃える。
 
 ### 日付フォーマット
 

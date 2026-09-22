@@ -7,6 +7,8 @@ export type AuthErrorKey =
   | "too-long"
   /** パスワードを持たないアカウント（Google ログインのみで登録された場合）。 */
   | "no-password"
+  /** 短時間に試行しすぎ（`src/lib/rate-limit.ts`）。 */
+  | "rate"
   | "generic";
 
 type LooseError = {

@@ -77,6 +77,19 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 - **キャンセルは「依頼」であって実行ではない**。`requestOrderCancellationAction` は発送前（confirmed / preparing）に `cancel_requested_at` を刻んで ops へ通知するだけ。返金の実行は従来どおり owner だけが `adminRefundOrderAction` から行う（お客様の操作でお金が動く経路は作らない）。
 - 注文ステータスの表示は `OrderStatusPill`（`Record<OrderStatus, …>` なので新ステータス追加時に型で漏れが出る）と `OrderTimeline`（cancelled / refunded は進行段階ではないので専用表示）。
 
+## レート制限
+
+- **カウンタは 2 つあり、守る面が違う**（`src/db/rate-limit-schema.ts`）。片方だけでは迂回される。
+  1. `action_rate_limit` — Server Action 用（`src/lib/rate-limit.ts` の `consumeRateLimit`）。ログイン・登録・再設定・認証メール再送は Server Action から `auth.api.*` を**直接**呼ぶため、Better Auth の `rateLimit` は通らない。
+  2. `rate_limit` — Better Auth 用（`src/lib/auth.ts` の `rateLimit`）。`/api/auth/*` は UI を経由せず HTTP で直接叩けるので、こちらを塞がないと上の制限を迂回できる。**列の構成は Better Auth が決めている**ので変えないこと。
+- **`storage: "database"` が必須**。既定の `"memory"` はアイソレート内の Map で、Workers では回数を共有できず実質機能しない。`enabled` も既定（`NODE_ENV === "production"` 頼み）ではなく明示する — 黙って無効になるのがいちばん困る。
+- `advanced.ipAddress.ipAddressHeaders` に `cf-connecting-ip` を入れておく。**IP が取れないと Better Auth はレート制限を丸ごと諦める**。自前側も同じ優先順（CF ヘッダ → XFF）で、XFF はクライアントが詐称できるため後ろに置く。
+- 数え落とさないことを担保しているのは **UPSERT 1 文**（`CASE WHEN expires_at <= now THEN 1 ELSE count + 1 END`）。在庫と同じで、読んでから書くと同時アクセスで取りこぼす。
+- **DB が落ちているときは通す**（`ok: true`）。レート制限は濫用を遅くする仕組みで、認証の可否を決めるものではない。D1 の不調でログイン不能にしない。
+- **自前側は生 IP を保存しない**（SHA-256 の先頭16文字）。一方 **Better Auth は key に生 IP をそのまま入れ、行を自分では消さない**。ハッシュに差し替える口は無い（`getIp` が IP 形式を検証するので、ハッシュを渡すとレート制限ごと無効になる）。そのため `sweepRateLimitCounters()` が 1 時間より古い行を消す。**この掃除がプライバシーポリシーの「最長 1 時間で削除します」を担保している**ので、消すのをやめるならポリシーも直すこと。掃除は Server Action と `/api/auth/*` の両方から間引いて走らせる（HTTP だけ叩かれる場合に走らなくなるため）。
+- お問い合わせの連投制限だけは別方式で、`contact_message` の行数を IP ハッシュで数えている（受領そのものが記録として要るため。ここを統合しようとしないこと）。
+- 入力の形式チェックは**カウンタを消費する前**に行う。無害な不正入力で枠を食わせられると、攻撃側が正規の利用者を締め出せる。
+
 ## 取扱店（BtoB）の承認
 
 - **卸価格の表示条件は `user.role === "business"` ではなく `trade_account.status === "approved"`**（`src/lib/trade.ts` の `canSeeWholesalePricing`）。登録は自己申告なので role だけを条件にすると誰でも卸価格を見られる。`WholesalePriceList` / `TradeAccessBand` / `/account` はすべてこの判定を通す。
