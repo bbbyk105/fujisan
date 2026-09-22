@@ -6,6 +6,7 @@ import { UNDERAGE_NOTICE_EN, UNDERAGE_NOTICE_JP } from "@/data/fujisan-legal";
 import type { FujisanVolume } from "@/data/fujisan-products";
 import { useCart } from "@/lib/cart/useCart";
 import { LivePrice } from "@/components/fujisan/LivePrice";
+import { useLiveCatalog, liveKey } from "@/lib/cart/useLiveCatalog";
 import { pushToast } from "@/lib/cart/toast-store";
 import { L } from "@/i18n/Localized";
 
@@ -47,7 +48,16 @@ export default function ProductPurchaseBlock({
   const [selectedMl, setSelectedMl] = useState(volumes[0].ml);
 
   const selected = volumes.find((v) => v.ml === selectedMl) ?? volumes[0];
-  const soldOut = selected.soldOut === true;
+
+  // このページは静的書き出しなので、ビルド後に完売した SKU も「購入できる」
+  // 見た目のまま残る。ハイドレーション後に実勢の完売を重ねて、カートに
+  // 入れてから気づく状況を減らす。取得できないあいだはカタログのフラグだけで
+  // 判断する（最後の砦は startCheckoutAction のサーバー側検証）。
+  const { catalog } = useLiveCatalog();
+  const isSoldOut = (v: FujisanVolume) =>
+    v.soldOut === true || catalog[liveKey(slug, v.ml)]?.soldOut === true;
+
+  const soldOut = isSoldOut(selected);
 
   const onAddToCart = () => {
     // 完売 SKU は追加不可（選択中の容量が品切れならここで止める）。
@@ -110,7 +120,7 @@ export default function ProductPurchaseBlock({
             <div className="mt-3 flex flex-wrap gap-3">
               {volumes.map((v) => {
                 const active = v.ml === selected.ml;
-                const vSoldOut = v.soldOut === true;
+                const vSoldOut = isSoldOut(v);
                 return (
                   <button
                     key={v.ml}
