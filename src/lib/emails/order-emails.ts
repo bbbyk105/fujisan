@@ -27,6 +27,12 @@ export type OrderEmailData = {
   trackingNumber?: string | null;
   /** 返金メール用: 実際に返金した金額（円）。未指定なら total を使う。 */
   refundAmount?: number;
+  /**
+   * 返金メール用: 一部返金か。
+   * 一部返金の注文は**まだお届けする**ので、全額返金と同じ文面にしない
+   * （「返金しました」だけ届くと、お客様は注文が取り消されたと受け取る）。
+   */
+  partial?: boolean;
 };
 
 type ResendEnv = {
@@ -312,11 +318,26 @@ export async function sendOrderRefundedEmail(d: OrderEmailData): Promise<void> {
   const ctaUrl = `${baseUrl}/account`;
   const refund = d.refundAmount ?? d.total;
 
+  const partial = d.partial === true;
+  // 一部返金では「このご注文はそのままお届けします」を必ず添える。
+  const partialNoteJp = partial
+    ? "このご返金は一部のみです。ご注文はこのまま発送いたしますので、そのままお待ちください。\n"
+    : "";
+  const partialNoteEn = partial
+    ? "This is a partial refund. The rest of your order will still be shipped.\n"
+    : "";
+
   const refundBlock = `<div style="margin:16px 0 0;border:1px solid #C9A84C55;background:#fbf6e8;padding:14px 18px;font-size:13px;line-height:1.8;color:#0B1A2E;">
          <div style="display:flex;justify-content:space-between;">
-           <span style="color:#0B1A2E99;letter-spacing:0.1em;font-size:11px;">返金額 / REFUNDED</span>
+           <span style="color:#0B1A2E99;letter-spacing:0.1em;font-size:11px;">${
+             partial ? "一部返金額 / PARTIAL REFUND" : "返金額 / REFUNDED"
+           }</span>
            <strong style="font-weight:700;font-size:15px;">¥${yen.format(refund)}</strong>
-         </div>
+         </div>${
+           partial
+             ? `<div style="margin-top:8px;font-size:12px;color:#0B1A2E99;">ご注文はこのまま発送いたします。 / The rest of your order will still be shipped.</div>`
+             : ""
+         }
        </div>`;
 
   const text = `FUJISAN SAKE — ご返金の手続きを行いました / Your refund has been processed
@@ -324,9 +345,9 @@ export async function sendOrderRefundedEmail(d: OrderEmailData): Promise<void> {
 ${d.customerName} 様
 
 ご注文（${d.orderRef}）について、¥${yen.format(refund)} のご返金手続きを行いました。
-ご利用のカード会社や決済方法により、返金がお手元の明細に反映されるまで数日〜2週間程度かかる場合があります。
+${partialNoteJp}ご利用のカード会社や決済方法により、返金がお手元の明細に反映されるまで数日〜2週間程度かかる場合があります。
 
-We've processed a refund of ¥${yen.format(refund)} for your order.
+${partialNoteEn}We've processed a refund of ¥${yen.format(refund)} for your order.
 Depending on your card issuer, it may take several days to two weeks to appear on your statement.
 
 ────────────────────────────────
@@ -334,7 +355,7 @@ Depending on your card issuer, it may take several days to two weeks to appear o
 
 ${itemsText(d.items)}
 
-返金額 / Refunded: ¥${yen.format(refund)}
+${partial ? "一部返金額" : "返金額"} / Refunded: ¥${yen.format(refund)}
 ────────────────────────────────
 
 ご不明な点がございましたら、本メールへの返信または下記までお問い合わせください。
@@ -347,9 +368,17 @@ TEL ${FUJISAN_LEGAL.phone} / ${FUJISAN_LEGAL.email}
 `;
 
   const html = htmlShell({
-    badge: "REFUNDED ／ ご返金のお知らせ",
-    heading: "ご返金の手続きを行いました。",
-    lead: `${escapeHtml(d.customerName)} 様、ご注文について ¥${yen.format(refund)} のご返金手続きを行いました。ご利用のカード会社により、明細への反映まで数日〜2週間程度かかる場合があります。<br/><span style="color:#1D243299;">We've refunded ¥${yen.format(refund)}. It may take several days to appear on your statement.</span>`,
+    badge: partial
+      ? "PARTIAL REFUND ／ 一部ご返金のお知らせ"
+      : "REFUNDED ／ ご返金のお知らせ",
+    heading: partial
+      ? "一部のご返金手続きを行いました。"
+      : "ご返金の手続きを行いました。",
+    lead: `${escapeHtml(d.customerName)} 様、ご注文について ¥${yen.format(refund)} のご返金手続きを行いました。${
+      partial ? "ご注文はこのまま発送いたします。" : ""
+    }ご利用のカード会社により、明細への反映まで数日〜2週間程度かかる場合があります。<br/><span style="color:#1D243299;">We've refunded ¥${yen.format(refund)}. ${
+      partial ? "The rest of your order will still be shipped. " : ""
+    }It may take several days to appear on your statement.</span>`,
     d,
     extraBlock: refundBlock,
     ctaLabel: "ご注文履歴を見る",
@@ -359,7 +388,9 @@ TEL ${FUJISAN_LEGAL.phone} / ${FUJISAN_LEGAL.email}
   await sendEmail(
     {
       to: d.customerEmail,
-      subject: `FUJISAN — ご返金の手続きを行いました（${d.orderRef}）/ Refund processed`,
+      subject: partial
+        ? `FUJISAN — 一部ご返金の手続きを行いました（${d.orderRef}）/ Partial refund processed`
+        : `FUJISAN — ご返金の手続きを行いました（${d.orderRef}）/ Refund processed`,
       text,
       html,
     },

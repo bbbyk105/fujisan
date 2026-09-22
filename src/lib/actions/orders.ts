@@ -35,6 +35,14 @@ export type OrderRecord = {
   paidAt: Date | null;
   /** お客様がキャンセルを依頼した日時。未依頼なら null。 */
   cancelRequestedAt: Date | null;
+  /**
+   * これまでに返金された累計額（円）。null は返金なし。
+   * `status === "refunded"` は全額返金。一部返金はステータスに出ないので、
+   * 画面では必ずこの金額も見る（見ないと「返金された」ことが伝わらない）。
+   */
+  refundedAmount: number | null;
+  /** 直近の返金日時。 */
+  refundedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -83,6 +91,8 @@ export async function listMyOrdersAction(limit = 20): Promise<OrderRecord[]> {
       deliveredAt: row.deliveredAt ?? null,
       paidAt: row.paidAt ?? null,
       cancelRequestedAt: row.cancelRequestedAt ?? null,
+      refundedAmount: row.refundedAmount ?? null,
+      refundedAt: row.refundedAt ?? null,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     }));
@@ -143,6 +153,8 @@ export async function getMyOrderByRefAction(
       deliveredAt: row.deliveredAt ?? null,
       paidAt: row.paidAt ?? null,
       cancelRequestedAt: row.cancelRequestedAt ?? null,
+      refundedAmount: row.refundedAmount ?? null,
+      refundedAt: row.refundedAt ?? null,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };

@@ -551,16 +551,44 @@ describe("Stripe Webhook — Stripe 側で行われた返金の同期", () => {
     expect(updateCalls[0].stripeRefundId).toBeUndefined();
   });
 
-  it("部分返金は「全額返金済み」にせず、人に知らせる", async () => {
+  it("部分返金は金額だけを記録し、ステータスは動かさない", async () => {
     givenCharge({ amount_refunded: 1000, refunded: false });
     const res = await postWebhook();
 
     expect(res.status).toBe(200);
-    // ステータスは動かさない（スキーマが部分返金を表現できないため）
+    // 一部返金した注文はまだ発送する予定のものなので、refunded にはしない。
+    expect(updateCalls).toHaveLength(1);
+    expect(updateCalls[0].status).toBeUndefined();
+    expect(updateCalls[0].refundedAmount).toBe(1000);
+  });
+
+  it("部分返金では在庫を自動で戻さず、人に知らせる", async () => {
+    givenCharge({ amount_refunded: 1000, refunded: false });
+    await postWebhook();
+
+    // 金額からは「どの品を何本引き取ったか」が分からないので自動では戻さない。
+    expect(restockCommitted).not.toHaveBeenCalled();
+    expect(alertOps).toHaveBeenCalledTimes(1);
+    expect(String(alertOps.mock.calls[0][0])).toContain("一部返金");
+  });
+
+  it("部分返金でも、一部返金であることを明記した返金メールを送る", async () => {
+    givenCharge({ amount_refunded: 1000, refunded: false });
+    await postWebhook();
+
+    expect(sendOrderRefundedEmail).toHaveBeenCalledTimes(1);
+    expect(sendOrderRefundedEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ refundAmount: 1000, partial: true }),
+    );
+  });
+
+  it("返金が 0 円なら何もしない", async () => {
+    givenCharge({ amount_refunded: 0, refunded: false });
+    const res = await postWebhook();
+
+    expect(res.status).toBe(200);
     expect(updateCalls).toHaveLength(0);
     expect(sendOrderRefundedEmail).not.toHaveBeenCalled();
-    expect(alertOps).toHaveBeenCalledTimes(1);
-    expect(String(alertOps.mock.calls[0][0])).toContain("部分返金");
   });
 
   it("当方の注文に紐づかない charge は無視する", async () => {

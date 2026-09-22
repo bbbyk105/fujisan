@@ -2,7 +2,7 @@
 
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { and, desc, eq, ne } from "drizzle-orm";
+import { and, desc, eq, isNull, ne } from "drizzle-orm";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getAuth } from "@/lib/auth";
 import { getEffectiveAdminRole, isOwner, isStaffOrAbove } from "@/lib/admin";
@@ -43,6 +43,8 @@ type AdminOrderListItem = {
   shippedAt: Date | null;
   deliveredAt: Date | null;
   refundedAt: Date | null;
+  /** これまでに返金した累計額（円）。null は返金なし。 */
+  refundedAmount: number | null;
   /** お客様からのキャンセル依頼（発送前のみ）。未依頼なら null。 */
   cancelRequestedAt: Date | null;
   cancelReason: string | null;
@@ -125,6 +127,7 @@ export async function adminListOrdersAction(): Promise<
       shippedAt: row.shippedAt ?? null,
       deliveredAt: row.deliveredAt ?? null,
       refundedAt: row.refundedAt ?? null,
+      refundedAmount: row.refundedAmount ?? null,
       cancelRequestedAt: row.cancelRequestedAt ?? null,
       cancelReason: row.cancelReason,
       createdAt: row.createdAt,
@@ -213,7 +216,7 @@ export async function adminUpdateOrderAction(input: {
             await restockCommitted(items);
           }
           // 発送後の取消は戻さない（品物が手元に無い）。返品を受け取ったら
-          // /admin/inventory で足す。
+          // /admin/products で足す。
         }
       } catch (err) {
         console.error("[admin:orders] 在庫の調整に失敗:", err);
@@ -257,19 +260,27 @@ export async function adminUpdateOrderAction(input: {
 type RefundEnv = { STRIPE_SECRET_KEY?: string };
 
 /**
- * 管理者（owner）向け: 注文を全額返金する。
+ * 管理者（owner）向け: 注文を返金する。全額・一部のどちらも扱う。
  *
- * - Stripe の PaymentIntent に対して `refunds.create` を実行し、成功したら
- *   注文ステータスを `refunded` にして返金メールを送る。
- * - 冪等: Stripe には orderId ベースの idempotencyKey を渡し、DB 更新は
- *   `status != 'refunded'` の WHERE 付きで原子的に行う（二重返金を防ぐ）。
- * - 返金対象は「支払い済み・未返金」の注文のみ（pending / cancelled / refunded は不可）。
- * - 破損・誤配送などの実務対応を想定した全額返金。部分返金は将来対応。
+ * - `amountJpy` を省くと**残額を全額**返金する。指定するとその額だけ返す。
+ * - 全額まで返し切ったときだけ status を `refunded` にする。一部返金では
+ *   ステータスを動かさない — 一部返金した注文はまだ発送する予定のもので、
+ *   「返金済み」の顔をさせると蔵側の作業一覧から消えてしまう。
+ * - 冪等: Stripe には「注文 + 返金前の累計 + 今回の額」から作った
+ *   idempotencyKey を渡す。ボタン連打では同じ鍵になるので二重に返らず、
+ *   意図した 2 回目の返金（累計が進んでいる）では別の鍵になる。
+ * - DB 更新は「返金前の累計」を WHERE に入れた原子的な UPDATE で行う。
+ * - 返金対象は「支払い済み・未返金」の注文のみ（pending / cancelled は不可）。
+ *
+ * **在庫を戻すのは全額返金のときだけ。** 一部返金では、どの品を何本
+ * 引き取ったのかが金額からは分からない。数えた分を `/admin/products` で足す。
  */
 export async function adminRefundOrderAction(input: {
   orderId: string;
+  /** 返金する金額（円）。省略すると残額を全額返金する。 */
+  amountJpy?: number;
 }): Promise<
-  | { ok: true }
+  | { ok: true; refunded: number; remaining: number }
   | {
       ok: false;
       error:
@@ -277,6 +288,7 @@ export async function adminRefundOrderAction(input: {
         | "forbidden"
         | "invalid"
         | "not_refundable"
+        | "amount"
         | "config"
         | "stripe"
         | "db";
@@ -299,13 +311,28 @@ export async function adminRefundOrderAction(input: {
   }
   if (!current) return { ok: false, error: "invalid" };
 
-  // 支払い済み・未返金のみ返金可能。
+  // 支払い済みのみ返金可能（pending / cancelled / refunded は不可）。
   if (
     !REFUNDABLE_STATUSES.includes(current.status as OrderStatus) ||
     !current.stripeSessionId
   ) {
     return { ok: false, error: "not_refundable" };
   }
+
+  // 返金できるのは残額まで。既に一部返している注文では、その分を差し引く。
+  const alreadyRefunded = current.refundedAmount ?? 0;
+  const remainingBefore = current.total - alreadyRefunded;
+  if (remainingBefore <= 0) return { ok: false, error: "not_refundable" };
+
+  const amount = input.amountJpy ?? remainingBefore;
+  if (
+    !Number.isInteger(amount) ||
+    amount < 1 ||
+    amount > remainingBefore
+  ) {
+    return { ok: false, error: "amount" };
+  }
+  const isFullRefund = amount === remainingBefore;
 
   const { env } = await getCloudflareContext({ async: true });
   const e = env as RefundEnv;
@@ -329,41 +356,53 @@ export async function adminRefundOrderAction(input: {
   }
   if (!paymentIntentId) return { ok: false, error: "not_refundable" };
 
-  // Stripe 側で返金を実行（全額）。idempotencyKey で再実行時の二重返金を防ぐ。
+  // Stripe 側で返金を実行。JPY は最小単位＝円なので、金額はそのまま渡す。
+  // idempotencyKey に「返金前の累計」を混ぜているので、連打は同じ鍵＝1 回、
+  // 意図した 2 回目は累計が進んで別の鍵になる。
   let refundId: string;
   try {
     const refund = await stripe.refunds.create(
-      { payment_intent: paymentIntentId },
-      { idempotencyKey: `refund_${current.id}` },
+      { payment_intent: paymentIntentId, amount },
+      {
+        idempotencyKey: `refund_${current.id}_${alreadyRefunded}_${amount}`,
+      },
     );
     refundId = refund.id;
   } catch {
     return { ok: false, error: "stripe" };
   }
 
-  // DB を原子的に refunded へ。既に他操作で返金済みなら更新行ゼロ（メールも送らない）。
+  // DB へ原子的に反映する。WHERE に「返金前の累計」を入れているので、
+  // 同時に別経路（Webhook など）が先に反映していたら更新行ゼロになり、
+  // 累計を二重に足すこともメールを重複送信することも無い。
+  const totalRefunded = alreadyRefunded + amount;
   let updated;
   try {
     const db = await getDb();
     updated = await db
       .update(orderTable)
       .set({
-        status: "refunded",
+        // 全額返し切ったときだけ終端ステータスへ移す。
+        ...(isFullRefund ? { status: "refunded" as const } : {}),
         stripeRefundId: refundId,
         stripePaymentIntentId: paymentIntentId,
         refundedAt: new Date(),
+        refundedAmount: totalRefunded,
       })
       .where(
         and(
           eq(orderTable.id, current.id),
           ne(orderTable.status, "refunded"),
+          alreadyRefunded === 0
+            ? isNull(orderTable.refundedAmount)
+            : eq(orderTable.refundedAmount, alreadyRefunded),
         ),
       )
       .returning({ id: orderTable.id });
   } catch {
-    // Stripe 返金は成立済み。DB 反映のみ失敗 → 手動で status を直せるようログを残す。
+    // Stripe 返金は成立済み。DB 反映のみ失敗 → 手動で直せるようログを残す。
     console.error(
-      `[admin:refund] Stripe 返金は成立したが DB 更新に失敗: order=${current.id} refund=${refundId}`,
+      `[admin:refund] Stripe 返金は成立したが DB 更新に失敗: order=${current.id} refund=${refundId} amount=${amount}`,
     );
     return { ok: false, error: "db" };
   }
@@ -371,11 +410,15 @@ export async function adminRefundOrderAction(input: {
   revalidatePath("/admin/orders");
   revalidatePath("/account");
 
-  if (updated.length === 0) return { ok: true }; // 既に返金済み。メールは重複送信しない。
+  // 既に反映済み（Webhook が先着した等）。メールは重複送信しない。
+  if (updated.length === 0) {
+    return { ok: true, refunded: totalRefunded, remaining: 0 };
+  }
 
-  // 未発送のまま返金したなら品物は蔵にあるので在庫に戻す。
-  // 発送後は手元に無いので戻さない（返品を受け取ったら /admin/inventory で足す）。
-  if (!hasLeftTheKura(current.status as OrderStatus)) {
+  // 未発送のまま**全額**返金したなら品物は蔵にあるので在庫に戻す。
+  // 発送後は手元に無いので戻さない（返品を受け取ったら /admin/products で足す）。
+  // 一部返金では戻さない — 金額からは、どの品を何本引き取ったか分からない。
+  if (isFullRefund && !hasLeftTheKura(current.status as OrderStatus)) {
     try {
       await restockCommitted(safeParseItems(current.itemsJson));
     } catch (err) {
@@ -396,13 +439,18 @@ export async function adminRefundOrderAction(input: {
       total: current.total,
       postalCode: current.postalCode,
       address: current.address,
-      refundAmount: current.total,
+      refundAmount: amount,
+      partial: !isFullRefund,
     });
   } catch (err) {
     console.error("[admin:refund] 返金メール送信に失敗:", err);
   }
 
-  return { ok: true };
+  return {
+    ok: true,
+    refunded: totalRefunded,
+    remaining: current.total - totalRefunded,
+  };
 }
 
 function safeParseItems(json: string): OrderLine[] {

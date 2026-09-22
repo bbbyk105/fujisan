@@ -47,6 +47,11 @@ export default async function OrderDetailPage({
 
   const canCancel =
     CANCELLABLE.has(order.status) && order.cancelRequestedAt === null;
+
+  // 一部返金の額。全額返金（status が refunded）はステータス表示で伝わるので、
+  // ここでは金額の内訳としてだけ扱う。
+  const partialRefund =
+    order.status === "refunded" ? 0 : (order.refundedAmount ?? 0);
   // 返金済み・キャンセル済みには領収書を出さない（発行条件はスキーマ側に集約）。
   const receiptAvailable = isReceiptIssuable(order.status);
 
@@ -227,6 +232,35 @@ export default async function OrderDetailPage({
                 ¥{yen.format(order.total)}
               </p>
             </div>
+
+            {/* 一部返金はステータスに出ない（注文は進行中のまま）ので、
+                金額としてここに必ず出す。出さないと返金に気づけない。 */}
+            {partialRefund > 0 && (
+              <div className="mt-4 border border-[#8B1A1A]/30 bg-[#8B1A1A]/[0.05] px-4 py-3">
+                <div className="flex items-baseline justify-between gap-3 text-[12.5px] text-[#8B1A1A]">
+                  <span className="font-semibold">
+                    <L en="Refunded" ja="ご返金済み" />
+                  </span>
+                  <span className="font-semibold tabular-nums">
+                    −¥{yen.format(partialRefund)}
+                  </span>
+                </div>
+                <div className="mt-2 flex items-baseline justify-between gap-3 text-[12.5px] text-[#0B1A2E]">
+                  <span>
+                    <L en="Net charged" ja="差引ご負担額" />
+                  </span>
+                  <span className="font-semibold tabular-nums">
+                    ¥{yen.format(order.total - partialRefund)}
+                  </span>
+                </div>
+                <p className="mt-2 text-[11px] leading-[1.7] text-[#0B1A2E]/65">
+                  <L
+                    en="The remainder of your order will still be shipped."
+                    ja="ご注文はこのまま発送いたします。"
+                  />
+                </p>
+              </div>
+            )}
 
             <div className="mt-8 flex flex-col gap-3">
               {receiptAvailable && (

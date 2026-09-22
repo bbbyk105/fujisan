@@ -51,6 +51,12 @@ export default async function ReceiptPage({
 
   // 発行日は支払い確定日。Webhook 前の古い注文に備えて注文日をフォールバックにする。
   const issuedAt = order.paidAt ?? order.createdAt;
+
+  // 一部返金された注文では、**いま手元に預かっている金額**を領収額とする。
+  // 返した分まで「領収いたしました」と書くと、事実と食い違う書面になる。
+  // （全額返金の注文はそもそも isReceiptIssuable が false で、ここへ来ない。）
+  const refunded = order.refundedAmount ?? 0;
+  const receiptedAmount = order.total - refunded;
   const addressee = order.customerName.trim() || "—";
 
   return (
@@ -104,11 +110,16 @@ export default async function ReceiptPage({
             金額（税込）
           </p>
           <p className="mt-2 font-serif text-[34px] font-semibold tracking-[0.06em]">
-            ¥{yen.format(order.total)}
+            ¥{yen.format(receiptedAmount)}
             <span className="ml-2 align-middle text-[13px] text-[#0B1A2E]/60">
               −
             </span>
           </p>
+          {refunded > 0 && (
+            <p className="mt-2 text-[11px] tracking-[0.06em] text-[#0B1A2E]/60">
+              ご請求 ¥{yen.format(order.total)} − ご返金 ¥{yen.format(refunded)}
+            </p>
+          )}
         </div>
 
         <p className="mt-6 text-[13px] leading-[1.9]">
@@ -166,6 +177,32 @@ export default async function ReceiptPage({
                 ¥{yen.format(order.total)}
               </td>
             </tr>
+            {refunded > 0 && (
+              <>
+                <tr>
+                  <td
+                    className="py-2.5 text-[11px] font-semibold tracking-[0.2em]"
+                    colSpan={3}
+                  >
+                    ご返金
+                  </td>
+                  <td className="py-2.5 text-right font-serif text-[14px] tabular-nums">
+                    −¥{yen.format(refunded)}
+                  </td>
+                </tr>
+                <tr className="border-t border-[#0B1A2E]/35">
+                  <td
+                    className="py-3 text-[11px] font-semibold tracking-[0.2em]"
+                    colSpan={3}
+                  >
+                    差引領収額
+                  </td>
+                  <td className="py-3 text-right font-serif text-[16px] font-semibold tabular-nums">
+                    ¥{yen.format(receiptedAmount)}
+                  </td>
+                </tr>
+              </>
+            )}
           </tfoot>
         </table>
 

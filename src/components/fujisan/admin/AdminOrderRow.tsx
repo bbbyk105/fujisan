@@ -56,6 +56,7 @@ type Props = {
     shippedAt: Date | null;
     deliveredAt: Date | null;
     refundedAt: Date | null;
+    refundedAmount: number | null;
     cancelRequestedAt: Date | null;
     cancelReason: string | null;
     createdAt: Date;
@@ -99,13 +100,19 @@ export function AdminOrderRow({ order, canRefund }: Props) {
   const [refundMsg, setRefundMsg] = useState<string | null>(null);
   const [refunding, startRefund] = useTransition();
 
+  // 返金の残額。一部返金した注文はここが減っていく。
+  const alreadyRefunded = order.refundedAmount ?? 0;
+  const remainingRefundable = Math.max(0, order.total - alreadyRefunded);
+  const [refundAmount, setRefundAmount] = useState(String(remainingRefundable));
+
   const dirty =
     status !== order.status ||
     carrier !== (order.trackingCarrier ?? "") ||
     number !== (order.trackingNumber ?? "");
 
-  // owner かつ「支払い済み・未返金」の注文にのみ返金ボタンを出す。
-  const showRefund = canRefund && REFUNDABLE.includes(order.status);
+  // owner かつ「支払い済み」で、まだ返せる残額がある注文にだけ返金欄を出す。
+  const showRefund =
+    canRefund && REFUNDABLE.includes(order.status) && remainingRefundable > 0;
 
   const handleSave = () => {
     setMessage(null);
@@ -130,21 +137,38 @@ export function AdminOrderRow({ order, canRefund }: Props) {
     forbidden: "返金は owner のみ可能です",
     invalid: "注文が見つかりません",
     not_refundable: "この注文は返金できません（未決済/返金済み）",
+    amount: "返金額は 1 円以上、残額以下で指定してください",
     config: "Stripe の設定が未完了です",
     stripe: "Stripe 返金に失敗しました",
     db: "返金は成立しましたが記録更新に失敗（要手動確認）",
   };
 
-  const handleRefund = () => {
+  /**
+   * 返金する。`amount` を省くと残額を全額返す。
+   * 全額かどうかで確認文と結果の文面を変える — 一部返金では注文が続くので、
+   * 「返金しました」だけだと発送を止めたと誤解されかねない。
+   */
+  const handleRefund = (amount?: number) => {
+    const isFull = amount === undefined || amount >= remainingRefundable;
+    const shown = amount ?? remainingRefundable;
     const ok = window.confirm(
-      `注文 ${order.orderRef} を全額（¥${yen.format(order.total)}）返金します。\nこの操作は取り消せません。よろしいですか？`,
+      isFull
+        ? `注文 ${order.orderRef} の残額すべて（¥${yen.format(shown)}）を返金します。\n注文は「返金済み」になります。この操作は取り消せません。よろしいですか？`
+        : `注文 ${order.orderRef} のうち ¥${yen.format(shown)} を返金します。\n注文は進行中のまま（発送は続きます）です。この操作は取り消せません。よろしいですか？`,
     );
     if (!ok) return;
     setRefundMsg(null);
     startRefund(async () => {
-      const res = await adminRefundOrderAction({ orderId: order.id });
+      const res = await adminRefundOrderAction({
+        orderId: order.id,
+        ...(isFull ? {} : { amountJpy: shown }),
+      });
       if (res.ok) {
-        setRefundMsg("返金しました。まもなく一覧に反映されます。");
+        setRefundMsg(
+          res.remaining > 0
+            ? `¥${yen.format(shown)} を返金しました（残額 ¥${yen.format(res.remaining)}）。`
+            : "全額を返金しました。まもなく一覧に反映されます。",
+        );
       } else {
         setRefundMsg(`返金失敗: ${REFUND_ERRORS[res.error] ?? res.error}`);
       }
@@ -354,33 +378,82 @@ export function AdminOrderRow({ order, canRefund }: Props) {
                   <p className="text-[10px] font-semibold tracking-[0.3em] text-crimson/80">
                     返金
                   </p>
+                  {alreadyRefunded > 0 && (
+                    <p className="mt-2 text-[11.5px] font-semibold text-crimson">
+                      返金済み ¥{yen.format(alreadyRefunded)} / 残額 ¥
+                      {yen.format(remainingRefundable)}
+                    </p>
+                  )}
                   <p className="mt-2 text-[11px] leading-[1.6] text-[#0B1A2E]/60">
-                    Stripe 経由で全額（¥{yen.format(order.total)}
-                    ）を返金し、お客様へ返金メールを送ります。取り消せません。
+                    Stripe 経由で返金し、お客様へ返金メールを送ります。取り消せません。
+                    一部だけ返した場合、注文は進行中のまま（発送は続きます）で、
+                    <strong className="font-semibold">在庫は自動では戻りません</strong>。
                   </p>
-                  <div className="mt-3 flex items-center gap-4">
+
+                  <div className="mt-3 flex flex-wrap items-center gap-3">
                     <button
                       type="button"
-                      onClick={handleRefund}
+                      onClick={() => handleRefund()}
                       disabled={refunding}
                       className="inline-flex cursor-pointer items-center gap-2 border border-crimson bg-transparent px-5 py-3 text-[11px] font-semibold tracking-[0.22em] text-crimson transition-colors hover:bg-crimson hover:text-paper-card disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {refunding
                         ? "返金処理中…"
-                        : `全額返金（¥${yen.format(order.total)}）`}
+                        : `全額返金（¥${yen.format(remainingRefundable)}）`}
                     </button>
-                    {refundMsg && (
-                      <span
-                        className={`text-[11.5px] leading-normal ${
-                          refundMsg.startsWith("返金失敗")
-                            ? "text-crimson"
-                            : "text-[#2F5A2F]"
-                        }`}
-                      >
-                        {refundMsg}
-                      </span>
-                    )}
+
+                    <span className="text-[11px] text-[#0B1A2E]/45">または</span>
+
+                    <label
+                      htmlFor={`refund-amount-${order.id}`}
+                      className="sr-only"
+                    >
+                      返金する金額（円）
+                    </label>
+                    <input
+                      id={`refund-amount-${order.id}`}
+                      type="number"
+                      min={1}
+                      max={remainingRefundable}
+                      step={1}
+                      inputMode="numeric"
+                      value={refundAmount}
+                      disabled={refunding}
+                      onChange={(e) => setRefundAmount(e.target.value)}
+                      className="w-28 border border-[#0B1A2E]/25 bg-white px-3 py-2.5 text-right text-[12.5px] tabular-nums text-[#0B1A2E] outline-none focus:border-crimson disabled:opacity-60"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const n = Number(refundAmount.trim());
+                        if (!Number.isInteger(n) || n < 1) {
+                          setRefundMsg("返金失敗: 金額は 1 円以上の整数で入力してください");
+                          return;
+                        }
+                        if (n > remainingRefundable) {
+                          setRefundMsg("返金失敗: 残額を超える金額は返金できません");
+                          return;
+                        }
+                        handleRefund(n);
+                      }}
+                      disabled={refunding}
+                      className="cursor-pointer border border-[#0B1A2E]/30 bg-transparent px-4 py-2.5 text-[11px] font-semibold tracking-[0.18em] text-[#0B1A2E] transition-colors hover:border-[#0B1A2E] disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      この額を返金
+                    </button>
                   </div>
+
+                  {refundMsg && (
+                    <p
+                      className={`mt-3 text-[11.5px] leading-normal ${
+                        refundMsg.startsWith("返金失敗")
+                          ? "text-crimson"
+                          : "text-[#2F5A2F]"
+                      }`}
+                    >
+                      {refundMsg}
+                    </p>
+                  )}
                 </div>
               )}
             </div>

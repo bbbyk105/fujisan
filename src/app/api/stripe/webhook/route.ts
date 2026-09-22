@@ -1,5 +1,5 @@
 import type Stripe from "stripe";
-import { and, eq, ne } from "drizzle-orm";
+import { and, eq, isNull, lt, ne, or } from "drizzle-orm";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getStripe, verifyStripeSignature } from "@/lib/stripe";
 import { getDb } from "@/db";
@@ -194,11 +194,15 @@ async function discardPendingOrder(
 /**
  * Stripe 側で成立した返金を注文に反映する。
  *
+ * ダッシュボードから直接返金された場合も、管理画面の返金ボタンから来た場合も、
+ * 同じこの経路を通る。**全額・一部のどちらも DB に残す。**
+ *
  * - 対象は PaymentIntent で引き当てる（管理画面経由なら保存済み）。
- * - **全額返金のときだけ** status を refunded にする。部分返金はこのスキーマで
- *   表現できないため、勝手に「全額返金済み」にせず人へ知らせる。
- * - 冪等: `status != 'refunded'` 付きの UPDATE。管理画面の返金ボタンから来た
- *   場合は既に refunded なので更新行ゼロとなり、返金メールも重複しない。
+ * - `status` を `refunded` にするのは**全額返し切ったときだけ**。一部返金では
+ *   ステータスを動かさない（その注文はまだ発送する予定のもの）。
+ * - 冪等: 「これまでの累計より増えているときだけ」更新する。管理画面から
+ *   返金した直後に同じ額の Webhook が来ても更新行ゼロとなり、
+ *   累計の二重計上も返金メールの重複送信も起きない。
  */
 async function syncRefundFromStripe(charge: Stripe.Charge): Promise<void> {
   const paymentIntentId = paymentIntentIdOf(charge.payment_intent);
@@ -212,46 +216,63 @@ async function syncRefundFromStripe(charge: Stripe.Charge): Promise<void> {
     .limit(1);
   if (!row) return; // 当方の注文に紐づかない charge は無視
 
-  // 部分返金: 金額の一部だけ戻っている状態。スキーマに持てないので人に委ねる。
-  if (!charge.refunded || charge.amount_refunded < charge.amount) {
-    await alertOps(
-      "部分返金が行われました（手動対応が必要）",
-      [
-        `注文番号: ${row.orderRef}`,
-        `charge: ${charge.id}`,
-        `返金額: ¥${charge.amount_refunded.toLocaleString("ja-JP")} / ¥${charge.amount.toLocaleString("ja-JP")}`,
-        "",
-        "部分返金は注文ステータスに反映されません（全額返金のみ対応）。必要なら手動で調整してください。",
-      ].join("\n"),
-    );
-    return;
-  }
-
+  const refundedTotal = charge.amount_refunded;
+  if (refundedTotal <= 0) return;
+  // 全額返金かは**注文の総額**で判定する（charge の金額ではなく）。
+  // 送料込みの total と charge.amount は一致する作りだが、判定の拠り所を
+  // 注文側に置いておかないと、将来ずれたときに状態が食い違う。
+  const isFullRefund = refundedTotal >= row.total;
   const refundId = charge.refunds?.data?.[0]?.id ?? null;
+
   const updated = await db
     .update(orderTable)
     .set({
-      status: "refunded",
+      ...(isFullRefund ? { status: "refunded" as const } : {}),
       refundedAt: new Date(),
+      refundedAmount: refundedTotal,
       // 既に控えがある場合は上書きしない（管理画面経由の返金 id を残す）。
       ...(refundId && !row.stripeRefundId ? { stripeRefundId: refundId } : {}),
     })
     .where(
-      and(eq(orderTable.id, row.id), ne(orderTable.status, "refunded")),
+      and(
+        eq(orderTable.id, row.id),
+        ne(orderTable.status, "refunded"),
+        // 累計が増えるときだけ反映する。これが冪等性の要。
+        or(
+          isNull(orderTable.refundedAmount),
+          lt(orderTable.refundedAmount, refundedTotal),
+        ),
+      ),
     )
     .returning({ id: orderTable.id });
 
   if (updated.length === 0) return; // 既に反映済み（管理画面から返金した等）
 
-  // 未発送のまま返金したなら品物は蔵にあるので在庫に戻す。
-  // 発送後（shipped / delivered）は手元に戻っていないので戻さない
-  // （返品を受け取ったら /admin/inventory で手で足す）。
-  if (!hasLeftTheKura(row.status as OrderStatus)) {
-    try {
-      await restockCommitted(safeParseItems(row.itemsJson));
-    } catch (err) {
-      console.error("[stripe:webhook] 返金に伴う在庫の戻しに失敗:", err);
+  if (isFullRefund) {
+    // 未発送のまま全額返金したなら品物は蔵にあるので在庫に戻す。
+    // 発送後（shipped / delivered）は手元に戻っていないので戻さない
+    // （返品を受け取ったら /admin/products で手で足す）。
+    if (!hasLeftTheKura(row.status as OrderStatus)) {
+      try {
+        await restockCommitted(safeParseItems(row.itemsJson));
+      } catch (err) {
+        console.error("[stripe:webhook] 返金に伴う在庫の戻しに失敗:", err);
+      }
     }
+  } else {
+    // 一部返金では在庫を自動では戻さない — 金額からは、どの品を何本
+    // 引き取ったのかが分からない。人が数えて入れる必要があるので知らせる。
+    await alertOps(
+      "一部返金が行われました（在庫の確認をお願いします）",
+      [
+        `注文番号: ${row.orderRef}`,
+        `charge: ${charge.id}`,
+        `返金累計: ¥${refundedTotal.toLocaleString("ja-JP")} / ¥${row.total.toLocaleString("ja-JP")}`,
+        "",
+        "注文は進行中のままです（発送は続きます）。",
+        "品物を引き取った場合は /admin/products で在庫を足してください。",
+      ].join("\n"),
+    );
   }
 
   // 返金メールはベストエフォート。返金自体は Stripe 側で成立している。
@@ -267,7 +288,10 @@ async function syncRefundFromStripe(charge: Stripe.Charge): Promise<void> {
       total: row.total,
       postalCode: row.postalCode,
       address: row.address,
-      refundAmount: charge.amount_refunded,
+      // 今回の Webhook で分かるのは**累計**。直前の累計との差分を出すことも
+      // できるが、ダッシュボード返金では控えが無い場合もあるため累計を出す。
+      refundAmount: refundedTotal,
+      partial: !isFullRefund,
     });
   } catch (err) {
     console.error("[stripe:webhook] 返金メール送信に失敗:", err);
@@ -352,7 +376,7 @@ async function fulfillOrder(
         `注文番号: ${row.orderRef}`,
         `error: ${err instanceof Error ? err.message : "unknown"}`,
         "",
-        "/admin/inventory で実在庫を突き合わせてください。",
+        "/admin/products で実在庫を突き合わせてください。",
       ].join("\n"),
     );
   }
