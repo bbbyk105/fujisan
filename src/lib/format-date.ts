@@ -56,3 +56,42 @@ export const formatMonthJp = (d: Date): string =>
     year: "numeric",
     month: "long",
   }).format(d);
+
+/** 例: 9/20 14:05（ダッシュボードの一覧向け。年を省いた詰まった表示） */
+export const formatDayTimeJp = (d: Date): string =>
+  new Intl.DateTimeFormat("ja-JP", {
+    timeZone: JST,
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(d);
+
+/**
+ * 日本標準時の UTC からの差。日本は**夏時間を採用していない**ので固定値でよい。
+ * （夏時間のある地域を扱うようになったら、この定数では足りなくなる。）
+ */
+const JST_OFFSET_MS = 9 * 60 * 60 * 1000;
+
+/**
+ * 日本時間のその日 0:00 を UTC の Date で返す。
+ *
+ * 集計の期間を切るのに使う。Worker は UTC で動くため、素朴に
+ * `setUTCHours(0,0,0,0)` とすると日本時間の 09:00 で日が変わることになり、
+ * 朝に入った注文が前日の売上に混ざる。
+ */
+export const jstDayStart = (now: Date): Date => {
+  const jst = new Date(now.getTime() + JST_OFFSET_MS);
+  return new Date(
+    Date.UTC(jst.getUTCFullYear(), jst.getUTCMonth(), jst.getUTCDate()) -
+      JST_OFFSET_MS,
+  );
+};
+
+/** 日本時間のその月 1 日 0:00 を UTC の Date で返す。 */
+export const jstMonthStart = (now: Date): Date => {
+  const jst = new Date(now.getTime() + JST_OFFSET_MS);
+  return new Date(
+    Date.UTC(jst.getUTCFullYear(), jst.getUTCMonth(), 1) - JST_OFFSET_MS,
+  );
+};

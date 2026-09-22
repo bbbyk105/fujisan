@@ -314,3 +314,15 @@ export function isVolumeSoldOut(volume: FujisanVolume): boolean {
 export function isProductSoldOut(product: FujisanProduct): boolean {
   return product.volumes.every((v) => v.soldOut === true);
 }
+
+/**
+ * SKU の一意キー（`${slug}__${ml}`）。
+ *
+ * 在庫・価格・実勢カタログ・クライアントのキャッシュで同じ規則を使う。
+ * 各所で文字列連結を書くと、片方だけ `-` 区切りにした瞬間に
+ * 「引けるはずの行が引けない」種類のバグになる。
+ * この関数はサーバー専用の依存を持たないので、クライアントからも読める。
+ */
+export function skuKey(slug: string, ml: number): string {
+  return `${slug}__${ml}`;
+}

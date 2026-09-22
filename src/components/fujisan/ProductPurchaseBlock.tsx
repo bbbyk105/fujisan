@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 import { UNDERAGE_NOTICE_EN, UNDERAGE_NOTICE_JP } from "@/data/fujisan-legal";
 import type { FujisanVolume } from "@/data/fujisan-products";
 import { useCart } from "@/lib/cart/useCart";
+import { LivePrice } from "@/components/fujisan/LivePrice";
 import { pushToast } from "@/lib/cart/toast-store";
 import { L } from "@/i18n/Localized";
 
@@ -25,7 +26,6 @@ type Props = {
   shippingNoteEn: string;
 };
 
-const yen = new Intl.NumberFormat("ja-JP");
 
 export default function ProductPurchaseBlock({
   slug,
@@ -96,7 +96,7 @@ export default function ProductPurchaseBlock({
 
           {/* 金額は年齢確認より小さくする（国税局指導）。拡大しないこと。 */}
           <p className="mt-6 font-serif text-[22px] font-semibold leading-[1.15] tracking-[0.02em] text-[#0B1A2E] md:text-[24px]">
-            ¥{yen.format(selected.priceJpy)}
+            <LivePrice slug={slug} ml={selected.ml} fallback={selected.priceJpy} />
             <span className="ml-2 align-middle text-[12px] font-medium tracking-[0.18em] text-[#0B1A2E]/60">
               <L en="(tax incl.)" ja="（税込）" />
             </span>
@@ -130,7 +130,7 @@ export default function ProductPurchaseBlock({
                         vSoldOut ? "line-through" : ""
                       } ${active ? "text-paper-card/75" : "text-[#0B1A2E]/70"}`}
                     >
-                      ¥{yen.format(v.priceJpy)}
+                      <LivePrice slug={slug} ml={v.ml} fallback={v.priceJpy} />
                     </span>
                     {vSoldOut ? (
                       <span

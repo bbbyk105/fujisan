@@ -7,6 +7,8 @@
 // スタブで戻り値を作ると、その SQL を検証したことにならない。
 // そこで node:sqlite のインメモリ DB に drizzle が生成した実際の SQL を流す。
 
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { drizzle } from "drizzle-orm/sqlite-proxy";
 
@@ -58,20 +60,26 @@ function seed(slug: string, ml: number, onHand: number, reserved = 0) {
     .run(slug, ml, onHand, reserved);
 }
 
+/**
+ * `drizzle/` のマイグレーションをそのまま流して同じ表を作る。
+ *
+ * 以前はここに CREATE TABLE を手書きしていたが、列を足したときに
+ * **本番のスキーマとテストのスキーマが静かにずれた**（テストだけが古い表で
+ * 通り続ける）。実ファイルを読めば、マイグレーションを足し忘れた時点で落ちる。
+ */
+function applyMigrations(): void {
+  const dir = join(__dirname, "../../../drizzle");
+  for (const file of ["0009_inventory.sql", "0012_product_price.sql"]) {
+    const sql = readFileSync(join(dir, file), "utf8");
+    for (const stmt of sql.split("--> statement-breakpoint")) {
+      if (stmt.trim()) sqlite.exec(stmt);
+    }
+  }
+}
+
 beforeEach(() => {
   sqlite = new DatabaseSync(":memory:");
-  sqlite.exec(`
-    CREATE TABLE inventory (
-      product_slug TEXT NOT NULL,
-      ml INTEGER NOT NULL,
-      on_hand INTEGER DEFAULT 0 NOT NULL,
-      reserved INTEGER DEFAULT 0 NOT NULL,
-      updated_by_email TEXT,
-      updated_at INTEGER NOT NULL,
-      created_at INTEGER NOT NULL,
-      PRIMARY KEY (product_slug, ml)
-    );
-  `);
+  applyMigrations();
   seed("shogun", 300, 3);
   seed("kokoro", 300, 1);
 });

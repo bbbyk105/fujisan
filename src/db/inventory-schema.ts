@@ -7,7 +7,7 @@ import { sqliteTable, text, integer, primaryKey } from "drizzle-orm/sqlite-core"
  * **オプトイン方式**: 行が存在する SKU だけを在庫管理の対象とする。
  * 行が無い SKU は「数量無制限」として従来どおり売れる。こうしないと、
  * デプロイした瞬間に全 SKU が在庫 0 になって販売が止まってしまう。
- * 蔵で本数を数え終わった SKU から `/admin/inventory` で管理を開始する。
+ * 蔵で本数を数え終わった SKU から `/admin/products` で管理を開始する。
  *
  * カタログ側（`fujisan-products.ts`）の `soldOut` フラグは引き続き有効で、
  * 在庫数とは独立した「販売停止」スイッチとして働く。
@@ -34,6 +34,12 @@ export const inventory = sqliteTable(
     /** 決済待ちで確保中の本数。`onHand - reserved` が販売可能数。 */
     reserved: integer("reserved").notNull().default(0),
 
+    /**
+     * 販売可能数がこの本数以下になったら管理画面で「在庫僅少」として報せる。
+     * 売り止めはしない — あくまで蔵に仕込みを促すための目安。
+     */
+    lowStockThreshold: integer("low_stock_threshold").notNull().default(6),
+
     /** 在庫を最後に手で調整した管理者（監査用）。 */
     updatedByEmail: text("updated_by_email"),
     updatedAt: integer("updated_at", { mode: "timestamp_ms" })
@@ -55,4 +61,8 @@ export type StockLevel = {
   reserved: number;
   /** 今すぐ売れる本数（onHand - reserved、負にはしない）。 */
   available: number;
+  /** 「在庫僅少」と見なす本数のしきい値。 */
+  lowStockThreshold: number;
+  /** 在庫僅少か（0 本は完売であって僅少ではないので false）。 */
+  lowStock: boolean;
 };

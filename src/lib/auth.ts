@@ -134,7 +134,9 @@ async function authBuilder() {
   // 必ずプラグイン配列の最後に置く。
   const { nextCookies } = await import("better-auth/next-js");
   const { eq } = await import("drizzle-orm");
-  const { user: userTable, teamInvite } = await import("@/db/schema");
+  const { user: userTable, teamInvite, TEAM_INVITE_TTL_MS } = await import(
+    "@/db/schema"
+  );
   const { env } = await getCloudflareContext({ async: true });
   const db = await getDb();
 
@@ -148,12 +150,28 @@ async function authBuilder() {
           // 登録経路（メール/パスワード・Google）を問わず共通で効く。
           after: async (created: { id: string; email: string }) => {
             const email = created.email.trim().toLowerCase();
-            const invite = await db
-              .select({ adminRole: teamInvite.adminRole })
+            const [invite] = await db
+              .select({
+                adminRole: teamInvite.adminRole,
+                createdAt: teamInvite.createdAt,
+              })
               .from(teamInvite)
               .where(eq(teamInvite.email, email))
               .limit(1);
-            const role = invite[0]?.adminRole;
+            if (!invite) return;
+
+            // 期限切れの招待では権限を付与せず、その場で捨てる。
+            // 残しておくと、次に同じアドレスで登録した人にまた判定が走る。
+            const issuedAt = new Date(invite.createdAt).getTime();
+            if (
+              !Number.isFinite(issuedAt) ||
+              Date.now() - issuedAt > TEAM_INVITE_TTL_MS
+            ) {
+              await db.delete(teamInvite).where(eq(teamInvite.email, email));
+              return;
+            }
+
+            const role = invite.adminRole;
             if (role !== "owner" && role !== "staff") return;
             await db
               .update(userTable)
