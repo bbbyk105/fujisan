@@ -12,15 +12,25 @@ import {
 import { FieldError } from "@/components/fujisan/FieldError";
 import { scrollToFirstError } from "@/lib/scrollToFirstError";
 import { L } from "@/i18n/Localized";
+import { useLocale } from "@/i18n/useLocale";
+import {
+  TRADE_BUSINESS_TYPES,
+  TRADE_BUSINESS_TYPE_LABELS,
+  requiresLiquorLicence,
+  type TradeBusinessType,
+} from "@/data/fujisan-trade";
 import { Field, inputCls, PrimaryButton, Notice } from "./ui";
 import { ResendVerification } from "./ResendVerification";
 
 export function RegisterBusinessForm() {
+  const locale = useLocale();
   const [companyName, setCompanyName] = useState("");
   const [contactName, setContactName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
+  const [businessType, setBusinessType] = useState<TradeBusinessType | "">("");
+  const [licenceNumber, setLicenceNumber] = useState("");
   const [password, setPassword] = useState("");
   const [errorKey, setErrorKey] = useState<AuthErrorKey | null>(null);
   const [fieldErrors, setFieldErrors] = useState<
@@ -46,6 +56,8 @@ export function RegisterBusinessForm() {
       email,
       phone,
       address,
+      businessType,
+      licenceNumber,
       password,
     });
     setFieldErrors(errors);
@@ -61,6 +73,8 @@ export function RegisterBusinessForm() {
       companyName,
       phone,
       address,
+      businessType,
+      licenceNumber,
     });
     setSubmitting(false);
     if (!res.ok) {
@@ -75,8 +89,8 @@ export function RegisterBusinessForm() {
       <div className="flex flex-col gap-6">
         <Notice tone="success">
           <L
-            en={`We've sent a confirmation link to ${email}. Verify your address, then sign in to view trade pricing.`}
-            ja={`${email} に確認メールを送信しました。メールアドレスを認証のうえログインすると、卸価格をご覧いただけます。`}
+            en={`We've sent a confirmation link to ${email}. Verify your address — then we review your application and reply within two business days. Wholesale pricing appears once the account is approved.`}
+            ja={`${email} に確認メールを送信しました。メールアドレスをご認証ください。お申し込みの内容を蔵で確認のうえ、2 営業日以内に審査の結果をご連絡します。卸価格は承認後に表示されます。`}
           />
         </Notice>
         <ResendVerification email={email} role="business" />
@@ -189,6 +203,71 @@ export function RegisterBusinessForm() {
         />
       </Field>
 
+      <Field id="biz-type" label="BUSINESS TYPE" jp="業態" required>
+        <select
+          id="biz-type"
+          aria-invalid={Boolean(fieldErrors.businessType)}
+          value={businessType}
+          onChange={(e) => {
+            setBusinessType(e.target.value as TradeBusinessType);
+            clearError("businessType");
+            clearError("licenceNumber");
+          }}
+          className={inputCls}
+        >
+          {/* option の中では <L> が両言語とも見えてしまうので、
+              属性値と同じく useLocale() で文言を切り替える。 */}
+          <option value="">
+            {locale === "ja" ? "― 選択してください ―" : "— Select —"}
+          </option>
+          {TRADE_BUSINESS_TYPES.map((type) => (
+            <option key={type} value={type}>
+              {TRADE_BUSINESS_TYPE_LABELS[type][locale]}
+            </option>
+          ))}
+        </select>
+        {businessType && (
+          <p className="mt-2 text-[11px] leading-[1.7] text-[#0F1F36]/55">
+            <L
+              en={TRADE_BUSINESS_TYPE_LABELS[businessType].note.en}
+              ja={TRADE_BUSINESS_TYPE_LABELS[businessType].note.ja}
+            />
+          </p>
+        )}
+        <FieldError error={fieldErrors.businessType} />
+      </Field>
+
+      {/* 免許番号は転売する業態でのみ必須。飲食店・宿泊施設の店内提供は
+          「販売」ではないので、一律に求めない。 */}
+      {businessType && requiresLiquorLicence(businessType) && (
+        <Field
+          id="biz-licence"
+          label="LIQUOR LICENCE"
+          jp="酒類販売業免許番号"
+          required
+        >
+          <input
+            id="biz-licence"
+            type="text"
+            aria-invalid={Boolean(fieldErrors.licenceNumber)}
+            value={licenceNumber}
+            onChange={(e) => {
+              setLicenceNumber(e.target.value);
+              clearError("licenceNumber");
+            }}
+            className={inputCls}
+            placeholder="〇〇税務署 第〇〇号"
+          />
+          <p className="mt-2 text-[11px] leading-[1.7] text-[#0F1F36]/55">
+            <L
+              en="We verify the licence before opening your account."
+              ja="口座開設の前に、蔵で内容を確認いたします。"
+            />
+          </p>
+          <FieldError error={fieldErrors.licenceNumber} />
+        </Field>
+      )}
+
       <Field id="biz-password" label="PASSWORD" jp="パスワード（8文字以上）" required>
         <input
           id="biz-password"
@@ -208,16 +287,16 @@ export function RegisterBusinessForm() {
 
       <p className="text-[11px] leading-[1.65] text-[#0F1F36]/55">
         <L
-          en="Trade pricing is shown only to signed-in business accounts. By creating an account you confirm your business handles, or is licensed to handle, alcoholic beverages."
-          ja="卸価格はログインした法人アカウントのみに表示されます。登録をもって、貴社が酒類を取り扱う（または取り扱う免許を有する）ことを確認したものとみなします。"
+          en="Registering opens an application, not an account. We check the details by hand — wholesale pricing is shown only after approval. By applying you confirm your business handles, or is licensed to handle, alcoholic beverages."
+          ja="ご登録は「お申し込み」です。内容を蔵で確認のうえ承認した後に、卸価格が表示されます。お申し込みをもって、貴社が酒類を取り扱う（または取り扱う免許を有する）ことを確認したものとみなします。"
         />
       </p>
 
       <PrimaryButton disabled={submitting}>
         {submitting ? (
-          <L en="CREATING…" ja="登録中…" />
+          <L en="SUBMITTING…" ja="送信中…" />
         ) : (
-          <L en="CREATE TRADE ACCOUNT" ja="取扱店アカウントを作成" />
+          <L en="APPLY FOR A TRADE ACCOUNT" ja="取扱口座を申し込む" />
         )}
       </PrimaryButton>
 

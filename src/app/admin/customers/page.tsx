@@ -6,7 +6,7 @@ import { LogoutButton } from "@/components/fujisan/auth/LogoutButton";
 import { getSession } from "@/lib/session";
 import { getEffectiveAdminRole, isStaffOrAbove, isOwner } from "@/lib/admin";
 import { adminListBusinessAccountsAction } from "@/lib/actions/admin-customers";
-import { formatDateShortJp } from "@/lib/format-date";
+import { AdminTradeRow } from "@/components/fujisan/admin/AdminTradeRow";
 import { buildMetadata } from "@/lib/seo";
 
 export const metadata = buildMetadata({
@@ -37,6 +37,10 @@ export default async function AdminCustomersPage(props: {
 
   const res = await adminListBusinessAccountsAction({ q: q || undefined });
   const accounts = res.ok ? res.accounts : [];
+  // 「未申請（旧アカウント）」も承認しないと卸価格が出ないので審査待ちに数える。
+  const awaitingReview = accounts.filter(
+    (a) => a.tradeStatus === "pending" || a.tradeStatus === null,
+  ).length;
 
   return (
     <main className="flex min-h-screen flex-col bg-paper text-[#0B1A2E]">
@@ -59,17 +63,30 @@ export default async function AdminCustomersPage(props: {
               法人・取扱店アカウント
             </h1>
             <p className="mt-4 max-w-[46ch] text-[13px] leading-[1.85] tracking-[0.02em] text-[#F2E4C7]/72">
-              法人登録された会社情報の一覧です。会社名・ご担当者・連絡先・所在地を確認できます。
+              法人登録された会社情報と、取扱口座の審査状況です。
+              <strong className="font-semibold text-[#E2C97E]">
+                承認するまで卸価格は表示されません。
+              </strong>
+              免許番号と業態を確認のうえ、承認または見送りを選んでください。
             </p>
           </div>
 
-          <dl className="grid grid-cols-1 gap-y-2">
+          <dl className="grid grid-cols-2 gap-x-8 gap-y-2">
             <div className="flex flex-col gap-1">
               <dt className="text-[9px] font-semibold tracking-[0.32em] text-[#F2E4C7]/55">
                 ACCOUNTS
               </dt>
               <dd className="font-serif text-[18px] tracking-[0.02em] text-[#F2E4C7]">
                 {accounts.length}
+                <span className="ml-1 text-[11px] text-[#F2E4C7]/55">社</span>
+              </dd>
+            </div>
+            <div className="flex flex-col gap-1">
+              <dt className="text-[9px] font-semibold tracking-[0.32em] text-[#E2C97E]">
+                審査待ち
+              </dt>
+              <dd className="font-serif text-[18px] tracking-[0.02em] text-[#E2C97E]">
+                {awaitingReview}
                 <span className="ml-1 text-[11px] text-[#F2E4C7]/55">社</span>
               </dd>
             </div>
@@ -122,33 +139,7 @@ export default async function AdminCustomersPage(props: {
         ) : (
           <ul className="mt-6 flex flex-col gap-3">
             {accounts.map((a) => (
-              <li
-                key={a.id}
-                className="border border-[#0B1A2E]/12 bg-white px-6 py-5"
-              >
-                <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-                  <h2 className="font-serif text-[16px] font-semibold tracking-[0.04em] text-[#0B1A2E]">
-                    {a.companyName || "（会社名未登録）"}
-                  </h2>
-                  <span
-                    className={`text-[10px] font-semibold tracking-[0.24em] ${
-                      a.emailVerified ? "text-[#2F5A2F]" : "text-[#8B1A1A]"
-                    }`}
-                  >
-                    {a.emailVerified ? "メール認証済" : "メール未認証"}
-                  </span>
-                </div>
-
-                <dl className="mt-4 grid grid-cols-1 gap-x-10 gap-y-4 sm:grid-cols-2 lg:grid-cols-4">
-                  <Field label="ご担当者" value={a.contactName} />
-                  <Field label="メール" value={a.email} />
-                  <Field label="電話" value={a.phone} />
-                  <Field label="ご登録" value={formatDateShortJp(a.createdAt)} />
-                  <div className="sm:col-span-2 lg:col-span-4">
-                    <Field label="所在地" value={a.address} />
-                  </div>
-                </dl>
-              </li>
+              <AdminTradeRow key={a.id} account={a} />
             ))}
           </ul>
         )}
@@ -189,19 +180,6 @@ export default async function AdminCustomersPage(props: {
 
       <FujisanFooter />
     </main>
-  );
-}
-
-function Field({ label, value }: { label: string; value?: string | null }) {
-  return (
-    <div className="flex flex-col gap-1">
-      <span className="text-[9.5px] font-semibold tracking-[0.28em] text-[#0B1A2E]/50">
-        {label}
-      </span>
-      <span className="text-[13px] leading-[1.6] text-[#0B1A2E]/85">
-        {value || "—"}
-      </span>
-    </div>
   );
 }
 

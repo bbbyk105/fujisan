@@ -14,8 +14,8 @@ BtoC（個人）と BtoB（法人取扱店・卸価格表示）の二系統の�
 ## アーキテクチャ
 
 - **デプロイ**: `@opennextjs/cloudflare` で Cloudflare Workers へ。`wrangler.jsonc` が正（worker 名 `fujisan`、D1 バインディング `DB` = `fujisan-db`）。Vercel ではない。
-- **DB**: Cloudflare D1 (SQLite) + Drizzle ORM。スキーマは `src/db/`（auth / orders / invite / contact / inventory に分割、`schema.ts` が re-export）。マイグレーション SQL は `drizzle/`（`wrangler d1 migrations apply fujisan-db [--local|--remote]` で適用）。D1 バインディングはリクエスト時にしか取れないため、必ず `getDb()`（`src/db/index.ts`）経由で毎回取得する。
-- **認証**: Better Auth + Drizzle アダプタ。メール認証必須・Google ログインは env 設定時のみ有効。`user.role` は `personal | business`（法人は companyName 等の追加フィールドあり）。管理者は `owner | staff` の2階層（`src/lib/admin.ts`。**`ADMIN_EMAILS` env は必須**（未設定だと env owner は 0 人。ソースにフォールバックのアドレスは置かない）、メール招待 `teamInvite` → 登録時に `databaseHooks.user.create.after` でロール付与）。
+- **DB**: Cloudflare D1 (SQLite) + Drizzle ORM。スキーマは `src/db/`（auth / orders / invite / contact / inventory / trade に分割、`schema.ts` が re-export）。マイグレーション SQL は `drizzle/`（`wrangler d1 migrations apply fujisan-db [--local|--remote]` で適用）。D1 バインディングはリクエスト時にしか取れないため、必ず `getDb()`（`src/db/index.ts`）経由で毎回取得する。
+- **認証**: Better Auth + Drizzle アダプタ。メール認証必須・Google ログインは env 設定時のみ有効。`user.role` は `personal | business`（法人は companyName 等の追加フィールドあり。**`business` は「法人として登録した」だけで、卸価格の可否は `trade_account` の審査で決まる** — 下記「取扱店（BtoB）の承認」）。管理者は `owner | staff` の2階層（`src/lib/admin.ts`。**`ADMIN_EMAILS` env は必須**（未設定だと env owner は 0 人。ソースにフォールバックのアドレスは置かない）、メール招待 `teamInvite` → 登録時に `databaseHooks.user.create.after` でロール付与）。
 - **Server Actions 中心**: ミューテーションは `src/lib/actions/`（checkout / orders / account / contact / admin-*）。API Route は Better Auth の `/api/auth/[...all]` と Stripe Webhook のみ。middleware は無く、ガードは各ページ/アクション内で `getSession()` / `getEffectiveAdminRole()`。
 - **商品データはコード内カタログ**: `src/data/fujisan-products.ts`（小売価格・卸価格・容量 SKU）。DB に商品テーブルは無い。価格変更＝このファイルの編集。**在庫数だけは D1**（`inventory` 表、下記）。
 - **command-center/** はダッシュボード用の別 Vite アプリ（jest 対象外）。本体とはビルドも独立。
@@ -76,6 +76,16 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 - 領収書は PDF を生成せず、印刷（ブラウザの「PDF として保存」）に最適化したページとして出す。電子発行のため収入印紙は不要。適格請求書の登録番号は `INVOICE_REGISTRATION_NUMBER` が null のあいだ行ごと出さない。
 - **キャンセルは「依頼」であって実行ではない**。`requestOrderCancellationAction` は発送前（confirmed / preparing）に `cancel_requested_at` を刻んで ops へ通知するだけ。返金の実行は従来どおり owner だけが `adminRefundOrderAction` から行う（お客様の操作でお金が動く経路は作らない）。
 - 注文ステータスの表示は `OrderStatusPill`（`Record<OrderStatus, …>` なので新ステータス追加時に型で漏れが出る）と `OrderTimeline`（cancelled / refunded は進行段階ではないので専用表示）。
+
+## 取扱店（BtoB）の承認
+
+- **卸価格の表示条件は `user.role === "business"` ではなく `trade_account.status === "approved"`**（`src/lib/trade.ts` の `canSeeWholesalePricing`）。登録は自己申告なので role だけを条件にすると誰でも卸価格を見られる。`WholesalePriceList` / `TradeAccessBand` / `/account` はすべてこの判定を通す。
+- **行が無い＝未承認**。この機能より前に登録した法人には行が無いので、`/admin/customers` から承認すると upsert で行ができる（`adminReviewTradeAccountAction`）。ここを「行が無ければ許可」にすると、旧アカウントに素通りされる。
+- 審査状況の取得に失敗したときは**見せない側に倒す**。一度表示した価格は取り消せない。
+- 業態は `src/data/fujisan-trade.ts` が唯一の出どころ（クライアントからも読めるようサーバー依存を持たせない）。**酒類販売業免許番号を必須にするのは転売する業態（`retailer` / `wholesaler`）だけ** — 飲食店・宿泊施設の店内提供は「販売」ではないので免許が要らない。実態に合わない項目を必須にすると、正しい相手を弾いて嘘の入力を誘発する。
+- 登録（`registerBusinessAction`）は **サインアップ成功後に pending 行を作る**。行の作成やメールに失敗しても登録は取り消さない（取りこぼしても未承認扱いなので価格は漏れない）。
+- 見送りの理由（`review_note`）は**そのままお客様へのメールに載る**。管理画面の入力欄にもその旨を書いてある。
+- `"use server"` のファイルは async 関数以外を export できないため、`TRADE_REVIEW_NOTE_MAX` のような定数は `src/data/fujisan-trade.ts` 側に置く（Server Action と同居させるとビルドが落ちる）。
 
 ## お問い合わせ
 

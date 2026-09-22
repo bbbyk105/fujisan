@@ -1,4 +1,9 @@
 import { z } from "zod";
+import {
+  TRADE_BUSINESS_TYPES,
+  requiresLiquorLicence,
+  type TradeBusinessType,
+} from "@/data/fujisan-trade";
 
 /** UI でローカライズして表示するためのエラーキー（メッセージ文字列ではなくキーを返す）。 */
 export type FieldErrorKey =
@@ -43,14 +48,52 @@ export const registerPersonalSchema = z.object({
   password,
 });
 
-export const registerBusinessSchema = z.object({
-  companyName: requiredString,
-  contactName: requiredString,
-  email: emailString,
-  phone: z.string().optional(),
-  address: z.string().optional(),
-  password,
-});
+/**
+ * 法人（取扱店）の新規登録。
+ *
+ * 業態は必須。**免許番号は転売する業態でだけ必須**にする
+ * （飲食店・宿泊施設が店内で提供するのは「販売」ではないため。
+ * 実態に合わない項目を必須にすると、正しい相手を弾いて嘘の入力を誘発する）。
+ */
+export const registerBusinessSchema = z
+  .object({
+    companyName: requiredString,
+    contactName: requiredString,
+    email: emailString,
+    phone: z.string().optional(),
+    address: z.string().optional(),
+    // z.string() だと未送信（undefined）のとき zod 既定の英文メッセージが出て
+    // FieldErrorKey にならないため、unknown を受けて自前のキーで弾く。
+    businessType: z
+      .unknown()
+      .refine(
+        (v) =>
+          typeof v === "string" &&
+          TRADE_BUSINESS_TYPES.includes(v as TradeBusinessType),
+        "required",
+      ),
+    licenceNumber: z.string().optional(),
+    password,
+  })
+  .superRefine((data, ctx) => {
+    const type = data.businessType;
+    if (
+      typeof type !== "string" ||
+      !TRADE_BUSINESS_TYPES.includes(type as TradeBusinessType)
+    ) {
+      return; // 業態が未選択なら、免許の要否は判定できない
+    }
+    if (
+      requiresLiquorLicence(type as TradeBusinessType) &&
+      (data.licenceNumber ?? "").trim().length === 0
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["licenceNumber"],
+        message: "required" satisfies FieldErrorKey,
+      });
+    }
+  });
 
 export const forgotPasswordSchema = z.object({
   email: emailString,

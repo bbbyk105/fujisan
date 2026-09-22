@@ -1,14 +1,39 @@
 import Link from "next/link";
 import { fujisanProducts } from "@/data/fujisan-products";
 import { getSession } from "@/lib/session";
+import { readTradeAccount } from "@/lib/trade";
+import { FUJISAN_LEGAL } from "@/data/fujisan-legal";
 import { L } from "@/i18n/Localized";
 
 const yen = (n: number) => `¥${n.toLocaleString("ja-JP")}`;
 
+/**
+ * 卸価格表。
+ *
+ * **表示の条件は「role が business」ではなく「審査が approved」**。
+ * 登録は自己申告なので、role だけを条件にすると誰でも卸価格を見られる。
+ * 審査状況の取得に失敗したときは見せない側に倒す（価格は一度見られたら
+ * 取り消せない）。
+ */
 export async function WholesalePriceList() {
   const session = await getSession();
-  const isBusiness =
-    (session?.user as { role?: string } | undefined)?.role === "business";
+  const user = session?.user as { id?: string; role?: string } | undefined;
+  const isBusiness = user?.role === "business" && Boolean(user.id);
+
+  let status: "approved" | "rejected" | "pending" | null = null;
+  if (isBusiness && user?.id) {
+    try {
+      const account = await readTradeAccount(user.id);
+      // 行が無い（この機能より前に登録した）法人は審査待ちとして扱う。
+      status = account?.status ?? "pending";
+    } catch {
+      status = "pending";
+    }
+  }
+
+  if (isBusiness && status !== "approved") {
+    return <UnderReviewPanel rejected={status === "rejected"} />;
+  }
 
   if (!isBusiness) {
     return (
@@ -115,6 +140,57 @@ export async function WholesalePriceList() {
           ja="価格は1本あたり（300ml／180ml）・税抜の参考価格です（アジア向け CIF 概算）。最小ロットは1出荷あたり3,000本（銘柄混載可）。正式なお見積りは担当窓口までご相談ください。"
         />
       </p>
+    </div>
+  );
+}
+
+/** 登録済みだが、まだ承認されていない（または見送られた）取扱店への表示。 */
+function UnderReviewPanel({ rejected }: { rejected: boolean }) {
+  return (
+    <div className="border border-[#0B1A2E]/14 bg-[#F1E6CB]/45 px-7 py-14 text-center md:px-12 md:py-20">
+      <span className="font-jp text-[12px] tracking-[0.3em] text-[#C9A84C]">
+        {rejected ? "― お取引について ―" : "― 審査中 ―"}
+      </span>
+      <h3 className="mx-auto mt-4 max-w-[560px] font-serif text-[clamp(20px,2.2vw,28px)] font-semibold leading-[1.3] tracking-[0.05em] text-[#0B1A2E]">
+        {rejected ? (
+          <L
+            en="This account is not currently open for trade pricing."
+            ja="現在、このアカウントでは卸価格をご案内しておりません。"
+          />
+        ) : (
+          <L
+            en="Your trade account is under review."
+            ja="取扱口座の審査を承っております。"
+          />
+        )}
+      </h3>
+      <p className="mx-auto mt-4 max-w-[520px] text-[13px] leading-[1.8] text-[#1D2432]/72">
+        {rejected ? (
+          <L
+            en="If your situation has changed, please get in touch — we're happy to look again."
+            ja="ご状況が変わりましたら、いつでも改めてご相談ください。担当があらためて確認いたします。"
+          />
+        ) : (
+          <L
+            en="We verify each licence by hand and reply within two business days. Wholesale pricing appears here once your account has been approved."
+            ja="免許の内容を一件ずつ確認のうえ、2 営業日以内に結果をご連絡します。承認後、このページに卸価格が表示されます。"
+          />
+        )}
+      </p>
+      <div className="mt-9 flex flex-col items-center justify-center gap-4 sm:flex-row">
+        <Link
+          href="/contact"
+          className="inline-flex w-full max-w-[260px] items-center justify-center border border-[#0B1A2E]/30 bg-transparent px-7 py-3.5 text-[11px] font-semibold tracking-[0.28em] text-[#0B1A2E]/80 no-underline transition-colors hover:border-[#0B1A2E]/60 hover:text-[#0B1A2E] sm:w-auto"
+        >
+          <L en="CONTACT THE TRADE DESK" ja="取扱店窓口へ問い合わせる" />
+        </Link>
+        <a
+          href={`mailto:${FUJISAN_LEGAL.email}`}
+          className="text-[12px] text-[#0B1A2E]/70 underline decoration-[#0B1A2E]/25 underline-offset-4 hover:text-[#C9A84C]"
+        >
+          {FUJISAN_LEGAL.email}
+        </a>
+      </div>
     </div>
   );
 }

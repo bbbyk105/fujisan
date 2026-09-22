@@ -70,25 +70,71 @@ describe("registerPersonalSchema", () => {
 });
 
 describe("registerBusinessSchema", () => {
+  const base = {
+    companyName: "鮨青山",
+    contactName: "佐々木",
+    email: "a@b.com",
+    password: "password1",
+    businessType: "restaurant",
+  };
+
   it("passes with required fields (phone/address optional)", () => {
-    expect(
-      getFieldErrors(registerBusinessSchema, {
-        companyName: "鮨青山",
-        contactName: "佐々木",
-        email: "a@b.com",
-        password: "password1",
-      }),
-    ).toEqual({});
+    expect(getFieldErrors(registerBusinessSchema, base)).toEqual({});
   });
   it("flags missing company and contact", () => {
     const errs = getFieldErrors(registerBusinessSchema, {
+      ...base,
       companyName: "",
       contactName: "",
-      email: "a@b.com",
-      password: "password1",
     });
     expect(errs.companyName).toBe("required");
     expect(errs.contactName).toBe("required");
+  });
+
+  it("requires a business type, and rejects unknown codes", () => {
+    // 未選択でも zod 既定の英文ではなく FieldErrorKey が返ること。
+    const { businessType, ...withoutType } = base;
+    void businessType;
+    expect(getFieldErrors(registerBusinessSchema, withoutType).businessType).toBe(
+      "required",
+    );
+    expect(
+      getFieldErrors(registerBusinessSchema, { ...base, businessType: "bank" })
+        .businessType,
+    ).toBe("required");
+  });
+
+  it("requires a licence number only from businesses that resell", () => {
+    // 転売する業態（小売・卸）だけ免許が要る。
+    for (const type of ["retailer", "wholesaler"]) {
+      expect(
+        getFieldErrors(registerBusinessSchema, { ...base, businessType: type })
+          .licenceNumber,
+      ).toBe("required");
+      expect(
+        getFieldErrors(registerBusinessSchema, {
+          ...base,
+          businessType: type,
+          licenceNumber: "静岡税務署 第123号",
+        }),
+      ).toEqual({});
+    }
+    // 店内で提供するだけの業態に免許を求めると、正しい相手を弾いてしまう。
+    for (const type of ["restaurant", "hotel", "other"]) {
+      expect(
+        getFieldErrors(registerBusinessSchema, { ...base, businessType: type }),
+      ).toEqual({});
+    }
+  });
+
+  it("treats a whitespace-only licence number as missing", () => {
+    expect(
+      getFieldErrors(registerBusinessSchema, {
+        ...base,
+        businessType: "retailer",
+        licenceNumber: "   ",
+      }).licenceNumber,
+    ).toBe("required");
   });
 });
 

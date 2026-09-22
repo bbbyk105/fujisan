@@ -1,28 +1,42 @@
 import Link from "next/link";
 import { getSession } from "@/lib/session";
+import { canSeeWholesalePricing } from "@/lib/trade";
 import { L } from "@/i18n/Localized";
 
-/** /shop/business 上部の取扱店アクセス帯。ログイン状態で表示を出し分ける。 */
+/**
+ * /shop/business 上部の取扱店アクセス帯。
+ * ログイン状態と **審査状況** で表示を出し分ける（承認前に「下記に卸価格を
+ * 表示しています」と書くと、実際には出ていないので混乱させる）。
+ */
 export async function TradeAccessBand() {
   const session = await getSession();
   const user = session?.user as
-    | { role?: string; companyName?: string | null; name?: string }
+    | { id?: string; role?: string; companyName?: string | null; name?: string }
     | undefined;
   const isBusiness = user?.role === "business";
+  const approved = await canSeeWholesalePricing(session);
 
   if (isBusiness) {
+    const who = user?.companyName || user?.name || "";
     return (
       <section className="border-b border-[#D7B46A]/25 bg-[#0F1D30] text-[#F2E4C7]">
         <div className="mx-auto flex max-w-[1280px] flex-col items-start justify-between gap-4 px-7 py-6 md:flex-row md:items-center md:px-12">
           <p className="text-[13px] leading-[1.6] tracking-[0.02em]">
             <span className="font-jp text-[11px] tracking-[0.26em] text-[#D7B46A]">
-              取扱店ログイン中
+              {approved ? "取扱店ログイン中" : "審査中"}
             </span>
             <span className="mx-3 text-[#F2E4C7]/30">／</span>
-            <L
-              en={`Signed in as ${user?.companyName || user?.name || "your account"} — wholesale pricing is shown below.`}
-              ja={`${user?.companyName || user?.name || "アカウント"}さま — 下記に卸価格を表示しています。`}
-            />
+            {approved ? (
+              <L
+                en={`Signed in as ${who || "your account"} — wholesale pricing is shown below.`}
+                ja={`${who || "アカウント"}さま — 下記に卸価格を表示しています。`}
+              />
+            ) : (
+              <L
+                en={`Signed in as ${who || "your account"} — wholesale pricing appears once your account has been approved.`}
+                ja={`${who || "アカウント"}さま — 卸価格は審査の完了後に表示されます。`}
+              />
+            )}
           </p>
           <Link
             href="/account"

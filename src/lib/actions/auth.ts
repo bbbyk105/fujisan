@@ -14,6 +14,12 @@ import {
   registerPersonalSchema,
   registerBusinessSchema,
 } from "@/lib/validation/forms";
+import { createTradeApplication } from "@/lib/trade";
+import type { TradeBusinessType } from "@/data/fujisan-trade";
+import {
+  sendTradeApplicationNotification,
+  sendTradeApplicationAcknowledgement,
+} from "@/lib/emails/trade-emails";
 
 function isValid(schema: Parameters<typeof getFieldErrors>[0], data: unknown) {
   return Object.keys(getFieldErrors(schema, data)).length === 0;
@@ -69,7 +75,14 @@ export async function registerPersonalAction(input: {
   }
 }
 
-/** 法人（toB）の新規登録。role はサーバー側で "business" に固定する。 */
+/**
+ * 法人（toB）の新規登録。role はサーバー側で "business" に固定する。
+ *
+ * **登録＝取引開始ではない。** 作られるのは審査待ち（pending）の申請で、
+ * 卸価格は蔵が承認するまで表示されない（`src/lib/trade.ts`）。以前は登録した
+ * 瞬間に卸価格が見えており、サイトに書いてある「免許確認のうえ口座開設」と
+ * 実装が食い違っていた。
+ */
 export async function registerBusinessAction(input: {
   contactName: string;
   email: string;
@@ -77,12 +90,16 @@ export async function registerBusinessAction(input: {
   companyName: string;
   phone?: string;
   address?: string;
+  businessType: string;
+  licenceNumber?: string;
 }): Promise<AuthActionResult> {
   if (!isValid(registerBusinessSchema, input))
     return { ok: false, error: "generic" };
+  const businessType = input.businessType as TradeBusinessType;
   const auth = await getAuth();
+  let userId: string | undefined;
   try {
-    await auth.api.signUpEmail({
+    const res = await auth.api.signUpEmail({
       body: {
         name: input.contactName,
         email: input.email,
@@ -94,10 +111,38 @@ export async function registerBusinessAction(input: {
       },
       headers: await headers(),
     });
-    return { ok: true };
+    userId = (res as { user?: { id?: string } } | undefined)?.user?.id;
   } catch (error) {
     return { ok: false, error: classifyAuthError(error) };
   }
+
+  // ここから先は登録済み。失敗しても登録は取り消さない（行が無い法人は
+  // 未承認として扱われるので、取りこぼしても卸価格が漏れることはない）。
+  if (userId) {
+    await createTradeApplication({
+      userId,
+      businessType,
+      licenceNumber: input.licenceNumber,
+    });
+  } else {
+    console.error("[trade] signUpEmail が user.id を返さず、申請行を作れませんでした");
+  }
+
+  const applicant = {
+    companyName: input.companyName.trim(),
+    contactName: input.contactName.trim(),
+    email: input.email.trim(),
+    businessType,
+    licenceNumber: input.licenceNumber?.trim() || null,
+  };
+  try {
+    await sendTradeApplicationNotification(applicant);
+    await sendTradeApplicationAcknowledgement(applicant);
+  } catch (error) {
+    console.error("[trade] 申請の通知メールに失敗しました", error);
+  }
+
+  return { ok: true };
 }
 
 /** ログアウト（セッション cookie をクリア）。 */

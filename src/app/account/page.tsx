@@ -16,6 +16,8 @@ import { getDb } from "@/db";
 import { user as userTable } from "@/db/auth-schema";
 import { listMyOrdersAction } from "@/lib/actions/orders";
 import { getEffectiveAdminRole, isOwner, isStaffOrAbove } from "@/lib/admin";
+import { readTradeAccount } from "@/lib/trade";
+import type { TradeStatus } from "@/data/fujisan-trade";
 import { L } from "@/i18n/Localized";
 import { buildMetadata } from "@/lib/seo";
 import { formatDateShortJp, formatMonthEn, formatMonthJp } from "@/lib/format-date";
@@ -68,6 +70,17 @@ export default async function AccountPage() {
   });
   const isAdmin = isStaffOrAbove(adminRole);
   const isOwnerUser = isOwner(adminRole);
+
+  // 法人は審査が通るまで卸価格が出ない。どの段階にいるかをここでも伝える
+  // （行が無い＝この機能より前の登録は「審査待ち」として扱う）。
+  let tradeStatus: TradeStatus | null = null;
+  if (isBusiness && user.id) {
+    try {
+      tradeStatus = (await readTradeAccount(user.id))?.status ?? "pending";
+    } catch {
+      tradeStatus = "pending";
+    }
+  }
 
   // 登録日と最新の登録情報を DB から取得（セッションは更新が反映されないため）
   let memberSinceJp = "—";
@@ -277,6 +290,30 @@ export default async function AccountPage() {
                     </Link>
                   )}
                 </div>
+              </div>
+            )}
+
+            {/* ===== 取扱店の審査状況（法人のみ） ===== */}
+            {isBusiness && tradeStatus !== "approved" && (
+              <div className="border border-[#C9A84C]/55 bg-[#F1E6CB]/55 px-6 py-5">
+                <span className="text-[10px] font-semibold tracking-[0.3em] text-[#8A6F1E]">
+                  {tradeStatus === "rejected"
+                    ? "TRADE ACCOUNT · お取引について"
+                    : "TRADE ACCOUNT · 審査中"}
+                </span>
+                <p className="mt-2 text-[12.5px] leading-[1.8] text-[#0B1A2E]/82">
+                  {tradeStatus === "rejected" ? (
+                    <L
+                      en="This account is not currently open for trade pricing. Please contact us if your situation has changed."
+                      ja="現在、このアカウントでは卸価格をご案内しておりません。ご状況が変わりましたら、お問い合わせよりご相談ください。"
+                    />
+                  ) : (
+                    <L
+                      en="We're reviewing your trade application and will reply within two business days. Wholesale pricing appears once approved."
+                      ja="取扱口座のお申し込みを審査しております。2 営業日以内に結果をご連絡します。卸価格は承認後に表示されます。"
+                    />
+                  )}
+                </p>
               </div>
             )}
 
