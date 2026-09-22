@@ -300,6 +300,75 @@ Google Cloud 側のリダイレクト URI に本番ドメインの登録も必�
 
 ---
 
+---
+
+## タスク11. GitHub を Cloudflare に接続して自動デプロイにする
+
+`npm run deploy` を手で打つ代わりに、**main への push で自動デプロイ**にする。
+Cloudflare の Workers Builds を使う（GitHub Actions は不要）。
+
+### 11-1. 接続
+
+Cloudflare ダッシュボード → **Compute (Workers & Pages)** → `fujisan`
+→ **Settings** → **Build** → **Connect to Git**
+
+1. GitHub を認可する（Cloudflare の GitHub App をインストール）。
+   対象リポジトリは `bbbyk105/fujisan` だけに絞ってよい
+2. **Production branch**: `main`
+3. **Root directory**: `/`（既定のまま）
+
+### 11-2. コマンド
+
+| 欄 | 値 |
+|---|---|
+| Build command | `npm run lint && npm test && npx opennextjs-cloudflare build` |
+| Deploy command | `npx opennextjs-cloudflare deploy` |
+
+- **Deploy command は既定の `npx wrangler deploy` から必ず変えること。** 既定のままだと
+  OpenNext の変換前の状態を上げようとして失敗する。
+- lint と test をビルドコマンドに入れているのは、**落ちているコードが本番に出ないようにする門番**が
+  他に無くなるため。Workers Builds には「テストが通ったら」という条件設定が無いので、
+  ビルドコマンドの `&&` で繋ぐのがその代わりになる。
+- `npm ci` は Workers Builds が lockfile を見て自動で走らせるので、書かなくてよい。
+- `npm run cf-typegen` も不要（`cloudflare-env.d.ts` は gitignore 済みだが、
+  無くてもビルドは通ることを実機で確認済み）。
+
+### 11-3. 環境変数（ビルド時）
+
+独自ドメインを繋いだら（タスク7）、**Build variables** に追加する。
+
+```
+NEXT_PUBLIC_SITE_URL = https://mtfuji-kikkou.com
+```
+
+canonical / OGP / sitemap の基底はビルド時に確定するため、Worker の secret ではなく
+**ビルド変数**側に置く。未設定ならコード側の既定（本番ドメイン）にフォールバックする。
+
+> `wrangler secret put` で入れた値（`STRIPE_SECRET_KEY` など）は**デプロイで消えない**。
+> ビルド変数に入れ直す必要はない。
+
+### 11-4. 接続後に変わること
+
+- **`npm run deploy` の法令チェックが効かなくなる。** あれは `predeploy` フックなので、
+  Cloudflare 側のビルドコマンドからは呼ばれない。免許番号が届いたら、
+  Build command の先頭に `npm run check:legal &&` を足して門番を戻すこと。
+- **D1 のマイグレーションは自動では流れない**（これは意図どおり）。`0012` のように表を
+  落とすものがあり、コードのデプロイと同時に自動で流すと順番次第で本番が壊れる。
+  スキーマを変えたときは、**先に**手でマイグレーションを適用してから push する。
+
+  ```bash
+  npx wrangler@4.136.2 d1 migrations apply fujisan-db --remote
+  ```
+
+  > 同梱の wrangler 4.86.0 は `d1 migrations apply --remote` が Cloudflare API から
+  > 7403 を返す（`list` と `execute` は同じ認証で通るので、権限の問題ではない）。
+  > 依存の wrangler を上げたら、このバージョン指定は外してよい。
+
+- main 以外のブランチも既定ではビルドされ、プレビュー版が作られる。
+  ビルド時間を使いたくなければ Settings で止める。
+
+---
+
 ## 公開前の最終チェック
 
 - [ ] `feat/integrate-admin-dashboard-catalog` を main へマージ
@@ -313,6 +382,7 @@ Google Cloud 側のリダイレクト URI に本番ドメインの登録も必�
 - [ ] `BETTER_AUTH_URL` が本番ドメイン
 - [ ] 免許番号が入っている（`npm run check:legal` が通る）
 - [ ] 実決済テストで在庫が減り、返金もできた
+- [ ] （自動デプロイにしたなら）Build command に `npm run check:legal &&` を戻した
 
 ---
 
