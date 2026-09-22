@@ -20,6 +20,7 @@ const sendVerificationEmail = jest.fn();
 const requestPasswordReset = jest.fn();
 const resetPassword = jest.fn();
 const changePassword = jest.fn();
+const changeEmail = jest.fn();
 const getSession = jest.fn();
 jest.mock("@/lib/auth", () => ({
   getAuth: async () => ({
@@ -30,6 +31,7 @@ jest.mock("@/lib/auth", () => ({
       requestPasswordReset,
       resetPassword,
       changePassword,
+      changeEmail,
       getSession,
     },
   }),
@@ -51,6 +53,7 @@ import {
   requestPasswordResetAction,
   resetPasswordAction,
   changeMyPasswordAction,
+  changeMyEmailAction,
 } from "@/lib/actions/auth";
 
 const PERSONAL = {
@@ -75,6 +78,7 @@ const CASES: Array<{ name: string; bucket: string; run: () => Promise<unknown> }
   { name: "requestPasswordResetAction", bucket: "sendEmail", run: () => requestPasswordResetAction({ email: PERSONAL.email }) },
   { name: "resetPasswordAction", bucket: "verify", run: () => resetPasswordAction({ token: "tok", password: "password1" }) },
   { name: "changeMyPasswordAction", bucket: "verify", run: () => changeMyPasswordAction({ currentPassword: "old-password", newPassword: "password1" }) },
+  { name: "changeMyEmailAction", bucket: "sendEmail", run: () => changeMyEmailAction({ newEmail: "new@example.com" }) },
 ];
 
 beforeEach(() => {
@@ -107,6 +111,7 @@ describe("認証系 Server Action のレート制限", () => {
       requestPasswordReset,
       resetPassword,
       changePassword,
+      changeEmail,
     ]) {
       expect(api).not.toHaveBeenCalled();
     }
@@ -122,7 +127,33 @@ describe("認証系 Server Action のレート制限", () => {
       ok: false,
       error: "invalid",
     });
+    // メールアドレス変更も同じ。形式不正と「今と同じアドレス」は枠を使わない。
+    expect(await changeMyEmailAction({ newEmail: "nope" })).toEqual({
+      ok: false,
+      error: "invalid",
+    });
+    expect(await changeMyEmailAction({ newEmail: PERSONAL.email })).toEqual({
+      ok: false,
+      error: "invalid",
+    });
     expect(consumeRateLimit).not.toHaveBeenCalled();
+  });
+
+  it("メールアドレス変更の確認は、現在のアドレスに送る経路を通す", async () => {
+    await changeMyEmailAction({ newEmail: "New@Example.com " });
+
+    // 宛先を決めるのは src/lib/auth.ts の sendChangeEmailConfirmation。
+    // ここで確かめるのは「Better Auth の changeEmail を、正規化した
+    // アドレスと戻り先付きで呼んでいる」こと。
+    expect(changeEmail).toHaveBeenCalledTimes(1);
+    expect(changeEmail.mock.calls[0][0]).toEqual(
+      expect.objectContaining({
+        body: expect.objectContaining({
+          newEmail: "new@example.com",
+          callbackURL: "/account?email=changed",
+        }),
+      }),
+    );
   });
 
   it("アカウントの有無は伏せたまま制限する（列挙対策を壊さない）", async () => {

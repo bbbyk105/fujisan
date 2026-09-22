@@ -66,6 +66,43 @@ export function buildAuthOptions(env: AuthEnv) {
     },
     user: {
       additionalFields: additionalUserFields,
+      /**
+       * メールアドレスの変更。
+       *
+       * **現在のアドレスの承認を先に取る。** セッションを乗っ取られた場合、
+       * 新アドレスだけで切り替えられるとアカウントごと奪われ、本来の持ち主は
+       * 何も知らないまま締め出される。先に現アドレスへ確認を送れば、
+       * 本人は「身に覚えのない変更依頼」に気づける。
+       *
+       * Better Auth はこの承認リンクを踏んだ時点で **新アドレス宛**の確認メールを
+       * 自動で送り（`emailVerification.sendVerificationEmail` を使う）、
+       * そちらのリンクを踏んで初めてアドレスが入れ替わる。
+       * つまり新旧どちらのアドレスも押さえていないと変更できない。
+       */
+      changeEmail: {
+        enabled: true,
+        sendChangeEmailConfirmation: async ({
+          user,
+          newEmail,
+          url,
+        }: {
+          user: { email: string; name?: string };
+          newEmail: string;
+          url: string;
+        }) => {
+          // 宛先は **変更前** のアドレス。ここを newEmail にすると、
+          // 現アドレスの持ち主に知らせないまま変更できてしまう。
+          await sendEmail(
+            {
+              to: user.email,
+              subject:
+                "FUJISAN — メールアドレス変更の確認 / Confirm your email change",
+              text: `FUJISAN SAKE\n\nご登録のメールアドレスを次のアドレスへ変更する依頼を受け付けました。\n\n  変更前: ${user.email}\n  変更後: ${newEmail}\n\nお心当たりがある場合は、以下のリンクから承認してください。\n承認後、新しいアドレス宛にも確認メールをお送りします。そちらのリンクを踏んでいただくと変更が完了します。\n\n${url}\n\n**お心当たりが無い場合は、このリンクを開かないでください。**\nこのメールを破棄いただければ、アドレスは変更されません。パスワードの変更もあわせてご検討ください。\n\nWe received a request to change your email address to ${newEmail}.\nIf this was you, approve it with the link above. We'll then email the new address to finish the change.\nIf this wasn't you, do not open the link — your address stays as it is.\n`,
+            },
+            { apiKey: env.RESEND_API_KEY, from: env.RESEND_FROM },
+          );
+        },
+      },
     },
     /**
      * `/api/auth/*` は UI を経由せず **HTTP で直接叩ける**。Server Action 側の

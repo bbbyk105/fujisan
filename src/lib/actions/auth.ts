@@ -343,6 +343,57 @@ export async function changeMyPasswordAction(input: {
 }
 
 /**
+ * ログイン中のユーザーが自分でメールアドレスを変更する（依頼まで）。
+ *
+ * **この時点ではまだ変わらない。** Better Auth が
+ * `user.changeEmail.sendChangeEmailConfirmation`（`src/lib/auth.ts`）を呼び、
+ * まず **現在のアドレス** に承認リンクを送る。それを踏むと新アドレス宛にも
+ * 確認メールが飛び、そちらのリンクを踏んで初めて入れ替わる。
+ * 新旧どちらのアドレスも押さえていないと変更できない作りで、
+ * セッションを奪われただけではアカウントを乗っ取れない。
+ *
+ * 戻り値は**新アドレスが既に使われているかを区別しない**。区別すると、
+ * ログインしただけで「このアドレスは登録済みか」を総当たりで調べられる。
+ * Better Auth 自身も既存アドレスには静かに成功を返す。
+ *
+ * 過去の注文に控えてあるメールアドレス（`orders.customer_email`）は
+ * 注文時点のスナップショットなので、ここでは変えない。
+ */
+export async function changeMyEmailAction(input: {
+  newEmail: string;
+}): Promise<AuthActionResult> {
+  const auth = await getAuth();
+  const session = await auth.api.getSession({ headers: await headers() });
+  const current = session?.user?.email;
+  if (!session?.user?.id || !current) return { ok: false, error: "invalid" };
+
+  const newEmail = input.newEmail.trim().toLowerCase();
+  if (!isEmailLike(newEmail)) return { ok: false, error: "invalid" };
+  if (newEmail === current.trim().toLowerCase()) {
+    return { ok: false, error: "invalid" };
+  }
+
+  // 形式の検査を先に済ませてから枠を消費する。無害な打ち間違いで枠を
+  // 食い潰されると、本当に変更したい人が締め出される。
+  // メール送信を伴うので sendEmail の枠（1時間に5件）を使う。
+  if (!(await limit("sendEmail"))) return { ok: false, error: "rate" };
+
+  try {
+    await auth.api.changeEmail({
+      body: {
+        newEmail,
+        // 承認リンクを踏んだあとの戻り先。2 通目の確認リンクにも引き継がれる。
+        callbackURL: "/account?email=changed",
+      },
+      headers: await headers(),
+    });
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, error: classifyAuthError(error) };
+  }
+}
+
+/**
  * Google OAuth の開始 URL をサーバーで生成して返す。クライアントはこの URL へ遷移する。
  * errorCallbackURL を指定すると、OAuth 失敗時に Better Auth の素のエラーページではなく
  * そのパスへ ?error=... 付きで戻される。
