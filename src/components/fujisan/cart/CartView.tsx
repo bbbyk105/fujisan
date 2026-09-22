@@ -9,6 +9,7 @@ import {
   shippingFee,
 } from "@/lib/cart/cart-core";
 import { useCart } from "@/lib/cart/useCart";
+import { useLiveCatalog, liveKey } from "@/lib/cart/useLiveCatalog";
 import { pushToast } from "@/lib/cart/toast-store";
 import { useSession } from "@/lib/auth-client";
 import {
@@ -73,8 +74,45 @@ function QtyStepper({
   );
 }
 
+/** 1 行の在庫の状態。問題があるときだけ返す。 */
+type LineStock =
+  | { kind: "soldout" }
+  | { kind: "short"; available: number }
+  | null;
+
+/**
+ * カート行の在庫の注意書き。
+ *
+ * **カートを開いた時点で出す**のが肝。以前は決済ボタンを押して弾かれて初めて
+ * 「残り N 本」と分かる作りで、住所や年齢確認まで進んでから引き返させていた。
+ */
+function LineStockNotice({ stock }: { stock: LineStock }) {
+  if (!stock) return null;
+  if (stock.kind === "soldout") {
+    return (
+      <p className="mt-2 text-[11.5px] font-semibold leading-[1.6] text-[#8B1A1A]">
+        <L
+          en="Sold out — please remove this item to continue."
+          ja="完売しました。お手数ですが削除してお進みください。"
+        />
+      </p>
+    );
+  }
+  return (
+    <p className="mt-2 text-[11.5px] font-semibold leading-[1.6] text-[#8A6D1F]">
+      <L
+        en={`Only ${stock.available} left — please reduce the quantity.`}
+        ja={`残り ${stock.available} 本です。数量を減らしてください。`}
+      />
+    </p>
+  );
+}
+
 export function CartView() {
   const { ready, lines, count, subtotal, add, setQty, remove } = useCart();
+  // 実勢在庫。カートを開いた時点で「買えない」ことに気づけるようにする。
+  // 取得前・取得失敗時は空なので、従来どおり決済開始時のサーバー検証に委ねる。
+  const { catalog } = useLiveCatalog();
   const { data: session, isPending } = useSession();
   const locale = useLocale();
   // 削除確認中の行（`${slug}-${ml}`）。null のときは確認テロップを出していない。
@@ -89,6 +127,15 @@ export function CartView() {
     Array<{ slug: string; ml: number; available: number }>
   >([]);
   const loggedIn = Boolean(session?.user?.id);
+
+  // 在庫の問題が分かっている行。押しても必ずサーバーに弾かれるので、
+  // 住所や年齢確認まで進ませる前に止める。実勢在庫が取れていないときは
+  // 空なので、従来どおり決済開始時の検証に委ねる。
+  const blockedByStock = lines.some((l) => {
+    const live = catalog[liveKey(l.slug, l.ml)];
+    if (!live) return false;
+    return live.soldOut || (live.stock !== null && live.stock < l.qty);
+  });
 
   // Stripe をキャンセルして /cart?canceled=1 に戻ってきた場合のお知らせ。
   // 静的ページなので useSearchParams は使わず、マウント後に location から読む。
@@ -282,6 +329,14 @@ export function CartView() {
           <ul>
             {lines.map(({ slug, ml, qty, product, lineTotal }) => {
               const lineKey = `${slug}-${ml}`;
+              const live = catalog[liveKey(slug, ml)];
+              const stock: LineStock = !live
+                ? null
+                : live.soldOut
+                  ? { kind: "soldout" }
+                  : live.stock !== null && live.stock < qty
+                    ? { kind: "short", available: live.stock }
+                    : null;
               return (
               <li
                 key={lineKey}
@@ -322,6 +377,8 @@ export function CartView() {
                       ¥{yen.format(lineTotal)}
                     </p>
                   </div>
+
+                  <LineStockNotice stock={stock} />
 
                   <div className="mt-auto flex items-center justify-between gap-4 pt-5">
                     <QtyStepper
@@ -644,12 +701,24 @@ export function CartView() {
             </p>
           ) : null}
 
+          {blockedByStock ? (
+            <p
+              role="alert"
+              className="mt-6 border border-[#8B1A1A]/40 bg-[#8B1A1A]/[0.06] px-4 py-3 text-[12px] leading-[1.7] text-[#8B1A1A]"
+            >
+              <L
+                en="Some items in your cart are no longer available in the quantity you selected. Please adjust them above to continue."
+                ja="カートの中に、ご指定の本数をご用意できない商品があります。上の表示にしたがって数量を調整してください。"
+              />
+            </p>
+          ) : null}
+
           <button
             type="button"
             onClick={handleCheckout}
-            disabled={submitting || (!isPending && !loggedIn)}
+            disabled={submitting || (!isPending && !loggedIn) || blockedByStock}
             className={`group/btn mt-6 inline-flex w-full items-center justify-center gap-3 px-7 py-4 text-[11px] font-semibold tracking-[0.28em] transition-all ${
-              submitting || (!isPending && !loggedIn)
+              submitting || (!isPending && !loggedIn) || blockedByStock
                 ? "cursor-not-allowed border border-[#0B1A2E]/25 bg-[#0B1A2E]/12 text-[#0B1A2E]/45"
                 : "cursor-pointer border border-[#0B1A2E] bg-[#0B1A2E] text-paper-card hover:bg-[#1D2432]"
             }`}

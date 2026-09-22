@@ -11,7 +11,11 @@ import {
 } from "@/components/fujisan/admin/AdminChrome";
 import { getSession } from "@/lib/session";
 import { getEffectiveAdminRole, isOwner } from "@/lib/admin";
-import { adminListTeamAction } from "@/lib/actions/admin-team";
+import {
+  adminListTeamAction,
+  adminListInvitesAction,
+} from "@/lib/actions/admin-team";
+import { AdminInviteRow } from "@/components/fujisan/admin/AdminInviteRow";
 import { buildMetadata } from "@/lib/seo";
 
 export const metadata = buildMetadata({
@@ -42,11 +46,16 @@ export default async function AdminTeamPage() {
 
   // チーム管理は「メール招待のみ」。一般顧客一覧からの昇格は廃止
   // （誤操作で顧客を権限者にしてしまう事故を防ぐため）。
-  const res = await adminListTeamAction({ adminsOnly: true });
+  const [res, inviteRes] = await Promise.all([
+    adminListTeamAction({ adminsOnly: true }),
+    adminListInvitesAction(),
+  ]);
   const members = (res.ok ? res.members : []).map((m) => ({
     ...m,
     isSelf: m.id === userId,
   }));
+  const invites = inviteRes.ok ? inviteRes.invites : [];
+  const expiredCount = invites.filter((i) => i.expired).length;
 
   const ownerCount = members.filter((m) => m.adminRole === "owner").length;
   const staffCount = members.filter((m) => m.adminRole === "staff").length;
@@ -75,6 +84,37 @@ export default async function AdminTeamPage() {
         <div className="mb-10">
           <AdminInviteForm />
         </div>
+
+        {/* 招待中（保留中の招待がある時だけ出す。常時 0 件の枠は視界の無駄） */}
+        {invites.length > 0 && (
+          <div className="mb-10">
+            <div className="flex items-baseline gap-4 border-b border-[#0B1A2E]/15 pb-4">
+              <span className="font-jp text-[12px] tracking-[0.3em] text-[#C9A84C]">
+                招待中
+              </span>
+              <span className="h-px flex-1 bg-[#0B1A2E]/12" />
+              <span className="text-[11px] tracking-[0.22em] text-[#0B1A2E]/55">
+                {invites.length} 件
+                {expiredCount > 0 && (
+                  <span className="ml-2 text-[#8B1A1A]">
+                    うち期限切れ {expiredCount} 件
+                  </span>
+                )}
+              </span>
+            </div>
+
+            <ul className="mt-6 flex flex-col gap-3">
+              {invites.map((inv) => (
+                <AdminInviteRow key={inv.email} invite={inv} />
+              ))}
+            </ul>
+
+            <p className="mt-4 text-[11.5px] leading-[1.75] text-[#0B1A2E]/60">
+              招待は <strong>14 日</strong>で失効します。招待した方が登録を済ませると、
+              この一覧から消えて「現在のメンバー」に移ります。
+            </p>
+          </div>
+        )}
 
         {/* メンバー見出し */}
         <div className="flex items-baseline gap-4 border-b border-[#0B1A2E]/15 pb-4">

@@ -9,7 +9,6 @@ import { revealDelays } from "@/components/reveal/constants";
 import {
   fujisanProducts,
   primaryVolume,
-  isProductSoldOut,
   type FujisanProduct,
 } from "@/data/fujisan-products";
 import { ShopAddToCart } from "@/components/fujisan/ShopAddToCart";
@@ -39,8 +38,12 @@ function CollectionRow({
   const reversed = index % 2 === 1;
   const base = primaryVolume(product);
   const multiVolume = product.volumes.length > 1;
-  const baseSoldOut = base.soldOut === true;
-  const allSoldOut = isProductSoldOut(product);
+  // 完売の出し分けは ShopAddToCart（クライアント）が行う。この一覧も静的配信で、
+  // ビルド後に売り切れた SKU をサーバー側では判定できない。
+  const volumes = product.volumes.map((v) => ({
+    ml: v.ml,
+    catalogSoldOut: v.soldOut === true,
+  }));
 
   const facts = [
     {
@@ -158,28 +161,13 @@ function CollectionRow({
           </div>
 
           <div className="mt-9 flex flex-wrap items-center gap-x-8 gap-y-5">
-            {baseSoldOut ? (
-              <Link
-                href={`/products/${product.slug}`}
-                className="inline-flex items-center justify-center gap-2 border border-[#0B1A2E]/25 bg-[#0B1A2E]/6 px-8 py-3.5 text-[10.5px] font-semibold tracking-[0.26em] text-[#0B1A2E]/70 no-underline transition-colors hover:border-[#0B1A2E]/45"
-              >
-                {allSoldOut ? (
-                  <L en="SOLD OUT" ja="完売しました" />
-                ) : (
-                  <>
-                    <L en="OTHER SIZES" ja="他の容量を見る" />
-                    <span aria-hidden>→</span>
-                  </>
-                )}
-              </Link>
-            ) : (
-              <ShopAddToCart
-                slug={product.slug}
-                name={`${product.name} ${product.variant}`}
-                ml={base.ml}
-                className="w-full px-8 sm:w-auto"
-              />
-            )}
+            <ShopAddToCart
+              slug={product.slug}
+              name={`${product.name} ${product.variant}`}
+              ml={base.ml}
+              volumes={volumes}
+              className="w-full sm:w-auto"
+            />
 
             <Link
               href={`/products/${product.slug}`}
@@ -198,7 +186,7 @@ function CollectionRow({
             </Link>
           </div>
 
-          {!baseSoldOut && multiVolume ? (
+          {multiVolume ? (
             <p className="mt-3 text-[10.5px] tracking-[0.12em] text-[#0B1A2E]/60">
               <L
                 ja={`カート追加は ${base.ml}ml。ほかの容量は商品ページからお選びいただけます。`}

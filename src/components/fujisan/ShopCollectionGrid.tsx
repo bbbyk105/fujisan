@@ -2,9 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { ViewTransition } from "react";
 import { LivePrice } from "@/components/fujisan/LivePrice";
+import { SoldOutBadge } from "@/components/fujisan/SoldOutBadge";
 import {
   primaryVolume,
-  isProductSoldOut,
   type FujisanProduct,
 } from "@/data/fujisan-products";
 import { ShopAddToCart } from "./ShopAddToCart";
@@ -18,9 +18,12 @@ import { L } from "@/i18n/Localized";
 function ShopBottleCard({ product }: { product: FujisanProduct }) {
   const base = primaryVolume(product);
   const multiVolume = product.volumes.length > 1;
-  // 既定 SKU（表示中の容量）が完売か / 全 SKU が完売か。
-  const baseSoldOut = base.soldOut === true;
-  const allSoldOut = isProductSoldOut(product);
+  // 完売の出し分けは ShopAddToCart（クライアント）が行う。
+  // 一覧は静的配信なので、ビルド後に売り切れた SKU をここでは判定できない。
+  const volumes = product.volumes.map((v) => ({
+    ml: v.ml,
+    catalogSoldOut: v.soldOut === true,
+  }));
 
   return (
     <article className="group flex flex-col border border-[#0B1A2E]/12 bg-paper-card transition-colors hover:border-[#C9A84C]/55">
@@ -44,11 +47,11 @@ function ShopBottleCard({ product }: { product: FujisanProduct }) {
             </div>
           </div>
           <span className="absolute bottom-3 left-1/2 h-4 w-[42%] -translate-x-1/2 rounded-[50%] bg-[#0B1A2E]/16 blur-[9px]" />
-          {baseSoldOut ? (
-            <span className="absolute left-4 top-4 border border-crimson/40 bg-paper-card/90 px-2.5 py-1 text-[9px] font-semibold tracking-[0.22em] text-crimson">
-              <L en="SOLD OUT" ja="完売" />
-            </span>
-          ) : null}
+          <SoldOutBadge
+            slug={product.slug}
+            ml={base.ml}
+            catalogSoldOut={base.soldOut === true}
+          />
         </div>
       </Link>
 
@@ -94,27 +97,12 @@ function ShopBottleCard({ product }: { product: FujisanProduct }) {
           </div>
         </div>
 
-        {baseSoldOut ? (
-          <Link
-            href={`/products/${product.slug}`}
-            className="mt-4 inline-flex w-full items-center justify-center gap-2 border border-[#0B1A2E]/25 bg-[#0B1A2E]/6 px-5 py-3.5 text-[10.5px] font-semibold tracking-[0.26em] text-[#0B1A2E]/70 no-underline transition-colors hover:border-[#0B1A2E]/45"
-          >
-            {allSoldOut ? (
-              <L en="SOLD OUT" ja="完売しました" />
-            ) : (
-              <>
-                <L en="OTHER SIZES" ja="他の容量を見る" />
-                <span aria-hidden>→</span>
-              </>
-            )}
-          </Link>
-        ) : (
-          <ShopAddToCart
-            slug={product.slug}
-            name={product.name}
-            ml={base.ml}
-          />
-        )}
+        <ShopAddToCart
+          slug={product.slug}
+          name={product.name}
+          ml={base.ml}
+          volumes={volumes}
+        />
       </div>
     </article>
   );

@@ -6,7 +6,7 @@ import { and, desc, eq, like, or, sql } from "drizzle-orm";
 import { getAuth } from "@/lib/auth";
 import { getDb } from "@/db";
 import { user as userTable } from "@/db/auth-schema";
-import { teamInvite } from "@/db/invite-schema";
+import { teamInvite, TEAM_INVITE_TTL_MS } from "@/db/invite-schema";
 import { sendEmail } from "@/lib/email";
 import { isEmailLike } from "@/lib/validation/forms";
 import {
@@ -276,6 +276,88 @@ export async function adminInviteByEmailAction(input: {
 
     revalidatePath("/admin/team");
     return { ok: true, status: "invited" };
+  } catch {
+    return { ok: false, error: "db" };
+  }
+}
+
+/** 保留中の招待 1 件（まだ登録されていないアドレス）。 */
+export type PendingInvite = {
+  email: string;
+  adminRole: AdminRole;
+  invitedByEmail: string;
+  invitedAt: Date;
+  /** 有効期限。これを過ぎると登録しても権限は付かない。 */
+  expiresAt: Date;
+  /** 期限切れか。 */
+  expired: boolean;
+};
+
+/**
+ * 招待中の一覧（owner 専用）。
+ *
+ * 招待には 14 日の期限があるのに、画面が登録済みメンバーしか出していなかったため、
+ * **「誰を招待中か」「その招待がもう失効していないか」が分からなかった**。
+ * 分からないと、招待し直すべきか・届いていないだけなのかを判断できない。
+ */
+export async function adminListInvitesAction(): Promise<
+  | { ok: true; invites: PendingInvite[] }
+  | { ok: false; error: "unauth" | "forbidden" | "db" }
+> {
+  const gate = await requireOwner();
+  if (!gate.ok) return { ok: false, error: gate.reason };
+
+  try {
+    const db = await getDb();
+    const rows = await db
+      .select()
+      .from(teamInvite)
+      .orderBy(desc(teamInvite.createdAt))
+      .limit(100);
+
+    const now = Date.now();
+    return {
+      ok: true,
+      invites: rows.map((row) => {
+        const invitedAt = new Date(row.createdAt);
+        const expiresAt = new Date(invitedAt.getTime() + TEAM_INVITE_TTL_MS);
+        return {
+          email: row.email,
+          adminRole: row.adminRole === "owner" ? "owner" : "staff",
+          invitedByEmail: row.invitedByEmail,
+          invitedAt,
+          expiresAt,
+          expired: expiresAt.getTime() <= now,
+        };
+      }),
+    };
+  } catch {
+    return { ok: false, error: "db" };
+  }
+}
+
+/**
+ * 招待を取り消す（owner 専用）。
+ *
+ * 宛先を間違えた招待をそのままにすると、**そのアドレスの持ち主が登録した時点で
+ * 管理権限が付いてしまう**（期限内であれば）。取り消せる口を用意しておく。
+ */
+export async function adminRevokeInviteAction(input: {
+  email: string;
+}): Promise<
+  { ok: true } | { ok: false; error: "unauth" | "forbidden" | "invalid" | "db" }
+> {
+  const gate = await requireOwner();
+  if (!gate.ok) return { ok: false, error: gate.reason };
+
+  const email = input.email.trim().toLowerCase();
+  if (!email) return { ok: false, error: "invalid" };
+
+  try {
+    const db = await getDb();
+    await db.delete(teamInvite).where(eq(teamInvite.email, email));
+    revalidatePath("/admin/team");
+    return { ok: true };
   } catch {
     return { ok: false, error: "db" };
   }
