@@ -14,16 +14,17 @@ BtoC（個人）と BtoB（法人取扱店・卸価格表示）の二系統の�
 ## アーキテクチャ
 
 - **デプロイ**: `@opennextjs/cloudflare` で Cloudflare Workers へ。`wrangler.jsonc` が正（worker 名 `fujisan`、D1 バインディング `DB` = `fujisan-db`）。Vercel ではない。
-- **DB**: Cloudflare D1 (SQLite) + Drizzle ORM。スキーマは `src/db/`（auth / orders / invite / contact / inventory / trade に分割、`schema.ts` が re-export）。マイグレーション SQL は `drizzle/`（`wrangler d1 migrations apply fujisan-db [--local|--remote]` で適用）。D1 バインディングはリクエスト時にしか取れないため、必ず `getDb()`（`src/db/index.ts`）経由で毎回取得する。
-- **認証**: Better Auth + Drizzle アダプタ。メール認証必須・Google ログインは env 設定時のみ有効。`user.role` は `personal | business`（法人は companyName 等の追加フィールドあり。**`business` は「法人として登録した」だけで、卸価格の可否は `trade_account` の審査で決まる** — 下記「取扱店（BtoB）の承認」）。管理者は `owner | staff` の2階層（`src/lib/admin.ts`。**`ADMIN_EMAILS` env は必須**（未設定だと env owner は 0 人。ソースにフォールバックのアドレスは置かない）、メール招待 `teamInvite` → 登録時に `databaseHooks.user.create.after` でロール付与）。
+- **DB**: Cloudflare D1 (SQLite) + Drizzle ORM。スキーマは `src/db/`（auth / orders / invite / contact / inventory / price / trade / rate-limit に分割、`schema.ts` が re-export）。マイグレーション SQL は `drizzle/`（`wrangler d1 migrations apply fujisan-db [--local|--remote]` で適用）。D1 バインディングはリクエスト時にしか取れないため、必ず `getDb()`（`src/db/index.ts`）経由で毎回取得する。
+- **認証**: Better Auth + Drizzle アダプタ。メール認証必須・Google ログインは env 設定時のみ有効。`user.role` は `personal | business`（法人は companyName 等の追加フィールドあり。**`business` は「法人として登録した」だけで、卸価格の可否は `trade_account` の審査で決まる** — 下記「取扱店（BtoB）の承認」）。管理者は `owner | staff` の2階層（`src/lib/admin.ts`。**`ADMIN_EMAILS` env は必須**（未設定だと env owner は 0 人。ソースにフォールバックのアドレスは置かない）、メール招待 `teamInvite` → 登録時に `databaseHooks.user.create.after` でロール付与）。**招待は 14 日で失効**する — 期限が無いと、退職者向けや宛先を間違えた古い招待メールのアドレスが後から登録された際に、意図せず管理権限が付く。招待し直しでは `createdAt` も打ち直す。
+- **メールアドレスの変更は新旧どちらの承認も要る**（`user.changeEmail`）。まず**変更前**のアドレスへ承認リンクを送り、それを踏むと Better Auth が新アドレス宛にも確認メールを出し、そちらを踏んで初めて入れ替わる。宛先を `newEmail` にすると、セッションを奪った側が現アドレスの持ち主に知らせないままアカウントを移せる。設定の要点は `src/lib/__tests__/auth-options.test.ts` で固定している。
 - **Server Actions 中心**: ミューテーションは `src/lib/actions/`（checkout / orders / account / contact / admin-*）。API Route は Better Auth の `/api/auth/[...all]` と Stripe Webhook のみ。middleware は無く、ガードは各ページ/アクション内で `getSession()` / `getEffectiveAdminRole()`。
-- **商品データはコード内カタログ**: `src/data/fujisan-products.ts`（小売価格・卸価格・容量 SKU）。DB に商品テーブルは無い。価格変更＝このファイルの編集。**在庫数だけは D1**（`inventory` 表、下記）。
+- **商品カタログはコード、価格と在庫は D1 の上書き**: 銘柄・容量・ストーリー・画像は `src/data/fujisan-products.ts`。そこへ D1 の `product_price`（価格の上書き）と `inventory`（在庫）を重ねたものが**実勢カタログ** `src/lib/catalog.ts` で、**決済・管理画面・卸価格表はこれを正とする**。どちらの表も**オプトイン**（行が無ければコードの値／数量無制限）で、D1 が読めなければコードの価格で売り続ける（fail-open）。カタログ定数を直接読むと、管理画面で変えた値が効かない経路が残る。
 - **command-center/** はダッシュボード用の別 Vite アプリ（jest 対象外）。本体とはビルドも独立。
 
 ## Stripe 決済フロー（b86fa89 で統合）
 
 1. カート (`CartView`) → Server Action `startCheckoutAction`（`src/lib/actions/checkout.ts`）
-   - 認証必須（ゲスト購入なし）。金額はクライアント申告を信用せず slug+ml からカタログ価格を引き直す。
+   - 認証必須（ゲスト購入なし）。金額はクライアント申告を信用せず、slug+ml から**実勢カタログ**（`getLiveSkuMap`）で引き直す。
    - 注文を `pending` で D1 に保存（**住所は空文字で開始**）→ Checkout Session 作成 → Stripe の URL を返す。
    - お届け先・電話は **Stripe 決済ページで収集**（`shipping_address_collection: JP のみ`）。自前住所フォームは廃止済み。
    - Session 作成失敗時は pending 注文を削除して掃除する。
@@ -44,7 +45,7 @@ Stripe ダッシュボードで以下を有効にする。どれか欠けると�
 | `checkout.session.async_payment_succeeded` | コンビニ等の後追い入金の確定 |
 | `checkout.session.expired` | 未払いのまま期限切れ → pending 注文を掃除 |
 | `checkout.session.async_payment_failed` | 後払い失敗 → pending 注文を掃除 |
-| `charge.refunded` | **ダッシュボードから返金したとき** DB へ同期（全額のみ。部分返金は ops 通知） |
+| `charge.refunded` | **ダッシュボードから返金したとき** DB へ同期（全額・一部とも金額を記録。一部なら在庫の確認を ops 通知） |
 | `charge.dispute.created` | チャージバックを ops 通知（自動対応は不可、人が期限内に対応する） |
 
 500 を返して Stripe に再送させるのは「注文確定の DB 失敗」と「返金同期の DB 失敗」だけ。
@@ -56,15 +57,18 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 - Webhook では **生ボディ（`request.text()`）のまま検証**。先に JSON パースすると署名不一致になる。
 - JPY の `unit_amount` は円の整数をそのまま渡す（×100 しない）。
 
-## 在庫
+## 在庫と価格
 
-- SKU（銘柄 × 容量）ごとに D1 の `inventory` 表で持つ。ロジックは `src/lib/inventory.ts`。
-- **オプトイン方式**: 行がある SKU だけが管理対象。行が無い SKU は数量無制限で売れる。全 SKU に 0 を入れるとデプロイした瞬間に販売が止まるため、初期データは入れない。蔵で数え終わった SKU から `/admin/inventory` で管理を開始する。
+- SKU（銘柄 × 容量）ごとに D1 で持つ。**在庫は `inventory`、価格は `product_price` と表を分ける**（`src/db/price-schema.ts` のコメント参照）。「蔵に何本あるか」は staff が棚卸しのたびに動かし、「いくらで売るか」は owner しか動かさない — 1 表にまとめると、価格だけ直したいのに行ができて在庫 0 の管理対象になり、その場で完売する事故が起きる。在庫のロジックは `src/lib/inventory.ts`、重ね合わせは `src/lib/catalog.ts`。
+- 管理画面は `/admin/products`（旧 `/admin/inventory` はリダイレクト）。**価格の編集は owner のみ**、在庫は staff 以上。
+- **オプトイン方式**: 行がある SKU だけが管理対象。行が無い SKU は数量無制限で売れる。全 SKU に 0 を入れるとデプロイした瞬間に販売が止まるため、初期データは入れない。蔵で数え終わった SKU から `/admin/products` で管理を開始する。
+- `low_stock_threshold` は**売り止めではなく報せるための値**。販売可能数が 0 は「完売」で「僅少」ではない（両方に出すと、仕込むべきものがアラートに埋もれる）。
+- 静的書き出しのページ（一覧・商品ページ・カート）は `/api/catalog` から価格と完売をハイドレーション後に取り直す。**卸価格はこのエンドポイントに載せない**（誰でも叩ける）。実在庫もそのままは返さず、カート 1 行の上限（`MAX_QTY_PER_LINE`）で頭打ちにする。カートの合計は実勢価格で計算する — しないと表示額と請求額がずれる。
 - カタログの `soldOut` フラグは在庫数とは独立した「販売停止」スイッチとして残る。
 - **引き当ての流れ**: 決済開始で `reserved += qty` → 入金確定で `onHand -= qty; reserved -= qty` → 期限切れ・決済失敗・Session 生成失敗で `reserved -= qty`。決済ページに滞在している数分を押さえないと、同じ最後の 1 本を複数人が買えてしまう（「確定時に減らす」だけでは足りない）。
 - 売り越さないことを担保しているのは `UPDATE … WHERE on_hand - reserved >= qty` という **1 文の原子性**。D1 に対話的トランザクションは無いので、複数明細で途中が足りなければ、それまでに積んだ分を戻す（補償）。
 - `commitStock` は**冪等ではない**。Webhook からは「pending → confirmed に実際に更新できた初回だけ」呼ぶこと。
-- 未発送のまま返金すると `onHand` に自動で戻る（`hasLeftTheKura` で判定）。発送後は戻さない — 品物が手元に無いため、返品を受け取ってから管理画面で足す。
+- 未発送のまま返金すると `onHand` に自動で戻る（`hasLeftTheKura` で判定）。発送後は戻さない — 品物が手元に無いため、返品を受け取ってから管理画面で足す。**部分返金では戻さない**（金額からはどの品を何本引き取ったか分からない）。
 - **管理画面から手でステータスを動かしたときも辻褄を合わせる**（`adminUpdateOrderAction`）: `pending → confirmed` で確定、`→ cancelled` は pending なら解放・入金済み未発送なら戻し、発送後は何もしない。Webhook の自動経路だけ見ていると手動操作の分がずれる。
 - Checkout Session には `expires_at` を 30 分（Stripe の下限）で入れている。既定の 24 時間のままだと、放棄された決済がまる 1 日ぶん在庫を押さえる。「戻る」で帰ってきた場合は `releaseAbandonedCheckoutAction` が期限切れを待たずに解放する（自分の pending 注文だけが対象）。
 - 在庫のテストは **node:sqlite のインメモリ DB に drizzle の実 SQL を流す**（`src/lib/__tests__/inventory.test.ts`）。スタブで戻り値を作ると、肝心の WHERE 句を検証したことにならない。`node:sqlite` の型は `@types/node@20` に無いので `src/types/node-sqlite.d.ts` で補っている。
@@ -74,6 +78,7 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 - `/account/orders/[orderRef]` が注文詳細、`/account/orders/[orderRef]/receipt` が領収書。
 - **注文の取得は必ず userId でも絞る**（`getMyOrderByRefAction`）。orderRef は推測しにくいだけで秘密ではないので、番号だけで引くと他人の注文が見える。
 - 領収書は PDF を生成せず、印刷（ブラウザの「PDF として保存」）に最適化したページとして出す。電子発行のため収入印紙は不要。適格請求書の登録番号は `INVOICE_REGISTRATION_NUMBER` が null のあいだ行ごと出さない。
+- **返金は全額・一部の両方を扱う**。`orders.refunded_amount` が累計額で、`status = "refunded"` は**全額返金のときだけ**付く（一部返金した注文は進行中のままで発送は続く）。判定は `refundStateOf()` に寄せる。冪等性は「返金前の累計」を WHERE と Stripe の idempotencyKey に入れて担保する。領収書は差引領収額を出す — 返した分まで「上記正に領収いたしました」と書くと事実と食い違う。
 - **キャンセルは「依頼」であって実行ではない**。`requestOrderCancellationAction` は発送前（confirmed / preparing）に `cancel_requested_at` を刻んで ops へ通知するだけ。返金の実行は従来どおり owner だけが `adminRefundOrderAction` から行う（お客様の操作でお金が動く経路は作らない）。
 - 注文ステータスの表示は `OrderStatusPill`（`Record<OrderStatus, …>` なので新ステータス追加時に型で漏れが出る）と `OrderTimeline`（cancelled / refunded は進行段階ではないので専用表示）。
 
@@ -167,8 +172,13 @@ npm run cf-typegen # cloudflare-env.d.ts 再生成（バインディング変更
 
 ## 未対応事項
 
-公開前に必要な作業（免許番号・Stripe の Webhook 設定・本番マイグレーション）と
-フェーズ3 の積み残しは [`docs/TODO.md`](./docs/TODO.md) にまとめてある。
+コード側の積み残しは [`docs/TODO.md`](./docs/TODO.md)、環境を触らないと終わらない
+作業（免許番号・Stripe の Webhook・本番マイグレーション・Resend のドメイン認証・
+secret）は [`SETUP.md`](./SETUP.md) にまとめてある。
+
+**本番 Worker は main ではなく未マージのブランチで動いている**期間があり、
+在庫の実装が 2 系統に分かれていた。`0012` で `product_price` + `inventory` に
+一本化済みだが、本番へ反映するまではこのズレが残る（SETUP.md の冒頭を参照）。
 
 ## スキル参照
 
