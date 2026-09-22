@@ -12,7 +12,6 @@ const config = {
     "<rootDir>/node_modules/",
     "<rootDir>/.next/",
     "<rootDir>/.open-next/",
-    "<rootDir>/command-center/",
   ],
 };
 

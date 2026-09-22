@@ -19,7 +19,6 @@ BtoC（個人）と BtoB（法人取扱店・卸価格表示）の二系統の�
 - **メールアドレスの変更は新旧どちらの承認も要る**（`user.changeEmail`）。まず**変更前**のアドレスへ承認リンクを送り、それを踏むと Better Auth が新アドレス宛にも確認メールを出し、そちらを踏んで初めて入れ替わる。宛先を `newEmail` にすると、セッションを奪った側が現アドレスの持ち主に知らせないままアカウントを移せる。設定の要点は `src/lib/__tests__/auth-options.test.ts` で固定している。
 - **Server Actions 中心**: ミューテーションは `src/lib/actions/`（checkout / orders / account / contact / admin-*）。API Route は Better Auth の `/api/auth/[...all]` と Stripe Webhook のみ。middleware は無く、ガードは各ページ/アクション内で `getSession()` / `getEffectiveAdminRole()`。
 - **商品カタログはコード、価格と在庫は D1 の上書き**: 銘柄・容量・ストーリー・画像は `src/data/fujisan-products.ts`。そこへ D1 の `product_price`（価格の上書き）と `inventory`（在庫）を重ねたものが**実勢カタログ** `src/lib/catalog.ts` で、**決済・管理画面・卸価格表はこれを正とする**。どちらの表も**オプトイン**（行が無ければコードの値／数量無制限）で、D1 が読めなければコードの価格で売り続ける（fail-open）。カタログ定数を直接読むと、管理画面で変えた値が効かない経路が残る。
-- **command-center/** はダッシュボード用の別 Vite アプリ（jest 対象外）。本体とはビルドも独立。
 
 ## Stripe 決済フロー（b86fa89 で統合）
 
@@ -182,4 +181,6 @@ secret）は [`SETUP.md`](./SETUP.md) にまとめてある。
 
 ## スキル参照
 
-UI 作業は `.claude/skills/design-system`・`flow-ui`（command-center）、Stripe 作業は `.claude/skills/stripe-*` を先に読むこと。
+Stripe 作業は `.claude/skills/stripe-*` を先に読むこと。
+
+**`.claude/skills/design-system` は別アプリ（削除済みの command-center）の配色を書いたもので、このサイトには当てはまらない。** FUJISAN の色・余白・タイポグラフィの出どころは `src/app/globals.css` の `@theme inline`（Tailwind v4）で、和紙色（paper 系）と藍（#0B1A2E）・金（#C9A84C）・朱（#8B1A1A）が基調。
