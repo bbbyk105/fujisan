@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# 同じブランチで新しい push があれば古い実行は打ち切る
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # wrangler のテレメトリ送信とバージョンチェックを止める（CI を遅くしないため）
+  WRANGLER_SEND_METRICS: "false"
+  # Next.js の匿名テレメトリを止める
+  NEXT_TELEMETRY_DISABLED: "1"
+
+jobs:
+  verify:
+    name: lint / test / build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+      # build は prebuild で cloudflare-env.d.ts を生成してから型チェックまで行う。
+      # （この型定義は .gitignore 済みなので、生成しないと env.DB の型が無くて落ちる）
+      - name: Build
+        run: npm run build

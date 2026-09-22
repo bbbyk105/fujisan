@@ -7,12 +7,14 @@ import { Reveal } from "@/components/reveal/Reveal";
 import { revealDelays } from "@/components/reveal/constants";
 import { SHIPPING_FEE } from "@/data/fujisan-legal";
 import { L } from "@/i18n/Localized";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Purchase — FUJISAN SAKE",
+export const metadata = buildMetadata({
+  title: "Purchase",
   description:
     "Two paths to the bottle. Order a single bottle for your table, or open a wholesale account for your restaurant, bar, or retail programme.",
-};
+  path: "/shop",
+});
 
 const paths = [
   {
@@ -170,8 +172,8 @@ export default function ShopHubPage() {
                 en: "Order with care",
                 ja: "ひとつずつ、手で確かめる",
                 desc: {
-                  en: "Every order is hand-checked at the kura before it ships. Cool-chain delivery available on request.",
-                  ja: "すべてのご注文を、出荷前に蔵でひとつずつ検品します。クール便も承ります。",
+                  en: "Every order is hand-checked at the kura before it ships, and packed in a chilled outer box.",
+                  ja: "すべてのご注文を、出荷前に蔵でひとつずつ検品し、保冷外箱に詰めてお送りします。",
                 },
               },
               {

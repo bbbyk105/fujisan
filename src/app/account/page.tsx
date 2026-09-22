@@ -9,18 +9,28 @@ import { DeleteAccountButton } from "@/components/fujisan/auth/DeleteAccountButt
 import { AccountSidebar } from "@/components/fujisan/auth/AccountSidebar";
 import { ProfileEditForm } from "@/components/fujisan/auth/ProfileEditForm";
 import { OrderTimeline } from "@/components/fujisan/auth/OrderTimeline";
+import { OrderStatusPill } from "@/components/fujisan/auth/OrderStatusPill";
+import { ChangePasswordForm } from "@/components/fujisan/auth/ChangePasswordForm";
 import { getSession } from "@/lib/session";
 import { getDb } from "@/db";
 import { user as userTable } from "@/db/auth-schema";
 import { listMyOrdersAction } from "@/lib/actions/orders";
 import { getEffectiveAdminRole, isOwner, isStaffOrAbove } from "@/lib/admin";
+import { readTradeAccount } from "@/lib/trade";
+import type { TradeStatus } from "@/data/fujisan-trade";
 import { L } from "@/i18n/Localized";
+import { buildMetadata } from "@/lib/seo";
+import { formatDateShortJp, formatMonthEn, formatMonthJp } from "@/lib/format-date";
 
 const yen = new Intl.NumberFormat("ja-JP");
 
-export const metadata = {
-  title: "Account — FUJISAN SAKE",
-};
+export const metadata = buildMetadata({
+  title: "Account",
+  description:
+    "ご注文の状況、お届け先の登録情報、アカウント設定をご確認いただけます。",
+  path: "/account",
+  noIndex: true,
+});
 
 type AccountSession = {
   id: string;
@@ -45,8 +55,12 @@ export default async function AccountPage() {
 
   // 自分の注文一覧（DBから）
   const orders = await listMyOrdersAction(10);
+  // 「進行中」は発送を待っている注文のこと。完了・取消・返金は含めない。
   const activeOrdersCount = orders.filter(
-    (o) => o.status !== "delivered" && o.status !== "cancelled",
+    (o) =>
+      o.status !== "delivered" &&
+      o.status !== "cancelled" &&
+      o.status !== "refunded",
   ).length;
 
   // 管理者なら admin 動線を表示。owner と staff で文言を出し分ける。
@@ -56,6 +70,17 @@ export default async function AccountPage() {
   });
   const isAdmin = isStaffOrAbove(adminRole);
   const isOwnerUser = isOwner(adminRole);
+
+  // 法人は審査が通るまで卸価格が出ない。どの段階にいるかをここでも伝える
+  // （行が無い＝この機能より前の登録は「審査待ち」として扱う）。
+  let tradeStatus: TradeStatus | null = null;
+  if (isBusiness && user.id) {
+    try {
+      tradeStatus = (await readTradeAccount(user.id))?.status ?? "pending";
+    } catch {
+      tradeStatus = "pending";
+    }
+  }
 
   // 登録日と最新の登録情報を DB から取得（セッションは更新が反映されないため）
   let memberSinceJp = "—";
@@ -92,14 +117,8 @@ export default async function AccountPage() {
     }
     if (rec?.createdAt) {
       const d = new Date(rec.createdAt);
-      memberSinceJp = new Intl.DateTimeFormat("ja-JP", {
-        year: "numeric",
-        month: "long",
-      }).format(d);
-      memberSinceEn = new Intl.DateTimeFormat("en-US", {
-        year: "numeric",
-        month: "long",
-      }).format(d);
+      memberSinceJp = formatMonthJp(d);
+      memberSinceEn = formatMonthEn(d);
     }
   } catch {
     /* DB 失敗時はダッシュを残す */
@@ -244,6 +263,18 @@ export default async function AccountPage() {
                       →
                     </span>
                   </Link>
+                  <Link
+                    href="/admin/contacts"
+                    className="group/contacts inline-flex items-center gap-3 border border-[#E2C97E]/55 bg-transparent px-6 py-3 text-[10.5px] font-semibold tracking-[0.32em] text-[#E2C97E] no-underline transition-colors hover:border-[#E2C97E] hover:bg-[#E2C97E]/10"
+                  >
+                    お問い合わせ
+                    <span
+                      aria-hidden
+                      className="transition-transform duration-500 group-hover/contacts:translate-x-1"
+                    >
+                      →
+                    </span>
+                  </Link>
                   {isOwnerUser && (
                     <Link
                       href="/admin/team"
@@ -259,6 +290,30 @@ export default async function AccountPage() {
                     </Link>
                   )}
                 </div>
+              </div>
+            )}
+
+            {/* ===== 取扱店の審査状況（法人のみ） ===== */}
+            {isBusiness && tradeStatus !== "approved" && (
+              <div className="border border-[#C9A84C]/55 bg-[#F1E6CB]/55 px-6 py-5">
+                <span className="text-[10px] font-semibold tracking-[0.3em] text-[#8A6F1E]">
+                  {tradeStatus === "rejected"
+                    ? "TRADE ACCOUNT · お取引について"
+                    : "TRADE ACCOUNT · 審査中"}
+                </span>
+                <p className="mt-2 text-[12.5px] leading-[1.8] text-[#0B1A2E]/82">
+                  {tradeStatus === "rejected" ? (
+                    <L
+                      en="This account is not currently open for trade pricing. Please contact us if your situation has changed."
+                      ja="現在、このアカウントでは卸価格をご案内しておりません。ご状況が変わりましたら、お問い合わせよりご相談ください。"
+                    />
+                  ) : (
+                    <L
+                      en="We're reviewing your trade application and will reply within two business days. Wholesale pricing appears once approved."
+                      ja="取扱口座のお申し込みを審査しております。2 営業日以内に結果をご連絡します。卸価格は承認後に表示されます。"
+                    />
+                  )}
+                </p>
               </div>
             )}
 
@@ -307,16 +362,19 @@ export default async function AccountPage() {
                           <span className="text-[10px] font-semibold tracking-[0.32em] text-[#0B1A2E]/55">
                             <L en="ORDER" ja="注文番号" />
                           </span>
-                          <span className="font-serif text-[16px] font-semibold tracking-[0.04em] text-[#0B1A2E]">
+                          <Link
+                            href={`/account/orders/${o.orderRef}`}
+                            className="font-serif text-[16px] font-semibold tracking-[0.04em] text-[#0B1A2E] underline decoration-[#0B1A2E]/25 underline-offset-4 transition-colors hover:text-[#C9A84C]"
+                          >
                             {o.orderRef}
-                          </span>
+                          </Link>
                           <span className="text-[11.5px] tracking-[0.04em] text-[#1D2432]/70">
-                            {formatOrderDate(o.createdAt)} · {o.itemsCount}{" "}
+                            {formatDateShortJp(o.createdAt)} · {o.itemsCount}{" "}
                             <L en="bottle(s)" ja="本" /> · ¥
                             {yen.format(o.total)}
                           </span>
                         </div>
-                        <StatusPill status={o.status} />
+                        <OrderStatusPill status={o.status} />
                       </div>
 
                       {/* timeline */}
@@ -371,12 +429,27 @@ export default async function AccountPage() {
                               {o.shippedAt && (
                                 <p className="mt-1 text-[11px] text-[#1D2432]/65">
                                   <L en="Shipped" ja="発送日" />:{" "}
-                                  {formatOrderDate(o.shippedAt)}
+                                  {formatDateShortJp(o.shippedAt)}
                                 </p>
                               )}
                             </div>
                           )}
                         </div>
+                      </div>
+
+                      <div className="mt-6 flex items-center justify-end border-t border-[#0B1A2E]/10 pt-5">
+                        <Link
+                          href={`/account/orders/${o.orderRef}`}
+                          className="group/detail inline-flex items-center gap-2 text-[10.5px] font-semibold tracking-[0.28em] text-[#0B1A2E] no-underline transition-colors hover:text-[#C9A84C]"
+                        >
+                          <L en="ORDER DETAIL & RECEIPT" ja="詳細・領収書" />
+                          <span
+                            aria-hidden
+                            className="transition-transform duration-500 group-hover/detail:translate-x-1"
+                          >
+                            →
+                          </span>
+                        </Link>
                       </div>
                     </li>
                   ))}
@@ -394,6 +467,10 @@ export default async function AccountPage() {
 
             {/* ===== SECURITY ===== */}
             <Section id="security" labelEn="SECURITY" labelJa="セキュリティ">
+              <div className="mb-6">
+                <ChangePasswordForm />
+              </div>
+
               <div className="border border-[#0B1A2E]/12 bg-paper/65 px-7 py-8 md:px-10 md:py-10">
                 <h3 className="font-serif text-[16px] font-semibold tracking-[0.04em] text-[#0B1A2E]">
                   <L en="Sign out" ja="ログアウト" />
@@ -484,64 +561,5 @@ function Section({
   );
 }
 
-function StatusPill({ status }: { status: string }) {
-  const STYLES: Record<
-    string,
-    { cls: string; en: string; ja: string; dot: string }
-  > = {
-    pending: {
-      cls: "border-[#0B1A2E]/30 bg-paper text-[#0B1A2E]",
-      en: "Received",
-      ja: "受付済",
-      dot: "bg-[#0B1A2E]/55",
-    },
-    confirmed: {
-      cls: "border-[#C9A84C]/60 bg-[#F1E6CB]/55 text-[#0B1A2E]",
-      en: "Confirmed",
-      ja: "注文確定",
-      dot: "bg-[#C9A84C]",
-    },
-    preparing: {
-      cls: "border-[#C9A84C]/60 bg-[#F1E6CB]/65 text-[#0B1A2E]",
-      en: "Preparing",
-      ja: "発送準備中",
-      dot: "bg-[#C9A84C]",
-    },
-    shipped: {
-      cls: "border-[#5C8A5C]/60 bg-[#5C8A5C]/[0.10] text-[#2F5A2F]",
-      en: "Shipped",
-      ja: "発送済み",
-      dot: "bg-[#5C8A5C]",
-    },
-    delivered: {
-      cls: "border-[#5C8A5C]/70 bg-[#5C8A5C]/[0.16] text-[#2F5A2F]",
-      en: "Delivered",
-      ja: "お届け済",
-      dot: "bg-[#5C8A5C]",
-    },
-    cancelled: {
-      cls: "border-[#8B1A1A]/45 bg-[#8B1A1A]/[0.08] text-[#8B1A1A]",
-      en: "Cancelled",
-      ja: "キャンセル",
-      dot: "bg-[#8B1A1A]",
-    },
-  };
-  const s = STYLES[status] ?? STYLES.pending;
-  return (
-    <span
-      className={`inline-flex items-center gap-2 border px-3 py-1.5 text-[10px] font-semibold tracking-[0.26em] ${s.cls}`}
-    >
-      <span aria-hidden className={`h-[6px] w-[6px] rounded-full ${s.dot}`} />
-      <L en={s.en} ja={s.ja} />
-    </span>
-  );
-}
 
-function formatOrderDate(d: Date): string {
-  return new Intl.DateTimeFormat("ja-JP", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  }).format(d);
-}
 

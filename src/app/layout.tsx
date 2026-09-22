@@ -1,9 +1,9 @@
-import type { Metadata } from "next";
 import { Noto_Serif, Noto_Serif_JP, Shippori_Mincho } from "next/font/google";
 import "./globals.css";
 import AgeGate from "@/components/fujisan/AgeGate";
 import { Toaster } from "@/components/fujisan/Toaster";
 import { LocaleBoot } from "@/i18n/LocaleBoot";
+import { buildMetadata } from "@/lib/seo";
 
 const notoSerif = Noto_Serif({
   subsets: ["latin"],
@@ -30,11 +30,16 @@ const shipporiMincho = Shippori_Mincho({
   preload: false,
 });
 
-export const metadata: Metadata = {
-  title: "FUJISAN — Japan Premium Sake",
+/**
+ * ルートの Metadata＝トップページの Metadata（app/page.tsx は metadata を持たない）。
+ * 下位ページはそれぞれ buildMetadata で完全な OGP を出力して上書きする。
+ */
+export const metadata = buildMetadata({
+  title: "Japan Premium Sake",
   description:
     "The spirit of Japan, crafted at the foot of Fujisan. A premium sake collection born from Mt. Fuji's pristine snowmelt and traditional brewing methods.",
-};
+  path: "/",
+});
 
 export default function RootLayout({
   children,

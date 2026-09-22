@@ -16,7 +16,9 @@ const STEPS: Step[] = [
  * 注文進行を 5 ステップの水平タイムラインで表す。
  * - 現在のステータスまでのドットを金色（完了済）に塗る
  * - 接続線も完了部分だけ色を変える
- * - cancelled の時は専用の注意ボックスを上に出す
+ * - cancelled / refunded は進行段階ではないので専用の注意ボックスに差し替える
+ *   （STEPS に無いステータスを渡すと activeIndex が -1 になり、
+ *    「受付済」で止まっているように見えてしまうため）
  */
 export function OrderTimeline({ status }: { status: OrderStatus }) {
   if (status === "cancelled") {
@@ -25,6 +27,17 @@ export function OrderTimeline({ status }: { status: OrderStatus }) {
         <L
           en="This order has been cancelled. Contact us if you need help."
           ja="このご注文はキャンセルされました。ご不明な点はお問い合わせください。"
+        />
+      </div>
+    );
+  }
+
+  if (status === "refunded") {
+    return (
+      <div className="border border-[#8B1A1A]/30 bg-[#8B1A1A]/[0.06] px-5 py-4 text-[12px] leading-[1.7] text-[#8B1A1A]">
+        <L
+          en="This order has been refunded. It can take a few days for the amount to appear on your card statement."
+          ja="このご注文は返金済みです。カード会社の締め日によっては、明細への反映まで数日かかることがあります。"
         />
       </div>
     );

@@ -5,7 +5,7 @@ import {
   registerPersonalSchema,
   registerBusinessSchema,
   contactSchema,
-  wholesaleSchema,
+  CONTACT_MESSAGE_MAX,
 } from "@/lib/validation/forms";
 
 describe("isEmailLike", () => {
@@ -70,25 +70,71 @@ describe("registerPersonalSchema", () => {
 });
 
 describe("registerBusinessSchema", () => {
+  const base = {
+    companyName: "鮨青山",
+    contactName: "佐々木",
+    email: "a@b.com",
+    password: "password1",
+    businessType: "restaurant",
+  };
+
   it("passes with required fields (phone/address optional)", () => {
-    expect(
-      getFieldErrors(registerBusinessSchema, {
-        companyName: "鮨青山",
-        contactName: "佐々木",
-        email: "a@b.com",
-        password: "password1",
-      }),
-    ).toEqual({});
+    expect(getFieldErrors(registerBusinessSchema, base)).toEqual({});
   });
   it("flags missing company and contact", () => {
     const errs = getFieldErrors(registerBusinessSchema, {
+      ...base,
       companyName: "",
       contactName: "",
-      email: "a@b.com",
-      password: "password1",
     });
     expect(errs.companyName).toBe("required");
     expect(errs.contactName).toBe("required");
+  });
+
+  it("requires a business type, and rejects unknown codes", () => {
+    // 未選択でも zod 既定の英文ではなく FieldErrorKey が返ること。
+    const { businessType, ...withoutType } = base;
+    void businessType;
+    expect(getFieldErrors(registerBusinessSchema, withoutType).businessType).toBe(
+      "required",
+    );
+    expect(
+      getFieldErrors(registerBusinessSchema, { ...base, businessType: "bank" })
+        .businessType,
+    ).toBe("required");
+  });
+
+  it("requires a licence number only from businesses that resell", () => {
+    // 転売する業態（小売・卸）だけ免許が要る。
+    for (const type of ["retailer", "wholesaler"]) {
+      expect(
+        getFieldErrors(registerBusinessSchema, { ...base, businessType: type })
+          .licenceNumber,
+      ).toBe("required");
+      expect(
+        getFieldErrors(registerBusinessSchema, {
+          ...base,
+          businessType: type,
+          licenceNumber: "静岡税務署 第123号",
+        }),
+      ).toEqual({});
+    }
+    // 店内で提供するだけの業態に免許を求めると、正しい相手を弾いてしまう。
+    for (const type of ["restaurant", "hotel", "other"]) {
+      expect(
+        getFieldErrors(registerBusinessSchema, { ...base, businessType: type }),
+      ).toEqual({});
+    }
+  });
+
+  it("treats a whitespace-only licence number as missing", () => {
+    expect(
+      getFieldErrors(registerBusinessSchema, {
+        ...base,
+        businessType: "retailer",
+        licenceNumber: "   ",
+      }).licenceNumber,
+    ).toBe("required");
   });
 });
 
@@ -103,6 +149,42 @@ describe("contactSchema", () => {
       }),
     ).toEqual({});
   });
+  it("caps the message length in the schema, not just the textarea", () => {
+    // textarea の maxLength はブラウザの入力補助でしかない。Server Action は
+    // 直接呼べるので、上限はスキーマ側で持っていないと巨大な行が保存できてしまう。
+    const base = {
+      name: "佐藤",
+      email: "a@b.com",
+      subject: "general",
+      message: "あ".repeat(CONTACT_MESSAGE_MAX),
+    };
+    expect(getFieldErrors(contactSchema, base)).toEqual({});
+    expect(
+      getFieldErrors(contactSchema, {
+        ...base,
+        message: "あ".repeat(CONTACT_MESSAGE_MAX + 1),
+      }),
+    ).toEqual({ message: "long" });
+  });
+
+  it("caps name and email length too", () => {
+    const base = {
+      name: "佐藤",
+      email: "a@b.com",
+      subject: "general",
+      message: "こんにちは",
+    };
+    expect(
+      getFieldErrors(contactSchema, { ...base, name: "あ".repeat(101) }),
+    ).toEqual({ name: "long" });
+    expect(
+      getFieldErrors(contactSchema, {
+        ...base,
+        email: `${"a".repeat(250)}@b.com`,
+      }),
+    ).toEqual({ email: "long" });
+  });
+
   it("flags empty message and bad email", () => {
     const errs = getFieldErrors(contactSchema, {
       name: "佐藤",
@@ -112,35 +194,5 @@ describe("contactSchema", () => {
     });
     expect(errs.email).toBe("email");
     expect(errs.message).toBe("required");
-  });
-});
-
-describe("wholesaleSchema", () => {
-  const base = {
-    company: "鮨青山",
-    contactName: "佐々木",
-    email: "a@b.com",
-    country: "Japan",
-    website: "",
-    licenseConfirmed: true,
-  };
-  it("passes with empty optional website and license confirmed", () => {
-    expect(getFieldErrors(wholesaleSchema, base)).toEqual({});
-  });
-  it("requires the licence confirmation", () => {
-    expect(
-      getFieldErrors(wholesaleSchema, { ...base, licenseConfirmed: false }),
-    ).toEqual({ licenseConfirmed: "agree" });
-  });
-  it("validates website URL when provided", () => {
-    expect(
-      getFieldErrors(wholesaleSchema, { ...base, website: "not-a-url" }),
-    ).toEqual({ website: "url" });
-    expect(
-      getFieldErrors(wholesaleSchema, {
-        ...base,
-        website: "https://example.com",
-      }),
-    ).toEqual({});
   });
 });

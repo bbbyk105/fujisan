@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import type { AdminRole } from "@/lib/admin";
 import { adminSetMemberRoleAction } from "@/lib/actions/admin-team";
+import { formatDateShortJp } from "@/lib/format-date";
 
 const ERROR_MESSAGES: Record<string, string> = {
   unauth: "ログインが切れています。再度ログインしてください。",
@@ -37,14 +38,6 @@ type Member = {
 type Props = {
   member: Member;
 };
-
-function fmtDate(d: Date): string {
-  return new Intl.DateTimeFormat("ja-JP", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  }).format(d);
-}
 
 /**
  * 1メンバーの行。
@@ -131,7 +124,7 @@ export function AdminTeamRow({ member }: Props) {
           </button>
         </div>
         <span className="text-[10.5px] text-[#0B1A2E]/55">
-          登録: {fmtDate(member.createdAt)}
+          登録: {formatDateShortJp(member.createdAt)}
         </span>
       </div>
 

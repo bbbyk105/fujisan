@@ -5,14 +5,17 @@ import {
   FUJISAN_LEGAL,
   UNDERAGE_NOTICE_JP,
   UNDERAGE_NOTICE_EN,
+  liquorLicenceLine,
 } from "@/data/fujisan-legal";
 import { L } from "@/i18n/Localized";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "特定商取引法に基づく表示 — FUJISAN SAKE",
+export const metadata = buildMetadata({
+  title: "特定商取引法に基づく表示",
   description:
     "FUJISAN SAKE オンラインショップ における特定商取引法に基づく表示、酒類販売管理者標識、通信販売酒類小売業免許情報。",
-};
+  path: "/tokushoho",
+});
 
 const m = FUJISAN_LEGAL.liquorManager;
 
@@ -94,7 +97,7 @@ const sections: InfoSection[] = [
     body: [
       <L
         key="o"
-        en="The cool-chain surcharge is borne by the customer."
+        en={FUJISAN_LEGAL.otherFeesEn}
         ja={FUJISAN_LEGAL.otherFees}
       />,
     ],
@@ -161,8 +164,8 @@ const sections: InfoSection[] = [
     body: [
       <L
         key="l"
-        en="Mail-order liquor retail licence (issued by the [TBD] Tax Office, Liquor Directive No. [TBD])"
-        ja={FUJISAN_LEGAL.liquorLicense}
+        en={liquorLicenceLine("en")}
+        ja={liquorLicenceLine("ja")}
       />,
     ],
   },
@@ -222,7 +225,7 @@ export default function TokushohoPage() {
         />
       }
       crumb={{ label: "特定商取引法", href: "/tokushoho" }}
-      updated="2026.05"
+      updated="2026.09"
       sections={sections}
     />
   );

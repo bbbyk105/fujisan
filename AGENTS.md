@@ -14,10 +14,10 @@ BtoC（個人）と BtoB（法人取扱店・卸価格表示）の二系統の�
 ## アーキテクチャ
 
 - **デプロイ**: `@opennextjs/cloudflare` で Cloudflare Workers へ。`wrangler.jsonc` が正（worker 名 `fujisan`、D1 バインディング `DB` = `fujisan-db`）。Vercel ではない。
-- **DB**: Cloudflare D1 (SQLite) + Drizzle ORM。スキーマは `src/db/`（auth / orders / invite に分割、`schema.ts` が re-export）。マイグレーション SQL は `drizzle/`（`wrangler d1 migrations apply fujisan-db [--local|--remote]` で適用）。D1 バインディングはリクエスト時にしか取れないため、必ず `getDb()`（`src/db/index.ts`）経由で毎回取得する。
-- **認証**: Better Auth + Drizzle アダプタ。メール認証必須・Google ログインは env 設定時のみ有効。`user.role` は `personal | business`（法人は companyName 等の追加フィールドあり）。管理者は `owner | staff` の2階層（`src/lib/admin.ts`。`ADMIN_EMAILS` env が owner のブートストラップ、メール招待 `teamInvite` → 登録時に `databaseHooks.user.create.after` でロール付与）。
-- **Server Actions 中心**: ミューテーションは `src/lib/actions/`（checkout / orders / account / admin-*）。API Route は Better Auth の `/api/auth/[...all]` と Stripe Webhook のみ。middleware は無く、ガードは各ページ/アクション内で `getSession()` / `getEffectiveAdminRole()`。
-- **商品データはコード内カタログ**: `src/data/fujisan-products.ts`（小売価格・卸価格・容量 SKU）。DB に商品テーブルは無い。価格変更＝このファイルの編集。
+- **DB**: Cloudflare D1 (SQLite) + Drizzle ORM。スキーマは `src/db/`（auth / orders / invite / contact / inventory / trade に分割、`schema.ts` が re-export）。マイグレーション SQL は `drizzle/`（`wrangler d1 migrations apply fujisan-db [--local|--remote]` で適用）。D1 バインディングはリクエスト時にしか取れないため、必ず `getDb()`（`src/db/index.ts`）経由で毎回取得する。
+- **認証**: Better Auth + Drizzle アダプタ。メール認証必須・Google ログインは env 設定時のみ有効。`user.role` は `personal | business`（法人は companyName 等の追加フィールドあり。**`business` は「法人として登録した」だけで、卸価格の可否は `trade_account` の審査で決まる** — 下記「取扱店（BtoB）の承認」）。管理者は `owner | staff` の2階層（`src/lib/admin.ts`。**`ADMIN_EMAILS` env は必須**（未設定だと env owner は 0 人。ソースにフォールバックのアドレスは置かない）、メール招待 `teamInvite` → 登録時に `databaseHooks.user.create.after` でロール付与）。
+- **Server Actions 中心**: ミューテーションは `src/lib/actions/`（checkout / orders / account / contact / admin-*）。API Route は Better Auth の `/api/auth/[...all]` と Stripe Webhook のみ。middleware は無く、ガードは各ページ/アクション内で `getSession()` / `getEffectiveAdminRole()`。
+- **商品データはコード内カタログ**: `src/data/fujisan-products.ts`（小売価格・卸価格・容量 SKU）。DB に商品テーブルは無い。価格変更＝このファイルの編集。**在庫数だけは D1**（`inventory` 表、下記）。
 - **command-center/** はダッシュボード用の別 Vite アプリ（jest 対象外）。本体とはビルドも独立。
 
 ## Stripe 決済フロー（b86fa89 で統合）
@@ -34,18 +34,92 @@ BtoC（個人）と BtoB（法人取扱店・卸価格表示）の二系統の�
    - **メール失敗は 500 にしない**（ログのみ）。500 を返すのは DB 確定失敗時だけ（Stripe が再送）。
 3. `/checkout/success` は `force-dynamic`。session_id で Stripe を参照し、`payment_status !== "paid"` なら「お支払い手続き中」を表示。マウント時にカートを空にする。
 
+### 購読すべき Webhook イベント
+
+Stripe ダッシュボードで以下を有効にする。どれか欠けると状態が揃わない。
+
+| イベント | 役割 |
+| --- | --- |
+| `checkout.session.completed` | カード決済の確定（注文確定・メール送信） |
+| `checkout.session.async_payment_succeeded` | コンビニ等の後追い入金の確定 |
+| `checkout.session.expired` | 未払いのまま期限切れ → pending 注文を掃除 |
+| `checkout.session.async_payment_failed` | 後払い失敗 → pending 注文を掃除 |
+| `charge.refunded` | **ダッシュボードから返金したとき** DB へ同期（全額のみ。部分返金は ops 通知） |
+| `charge.dispute.created` | チャージバックを ops 通知（自動対応は不可、人が期限内に対応する） |
+
+500 を返して Stripe に再送させるのは「注文確定の DB 失敗」と「返金同期の DB 失敗」だけ。
+pending の掃除失敗はログのみ（入金に影響しないため）。
+
 ### Workers 上の Stripe（`src/lib/stripe.ts`）
 - Node の `http` が無いため `Stripe.createFetchHttpClient()` を必ず使う。
 - Webhook 署名検証は `constructEventAsync` + `createSubtleCryptoProvider()`（Web Crypto）。同期版 `constructEvent` は動かない。
 - Webhook では **生ボディ（`request.text()`）のまま検証**。先に JSON パースすると署名不一致になる。
 - JPY の `unit_amount` は円の整数をそのまま渡す（×100 しない）。
 
+## 在庫
+
+- SKU（銘柄 × 容量）ごとに D1 の `inventory` 表で持つ。ロジックは `src/lib/inventory.ts`。
+- **オプトイン方式**: 行がある SKU だけが管理対象。行が無い SKU は数量無制限で売れる。全 SKU に 0 を入れるとデプロイした瞬間に販売が止まるため、初期データは入れない。蔵で数え終わった SKU から `/admin/inventory` で管理を開始する。
+- カタログの `soldOut` フラグは在庫数とは独立した「販売停止」スイッチとして残る。
+- **引き当ての流れ**: 決済開始で `reserved += qty` → 入金確定で `onHand -= qty; reserved -= qty` → 期限切れ・決済失敗・Session 生成失敗で `reserved -= qty`。決済ページに滞在している数分を押さえないと、同じ最後の 1 本を複数人が買えてしまう（「確定時に減らす」だけでは足りない）。
+- 売り越さないことを担保しているのは `UPDATE … WHERE on_hand - reserved >= qty` という **1 文の原子性**。D1 に対話的トランザクションは無いので、複数明細で途中が足りなければ、それまでに積んだ分を戻す（補償）。
+- `commitStock` は**冪等ではない**。Webhook からは「pending → confirmed に実際に更新できた初回だけ」呼ぶこと。
+- 未発送のまま返金すると `onHand` に自動で戻る（`hasLeftTheKura` で判定）。発送後は戻さない — 品物が手元に無いため、返品を受け取ってから管理画面で足す。
+- **管理画面から手でステータスを動かしたときも辻褄を合わせる**（`adminUpdateOrderAction`）: `pending → confirmed` で確定、`→ cancelled` は pending なら解放・入金済み未発送なら戻し、発送後は何もしない。Webhook の自動経路だけ見ていると手動操作の分がずれる。
+- Checkout Session には `expires_at` を 30 分（Stripe の下限）で入れている。既定の 24 時間のままだと、放棄された決済がまる 1 日ぶん在庫を押さえる。「戻る」で帰ってきた場合は `releaseAbandonedCheckoutAction` が期限切れを待たずに解放する（自分の pending 注文だけが対象）。
+- 在庫のテストは **node:sqlite のインメモリ DB に drizzle の実 SQL を流す**（`src/lib/__tests__/inventory.test.ts`）。スタブで戻り値を作ると、肝心の WHERE 句を検証したことにならない。`node:sqlite` の型は `@types/node@20` に無いので `src/types/node-sqlite.d.ts` で補っている。
+
+## 注文の顧客向け機能
+
+- `/account/orders/[orderRef]` が注文詳細、`/account/orders/[orderRef]/receipt` が領収書。
+- **注文の取得は必ず userId でも絞る**（`getMyOrderByRefAction`）。orderRef は推測しにくいだけで秘密ではないので、番号だけで引くと他人の注文が見える。
+- 領収書は PDF を生成せず、印刷（ブラウザの「PDF として保存」）に最適化したページとして出す。電子発行のため収入印紙は不要。適格請求書の登録番号は `INVOICE_REGISTRATION_NUMBER` が null のあいだ行ごと出さない。
+- **キャンセルは「依頼」であって実行ではない**。`requestOrderCancellationAction` は発送前（confirmed / preparing）に `cancel_requested_at` を刻んで ops へ通知するだけ。返金の実行は従来どおり owner だけが `adminRefundOrderAction` から行う（お客様の操作でお金が動く経路は作らない）。
+- 注文ステータスの表示は `OrderStatusPill`（`Record<OrderStatus, …>` なので新ステータス追加時に型で漏れが出る）と `OrderTimeline`（cancelled / refunded は進行段階ではないので専用表示）。
+
+## レート制限
+
+- **カウンタは 2 つあり、守る面が違う**（`src/db/rate-limit-schema.ts`）。片方だけでは迂回される。
+  1. `action_rate_limit` — Server Action 用（`src/lib/rate-limit.ts` の `consumeRateLimit`）。ログイン・登録・再設定・認証メール再送は Server Action から `auth.api.*` を**直接**呼ぶため、Better Auth の `rateLimit` は通らない。
+  2. `rate_limit` — Better Auth 用（`src/lib/auth.ts` の `rateLimit`）。`/api/auth/*` は UI を経由せず HTTP で直接叩けるので、こちらを塞がないと上の制限を迂回できる。**列の構成は Better Auth が決めている**ので変えないこと。
+- **`storage: "database"` が必須**。既定の `"memory"` はアイソレート内の Map で、Workers では回数を共有できず実質機能しない。`enabled` も既定（`NODE_ENV === "production"` 頼み）ではなく明示する — 黙って無効になるのがいちばん困る。
+- `advanced.ipAddress.ipAddressHeaders` に `cf-connecting-ip` を入れておく。**IP が取れないと Better Auth はレート制限を丸ごと諦める**。自前側も同じ優先順（CF ヘッダ → XFF）で、XFF はクライアントが詐称できるため後ろに置く。
+- 数え落とさないことを担保しているのは **UPSERT 1 文**（`CASE WHEN expires_at <= now THEN 1 ELSE count + 1 END`）。在庫と同じで、読んでから書くと同時アクセスで取りこぼす。
+- **DB が落ちているときは通す**（`ok: true`）。レート制限は濫用を遅くする仕組みで、認証の可否を決めるものではない。D1 の不調でログイン不能にしない。
+- **自前側は生 IP を保存しない**（SHA-256 の先頭16文字）。一方 **Better Auth は key に生 IP をそのまま入れ、行を自分では消さない**。ハッシュに差し替える口は無い（`getIp` が IP 形式を検証するので、ハッシュを渡すとレート制限ごと無効になる）。そのため `sweepRateLimitCounters()` が 1 時間より古い行を消す。**この掃除がプライバシーポリシーの「最長 1 時間で削除します」を担保している**ので、消すのをやめるならポリシーも直すこと。掃除は Server Action と `/api/auth/*` の両方から間引いて走らせる（HTTP だけ叩かれる場合に走らなくなるため）。
+- お問い合わせの連投制限だけは別方式で、`contact_message` の行数を IP ハッシュで数えている（受領そのものが記録として要るため。ここを統合しようとしないこと）。
+- 入力の形式チェックは**カウンタを消費する前**に行う。無害な不正入力で枠を食わせられると、攻撃側が正規の利用者を締め出せる。
+
+## 取扱店（BtoB）の承認
+
+- **卸価格の表示条件は `user.role === "business"` ではなく `trade_account.status === "approved"`**（`src/lib/trade.ts` の `canSeeWholesalePricing`）。登録は自己申告なので role だけを条件にすると誰でも卸価格を見られる。`WholesalePriceList` / `TradeAccessBand` / `/account` はすべてこの判定を通す。
+- **行が無い＝未承認**。この機能より前に登録した法人には行が無いので、`/admin/customers` から承認すると upsert で行ができる（`adminReviewTradeAccountAction`）。ここを「行が無ければ許可」にすると、旧アカウントに素通りされる。
+- 審査状況の取得に失敗したときは**見せない側に倒す**。一度表示した価格は取り消せない。
+- 業態は `src/data/fujisan-trade.ts` が唯一の出どころ（クライアントからも読めるようサーバー依存を持たせない）。**酒類販売業免許番号を必須にするのは転売する業態（`retailer` / `wholesaler`）だけ** — 飲食店・宿泊施設の店内提供は「販売」ではないので免許が要らない。実態に合わない項目を必須にすると、正しい相手を弾いて嘘の入力を誘発する。
+- 登録（`registerBusinessAction`）は **サインアップ成功後に pending 行を作る**。行の作成やメールに失敗しても登録は取り消さない（取りこぼしても未承認扱いなので価格は漏れない）。
+- 見送りの理由（`review_note`）は**そのままお客様へのメールに載る**。管理画面の入力欄にもその旨を書いてある。
+- `"use server"` のファイルは async 関数以外を export できないため、`TRADE_REVIEW_NOTE_MAX` のような定数は `src/data/fujisan-trade.ts` 側に置く（Server Action と同居させるとビルドが落ちる）。
+
+## お問い合わせ
+
+- フォーム（`FujisanContactForm`）→ Server Action `submitContactAction`（`src/lib/actions/contact.ts`）。
+- **受領の正は D1 の `contact_message` 表**。まず保存してからメールを送るので、Resend が落ちても問い合わせは失われず `/admin/contacts` から拾える。DB 保存に失敗したときだけお客様にエラーを返す。
+- スパム対策は 2 段: ハニーポット（`website` の隠し入力。値が入っていたら成功を装って静かに捨てる）＋ 同一 IP の連投制限（10 分に 5 件）。**生 IP は保存せず SHA-256 の先頭16文字だけ**を持つ。
+- 用件・対応状況のコードは `src/data/fujisan-contact.ts` が唯一の出どころ。サーバー依存を持たないのでクライアントからも読める（`src/lib/emails/contact-emails.ts` は `server-only` に依存するため、ラベルをそこに置かないこと）。
+
+## SEO
+
+- ページの Metadata は必ず `buildMetadata()`（`src/lib/seo.ts`）を通す。Next.js は `openGraph` のような入れ子フィールドを「最後に定義したセグメントが丸ごと上書き」するため、layout に置いても各ページの og:title には効かない。
+- 正規 URL はビルド時に確定する必要がある（ほぼ静的書き出しのため）。Cloudflare env ではなく build-time の `NEXT_PUBLIC_SITE_URL`（未設定なら本番ドメイン）を使う。
+- `sitemap.ts` / `robots.ts` / `manifest.ts` / `icon.svg` / `apple-icon.png` は `src/app/` 直下の file convention。OG 画像は `public/images/og/fujisan-og.jpg`（1200×630、`.webp` は OG に使えない）。
+- 構造化データは `jsonLdScript()` 経由で出す（`<` をエスケープして `</script>` 脱出を防ぐ）。
+
 ## 酒類販売の法令対応
 
 - **年齢確認は二重**:
   1. `AgeGate.tsx`（layout.tsx で全ページに配置）— 20歳確認モーダル。localStorage `fujisan-age-confirmed`、「いいえ」で東京都の未成年飲酒防止ページへ強制遷移。SSR は「確認済み」を返してハイドレーション不整合を回避。
-  2. 決済開始前のチェックボックス（`CartView` + `checkoutSchema.ageConfirmed`、Zod で true 必須）。
-- **法令情報の唯一の出どころ**: `src/data/fujisan-legal.ts`。未成年飲酒防止表示（`UNDERAGE_NOTICE_JP/EN`、フッター・商品ページ・特商法ページで参照）、送料 `SHIPPING_FEE`（一律1,100円 / 15,000円以上無料 — カート計算・全ページ表記がこの定数を参照）、特商法・通販酒類小売業免許・酒類販売管理者標識。**`[要確認]` ラベルの免許番号が未確定**なので本番公開前に差し替えること。
+  2. 決済開始前のチェックボックス（`CartView`）。**クライアントの state だけに頼らず、`startCheckoutAction` が `ageConfirmed !== true` を `age` エラーで弾く**（Server Action は直接呼べるため）。以前ここにあった `checkoutSchema.ageConfirmed`（Zod）は自前の住所フォーム廃止と同時に消えている。
+- **法令情報の唯一の出どころ**: `src/data/fujisan-legal.ts`。未成年飲酒防止表示（`UNDERAGE_NOTICE_JP/EN`、フッター・商品ページ・特商法ページで参照）、送料 `SHIPPING_FEE`（一律1,100円 / 15,000円以上無料 — カート計算・全ページ表記がこの定数を参照）、特商法・通販酒類小売業免許・酒類販売管理者標識。**未確定の値はダミー文字列で埋めず `null` にする**（`LIQUOR_LICENCE` / `INVOICE_REGISTRATION_NUMBER`）。それらしい伏せ字は本物に見えたまま公開されうる。`npm run deploy` は predeploy で `scripts/check-legal-disclosure.mjs` を実行し、未確定が残っていればデプロイを止める（dev / build / CI は止めない）。
 - 発送は日本国内のみ（Stripe の `allowed_countries: ["JP"]` と checkout の郵便番号7桁バリデーションで担保）。
 
 ## i18n（ja/en）
@@ -66,6 +140,10 @@ BtoC（個人）と BtoB（法人取扱店・卸価格表示）の二系統の�
 
 ## 落とし穴
 
+- **`drizzle/` の journal はずれている**: `0006_user_postal_code.sql` は手書きで追加されており `drizzle/meta/_journal.json` に載っていない。`drizzle-kit generate` を実行すると 0005 のスナップショットから差分を出すため、既に適用済みの列を二重に出力する。当面はマイグレーション SQL を手書きで足す（`wrangler d1 migrations apply` は journal ではなくファイル名順で適用するので動作には影響しない）。
+- **日付は必ず `src/lib/format-date.ts` のヘルパーで出す**。Workers は UTC で動くため `Intl.DateTimeFormat` に `timeZone: "Asia/Tokyo"` を指定しないと、JST 00:00〜09:00 の出来事が前日の日付になる（領収書の発行日がずれる）。ローカルの OS が JST だと気づけない。
+- **Next.js 16 の `error.js` は `reset` ではなく `unstable_retry`**。旧 API 名のままだと再試行ボタンが動かない。`global-error.js` も同じ。
+- **`cloudflare-env.d.ts` は生成物で `.gitignore` 済み**。`prebuild` が `cf-typegen` を走らせるので `npm run build` は clone 直後でも通るが、エディタの型エラーを消すには一度 `npm run cf-typegen` が要る。
 - **dev は `next dev --webpack`**（Turbopack ではない）。`initOpenNextCloudflareForDev()` により dev でも D1/env バインディングが `.dev.vars` から供給される。
 - **`.dev.vars` が真の env ファイル**（BETTER_AUTH_SECRET / BETTER_AUTH_URL / ADMIN_EMAILS / RESEND_API_KEY / GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET / STRIPE_SECRET_KEY / STRIPE_WEBHOOK_SECRET）。本番は `wrangler secret put <NAME>`。`.env.example` は古いテンプレで一部実態と乖離あり。
 - STRIPE_SECRET_KEY 未設定だと checkout は `config` エラーを返す。Webhook のローカル検証は Stripe CLI の forward が必要（`STRIPE_WEBHOOK_SECRET` を合わせる）。
@@ -78,12 +156,19 @@ BtoC（個人）と BtoB（法人取扱店・卸価格表示）の二系統の�
 ```bash
 npm run dev        # localhost:3000（--webpack、.dev.vars 読込）
 npm run lint       # eslint
-npm run build      # next build（デプロイ前に必須）
-npm test           # jest（cart-core / validation / i18n / auth コンポーネント）
+npm run typecheck  # cf-typegen + tsc --noEmit
+npm run build      # next build（prebuild で cloudflare-env.d.ts を自動生成）
+npm test           # jest
+npm run check:legal # 法令表示の埋め忘れ検査（predeploy で自動実行）
 npm run preview    # opennextjs-cloudflare build && preview（Workers 実環境相当）
 npm run deploy     # opennextjs-cloudflare build && deploy（人間の承認後）
 npm run cf-typegen # cloudflare-env.d.ts 再生成（バインディング変更時）
 ```
+
+## 未対応事項
+
+公開前に必要な作業（免許番号・Stripe の Webhook 設定・本番マイグレーション）と
+フェーズ3 の積み残しは [`docs/TODO.md`](./docs/TODO.md) にまとめてある。
 
 ## スキル参照
 

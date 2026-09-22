@@ -56,6 +56,8 @@ type Props = {
     shippedAt: Date | null;
     deliveredAt: Date | null;
     refundedAt: Date | null;
+    cancelRequestedAt: Date | null;
+    cancelReason: string | null;
     createdAt: Date;
     items: {
       slug: string;
@@ -72,6 +74,8 @@ type Props = {
 
 function fmt(d: Date): string {
   return new Intl.DateTimeFormat("ja-JP", {
+    // Workers は UTC で動くため、指定しないと JST 00:00〜09:00 が前日になる
+    timeZone: "Asia/Tokyo",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -203,6 +207,21 @@ export function AdminOrderRow({ order, canRefund }: Props) {
           </span>
         </span>
       </button>
+
+      {/*
+        キャンセル依頼は畳んでいても見える位置に出す。
+        発送を止める判断が要るので、行を開かないと気づけないのでは遅い。
+      */}
+      {order.cancelRequestedAt && order.status !== "refunded" && (
+        <p className="border-t border-crimson/25 bg-crimson/[0.06] px-6 py-3 text-[12px] leading-[1.7] text-crimson">
+          <strong className="font-semibold">
+            キャンセル依頼あり（{fmt(order.cancelRequestedAt)}）
+          </strong>
+          {order.cancelReason ? ` — ${order.cancelReason}` : "（理由の記入なし）"}
+          <br />
+          発送を止めたうえで、下の「返金」から全額返金してください。
+        </p>
+      )}
 
       {!open ? null : (
         <div className="border-t border-[#0B1A2E]/10 px-6 py-6">

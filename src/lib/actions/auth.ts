@@ -14,6 +14,17 @@ import {
   registerPersonalSchema,
   registerBusinessSchema,
 } from "@/lib/validation/forms";
+import {
+  clientIpFrom,
+  consumeRateLimit,
+  type RateLimitBucket,
+} from "@/lib/rate-limit";
+import { createTradeApplication } from "@/lib/trade";
+import type { TradeBusinessType } from "@/data/fujisan-trade";
+import {
+  sendTradeApplicationNotification,
+  sendTradeApplicationAcknowledgement,
+} from "@/lib/emails/trade-emails";
 
 function isValid(schema: Parameters<typeof getFieldErrors>[0], data: unknown) {
   return Object.keys(getFieldErrors(schema, data)).length === 0;
@@ -21,20 +32,26 @@ function isValid(schema: Parameters<typeof getFieldErrors>[0], data: unknown) {
 
 export type AuthActionResult = { ok: true } | { ok: false; error: AuthErrorKey };
 
-/** 新規登録時の重複チェック。同名（前後空白除去で完全一致）が既にあれば "name-taken" を返す。 */
-async function findDuplicate(
-  name: string,
-): Promise<"name-taken" | null> {
-  const db = await getDb();
-  const normalized = name.trim();
-  const hits = await db
-    .select({ id: userTable.id, name: userTable.name })
-    .from(userTable)
-    .where(eq(userTable.name, normalized))
-    .limit(1);
-  if (hits.length > 0) return "name-taken";
-  return null;
+/**
+ * 送信元 IP でレート制限を 1 回ぶん消費する。
+ *
+ * **Better Auth 側の `rateLimit` は当てにできない。** あれが効くのは
+ * `auth.handler()`（`/api/auth/[...all]`）への HTTP リクエストだけで、
+ * ここのように Server Action から `auth.api.*` を直接呼ぶ経路は通らない。
+ * パスワードの総当たりも認証メールの大量送信も、ここで止める。
+ */
+async function limit(bucket: RateLimitBucket): Promise<boolean> {
+  const res = await consumeRateLimit({
+    bucket,
+    ip: clientIpFrom(await headers()),
+  });
+  return res.ok;
 }
+
+// 氏名の重複チェックは行わない。
+// 以前は同姓同名を "name-taken" で弾いていたが、氏名は本来一意ではなく、
+// 「佐藤 健」さんが 2 人目から登録できなかった。アカウントの一意性は
+// メールアドレスで担保する（Better Auth が USER_ALREADY_EXISTS を返す）。
 
 /** メール+パスワードのログイン。成功時は nextCookies がセッション cookie を設定する。 */
 export async function signInAction(input: {
@@ -42,6 +59,7 @@ export async function signInAction(input: {
   password: string;
 }): Promise<AuthActionResult> {
   if (!isValid(loginSchema, input)) return { ok: false, error: "generic" };
+  if (!(await limit("signIn"))) return { ok: false, error: "rate" };
   const auth = await getAuth();
   try {
     await auth.api.signInEmail({
@@ -62,8 +80,7 @@ export async function registerPersonalAction(input: {
 }): Promise<AuthActionResult> {
   if (!isValid(registerPersonalSchema, input))
     return { ok: false, error: "generic" };
-  const dup = await findDuplicate(input.name);
-  if (dup) return { ok: false, error: dup };
+  if (!(await limit("signUp"))) return { ok: false, error: "rate" };
   const auth = await getAuth();
   try {
     await auth.api.signUpEmail({
@@ -81,7 +98,14 @@ export async function registerPersonalAction(input: {
   }
 }
 
-/** 法人（toB）の新規登録。role はサーバー側で "business" に固定する。 */
+/**
+ * 法人（toB）の新規登録。role はサーバー側で "business" に固定する。
+ *
+ * **登録＝取引開始ではない。** 作られるのは審査待ち（pending）の申請で、
+ * 卸価格は蔵が承認するまで表示されない（`src/lib/trade.ts`）。以前は登録した
+ * 瞬間に卸価格が見えており、サイトに書いてある「免許確認のうえ口座開設」と
+ * 実装が食い違っていた。
+ */
 export async function registerBusinessAction(input: {
   contactName: string;
   email: string;
@@ -89,14 +113,17 @@ export async function registerBusinessAction(input: {
   companyName: string;
   phone?: string;
   address?: string;
+  businessType: string;
+  licenceNumber?: string;
 }): Promise<AuthActionResult> {
   if (!isValid(registerBusinessSchema, input))
     return { ok: false, error: "generic" };
-  const dup = await findDuplicate(input.contactName);
-  if (dup) return { ok: false, error: dup };
+  if (!(await limit("signUp"))) return { ok: false, error: "rate" };
+  const businessType = input.businessType as TradeBusinessType;
   const auth = await getAuth();
+  let userId: string | undefined;
   try {
-    await auth.api.signUpEmail({
+    const res = await auth.api.signUpEmail({
       body: {
         name: input.contactName,
         email: input.email,
@@ -108,10 +135,38 @@ export async function registerBusinessAction(input: {
       },
       headers: await headers(),
     });
-    return { ok: true };
+    userId = (res as { user?: { id?: string } } | undefined)?.user?.id;
   } catch (error) {
     return { ok: false, error: classifyAuthError(error) };
   }
+
+  // ここから先は登録済み。失敗しても登録は取り消さない（行が無い法人は
+  // 未承認として扱われるので、取りこぼしても卸価格が漏れることはない）。
+  if (userId) {
+    await createTradeApplication({
+      userId,
+      businessType,
+      licenceNumber: input.licenceNumber,
+    });
+  } else {
+    console.error("[trade] signUpEmail が user.id を返さず、申請行を作れませんでした");
+  }
+
+  const applicant = {
+    companyName: input.companyName.trim(),
+    contactName: input.contactName.trim(),
+    email: input.email.trim(),
+    businessType,
+    licenceNumber: input.licenceNumber?.trim() || null,
+  };
+  try {
+    await sendTradeApplicationNotification(applicant);
+    await sendTradeApplicationAcknowledgement(applicant);
+  } catch (error) {
+    console.error("[trade] 申請の通知メールに失敗しました", error);
+  }
+
+  return { ok: true };
 }
 
 /** ログアウト（セッション cookie をクリア）。 */
@@ -189,6 +244,8 @@ export async function resendVerificationAction(input: {
 }): Promise<AuthActionResult> {
   const email = input.email.trim();
   if (!isEmailLike(email)) return { ok: false, error: "invalid" };
+  // 認証メールは「誰でも・何度でも」送れてしまうので、ここは必ず絞る。
+  if (!(await limit("sendEmail"))) return { ok: false, error: "rate" };
   const callbackURL = input.role === "business" ? "/shop/business" : "/account";
   const auth = await getAuth();
   try {
@@ -212,6 +269,7 @@ export async function requestPasswordResetAction(input: {
 }): Promise<AuthActionResult> {
   const email = input.email.trim();
   if (!isEmailLike(email)) return { ok: false, error: "invalid" };
+  if (!(await limit("sendEmail"))) return { ok: false, error: "rate" };
   const auth = await getAuth();
   try {
     await auth.api.requestPasswordReset({
@@ -235,10 +293,47 @@ export async function resetPasswordAction(input: {
   const token = input.token.trim();
   if (!token) return { ok: false, error: "invalid" };
   if (input.password.length < 8) return { ok: false, error: "weak" };
+  // トークンは推測しにくいだけなので、総当たりの回数自体を絞る。
+  if (!(await limit("verify"))) return { ok: false, error: "rate" };
   const auth = await getAuth();
   try {
     await auth.api.resetPassword({
       body: { token, newPassword: input.password },
+      headers: await headers(),
+    });
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, error: classifyAuthError(error) };
+  }
+}
+
+/**
+ * ログイン中のユーザーが自分でパスワードを変更する。
+ *
+ * 現在のパスワードの確認を Better Auth 側に任せる（誤りなら例外 → "invalid"）。
+ * 変更に成功したら **他端末のセッションを失効させる**。パスワードを変えたい
+ * 動機の多くは「乗っ取られたかもしれない」なので、今の端末だけ残すのが安全。
+ */
+export async function changeMyPasswordAction(input: {
+  currentPassword: string;
+  newPassword: string;
+}): Promise<AuthActionResult> {
+  const auth = await getAuth();
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session?.user?.id) return { ok: false, error: "invalid" };
+
+  if (input.newPassword.length < 8) return { ok: false, error: "weak" };
+  if (!input.currentPassword) return { ok: false, error: "invalid" };
+  // 端末を奪われたときに、現在のパスワードを総当たりされるのを防ぐ。
+  if (!(await limit("verify"))) return { ok: false, error: "rate" };
+
+  try {
+    await auth.api.changePassword({
+      body: {
+        currentPassword: input.currentPassword,
+        newPassword: input.newPassword,
+        revokeOtherSessions: true,
+      },
       headers: await headers(),
     });
     return { ok: true };

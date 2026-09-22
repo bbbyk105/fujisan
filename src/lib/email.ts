@@ -3,6 +3,11 @@ type EmailArgs = {
   subject: string;
   text: string;
   html?: string;
+  /**
+   * 返信先。管理者宛の通知でお客様のアドレスを入れておくと、
+   * 管理者がそのまま返信するだけでお客様に届く。
+   */
+  replyTo?: string;
 };
 
 type EmailOpts = {
@@ -34,6 +39,8 @@ export async function sendEmail(args: EmailArgs, opts: EmailOpts): Promise<void>
       subject: args.subject,
       text: args.text,
       ...(args.html ? { html: args.html } : {}),
+      // Resend のフィールド名は snake_case
+      ...(args.replyTo ? { reply_to: args.replyTo } : {}),
     }),
   });
 

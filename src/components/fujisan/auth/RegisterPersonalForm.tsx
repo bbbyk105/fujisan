@@ -12,7 +12,14 @@ import {
 import { FieldError } from "@/components/fujisan/FieldError";
 import { scrollToFirstError } from "@/lib/scrollToFirstError";
 import { L } from "@/i18n/Localized";
-import { Field, inputCls, PrimaryButton, Notice, OrDivider } from "./ui";
+import {
+  Field,
+  inputCls,
+  PrimaryButton,
+  Notice,
+  OrDivider,
+  RateLimitMessage,
+} from "./ui";
 import { GoogleButton } from "./GoogleButton";
 import { ResendVerification } from "./ResendVerification";
 
@@ -86,15 +93,12 @@ export function RegisterPersonalForm({
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-7">
       {errorKey && (
         <Notice tone="error">
-          {errorKey === "exists" ? (
+          {errorKey === "rate" ? (
+            <RateLimitMessage />
+          ) : errorKey === "exists" ? (
             <L
               en="An account with this email already exists. Try signing in instead."
               ja="このメールアドレスは既に登録されています。ログインをお試しください。"
-            />
-          ) : errorKey === "name-taken" ? (
-            <L
-              en="This name is already in use. Please choose a different name."
-              ja="このお名前は既に登録されています。別のお名前でご登録ください。"
             />
           ) : errorKey === "weak" ? (
             <L

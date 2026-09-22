@@ -3,12 +3,14 @@ import FujisanInfoPage, {
 } from "@/components/fujisan/FujisanInfoPage";
 import { SHIPPING_FEE } from "@/data/fujisan-legal";
 import { L } from "@/i18n/Localized";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Shipping & Returns — FUJISAN SAKE",
+export const metadata = buildMetadata({
+  title: "Shipping & Returns",
   description:
     "How we ship the Fujisan collection — temperature-controlled, hand-packed — and how to handle returns or damage.",
-};
+  path: "/shipping",
+});
 
 const sections: InfoSection[] = [
   {
@@ -17,8 +19,8 @@ const sections: InfoSection[] = [
     body: [
       <L
         key="b"
-        en="We ship the Fujisan collection across Japan and to selected international destinations. Availability depends on local import regulations for alcoholic beverages."
-        ja="国内全域および一部の海外地域へお届けいたします。配送可否は各国・地域の酒類輸入規制に従います。"
+        en="Orders placed on this site ship within Japan only. Delivery outside Japan cannot be arranged through checkout — please contact us and we will discuss the options with you directly."
+        ja="当サイトからのご注文は、日本国内のみへのお届けとなります。海外へのお届けは購入手続きからは承れませんので、お問い合わせフォームよりご相談ください。"
       />,
     ],
     bullets: [
@@ -29,23 +31,13 @@ const sections: InfoSection[] = [
       />,
       <L
         key="2"
-        en={`Shipping — ${SHIPPING_FEE.flatEn} / ${SHIPPING_FEE.coolEn}`}
-        ja={`送料: ${SHIPPING_FEE.flat} ／ ${SHIPPING_FEE.cool}`}
+        en={`Shipping — ${SHIPPING_FEE.flatEn} / ${SHIPPING_FEE.freeEn}`}
+        ja={`送料: ${SHIPPING_FEE.flat} ／ ${SHIPPING_FEE.free}`}
       />,
       <L
         key="3"
-        en="Asia — Hong Kong, Singapore, Taiwan"
-        ja="アジア — 香港・シンガポール・台湾"
-      />,
-      <L
-        key="4"
-        en="EU & UK — selected countries via licenced importers"
-        ja="EU・英国 — 認可輸入業者を通じた一部の国"
-      />,
-      <L
-        key="5"
-        en="United States — California, New York, Illinois"
-        ja="米国 — カリフォルニア・ニューヨーク・イリノイ"
+        en="Outside Japan — by arrangement only; please enquire"
+        ja="海外 — 個別のご相談のうえ対応（お問い合わせください）"
       />,
     ],
   },
@@ -55,8 +47,8 @@ const sections: InfoSection[] = [
     body: [
       <L
         key="b1"
-        en="Each bottle is hand-wrapped in washi paper, cushioned in moulded fibre, and packed in a chilled outer box. For overseas shipments we add a temperature buffer to keep the sake below 18°C in transit."
-        ja="各ボトルは和紙で包み、モールドファイバーで保護し、保冷外箱に詰めてお届けします。海外発送では、輸送中も18℃以下に保てるよう保冷材を追加します。"
+        en="Each bottle is hand-wrapped in washi paper, cushioned in moulded fibre, and packed in a chilled outer box so the sake stays below 18°C in transit."
+        ja="各ボトルは和紙で包み、モールドファイバーで保護し、保冷外箱に詰めてお届けします。輸送中も18℃以下に保てるよう梱包しています。"
       />,
       <L
         key="b2"
@@ -81,9 +73,11 @@ const sections: InfoSection[] = [
         en="Japan — 1–3 business days after dispatch"
         ja="国内: 発送から1〜3営業日でお届け"
       />,
-      <L key="2" en="Asia · 3–5 business days" ja="アジア · 3〜5営業日" />,
-      <L key="3" en="EU / UK · 5–8 business days" ja="EU・英国 · 5〜8営業日" />,
-      <L key="4" en="United States · 5–9 business days" ja="米国 · 5〜9営業日" />,
+      <L
+        key="2"
+        en="Hokkaido, Okinawa and remote islands — allow an extra day"
+        ja="北海道・沖縄・離島: さらに1日ほど頂戴する場合があります"
+      />,
     ],
   },
   {
@@ -140,7 +134,7 @@ export default function ShippingPage() {
         />
       }
       crumb={{ label: "SHIPPING", href: "/shipping" }}
-      updated="2026.04"
+      updated="2026.09"
       sections={sections}
     />
   );

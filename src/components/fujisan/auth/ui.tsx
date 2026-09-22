@@ -76,6 +76,22 @@ export function Notice({
   );
 }
 
+/**
+ * レート制限に掛かったときの文言（`AuthErrorKey` の "rate"）。
+ *
+ * **なぜ試行が止まったのかを説明する。** 「失敗しました」とだけ出すと、
+ * 正規のお客様がパスワードを疑って何度も試し、さらに待たされる。
+ * 具体的な残り時間は出さない（攻撃側に窓の長さを教えることになるため）。
+ */
+export function RateLimitMessage() {
+  return (
+    <L
+      en="Too many attempts from your connection. Please wait a few minutes and try again."
+      ja="短時間に試行が集中したため、一時的に受け付けを止めています。数分おいてから、もう一度お試しください。"
+    />
+  );
+}
+
 export function OrDivider({ children }: { children: ReactNode }) {
   return (
     <div className="flex items-center gap-4 py-1">

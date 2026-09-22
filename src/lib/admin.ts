@@ -7,13 +7,14 @@ import { user as userTable } from "@/db/auth-schema";
 export type AdminRole = "owner" | "staff";
 
 /**
- * 既定の owner（ブートストラップ用）。
- * env の ADMIN_EMAILS が未設定でも最低限 1 人は owner として扱う。
- * 本番では Cloudflare の secret `ADMIN_EMAILS` をカンマ区切りで設定する。
+ * env の ADMIN_EMAILS（カンマ区切り）→ 小文字 trim 済みの配列。
+ *
+ * **ソースにフォールバックの管理者アドレスは置かない。**
+ * 以前は個人のメールアドレスが定数としてコミットされており、`ADMIN_EMAILS` を
+ * 設定し忘れた環境では常にそのアドレスが owner になってしまっていた。
+ * 未設定なら owner は 0 人（＝誰も管理画面に入れない）とし、設定漏れを
+ * 静かに握りつぶさず警告する。DB 側で admin_role を持つユーザーは影響を受けない。
  */
-const FALLBACK_OWNER_EMAILS = ["byakkokondo@gmail.com"];
-
-/** env の ADMIN_EMAILS（カンマ区切り）→ 小文字 trim 済みの配列。 */
 export async function getOwnerEmailsFromEnv(): Promise<string[]> {
   try {
     const { getCloudflareContext } = await import("@opennextjs/cloudflare");
@@ -25,10 +26,14 @@ export async function getOwnerEmailsFromEnv(): Promise<string[]> {
         .map((s) => s.trim().toLowerCase())
         .filter(Boolean);
     }
+    console.warn(
+      "[admin] ADMIN_EMAILS が未設定です。env owner は 0 人として扱います" +
+        "（.dev.vars もしくは `wrangler secret put ADMIN_EMAILS` で設定してください）。",
+    );
   } catch {
-    /* DEV で env が引けない場合はフォールバックへ */
+    // ビルド時など env が引けない文脈。owner 判定は実行時にしか意味がないので空でよい。
   }
-  return FALLBACK_OWNER_EMAILS.map((s) => s.toLowerCase());
+  return [];
 }
 
 /** env の owner リストに該当するか（DB レコードは見ない、ブートストラップ専用）。 */

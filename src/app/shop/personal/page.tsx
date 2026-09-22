@@ -12,12 +12,14 @@ import {
   UNDERAGE_NOTICE_EN,
 } from "@/data/fujisan-legal";
 import { L } from "@/i18n/Localized";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "For your table — FUJISAN SAKE",
+export const metadata = buildMetadata({
+  title: "For your table",
   description:
     "Order a single bottle of Fujisan sake for your home. Five expressions, nationwide delivery, age verification at every step.",
-};
+  path: "/shop/personal",
+});
 
 const yen = new Intl.NumberFormat("ja-JP");
 
@@ -45,8 +47,8 @@ const steps = [
     en: "Receive it at home",
     ja: "ご自宅でお受け取り",
     desc: {
-      en: "Hand-checked one by one, shipped within two business days. Cool-chain available on request — the courier will verify age again at the door.",
-      ja: "ひとつずつ検品し、原則 2 営業日以内に発送します。クール便も承ります。お受け取りの際にも、年齢の確認をお願いいたします。",
+      en: "Hand-checked one by one and shipped within two business days in a chilled outer box — the courier will verify age again at the door.",
+      ja: "ひとつずつ検品し、保冷外箱に詰めて原則 2 営業日以内に発送します。お受け取りの際にも、年齢の確認をお願いいたします。",
     },
   },
 ];

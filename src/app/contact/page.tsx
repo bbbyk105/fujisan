@@ -6,19 +6,21 @@ import { FujisanContactForm } from "@/components/fujisan/FujisanContactForm";
 import { Reveal } from "@/components/reveal/Reveal";
 import { revealDelays } from "@/components/reveal/constants";
 import { L } from "@/i18n/Localized";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Contact — FUJISAN SAKE",
+export const metadata = buildMetadata({
+  title: "Contact",
   description:
     "Reach our small team in Shizuoka for general enquiries, trade and wholesale, brewery visits, or press requests.",
-};
+  path: "/contact",
+});
 
 const CONTACT_EMAIL = "mtfujipharmacy@gmail.com";
 
 const promises = [
   {
     label: <L en="REPLY TIME" ja="返信目安" />,
-    value: <L en="Within one business day" ja="通常1営業日以内にご返信" />,
+    value: <L en="Within two business days" ja="通常2営業日以内にご返信" />,
   },
   {
     label: <L en="LANGUAGES" ja="対応言語" />,
@@ -108,8 +110,8 @@ export default function ContactPage() {
               delay={revealDelays.d2}
             >
               <L
-                en="We reply, in Japanese or English, usually within one business day."
-                ja="日本語・英語のどちらでも、通常1営業日以内にご返信します。"
+                en="We reply, in Japanese or English, usually within two business days."
+                ja="日本語・英語のどちらでも、通常2営業日以内にご返信します。"
               />
             </Reveal>
 

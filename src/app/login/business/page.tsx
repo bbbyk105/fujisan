@@ -1,10 +1,15 @@
 import { Suspense } from "react";
 import { AuthShell, AuthHeading } from "@/components/fujisan/auth/AuthShell";
 import { LoginForm } from "@/components/fujisan/auth/LoginForm";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Trade Sign In — FUJISAN SAKE",
-};
+export const metadata = buildMetadata({
+  title: "Trade Sign In",
+  description:
+    "取扱店さまのログインページです。",
+  path: "/login/business",
+  noIndex: true,
+});
 
 export default function LoginBusinessPage() {
   return (

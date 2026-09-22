@@ -13,7 +13,13 @@ import {
 import { FieldError } from "@/components/fujisan/FieldError";
 import { scrollToFirstError } from "@/lib/scrollToFirstError";
 import { L } from "@/i18n/Localized";
-import { Field, inputCls, PrimaryButton, Notice } from "./ui";
+import {
+  Field,
+  inputCls,
+  PrimaryButton,
+  Notice,
+  RateLimitMessage,
+} from "./ui";
 
 export function ResetPasswordForm({
   role,
@@ -101,7 +107,9 @@ export function ResetPasswordForm({
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-7">
       {errorKey && (
         <Notice tone="error">
-          {errorKey === "weak" ? (
+          {errorKey === "rate" ? (
+            <RateLimitMessage />
+          ) : errorKey === "weak" ? (
             <L
               en="Please use a password of at least 8 characters."
               ja="パスワードは8文字以上でご設定ください。"

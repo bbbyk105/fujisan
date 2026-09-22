@@ -19,6 +19,33 @@ export const ORDER_STATUSES = [
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
 /**
+ * 品物が蔵を出たか。
+ *
+ * 返金・取消のときに在庫を戻してよいかの判断に使う。発送後は品物が手元に
+ * 戻っていないので、返金しても在庫は増やさない（返品を受け取ったら手で足す）。
+ */
+export function hasLeftTheKura(status: OrderStatus): boolean {
+  return status === "shipped" || status === "delivered";
+}
+
+/**
+ * 領収書を発行してよいステータスか。
+ *
+ * 領収書は「代金を受け取って保持している」ことの証明なので、
+ * 未入金のまま終わったもの（pending / cancelled）と、代金を返したもの
+ * （refunded）には発行しない。返金済みに全額の「上記正に領収いたしました」を
+ * 出すと事実と食い違う。
+ */
+export function isReceiptIssuable(status: OrderStatus): boolean {
+  return (
+    status === "confirmed" ||
+    status === "preparing" ||
+    status === "shipped" ||
+    status === "delivered"
+  );
+}
+
+/**
  * 1注文 = 1行。`items_json` にカートの行を JSON で保存する（スナップショット）。
  * 価格列はすべて円・税込の整数。
  */
@@ -64,6 +91,10 @@ export const order = sqliteTable(
     stripeRefundId: text("stripe_refund_id"),
     /** 返金完了日時。 */
     refundedAt: integer("refunded_at", { mode: "timestamp_ms" }),
+
+    /** お客様からのキャンセル依頼（発送前のみ受け付ける）。返金の実行は owner が行う。 */
+    cancelRequestedAt: integer("cancel_requested_at", { mode: "timestamp_ms" }),
+    cancelReason: text("cancel_reason"),
 
     /** 追跡情報（発送後に蔵側で記入） */
     trackingCarrier: text("tracking_carrier"),

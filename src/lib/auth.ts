@@ -12,7 +12,11 @@ type AuthEnv = {
   GOOGLE_CLIENT_SECRET?: string;
 };
 
-function buildOptions(env: AuthEnv) {
+/**
+ * 実行時インスタンスと CLI 用インスタンスで共有する設定。
+ * レート制限の設定が実際に効くかを確かめる検証スクリプトからも読むため export する。
+ */
+export function buildAuthOptions(env: AuthEnv) {
   const googleEnabled = Boolean(
     env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET,
   );
@@ -63,6 +67,42 @@ function buildOptions(env: AuthEnv) {
     user: {
       additionalFields: additionalUserFields,
     },
+    /**
+     * `/api/auth/*` は UI を経由せず **HTTP で直接叩ける**。Server Action 側の
+     * 制限（`src/lib/rate-limit.ts`）だけでは、そちらから迂回されてしまう。
+     *
+     * - `storage: "database"` が肝。既定の `"memory"` はアイソレート内の Map で、
+     *   Workers では回数を共有できないため実質機能しない（D1 の `rate_limit` 表を使う）。
+     * - `enabled` も明示する。既定は `NODE_ENV === "production"` 頼みで、
+     *   Workers 上でその値が期待どおりになる保証が無い。**黙って無効**が
+     *   いちばん困るので、環境に関係なく有効にする。
+     */
+    rateLimit: {
+      enabled: true,
+      storage: "database" as const,
+      window: 60,
+      max: 60,
+      customRules: {
+        // 総当たり対策。Better Auth 既定（10秒で3回＝毎分18回）は緩すぎる。
+        "/sign-in/email": { window: 600, max: 10 },
+        "/sign-up/email": { window: 3600, max: 5 },
+        // メールを送らせる系は、送信そのものが被害になるので特に厳しく。
+        "/send-verification-email": { window: 3600, max: 5 },
+        "/request-password-reset": { window: 3600, max: 5 },
+        "/forget-password": { window: 3600, max: 5 },
+        "/reset-password": { window: 600, max: 10 },
+        "/change-password": { window: 600, max: 10 },
+      },
+    },
+    advanced: {
+      ipAddress: {
+        // Cloudflare は CF-Connecting-IP に本物のクライアント IP を入れる。
+        // X-Forwarded-For はクライアントが詐称できるので後ろに置く。
+        // IP が取れないと Better Auth はレート制限を**丸ごと諦める**ので、
+        // ここを外さないこと。
+        ipAddressHeaders: ["cf-connecting-ip", "x-forwarded-for"],
+      },
+    },
     account: {
       accountLinking: {
         // メール/パスワード登録済みのユーザーが同じメールで Google ログインした際、
@@ -100,7 +140,7 @@ async function authBuilder() {
 
   return betterAuth({
     database: drizzleAdapter(db, { provider: "sqlite" }),
-    ...buildOptions(env as AuthEnv),
+    ...buildAuthOptions(env as AuthEnv),
     databaseHooks: {
       user: {
         create: {
@@ -154,6 +194,6 @@ export async function isGoogleEnabled() {
  */
 export const auth = betterAuth({
   database: drizzleAdapter({} as never, { provider: "sqlite" }),
-  ...buildOptions({}),
+  ...buildAuthOptions({}),
   logger: { disabled: true },
 });

@@ -2,12 +2,14 @@ import FujisanInfoPage, {
   type InfoSection,
 } from "@/components/fujisan/FujisanInfoPage";
 import { L } from "@/i18n/Localized";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Terms of Use — FUJISAN SAKE",
+export const metadata = buildMetadata({
+  title: "Terms of Use",
   description:
     "The terms governing your use of fujisan-sake.com and the purchase of FUJISAN SAKE products.",
-};
+  path: "/terms",
+});
 
 const sections: InfoSection[] = [
   {
@@ -32,13 +34,13 @@ const sections: InfoSection[] = [
       />,
       <L
         key="b2"
-        en="Sake is an alcoholic beverage. You must be of legal drinking age in your country to view product detail pages or place an order, and we may verify age at delivery."
-        ja="日本国内のお客様は満20歳以上であること、海外のお客様は居住国・地域における法定飲酒年齢以上であることをご確認のうえ、ご注文・閲覧をお願いいたします。当社は配送時に年齢確認を行う場合があります。"
+        en="Sake is an alcoholic beverage. You must be 20 years of age or older to place an order, and the carrier may verify age at delivery."
+        ja="酒類のご注文は満20歳以上の方に限ります。お受け取りの際、配送業者が年齢確認を行う場合があります。"
       />,
       <L
         key="b3"
-        en="We currently ship only to addresses where the import of alcoholic beverages is permitted. Where local law restricts the sale, the order will be cancelled and refunded."
-        ja="酒類の輸入が認められている住所にのみ配送しています。現地の法令により販売が制限される場合、ご注文はキャンセルのうえ全額返金いたします。"
+        en="Orders placed on this site are shipped within Japan only. Delivery outside Japan cannot be arranged through checkout; please contact us to discuss the options."
+        ja="当サイトからのご注文は、日本国内の住所にのみ配送いたします。海外へのお届けは購入手続きからは承れませんので、お問い合わせフォームよりご相談ください。"
       />,
     ],
   },
@@ -92,8 +94,8 @@ const sections: InfoSection[] = [
     body: [
       <L
         key="b"
-        en="These terms are governed by the laws of Japan. Any dispute arising from them will be resolved in the courts of Tokyo, unless local consumer law requires otherwise."
-        ja="本規約は日本法に準拠します。本規約から生じる紛争は、現地の消費者法に別段の定めがある場合を除き、東京の裁判所を専属的合意管轄裁判所として解決するものとします。"
+        en="These terms are governed by the laws of Japan. Any dispute arising from them will be submitted to the Shizuoka District Court having jurisdiction over our registered office as the court of first instance, unless consumer protection law requires otherwise."
+        ja="本規約は日本法に準拠します。本規約から生じる紛争については、消費者保護に関する法令に別段の定めがある場合を除き、当社本店所在地を管轄する静岡地方裁判所を第一審の専属的合意管轄裁判所とします。"
       />,
     ],
   },
@@ -113,7 +115,7 @@ export default function TermsPage() {
         />
       }
       crumb={{ label: "TERMS", href: "/terms" }}
-      updated="2026.04"
+      updated="2026.09"
       sections={sections}
     />
   );
