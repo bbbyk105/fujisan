@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { fujisanProducts } from "@/data/fujisan-products";
+import { fujisanProducts, skuKey } from "@/data/fujisan-products";
+import { getLiveSkuMap } from "@/lib/catalog";
 import { getSession } from "@/lib/session";
 import { readTradeAccount } from "@/lib/trade";
 import { FUJISAN_LEGAL } from "@/data/fujisan-legal";
@@ -34,6 +35,11 @@ export async function WholesalePriceList() {
   if (isBusiness && status !== "approved") {
     return <UnderReviewPanel rejected={status === "rejected"} />;
   }
+
+  // 実勢の卸価格。**公開の /api/catalog には載せない**ので、承認済みの
+  // 取扱店に見せるこの経路だけがサーバー側で D1 から読む。
+  // 読めなければカタログ価格で表示する（getLiveSkuMap が fail-open）。
+  const live = await getLiveSkuMap();
 
   if (!isBusiness) {
     return (
@@ -111,25 +117,30 @@ export async function WholesalePriceList() {
                 {p.variantJp} ／ {p.variantLineJp}
               </span>
             </div>
-            {p.volumes.map((v) => (
-              <div
-                key={`${p.slug}-${v.ml}`}
-                className="grid grid-cols-[1fr_auto_auto] items-baseline gap-x-5 border-t border-[#0B1A2E]/8 px-4 py-4 transition-colors duration-150 hover:bg-[#F1E6CB]/35 sm:gap-x-8 sm:px-6"
-              >
-                <span className="text-[12px] tracking-[0.1em] text-[#0B1A2E]/70">
-                  {v.ml} ml
-                </span>
-                <span className="text-right font-serif text-[15px] text-[#0B1A2E]">
-                  {yen(v.wholesalePriceJpy)}
-                </span>
-                <span className="text-right font-serif text-[15px] text-[#0B1A2E]">
-                  {yen(v.wholesalePriceJpy * v.caseSize)}
-                  <span className="ml-1.5 align-baseline text-[10px] tracking-[0.06em] text-[#0B1A2E]/55">
-                    ×{v.caseSize}
+            {p.volumes.map((v) => {
+              const sku = live.get(skuKey(p.slug, v.ml));
+              const unit = sku?.wholesalePriceJpy ?? v.wholesalePriceJpy;
+              const caseSize = sku?.caseSize ?? v.caseSize;
+              return (
+                <div
+                  key={`${p.slug}-${v.ml}`}
+                  className="grid grid-cols-[1fr_auto_auto] items-baseline gap-x-5 border-t border-[#0B1A2E]/8 px-4 py-4 transition-colors duration-150 hover:bg-[#F1E6CB]/35 sm:gap-x-8 sm:px-6"
+                >
+                  <span className="text-[12px] tracking-[0.1em] text-[#0B1A2E]/70">
+                    {v.ml} ml
                   </span>
-                </span>
-              </div>
-            ))}
+                  <span className="text-right font-serif text-[15px] text-[#0B1A2E]">
+                    {yen(unit)}
+                  </span>
+                  <span className="text-right font-serif text-[15px] text-[#0B1A2E]">
+                    {yen(unit * caseSize)}
+                    <span className="ml-1.5 align-baseline text-[10px] tracking-[0.06em] text-[#0B1A2E]/55">
+                      ×{caseSize}
+                    </span>
+                  </span>
+                </div>
+              );
+            })}
           </div>
         ))}
       </div>

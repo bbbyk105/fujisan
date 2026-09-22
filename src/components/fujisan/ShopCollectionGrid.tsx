@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ViewTransition } from "react";
+import { LivePrice } from "@/components/fujisan/LivePrice";
 import {
   primaryVolume,
   isProductSoldOut,
@@ -9,7 +10,6 @@ import {
 import { ShopAddToCart } from "./ShopAddToCart";
 import { L } from "@/i18n/Localized";
 
-const yen = new Intl.NumberFormat("ja-JP");
 
 /**
  * 一覧カード。Server Component — カート追加ボタン（ShopAddToCart）だけが
@@ -77,7 +77,11 @@ function ShopBottleCard({ product }: { product: FujisanProduct }) {
         <div className="mt-auto flex items-end justify-between gap-3 pt-5">
           <div>
             <p className="font-serif text-[20px] font-semibold tracking-[0.02em] text-[#0B1A2E]">
-              ¥{yen.format(base.priceJpy)}
+              <LivePrice
+                slug={product.slug}
+                ml={base.ml}
+                fallback={base.priceJpy}
+              />
               <span className="ml-1.5 align-middle text-[10px] font-medium tracking-[0.14em] text-[#0B1A2E]/75">
                 <L en={`${base.ml}ml · tax incl.`} ja={`${base.ml}ml・税込`} />
               </span>

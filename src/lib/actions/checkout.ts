@@ -7,7 +7,8 @@ import { getAuth } from "@/lib/auth";
 import { getDb } from "@/db";
 import { order as orderTable, type OrderLine } from "@/db/orders-schema";
 import { user as userTable } from "@/db/auth-schema";
-import { getFujisanProductBySlug, findVolume } from "@/data/fujisan-products";
+import { getLiveSkuMap } from "@/lib/catalog";
+import { skuKey } from "@/data/fujisan-products";
 import { MAX_QTY_PER_LINE, shippingFee } from "@/lib/cart/cart-core";
 import {
   releaseStock,
@@ -101,15 +102,19 @@ export async function startCheckoutAction(input: {
     return { ok: false, error: "invalid" };
   }
 
-  // 価格をサーバー側で引き直して明細を組み立てる（改ざん防止）
+  // 価格をサーバー側で引き直して明細を組み立てる（改ざん防止）。
+  // 引き直しの出どころは実勢カタログ（コードの定数 + D1 の価格上書き）。
+  // カタログ定数を直接読むと、管理画面で変えた価格が決済に効かない。
+  const live = await getLiveSkuMap();
   const items: OrderLine[] = [];
   for (const ci of input.items) {
-    const product = getFujisanProductBySlug(ci.slug);
-    if (!product) return { ok: false, error: "invalid" };
-    const volume = findVolume(product, ci.ml);
-    if (!volume) return { ok: false, error: "invalid" };
-    // 完売 SKU は決済に進ませない（UI で無効化していても最後の砦としてここで拒否）。
-    if (volume.soldOut) return { ok: false, error: "soldout" };
+    const sku = live.get(skuKey(ci.slug, ci.ml));
+    if (!sku) return { ok: false, error: "invalid" };
+    // カタログ側で販売停止にした SKU は決済に進ませない
+    // （UI で無効化していても最後の砦としてここで拒否）。
+    // 在庫切れはこの先の reserveStock が「どれが何本まで買えるか」付きで返すので、
+    // ここでは見ない — ここで弾くと、その情報を UI に渡せなくなる。
+    if (sku.catalogSoldOut) return { ok: false, error: "soldout" };
     // 申告値をそのまま検証する。以前は Math.floor() してから
     // Number.isInteger() を見ていたため、小数（1.5 → 1）が常に整数判定を
     // 通り抜けて黙って切り捨てられていた。上限はカート UI と同じ定数を使う。
@@ -118,13 +123,13 @@ export async function startCheckoutAction(input: {
       return { ok: false, error: "invalid" };
     }
     items.push({
-      slug: product.slug,
-      name: product.name,
-      variant: product.variant,
-      ml: volume.ml,
+      slug: sku.slug,
+      name: sku.name,
+      variant: sku.variant,
+      ml: sku.ml,
       qty,
-      unitPrice: volume.priceJpy,
-      lineTotal: volume.priceJpy * qty,
+      unitPrice: sku.priceJpy,
+      lineTotal: sku.priceJpy * qty,
     });
   }
 

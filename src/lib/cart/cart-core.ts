@@ -19,7 +19,33 @@ export type CartLine = { slug: string; ml: number; qty: number };
 export type CartLineView = CartLine & {
   product: FujisanProduct;
   volume: FujisanVolume;
+  /** 1 本あたりの税込価格。実勢価格があればその値、無ければカタログ価格。 */
+  unitPrice: number;
+  /** この行の小計（unitPrice × qty）。 */
+  lineTotal: number;
 };
+
+/**
+ * 実勢価格の引き当て。`undefined` を返した SKU はカタログ価格で扱う。
+ *
+ * カートは静的配信のページから使われるため、**ビルド時に焼き込まれた
+ * カタログ価格と、いま決済で請求される価格がずれうる**。決済と同じ金額を
+ * 見せるために、クライアントが `/api/catalog` から取った値をここへ渡す。
+ * 渡さなければ従来どおりカタログ価格で計算する。
+ */
+export type PriceLookup = (slug: string, ml: number) => number | undefined;
+
+/** 実勢価格 → カタログ価格の順で 1 本あたりの価格を決める。 */
+function unitPriceOf(
+  volume: FujisanVolume,
+  slug: string,
+  priceOf?: PriceLookup,
+): number {
+  const live = priceOf?.(slug, volume.ml);
+  return typeof live === "number" && Number.isFinite(live) && live >= 0
+    ? live
+    : volume.priceJpy;
+}
 
 function clampQty(qty: number): number {
   if (!Number.isFinite(qty)) return 1;
@@ -101,12 +127,23 @@ export function normalizeLines(raw: unknown): CartLine[] {
 }
 
 /** 商品・容量データを結合し、コレクションの並び順→容量の大きい順で返す。 */
-export function toLineViews(items: CartLine[]): CartLineView[] {
+export function toLineViews(
+  items: CartLine[],
+  priceOf?: PriceLookup,
+): CartLineView[] {
   return items
     .map((l) => {
       const product = getFujisanProductBySlug(l.slug);
       const volume = product ? findVolume(product, l.ml) : undefined;
-      return product && volume ? { ...l, product, volume } : null;
+      if (!product || !volume) return null;
+      const unitPrice = unitPriceOf(volume, l.slug, priceOf);
+      return {
+        ...l,
+        product,
+        volume,
+        unitPrice,
+        lineTotal: unitPrice * l.qty,
+      };
     })
     .filter((l): l is CartLineView => l !== null)
     .sort((a, b) => {
@@ -122,11 +159,14 @@ export function cartCount(items: CartLine[]): number {
 }
 
 /** 税込小計（円）。実在しない slug/容量は 0 として扱う。 */
-export function cartSubtotal(items: CartLine[]): number {
+export function cartSubtotal(
+  items: CartLine[],
+  priceOf?: PriceLookup,
+): number {
   return items.reduce((sum, l) => {
     const product = getFujisanProductBySlug(l.slug);
     const volume = product ? findVolume(product, l.ml) : undefined;
-    return volume ? sum + volume.priceJpy * l.qty : sum;
+    return volume ? sum + unitPriceOf(volume, l.slug, priceOf) * l.qty : sum;
   }, 0);
 }
 

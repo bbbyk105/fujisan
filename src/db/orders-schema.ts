@@ -28,6 +28,27 @@ export function hasLeftTheKura(status: OrderStatus): boolean {
   return status === "shipped" || status === "delivered";
 }
 
+/** 返金の状態。金額とステータスの組み合わせを 1 か所で判定する。 */
+export type RefundState = "none" | "partial" | "full";
+
+/**
+ * 注文の返金状態。
+ *
+ * `status === "refunded"` は全額返金。それ以外でも `refundedAmount` が
+ * 入っていれば一部返金であり、**金額だけを見て「返金済み」と表示しない**こと
+ * （一部返金の注文はまだ届く予定のものなので、全額返金と同じ顔をさせない）。
+ */
+export function refundStateOf(order: {
+  status: OrderStatus | string;
+  refundedAmount: number | null;
+  total: number;
+}): RefundState {
+  if (order.status === "refunded") return "full";
+  const refunded = order.refundedAmount ?? 0;
+  if (refunded <= 0) return "none";
+  return refunded >= order.total ? "full" : "partial";
+}
+
 /**
  * 領収書を発行してよいステータスか。
  *
@@ -89,8 +110,17 @@ export const order = sqliteTable(
     /** 返金情報（管理者が返金操作したとき） */
     /** Stripe の Refund id（冪等キー兼、二重返金防止の記録）。 */
     stripeRefundId: text("stripe_refund_id"),
-    /** 返金完了日時。 */
+    /** 返金完了日時（部分返金なら直近の返金日時）。 */
     refundedAt: integer("refunded_at", { mode: "timestamp_ms" }),
+    /**
+     * これまでに返金した累計額（円）。null は返金なし。
+     *
+     * **`status === "refunded"` は「全額返金済み」だけを意味する。**
+     * 一部だけ返した注文は進行中のまま（発送は続く）なので、ステータスは
+     * 動かさずこの金額だけが増える。金額を持たずにステータスだけで
+     * 表そうとすると、「一部返金して発送準備中」が表現できない。
+     */
+    refundedAmount: integer("refunded_amount"),
 
     /** お客様からのキャンセル依頼（発送前のみ受け付ける）。返金の実行は owner が行う。 */
     cancelRequestedAt: integer("cancel_requested_at", { mode: "timestamp_ms" }),

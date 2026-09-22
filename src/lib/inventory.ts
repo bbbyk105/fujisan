@@ -3,6 +3,7 @@ import { and, eq, gte, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { inventory, type StockLevel } from "@/db/inventory-schema";
 import type { OrderLine } from "@/db/orders-schema";
+import { skuKey } from "@/data/fujisan-products";
 
 /**
  * 在庫の引き当て・確定・解放。
@@ -187,29 +188,30 @@ export async function readStock(
     .where(and(eq(inventory.productSlug, slug), eq(inventory.ml, ml)))
     .limit(1);
   if (!row) return null;
+  return toLevel(row);
+}
+
+/** 管理対象の全 SKU。キーは `skuKey(slug, ml)`。 */
+export async function readAllStock(): Promise<Map<string, StockLevel>> {
+  const db = await getDb();
+  const rows = await db.select().from(inventory);
+  return new Map(
+    rows.map((row) => [skuKey(row.productSlug, row.ml), toLevel(row)]),
+  );
+}
+
+/** 行 → StockLevel。`available` と `lowStock` の導出を 1 か所に閉じる。 */
+function toLevel(row: typeof inventory.$inferSelect): StockLevel {
+  const available = Math.max(0, row.onHand - row.reserved);
   return {
     productSlug: row.productSlug,
     ml: row.ml,
     onHand: row.onHand,
     reserved: row.reserved,
-    available: Math.max(0, row.onHand - row.reserved),
+    available,
+    lowStockThreshold: row.lowStockThreshold,
+    // 0 本は「完売」であって「僅少」ではない。両方に出すと、完売の SKU が
+    // アラートに二重で並んで、仕込むべきものが埋もれる。
+    lowStock: available > 0 && available <= row.lowStockThreshold,
   };
-}
-
-/** 管理対象の全 SKU。キーは `${slug}__${ml}`。 */
-export async function readAllStock(): Promise<Map<string, StockLevel>> {
-  const db = await getDb();
-  const rows = await db.select().from(inventory);
-  return new Map(
-    rows.map((row) => [
-      `${row.productSlug}__${row.ml}`,
-      {
-        productSlug: row.productSlug,
-        ml: row.ml,
-        onHand: row.onHand,
-        reserved: row.reserved,
-        available: Math.max(0, row.onHand - row.reserved),
-      },
-    ]),
-  );
 }

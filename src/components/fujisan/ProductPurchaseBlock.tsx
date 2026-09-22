@@ -5,6 +5,8 @@ import { useRef, useState } from "react";
 import { UNDERAGE_NOTICE_EN, UNDERAGE_NOTICE_JP } from "@/data/fujisan-legal";
 import type { FujisanVolume } from "@/data/fujisan-products";
 import { useCart } from "@/lib/cart/useCart";
+import { LivePrice } from "@/components/fujisan/LivePrice";
+import { useLiveCatalog, liveKey } from "@/lib/cart/useLiveCatalog";
 import { pushToast } from "@/lib/cart/toast-store";
 import { L } from "@/i18n/Localized";
 
@@ -25,7 +27,6 @@ type Props = {
   shippingNoteEn: string;
 };
 
-const yen = new Intl.NumberFormat("ja-JP");
 
 export default function ProductPurchaseBlock({
   slug,
@@ -47,7 +48,16 @@ export default function ProductPurchaseBlock({
   const [selectedMl, setSelectedMl] = useState(volumes[0].ml);
 
   const selected = volumes.find((v) => v.ml === selectedMl) ?? volumes[0];
-  const soldOut = selected.soldOut === true;
+
+  // このページは静的書き出しなので、ビルド後に完売した SKU も「購入できる」
+  // 見た目のまま残る。ハイドレーション後に実勢の完売を重ねて、カートに
+  // 入れてから気づく状況を減らす。取得できないあいだはカタログのフラグだけで
+  // 判断する（最後の砦は startCheckoutAction のサーバー側検証）。
+  const { catalog } = useLiveCatalog();
+  const isSoldOut = (v: FujisanVolume) =>
+    v.soldOut === true || catalog[liveKey(slug, v.ml)]?.soldOut === true;
+
+  const soldOut = isSoldOut(selected);
 
   const onAddToCart = () => {
     // 完売 SKU は追加不可（選択中の容量が品切れならここで止める）。
@@ -96,7 +106,7 @@ export default function ProductPurchaseBlock({
 
           {/* 金額は年齢確認より小さくする（国税局指導）。拡大しないこと。 */}
           <p className="mt-6 font-serif text-[22px] font-semibold leading-[1.15] tracking-[0.02em] text-[#0B1A2E] md:text-[24px]">
-            ¥{yen.format(selected.priceJpy)}
+            <LivePrice slug={slug} ml={selected.ml} fallback={selected.priceJpy} />
             <span className="ml-2 align-middle text-[12px] font-medium tracking-[0.18em] text-[#0B1A2E]/60">
               <L en="(tax incl.)" ja="（税込）" />
             </span>
@@ -110,7 +120,7 @@ export default function ProductPurchaseBlock({
             <div className="mt-3 flex flex-wrap gap-3">
               {volumes.map((v) => {
                 const active = v.ml === selected.ml;
-                const vSoldOut = v.soldOut === true;
+                const vSoldOut = isSoldOut(v);
                 return (
                   <button
                     key={v.ml}
@@ -130,7 +140,7 @@ export default function ProductPurchaseBlock({
                         vSoldOut ? "line-through" : ""
                       } ${active ? "text-paper-card/75" : "text-[#0B1A2E]/70"}`}
                     >
-                      ¥{yen.format(v.priceJpy)}
+                      <LivePrice slug={slug} ml={v.ml} fallback={v.priceJpy} />
                     </span>
                     {vSoldOut ? (
                       <span

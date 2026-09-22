@@ -240,7 +240,9 @@ export async function adminInviteByEmailAction(input: {
       return { ok: true, status: "granted" };
     }
 
-    // 未登録なら招待を予約（同じメールの再招待は role を上書き）
+    // 未登録なら招待を予約（同じメールの再招待は role を上書き）。
+    // **createdAt も打ち直す。** 招待には 14 日の期限があり、ここを据え置くと
+    // 「期限が切れたので招待し直した」のに、届いた招待が最初から無効になる。
     await db
       .insert(teamInvite)
       .values({
@@ -250,7 +252,11 @@ export async function adminInviteByEmailAction(input: {
       })
       .onConflictDoUpdate({
         target: teamInvite.email,
-        set: { adminRole: input.role, invitedByEmail: gate.email },
+        set: {
+          adminRole: input.role,
+          invitedByEmail: gate.email,
+          createdAt: new Date(),
+        },
       });
 
     // 登録案内メールを送信（RESEND 未設定時は dev コンソール出力）
@@ -263,7 +269,7 @@ export async function adminInviteByEmailAction(input: {
       {
         to: email,
         subject: "FUJISAN — チームへの招待 / You're invited to the team",
-        text: `FUJISAN SAKE\n\n${gate.email} さんから、FUJISAN の管理チーム（${roleLabel}）に招待されました。\n以下のリンクからこのメールアドレスで新規登録すると、登録完了後に自動で権限が付与されます。\n\n${base}/register/personal\n\nYou've been invited as ${input.role}. Register with this email to receive access automatically.\n`,
+        text: `FUJISAN SAKE\n\n${gate.email} さんから、FUJISAN の管理チーム（${roleLabel}）に招待されました。\n以下のリンクからこのメールアドレスで新規登録すると、登録完了後に自動で権限が付与されます。\n\n${base}/register/personal\n\nこの招待は 14 日で失効します。期限を過ぎた場合は、お手数ですが招待し直しをご依頼ください。\n\nYou've been invited as ${input.role}. Register with this email to receive access automatically.\nThis invitation expires in 14 days.\n`,
       },
       { apiKey: e.RESEND_API_KEY, from: e.RESEND_FROM },
     );

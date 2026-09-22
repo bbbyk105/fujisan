@@ -1,10 +1,14 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import FujisanNav from "@/components/fujisan/FujisanNav";
 import FujisanFooter from "@/components/fujisan/FujisanFooter";
 import { AdminTeamRow } from "@/components/fujisan/admin/AdminTeamRow";
 import { AdminInviteForm } from "@/components/fujisan/admin/AdminInviteForm";
-import { LogoutButton } from "@/components/fujisan/auth/LogoutButton";
+import {
+  AdminForbidden,
+  AdminFooterBar,
+  AdminHeader,
+  AdminKpi,
+} from "@/components/fujisan/admin/AdminChrome";
 import { getSession } from "@/lib/session";
 import { getEffectiveAdminRole, isOwner } from "@/lib/admin";
 import { adminListTeamAction } from "@/lib/actions/admin-team";
@@ -33,7 +37,7 @@ export default async function AdminTeamPage() {
   }
   const role = await getEffectiveAdminRole({ userId, email });
   if (!isOwner(role)) {
-    return <ForbiddenView email={email} />;
+    return <AdminForbidden email={email} />;
   }
 
   // チーム管理は「メール招待のみ」。一般顧客一覧からの昇格は廃止
@@ -51,33 +55,19 @@ export default async function AdminTeamPage() {
     <main className="flex min-h-screen flex-col bg-paper text-[#0B1A2E]">
       <FujisanNav />
 
-      {/* Header */}
-      <section className="bg-[#0B1A2E] fujisan-dark-panel text-[#F2E4C7]">
-        <div className="mx-auto flex max-w-[1280px] flex-col gap-5 px-7 pt-[124px] pb-10 md:flex-row md:items-end md:justify-between md:px-12 md:pt-[150px] md:pb-12">
-          <div>
-            <div className="flex items-center gap-3">
-              <span className="font-jp text-[12px] tracking-[0.34em] text-[#E2C97E]">
-                ― 蔵内 ―
-              </span>
-              <span className="h-px w-10 bg-[#E2C97E]/50" />
-              <span className="text-[10px] font-semibold uppercase tracking-[0.38em] text-[#E2C97E]/80">
-                Team
-              </span>
-            </div>
-            <h1 className="mt-6 font-serif text-[clamp(24px,2.8vw,34px)] font-semibold leading-[1.16] tracking-[0.06em] text-[#F2E4C7]">
-              メンバー管理
-            </h1>
-            <p className="mt-4 max-w-[44ch] text-[13px] leading-[1.85] tracking-[0.02em] text-[#F2E4C7]/72">
-              注文・配送を扱う蔵人を、メールでお招きします。招待した方が登録すると、自動で権限が付きます。
-            </p>
-          </div>
-
-          <dl className="grid grid-cols-2 gap-x-10 gap-y-2">
-            <Kpi label="OWNER" value={`${ownerCount}`} suffix="人" />
-            <Kpi label="STAFF" value={`${staffCount}`} suffix="人" />
-          </dl>
-        </div>
-      </section>
+      <AdminHeader
+        title="メンバー管理"
+        lead="注文・配送を扱う蔵人を、メールでお招きします。招待した方が登録すると、自動で権限が付きます。"
+        email={email}
+        isOwnerUser
+        current="team"
+        kpis={
+          <>
+            <AdminKpi label="OWNER" value={`${ownerCount}`} suffix="人" />
+            <AdminKpi label="STAFF" value={`${staffCount}`} suffix="人" />
+          </>
+        }
+      />
 
       {/* Body */}
       <section className="mx-auto w-full max-w-[1280px] flex-1 px-7 pb-24 pt-12 md:px-12 md:pt-14">
@@ -115,72 +105,9 @@ export default async function AdminTeamPage() {
           </ul>
         )}
 
-        {/* Footer nav */}
-        <div className="mt-12 flex items-center justify-between border-t border-[#0B1A2E]/12 pt-8">
-          <Link
-            href="/admin/orders"
-            className="text-[11px] font-semibold tracking-[0.3em] text-[#0B1A2E]/75 no-underline hover:text-[#0B1A2E]"
-          >
-            ← 注文管理へ
-          </Link>
-          <LogoutButton />
-        </div>
+        <AdminFooterBar />
       </section>
 
-      <FujisanFooter />
-    </main>
-  );
-}
-
-function Kpi({
-  label,
-  value,
-  suffix,
-}: {
-  label: string;
-  value: string;
-  suffix?: string;
-}) {
-  return (
-    <div className="flex flex-col gap-1">
-      <dt className="text-[9px] font-semibold tracking-[0.32em] text-[#F2E4C7]/55">
-        {label}
-      </dt>
-      <dd className="font-serif text-[18px] tracking-[0.02em] text-[#F2E4C7]">
-        {value}
-        {suffix && (
-          <span className="ml-1 text-[11px] text-[#F2E4C7]/55">{suffix}</span>
-        )}
-      </dd>
-    </div>
-  );
-}
-
-function ForbiddenView({ email }: { email: string | undefined }) {
-  return (
-    <main className="flex min-h-screen flex-col bg-paper text-[#0B1A2E]">
-      <FujisanNav />
-      <section className="mx-auto flex w-full max-w-[680px] flex-1 flex-col items-center justify-center px-7 pt-[140px] pb-24 text-center md:pt-[180px]">
-        <p className="font-serif text-[10px] font-semibold tracking-[0.34em] text-[#8B1A1A]">
-          OWNER ACCESS REQUIRED
-        </p>
-        <h1 className="mt-5 font-serif text-[28px] font-semibold leading-[1.18] tracking-[0.04em] text-[#0B1A2E]">
-          このページは蔵元（owner）専用です。
-        </h1>
-        <p className="mt-5 text-[13px] leading-[1.85] text-[#1D2432]/78">
-          現在のログイン:{" "}
-          <span className="font-semibold">{email ?? "（未ログイン）"}</span>
-        </p>
-        <div className="mt-9 flex items-center justify-center gap-6">
-          <Link
-            href="/admin/orders"
-            className="text-[11px] font-semibold tracking-[0.3em] text-[#0B1A2E]/75 no-underline hover:text-[#0B1A2E]"
-          >
-            ← 注文管理へ
-          </Link>
-          <LogoutButton />
-        </div>
-      </section>
       <FujisanFooter />
     </main>
   );

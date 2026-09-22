@@ -17,6 +17,7 @@ import {
 } from "@/lib/actions/checkout";
 import { fujisanProducts, primaryVolume } from "@/data/fujisan-products";
 import { SHIPPING_FEE } from "@/data/fujisan-legal";
+import { LivePrice } from "@/components/fujisan/LivePrice";
 import { L } from "@/i18n/Localized";
 import { useLocale } from "@/i18n/useLocale";
 
@@ -233,7 +234,11 @@ export function CartView() {
                     <span className="text-[#0B1A2E]/55">{p.variant}</span>
                   </Link>
                   <p className="mt-1 font-serif text-[13px] font-semibold text-[#0B1A2E]">
-                    ¥{yen.format(primaryVolume(p).priceJpy)}
+                    <LivePrice
+                      slug={p.slug}
+                      ml={primaryVolume(p).ml}
+                      fallback={primaryVolume(p).priceJpy}
+                    />
                   </p>
                   <button
                     type="button"
@@ -275,7 +280,7 @@ export function CartView() {
           </div>
 
           <ul>
-            {lines.map(({ slug, ml, qty, product, volume }) => {
+            {lines.map(({ slug, ml, qty, product, lineTotal }) => {
               const lineKey = `${slug}-${ml}`;
               return (
               <li
@@ -314,7 +319,7 @@ export function CartView() {
                       </p>
                     </div>
                     <p className="shrink-0 font-serif text-[15px] font-semibold tracking-[0.02em] text-[#0B1A2E]">
-                      ¥{yen.format(volume.priceJpy * qty)}
+                      ¥{yen.format(lineTotal)}
                     </p>
                   </div>
 

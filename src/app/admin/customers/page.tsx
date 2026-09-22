@@ -2,7 +2,12 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import FujisanNav from "@/components/fujisan/FujisanNav";
 import FujisanFooter from "@/components/fujisan/FujisanFooter";
-import { LogoutButton } from "@/components/fujisan/auth/LogoutButton";
+import {
+  AdminForbidden,
+  AdminFooterBar,
+  AdminHeader,
+  AdminKpi,
+} from "@/components/fujisan/admin/AdminChrome";
 import { getSession } from "@/lib/session";
 import { getEffectiveAdminRole, isStaffOrAbove, isOwner } from "@/lib/admin";
 import { adminListBusinessAccountsAction } from "@/lib/actions/admin-customers";
@@ -29,7 +34,7 @@ export default async function AdminCustomersPage(props: {
   if (!session) redirect("/login/personal?next=/admin/customers");
 
   const role = await getEffectiveAdminRole({ userId: u?.id, email: u?.email });
-  if (!isStaffOrAbove(role)) return <ForbiddenView email={u?.email} />;
+  if (!isStaffOrAbove(role)) return <AdminForbidden email={u?.email} />;
   const isOwnerUser = isOwner(role);
 
   const params = (await props.searchParams) ?? {};
@@ -46,53 +51,27 @@ export default async function AdminCustomersPage(props: {
     <main className="flex min-h-screen flex-col bg-paper text-[#0B1A2E]">
       <FujisanNav />
 
-      {/* Header */}
-      <section className="bg-[#0B1A2E] fujisan-dark-panel text-[#F2E4C7]">
-        <div className="mx-auto flex max-w-[1280px] flex-col gap-5 px-7 pt-[124px] pb-10 md:flex-row md:items-end md:justify-between md:px-12 md:pt-[150px] md:pb-12">
-          <div>
-            <div className="flex items-center gap-3">
-              <span className="font-jp text-[12px] tracking-[0.34em] text-[#E2C97E]">
-                ― 取扱店 ―
-              </span>
-              <span className="h-px w-10 bg-[#E2C97E]/50" />
-              <span className="text-[10px] font-semibold uppercase tracking-[0.38em] text-[#E2C97E]/80">
-                Trade Accounts
-              </span>
-            </div>
-            <h1 className="mt-6 font-serif text-[clamp(24px,2.8vw,34px)] font-semibold leading-[1.16] tracking-[0.06em] text-[#F2E4C7]">
-              法人・取扱店アカウント
-            </h1>
-            <p className="mt-4 max-w-[46ch] text-[13px] leading-[1.85] tracking-[0.02em] text-[#F2E4C7]/72">
-              法人登録された会社情報と、取扱口座の審査状況です。
-              <strong className="font-semibold text-[#E2C97E]">
-                承認するまで卸価格は表示されません。
-              </strong>
-              免許番号と業態を確認のうえ、承認または見送りを選んでください。
-            </p>
-          </div>
-
-          <dl className="grid grid-cols-2 gap-x-8 gap-y-2">
-            <div className="flex flex-col gap-1">
-              <dt className="text-[9px] font-semibold tracking-[0.32em] text-[#F2E4C7]/55">
-                ACCOUNTS
-              </dt>
-              <dd className="font-serif text-[18px] tracking-[0.02em] text-[#F2E4C7]">
-                {accounts.length}
-                <span className="ml-1 text-[11px] text-[#F2E4C7]/55">社</span>
-              </dd>
-            </div>
-            <div className="flex flex-col gap-1">
-              <dt className="text-[9px] font-semibold tracking-[0.32em] text-[#E2C97E]">
-                審査待ち
-              </dt>
-              <dd className="font-serif text-[18px] tracking-[0.02em] text-[#E2C97E]">
-                {awaitingReview}
-                <span className="ml-1 text-[11px] text-[#F2E4C7]/55">社</span>
-              </dd>
-            </div>
-          </dl>
-        </div>
-      </section>
+      <AdminHeader
+        title="法人・取扱店アカウント"
+        lead={
+          <>
+            法人登録された会社情報と、取扱口座の審査状況です。
+            <strong className="font-semibold text-[#E2C97E]">
+              承認するまで卸価格は表示されません。
+            </strong>
+            免許番号と業態を確認のうえ、承認または見送りを選んでください。
+          </>
+        }
+        email={u?.email}
+        isOwnerUser={isOwnerUser}
+        current="customers"
+        kpis={
+          <>
+            <AdminKpi label="ACCOUNTS" value={`${accounts.length}`} suffix="社" />
+            <AdminKpi label="審査待ち" value={`${awaitingReview}`} suffix="社" />
+          </>
+        }
+      />
 
       {/* Body */}
       <section className="mx-auto w-full max-w-[1280px] flex-1 px-7 pb-24 pt-12 md:px-12 md:pt-14">
@@ -144,64 +123,9 @@ export default async function AdminCustomersPage(props: {
           </ul>
         )}
 
-        {/* Footer nav */}
-        <div className="mt-12 flex items-center justify-between border-t border-[#0B1A2E]/12 pt-8">
-          <div className="flex items-center gap-6">
-            <Link
-              href="/admin/orders"
-              className="text-[11px] font-semibold tracking-[0.3em] text-[#0B1A2E]/75 no-underline hover:text-[#0B1A2E]"
-            >
-              ← 注文管理へ
-            </Link>
-            <Link
-              href="/admin/inventory"
-              className="text-[11px] font-semibold tracking-[0.3em] text-[#0B1A2E]/75 no-underline hover:text-[#0B1A2E]"
-            >
-              在庫へ
-            </Link>
-            <Link
-              href="/admin/contacts"
-              className="text-[11px] font-semibold tracking-[0.3em] text-[#0B1A2E]/75 no-underline hover:text-[#0B1A2E]"
-            >
-              お問い合わせへ
-            </Link>
-            {isOwnerUser && (
-              <Link
-                href="/admin/team"
-                className="text-[11px] font-semibold tracking-[0.3em] text-[#0B1A2E]/75 no-underline hover:text-[#0B1A2E]"
-              >
-                メンバー管理へ
-              </Link>
-            )}
-          </div>
-          <LogoutButton />
-        </div>
+        <AdminFooterBar />
       </section>
 
-      <FujisanFooter />
-    </main>
-  );
-}
-
-function ForbiddenView({ email }: { email: string | undefined }) {
-  return (
-    <main className="flex min-h-screen flex-col bg-paper text-[#0B1A2E]">
-      <FujisanNav />
-      <section className="mx-auto flex w-full max-w-[680px] flex-1 flex-col items-center justify-center px-7 pt-[140px] pb-24 text-center md:pt-[180px]">
-        <p className="font-serif text-[10px] font-semibold tracking-[0.34em] text-[#8B1A1A]">
-          STAFF ACCESS REQUIRED
-        </p>
-        <h1 className="mt-5 font-serif text-[28px] font-semibold leading-[1.18] tracking-[0.04em] text-[#0B1A2E]">
-          このページは蔵スタッフ専用です。
-        </h1>
-        <p className="mt-5 text-[13px] leading-[1.85] text-[#1D2432]/78">
-          現在のログイン:{" "}
-          <span className="font-semibold">{email ?? "（未ログイン）"}</span>
-        </p>
-        <div className="mt-9">
-          <LogoutButton />
-        </div>
-      </section>
       <FujisanFooter />
     </main>
   );

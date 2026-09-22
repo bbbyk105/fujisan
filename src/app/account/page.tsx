@@ -11,6 +11,7 @@ import { ProfileEditForm } from "@/components/fujisan/auth/ProfileEditForm";
 import { OrderTimeline } from "@/components/fujisan/auth/OrderTimeline";
 import { OrderStatusPill } from "@/components/fujisan/auth/OrderStatusPill";
 import { ChangePasswordForm } from "@/components/fujisan/auth/ChangePasswordForm";
+import { ChangeEmailForm } from "@/components/fujisan/auth/ChangeEmailForm";
 import { getSession } from "@/lib/session";
 import { getDb } from "@/db";
 import { user as userTable } from "@/db/auth-schema";
@@ -467,6 +468,10 @@ export default async function AccountPage() {
 
             {/* ===== SECURITY ===== */}
             <Section id="security" labelEn="SECURITY" labelJa="セキュリティ">
+              <div className="mb-6">
+                <ChangeEmailForm currentEmail={user.email} />
+              </div>
+
               <div className="mb-6">
                 <ChangePasswordForm />
               </div>
