@@ -732,10 +732,29 @@ details:not([open]) > :not(summary) {
     }
   }
 
-  /* ── 補足（囲まずに、左の罫だけで示す）───────────── */
+  /* ── 注記 ───────────────────────────────────────
+     **左に色の帯を立てる囲み（コールアウト）は作らない。**
+     生成コードに頻出する形で、和文の誌面ではまず見ない。
+     上に一本・下に一本の細い罫で挟み、本文より一段小さく組む——
+     印刷物の注記の作法に寄せる。 */
   .ed-note {
-    border-left: 2px solid var(--ed-gold);
-    padding-left: 20px;
+    border-top: 1px solid var(--ed-rule-strong);
+    border-bottom: 1px solid var(--ed-rule);
+    padding-block: 16px 18px;
+  }
+  .ed-note .ed-p {
+    max-width: 46em;
+    font-size: 13px;
+    line-height: 1.95;
+  }
+  @media (min-width: 768px) {
+    .ed-note .ed-p {
+      font-size: 13.5px;
+    }
+  }
+  /* 注記の中は「段落」ではなく続けて読む数行。段落の間隔を空けない */
+  .ed-note .ed-p + .ed-p {
+    margin-top: 0.35em;
   }
 
   /* ── 開閉（FAQ）─────────────────────────────────── */

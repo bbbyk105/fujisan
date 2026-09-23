@@ -193,7 +193,7 @@ export default function TokushohoPage() {
       />
 
       {/* 未成年飲酒防止表示。法定表示の表より前に、独立して置く */}
-      <EditorialSection ruled={false} className="!pt-0 !pb-10 md:!pb-14">
+      <EditorialSection ruled={false} className="py-12 md:py-16">
         <EdNote
           role="note"
           aria-label="未成年飲酒防止のお知らせ"

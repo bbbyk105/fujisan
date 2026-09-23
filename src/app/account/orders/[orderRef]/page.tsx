@@ -103,7 +103,7 @@ export default async function OrderDetailPage({
 
         {/* ===== Tracking ===== */}
         {order.trackingNumber && (
-          <div className="mt-10 border-l-2 border-moss pl-5">
+          <div className="ed-note mt-10">
             <p className="ed-label text-moss">
               <L en="Tracking" ja="追跡番号" />
             </p>
@@ -227,7 +227,7 @@ export default async function OrderDetailPage({
             {/* 一部返金はステータスに出ない（注文は進行中のまま）ので、
                 金額としてここに必ず出す。出さないと返金に気づけない。 */}
             {partialRefund > 0 && (
-              <div className="mt-5 border-l-2 border-crimson pl-4">
+              <div className="ed-note mt-5">
                 <div className="flex items-baseline justify-between gap-3 text-[12.5px] text-crimson">
                   <span className="font-semibold">
                     <L en="Refunded" ja="ご返金済み" />
