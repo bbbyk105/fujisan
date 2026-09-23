@@ -324,8 +324,17 @@ Cloudflare ダッシュボード → **Compute (Workers & Pages)** → `fujisan`
 | Build command | `npm run lint && npm test && npx opennextjs-cloudflare build` |
 | Deploy command | `npx opennextjs-cloudflare deploy` |
 
+- **Build command を `npm run build` にしない。** `next build` だけでは
+  `.open-next/worker.js` が作られず、`wrangler.jsonc` の `main` が指す先が無いまま
+  デプロイ段階へ進んで必ず落ちる。OpenNext への変換まで含めて 1 本のコマンドにすること。
 - **Deploy command は既定の `npx wrangler deploy` から必ず変えること。** 既定のままだと
   OpenNext の変換前の状態を上げようとして失敗する。
+  `npx wrangler preview` も**不可**（Wrangler 1 系で廃止済みのコマンドで、4 系には無い。
+  デプロイ段階が数秒で終了コード非 0 になり、ログにも原因が出にくい）。
+- **PR のブランチでもビルドは走る。** Deploy command は production / non-production で
+  分かれていないため、このままだと PR を出すたびに本番が差し替わる。非本番ブランチの
+  ビルドを切るか、非本番側は `npx wrangler versions upload`（本番を差し替えずに
+  バージョンだけ上げる）にしておくこと。
 - lint と test をビルドコマンドに入れているのは、**落ちているコードが本番に出ないようにする門番**が
   他に無くなるため。Workers Builds には「テストが通ったら」という条件設定が無いので、
   ビルドコマンドの `&&` で繋ぐのがその代わりになる。
