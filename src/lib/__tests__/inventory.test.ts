@@ -35,6 +35,7 @@ jest.mock("@/db", () => ({
 
 import {
   commitStock,
+  formatStockWarnings,
   readStock,
   readAllStock,
   releaseStock,
@@ -209,8 +210,72 @@ describe("確定", () => {
     });
   });
 
-  it("管理対象外の SKU を確定しても落ちない", async () => {
-    await expect(commitStock([line("tenka", 300, 1)])).resolves.toBeUndefined();
+  it("管理対象外の SKU を確定しても落ちない（警告も出ない）", async () => {
+    await expect(commitStock([line("tenka", 300, 1)])).resolves.toEqual([]);
+  });
+});
+
+// 在庫の警告は「またいだ瞬間だけ」返す。毎回の在庫を通知すると読まれなくなり、
+// 本当に仕込みが要るときに気づけなくなる。
+describe("確定にともなう在庫の警告", () => {
+  /** しきい値 6 本の SKU を、指定の本数で用意する。 */
+  function seedWithThreshold(onHand: number, threshold = 6) {
+    sqlite
+      .prepare(
+        "INSERT INTO inventory (product_slug, ml, on_hand, reserved, low_stock_threshold, updated_at, created_at) VALUES (?, ?, ?, 0, ?, 0, 0)",
+      )
+      .run("samurai", 300, onHand, threshold);
+  }
+
+  it("十分に残っているあいだは何も返さない", async () => {
+    seedWithThreshold(20);
+    await expect(commitStock([line("samurai", 300, 1)])).resolves.toEqual([]);
+  });
+
+  it("しきい値を下回った瞬間に僅少として返す", async () => {
+    seedWithThreshold(7); // 1 本売れて 6 本 → しきい値ちょうど
+    const warnings = await commitStock([line("samurai", 300, 1)]);
+
+    expect(warnings).toEqual([
+      expect.objectContaining({
+        slug: "samurai",
+        ml: 300,
+        available: 6,
+        soldOut: false,
+      }),
+    ]);
+  });
+
+  it("既に僅少だった SKU は、さらに売れても繰り返し通知しない", async () => {
+    seedWithThreshold(4); // 最初から僅少
+    await expect(commitStock([line("samurai", 300, 1)])).resolves.toEqual([]);
+  });
+
+  it("完売したら soldOut として返す", async () => {
+    // 完売は「僅少」とは別に扱う。販売が止まる事象なので文面も変える。
+    seedWithThreshold(20);
+    const warnings = await commitStock([line("samurai", 300, 20)]);
+
+    expect(warnings).toEqual([
+      expect.objectContaining({ available: 0, soldOut: true }),
+    ]);
+  });
+
+  it("文面は完売を先に、僅少をあとに並べる", () => {
+    const text = formatStockWarnings([
+      { slug: "ninja", ml: 300, available: 3, lowStockThreshold: 6, soldOut: false },
+      { slug: "tenka", ml: 180, available: 0, lowStockThreshold: 6, soldOut: true },
+    ]);
+
+    expect(text).not.toBeNull();
+    // 件名は「止まっていること」を先に伝える。
+    expect(text!.subject).toContain("在庫が切れました");
+    expect(text!.body.indexOf("完売")).toBeLessThan(text!.body.indexOf("残りわずか"));
+    expect(text!.body).toContain("残り 3 本");
+  });
+
+  it("警告が無ければ文面も作らない（空の通知を送らない）", () => {
+    expect(formatStockWarnings([])).toBeNull();
   });
 });
 
