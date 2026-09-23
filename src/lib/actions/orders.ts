@@ -6,6 +6,7 @@ import { and, desc, eq, isNull, ne } from "drizzle-orm";
 import { getAuth } from "@/lib/auth";
 import { getDb } from "@/db";
 import { alertOps } from "@/lib/ops-alert";
+import { RECEIPT_ADDRESSEE_MAX } from "@/data/fujisan-orders";
 import {
   order as orderTable,
   type OrderLine,
@@ -43,6 +44,8 @@ export type OrderRecord = {
   refundedAmount: number | null;
   /** 直近の返金日時。 */
   refundedAt: Date | null;
+  /** 領収書の宛名。null なら登録名（customerName）を使う。 */
+  receiptAddressee: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -93,6 +96,7 @@ export async function listMyOrdersAction(limit = 20): Promise<OrderRecord[]> {
       cancelRequestedAt: row.cancelRequestedAt ?? null,
       refundedAmount: row.refundedAmount ?? null,
       refundedAt: row.refundedAt ?? null,
+      receiptAddressee: row.receiptAddressee ?? null,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     }));
@@ -155,6 +159,7 @@ export async function getMyOrderByRefAction(
       cancelRequestedAt: row.cancelRequestedAt ?? null,
       refundedAmount: row.refundedAmount ?? null,
       refundedAt: row.refundedAt ?? null,
+      receiptAddressee: row.receiptAddressee ?? null,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };
@@ -260,5 +265,55 @@ function safeParseItems(json: string): OrderLine[] {
     return parsed as OrderLine[];
   } catch {
     return [];
+  }
+}
+
+/**
+ * 領収書の宛名を設定する（お客様ご自身）。
+ *
+ * 空文字を渡すと未指定に戻り、登録名が使われる。
+ *
+ * **必ず userId でも絞る。** orderRef は推測しにくいだけで秘密ではないので、
+ * 番号だけで更新できると他人の領収書を書き換えられる。
+ *
+ * 金額・ステータスには一切触れない。宛名は「誰に宛てた書面か」を示すだけで、
+ * 受け取った金額の事実は変わらない。
+ */
+export async function setReceiptAddresseeAction(input: {
+  orderRef: string;
+  addressee: string;
+}): Promise<
+  { ok: true; addressee: string | null } | { ok: false; error: "unauth" | "not_found" | "invalid" | "db" }
+> {
+  const auth = await getAuth();
+  const session = await auth.api.getSession({ headers: await headers() });
+  const userId = session?.user?.id;
+  if (!userId) return { ok: false, error: "unauth" };
+
+  const ref = input.orderRef.trim();
+  if (!ref) return { ok: false, error: "not_found" };
+
+  const raw = input.addressee.trim();
+  if (raw.length > RECEIPT_ADDRESSEE_MAX) return { ok: false, error: "invalid" };
+  // 改行は書面の体裁を壊すので受け付けない。
+  if (/[\r\n]/.test(raw)) return { ok: false, error: "invalid" };
+  const value = raw === "" ? null : raw;
+
+  try {
+    const db = await getDb();
+    const updated = await db
+      .update(orderTable)
+      .set({ receiptAddressee: value })
+      .where(
+        and(eq(orderTable.orderRef, ref), eq(orderTable.userId, userId)),
+      )
+      .returning({ id: orderTable.id });
+
+    if (updated.length === 0) return { ok: false, error: "not_found" };
+
+    revalidatePath(`/account/orders/${ref}/receipt`);
+    return { ok: true, addressee: value };
+  } catch {
+    return { ok: false, error: "db" };
   }
 }

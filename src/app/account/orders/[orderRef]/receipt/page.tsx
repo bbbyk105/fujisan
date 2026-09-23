@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { PrintButton } from "@/components/fujisan/auth/PrintButton";
+import { ReceiptAddresseeForm } from "@/components/fujisan/auth/ReceiptAddresseeForm";
 import { getSession } from "@/lib/session";
 import { getMyOrderByRefAction } from "@/lib/actions/orders";
 import { isReceiptIssuable } from "@/db/orders-schema";
@@ -57,7 +58,9 @@ export default async function ReceiptPage({
   // （全額返金の注文はそもそも isReceiptIssuable が false で、ここへ来ない。）
   const refunded = order.refundedAmount ?? 0;
   const receiptedAmount = order.total - refunded;
-  const addressee = order.customerName.trim() || "—";
+  // 宛名は保存済みの指定 → 登録名 の順。どちらも無ければ「—」。
+  const registeredName = order.customerName.trim();
+  const addressee = order.receiptAddressee?.trim() || registeredName || "—";
 
   return (
     <main className="min-h-screen bg-[#EDE6D6] py-10 print:bg-white print:py-0">
@@ -71,6 +74,12 @@ export default async function ReceiptPage({
         </Link>
         <PrintButton />
       </div>
+
+      <ReceiptAddresseeForm
+        orderRef={order.orderRef}
+        initial={order.receiptAddressee}
+        fallbackName={registeredName || "お名前"}
+      />
 
       {/* 領収書本体（A4 相当） */}
       <article className="mx-auto max-w-[760px] bg-white px-10 py-12 text-[#0B1A2E] shadow-[0_20px_60px_-40px_rgba(11,26,46,0.5)] print:max-w-none print:px-0 print:py-0 print:shadow-none">
