@@ -60,6 +60,7 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 
 - SKU（銘柄 × 容量）ごとに D1 で持つ。**在庫は `inventory`、価格は `product_price` と表を分ける**（`src/db/price-schema.ts` のコメント参照）。「蔵に何本あるか」は staff が棚卸しのたびに動かし、「いくらで売るか」は owner しか動かさない — 1 表にまとめると、価格だけ直したいのに行ができて在庫 0 の管理対象になり、その場で完売する事故が起きる。在庫のロジックは `src/lib/inventory.ts`、重ね合わせは `src/lib/catalog.ts`。
 - 管理画面は `/admin/products`（旧 `/admin/inventory` はリダイレクト）。**価格の編集は owner のみ**、在庫は staff 以上。
+- **在庫がしきい値をまたいだ瞬間だけ運用へ通知する**（`commitStock` の戻り値 → `formatStockWarnings` → `alertOps`）。毎回の在庫を送ると読まれなくなり、本当に仕込みが要るときに気づけない。通知の失敗で決済は止めない。
 - **オプトイン方式**: 行がある SKU だけが管理対象。行が無い SKU は数量無制限で売れる。全 SKU に 0 を入れるとデプロイした瞬間に販売が止まるため、初期データは入れない。蔵で数え終わった SKU から `/admin/products` で管理を開始する。
 - `low_stock_threshold` は**売り止めではなく報せるための値**。販売可能数が 0 は「完売」で「僅少」ではない（両方に出すと、仕込むべきものがアラートに埋もれる）。
 - 静的書き出しのページ（一覧・商品ページ・カート）は `/api/catalog` から価格と完売をハイドレーション後に取り直す。**卸価格はこのエンドポイントに載せない**（誰でも叩ける）。実在庫もそのままは返さず、カート 1 行の上限（`MAX_QTY_PER_LINE`）で頭打ちにする。カートの合計は実勢価格で計算する — しないと表示額と請求額がずれる。
@@ -76,10 +77,21 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 
 - `/account/orders/[orderRef]` が注文詳細、`/account/orders/[orderRef]/receipt` が領収書。
 - **注文の取得は必ず userId でも絞る**（`getMyOrderByRefAction`）。orderRef は推測しにくいだけで秘密ではないので、番号だけで引くと他人の注文が見える。
-- 領収書は PDF を生成せず、印刷（ブラウザの「PDF として保存」）に最適化したページとして出す。電子発行のため収入印紙は不要。適格請求書の登録番号は `INVOICE_REGISTRATION_NUMBER` が null のあいだ行ごと出さない。
+- 領収書は PDF を生成せず、印刷（ブラウザの「PDF として保存」）に最適化したページとして出す。電子発行のため収入印紙は不要。適格請求書の登録番号は `INVOICE_REGISTRATION_NUMBER` が null のあいだ行ごと出さない。**宛名は `orders.receipt_addressee` に保存**でき（未指定なら登録名）、金額には影響しない。
 - **返金は全額・一部の両方を扱う**。`orders.refunded_amount` が累計額で、`status = "refunded"` は**全額返金のときだけ**付く（一部返金した注文は進行中のままで発送は続く）。判定は `refundStateOf()` に寄せる。冪等性は「返金前の累計」を WHERE と Stripe の idempotencyKey に入れて担保する。領収書は差引領収額を出す — 返した分まで「上記正に領収いたしました」と書くと事実と食い違う。
 - **キャンセルは「依頼」であって実行ではない**。`requestOrderCancellationAction` は発送前（confirmed / preparing）に `cancel_requested_at` を刻んで ops へ通知するだけ。返金の実行は従来どおり owner だけが `adminRefundOrderAction` から行う（お客様の操作でお金が動く経路は作らない）。
 - 注文ステータスの表示は `OrderStatusPill`（`Record<OrderStatus, …>` なので新ステータス追加時に型で漏れが出る）と `OrderTimeline`（cancelled / refunded は進行段階ではないので専用表示）。
+
+## 管理画面
+
+- ナビと暗色ヘッダーは `AdminChrome`（`AdminHeader` / `AdminNav` / `AdminForbidden` / `AdminFooterBar`）に集約。各ページで行き来のリンクを書かない。
+- `/admin` はダッシュボード（売上・要対応・在庫アラート・直近の注文）。期間の区切りは **`jstDayStart` / `jstMonthStart`** を使う（UTC で切ると JST 09:00 で日が変わり、朝の売上が前日に混ざる）。
+- 注文一覧は**期間の絞り込みと CSV 書き出しが同じ条件で動く**。画面で絞ったのに CSV が全件出ると、会計に渡す前に突き合わせが要る。期間は SQL 側で絞ること（取得後に捨てると上限 200 件が期間外で埋まる）。
+- **CSV は `src/lib/csv.ts` の `toCsv()` を通す。** `=`・`+`・`-`・`@` で始まるセルを表計算ソフトが数式として実行するため無害化し、Excel が UTF-8 と判定できるよう BOM を付ける。素朴な join で書くとどちらも落ちる。
+- 納品書は `/admin/orders/[orderRef]/packing-slip`。領収書と役割が違い、**金額は出すが「領収いたしました」とは書かない**（未入金の注文にも同梱しうる）。送り状は配送業者のシステムが発行するものでないと受け付けられないので作らない。
+- `/admin/customers` は法人（取扱店）と個人でタブが分かれる。個人側の注文集計は SQL 側で行う。
+- 注文ステータスの日本語ラベルは `src/data/fujisan-orders.ts` が唯一の出どころ（管理画面と顧客向けで言葉が割れていた）。
+- `/admin/team` は登録済みメンバーに加えて**招待中の一覧**を出す。招待は 14 日で失効し、期限切れも消さずに見せる（黙って消えると、届いていないのか失効したのか区別できない）。
 
 ## レート制限
 
@@ -144,7 +156,7 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 
 ## 落とし穴
 
-- **`drizzle/` の journal はずれている**: `0006_user_postal_code.sql` は手書きで追加されており `drizzle/meta/_journal.json` に載っていない。`drizzle-kit generate` を実行すると 0005 のスナップショットから差分を出すため、既に適用済みの列を二重に出力する。当面はマイグレーション SQL を手書きで足す（`wrangler d1 migrations apply` は journal ではなくファイル名順で適用するので動作には影響しない）。
+- **`drizzle-kit generate` は使える**（以前は journal がずれていて禁止だった）。`meta/_journal.json` が `drizzle/` の SQL 15 本と 1 対 1 で対応し、最後の `0014_snapshot.json` が現在のスキーマ。`0006`〜`0013` は手書きで足された経緯から**中間スナップショットが無い**が、`generate` は最後のスナップショットしか読まないので支障はない（`drizzle-kit up` / `drop` は使わないこと）。このズレは `src/db/__tests__/migrations.test.ts` が見張っていて、SQL を足して journal に載せ忘れると落ちる。**SQL を手で足したときは journal にも追記する。**
 - **日付は必ず `src/lib/format-date.ts` のヘルパーで出す**。Workers は UTC で動くため `Intl.DateTimeFormat` に `timeZone: "Asia/Tokyo"` を指定しないと、JST 00:00〜09:00 の出来事が前日の日付になる（領収書の発行日がずれる）。ローカルの OS が JST だと気づけない。
 - **Next.js 16 の `error.js` は `reset` ではなく `unstable_retry`**。旧 API 名のままだと再試行ボタンが動かない。`global-error.js` も同じ。
 - **`cloudflare-env.d.ts` は生成物で `.gitignore` 済み**。`prebuild` が `cf-typegen` を走らせるので `npm run build` は clone 直後でも通るが、エディタの型エラーを消すには一度 `npm run cf-typegen` が要る。
