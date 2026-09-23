@@ -18,7 +18,6 @@ const eslintConfig = defineConfig([
     "drizzle/**",
     "cloudflare-env.d.ts",
     // Sibling projects outside the Next.js app:
-    "command-center/**",
     "apps/**",
   ]),
 ]);

@@ -15,7 +15,12 @@ import {
   type OrderEmailData,
 } from "@/lib/emails/order-emails";
 import { alertOps } from "@/lib/ops-alert";
-import { commitStock, releaseStock, restockCommitted } from "@/lib/inventory";
+import {
+  commitStock,
+  formatStockWarnings,
+  releaseStock,
+  restockCommitted,
+} from "@/lib/inventory";
 import { formatDateTimeJp } from "@/lib/format-date";
 
 // 署名検証のため生ボディを読む。プリレンダ・キャッシュは一切しない。
@@ -367,7 +372,10 @@ async function fulfillOrder(
   // 更新できた初回だけ**呼ぶこと（この位置より上で return していると二重に減る）。
   // 在庫の反映に失敗しても入金は成立しているので、例外で 500 にせず記録に留める。
   try {
-    await commitStock(safeParseItems(row.itemsJson));
+    const warnings = await commitStock(safeParseItems(row.itemsJson));
+    // 在庫がしきい値をまたいだら知らせる。commitStock はこの配信が初回のときしか
+    // 呼ばれないので、同じ注文で二重に通知されることはない。
+    await notifyStockWarnings(warnings);
   } catch (err) {
     console.error("[stripe:webhook] 在庫の確定に失敗:", err);
     await alertOps(
@@ -416,5 +424,22 @@ function safeParseItems(json: string): OrderLine[] {
     return Array.isArray(parsed) ? (parsed as OrderLine[]) : [];
   } catch {
     return [];
+  }
+}
+
+/**
+ * 在庫の警告を運用へ流す。**送信の失敗で決済処理を止めない。**
+ * 入金は既に成立しており、通知が届かないことより 500 を返して
+ * Stripe に再送させるほうが害が大きい。
+ */
+async function notifyStockWarnings(
+  warnings: Awaited<ReturnType<typeof commitStock>>,
+): Promise<void> {
+  const message = formatStockWarnings(warnings);
+  if (!message) return;
+  try {
+    await alertOps(message.subject, message.body);
+  } catch (err) {
+    console.error("[stripe:webhook] 在庫警告の通知に失敗:", err);
   }
 }

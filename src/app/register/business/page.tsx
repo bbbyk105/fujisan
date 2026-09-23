@@ -17,7 +17,7 @@ export default function RegisterBusinessPage() {
       mode="register"
       brand={{
         kanji: "法人",
-        kickerJp: "― 取扱店 新規登録 ―",
+        kickerJp: "取扱店 新規登録",
         titleEn: "Pour Fujisan, with the kura behind it.",
         titleJp: "蔵を背負った一本を、貴店へ。",
         textEn:

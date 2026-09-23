@@ -19,7 +19,6 @@ BtoC（個人）と BtoB（法人取扱店・卸価格表示）の二系統の�
 - **メールアドレスの変更は新旧どちらの承認も要る**（`user.changeEmail`）。まず**変更前**のアドレスへ承認リンクを送り、それを踏むと Better Auth が新アドレス宛にも確認メールを出し、そちらを踏んで初めて入れ替わる。宛先を `newEmail` にすると、セッションを奪った側が現アドレスの持ち主に知らせないままアカウントを移せる。設定の要点は `src/lib/__tests__/auth-options.test.ts` で固定している。
 - **Server Actions 中心**: ミューテーションは `src/lib/actions/`（checkout / orders / account / contact / admin-*）。API Route は Better Auth の `/api/auth/[...all]` と Stripe Webhook のみ。middleware は無く、ガードは各ページ/アクション内で `getSession()` / `getEffectiveAdminRole()`。
 - **商品カタログはコード、価格と在庫は D1 の上書き**: 銘柄・容量・ストーリー・画像は `src/data/fujisan-products.ts`。そこへ D1 の `product_price`（価格の上書き）と `inventory`（在庫）を重ねたものが**実勢カタログ** `src/lib/catalog.ts` で、**決済・管理画面・卸価格表はこれを正とする**。どちらの表も**オプトイン**（行が無ければコードの値／数量無制限）で、D1 が読めなければコードの価格で売り続ける（fail-open）。カタログ定数を直接読むと、管理画面で変えた値が効かない経路が残る。
-- **command-center/** はダッシュボード用の別 Vite アプリ（jest 対象外）。本体とはビルドも独立。
 
 ## Stripe 決済フロー（b86fa89 で統合）
 
@@ -61,6 +60,7 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 
 - SKU（銘柄 × 容量）ごとに D1 で持つ。**在庫は `inventory`、価格は `product_price` と表を分ける**（`src/db/price-schema.ts` のコメント参照）。「蔵に何本あるか」は staff が棚卸しのたびに動かし、「いくらで売るか」は owner しか動かさない — 1 表にまとめると、価格だけ直したいのに行ができて在庫 0 の管理対象になり、その場で完売する事故が起きる。在庫のロジックは `src/lib/inventory.ts`、重ね合わせは `src/lib/catalog.ts`。
 - 管理画面は `/admin/products`（旧 `/admin/inventory` はリダイレクト）。**価格の編集は owner のみ**、在庫は staff 以上。
+- **在庫がしきい値をまたいだ瞬間だけ運用へ通知する**（`commitStock` の戻り値 → `formatStockWarnings` → `alertOps`）。毎回の在庫を送ると読まれなくなり、本当に仕込みが要るときに気づけない。通知の失敗で決済は止めない。
 - **オプトイン方式**: 行がある SKU だけが管理対象。行が無い SKU は数量無制限で売れる。全 SKU に 0 を入れるとデプロイした瞬間に販売が止まるため、初期データは入れない。蔵で数え終わった SKU から `/admin/products` で管理を開始する。
 - `low_stock_threshold` は**売り止めではなく報せるための値**。販売可能数が 0 は「完売」で「僅少」ではない（両方に出すと、仕込むべきものがアラートに埋もれる）。
 - 静的書き出しのページ（一覧・商品ページ・カート）は `/api/catalog` から価格と完売をハイドレーション後に取り直す。**卸価格はこのエンドポイントに載せない**（誰でも叩ける）。実在庫もそのままは返さず、カート 1 行の上限（`MAX_QTY_PER_LINE`）で頭打ちにする。カートの合計は実勢価格で計算する — しないと表示額と請求額がずれる。
@@ -77,10 +77,21 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 
 - `/account/orders/[orderRef]` が注文詳細、`/account/orders/[orderRef]/receipt` が領収書。
 - **注文の取得は必ず userId でも絞る**（`getMyOrderByRefAction`）。orderRef は推測しにくいだけで秘密ではないので、番号だけで引くと他人の注文が見える。
-- 領収書は PDF を生成せず、印刷（ブラウザの「PDF として保存」）に最適化したページとして出す。電子発行のため収入印紙は不要。適格請求書の登録番号は `INVOICE_REGISTRATION_NUMBER` が null のあいだ行ごと出さない。
+- 領収書は PDF を生成せず、印刷（ブラウザの「PDF として保存」）に最適化したページとして出す。電子発行のため収入印紙は不要。適格請求書の登録番号は `INVOICE_REGISTRATION_NUMBER` が null のあいだ行ごと出さない。**宛名は `orders.receipt_addressee` に保存**でき（未指定なら登録名）、金額には影響しない。
 - **返金は全額・一部の両方を扱う**。`orders.refunded_amount` が累計額で、`status = "refunded"` は**全額返金のときだけ**付く（一部返金した注文は進行中のままで発送は続く）。判定は `refundStateOf()` に寄せる。冪等性は「返金前の累計」を WHERE と Stripe の idempotencyKey に入れて担保する。領収書は差引領収額を出す — 返した分まで「上記正に領収いたしました」と書くと事実と食い違う。
 - **キャンセルは「依頼」であって実行ではない**。`requestOrderCancellationAction` は発送前（confirmed / preparing）に `cancel_requested_at` を刻んで ops へ通知するだけ。返金の実行は従来どおり owner だけが `adminRefundOrderAction` から行う（お客様の操作でお金が動く経路は作らない）。
 - 注文ステータスの表示は `OrderStatusPill`（`Record<OrderStatus, …>` なので新ステータス追加時に型で漏れが出る）と `OrderTimeline`（cancelled / refunded は進行段階ではないので専用表示）。
+
+## 管理画面
+
+- ナビと暗色ヘッダーは `AdminChrome`（`AdminHeader` / `AdminNav` / `AdminForbidden` / `AdminFooterBar`）に集約。各ページで行き来のリンクを書かない。
+- `/admin` はダッシュボード（売上・要対応・在庫アラート・直近の注文）。期間の区切りは **`jstDayStart` / `jstMonthStart`** を使う（UTC で切ると JST 09:00 で日が変わり、朝の売上が前日に混ざる）。
+- 注文一覧は**期間の絞り込みと CSV 書き出しが同じ条件で動く**。画面で絞ったのに CSV が全件出ると、会計に渡す前に突き合わせが要る。期間は SQL 側で絞ること（取得後に捨てると上限 200 件が期間外で埋まる）。
+- **CSV は `src/lib/csv.ts` の `toCsv()` を通す。** `=`・`+`・`-`・`@` で始まるセルを表計算ソフトが数式として実行するため無害化し、Excel が UTF-8 と判定できるよう BOM を付ける。素朴な join で書くとどちらも落ちる。
+- 納品書は `/admin/orders/[orderRef]/packing-slip`。領収書と役割が違い、**金額は出すが「領収いたしました」とは書かない**（未入金の注文にも同梱しうる）。送り状は配送業者のシステムが発行するものでないと受け付けられないので作らない。
+- `/admin/customers` は法人（取扱店）と個人でタブが分かれる。個人側の注文集計は SQL 側で行う。
+- 注文ステータスの日本語ラベルは `src/data/fujisan-orders.ts` が唯一の出どころ（管理画面と顧客向けで言葉が割れていた）。
+- `/admin/team` は登録済みメンバーに加えて**招待中の一覧**を出す。招待は 14 日で失効し、期限切れも消さずに見せる（黙って消えると、届いていないのか失効したのか区別できない）。
 
 ## レート制限
 
@@ -127,6 +138,33 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 - **法令情報の唯一の出どころ**: `src/data/fujisan-legal.ts`。未成年飲酒防止表示（`UNDERAGE_NOTICE_JP/EN`、フッター・商品ページ・特商法ページで参照）、送料 `SHIPPING_FEE`（一律1,100円 / 15,000円以上無料 — カート計算・全ページ表記がこの定数を参照）、特商法・通販酒類小売業免許・酒類販売管理者標識。**未確定の値はダミー文字列で埋めず `null` にする**（`LIQUOR_LICENCE` / `INVOICE_REGISTRATION_NUMBER`）。それらしい伏せ字は本物に見えたまま公開されうる。`npm run deploy` は predeploy で `scripts/check-legal-disclosure.mjs` を実行し、未確定が残っていればデプロイを止める（dev / build / CI は止めない）。
 - 発送は日本国内のみ（Stripe の `allowed_countries: ["JP"]` と checkout の郵便番号7桁バリデーションで担保）。
 
+## 編集レイヤー（.fjs-ed）
+
+**トップページ（`/`）と `/products`（コレクション）はデザインの参照元として凍結**し、
+それ以外の全ページは `.fjs-ed` という編集レイヤーの上に組み直してある
+（`src/app/globals.css` の EDITORIAL LAYER、`src/components/fujisan/editorial/`）。
+
+- 共通 CSS は**すべて `.fjs-ed` 配下に閉じる**。`.fjs-ed` / `.ed-*` は凍結ページの
+  マークアップに一つも現れないので、接頭辞を守る限り凍結ページの computed style は動かない。
+- CSS は **`@layer components`** に置く。Tailwind v4 は `theme → base → components → utilities`
+  の順なので、レイヤー外に書くと全 utility より強くなり、ページ側の `text-[10px]` /
+  `min-h-[44px]` が黙って無視される。既定の文字色は `@layer base`。
+  **フォーカス指定だけは例外**でレイヤー外に置く（globals.css 冒頭の共通指定と揃える）。
+- ページの扉は `EditorialPageHeader`。**`FujisanInnerHero`（写真ヒーロー）は `/products` 専用**なので混ぜない。
+  扉の `width` は本文の章（`EditorialSection`）と必ず揃える（左端がずれる）。
+- 規約・ポリシーは `editorial/DocumentPage`、法定表示のような一覧は `EdDataList` で表に組む。
+- **カードを作らない。** 情報は罫・番号・余白で整理する。金（`gold`）は「いま選ばれている」ことを
+  示すときだけで、飾りには使わない。装飾の `→` / `↗`、大文字＋広いレタースペースの見出し、
+  `― ○○ ―` の囲み、同じ内容を日英で二度言う組み方は入れないこと。
+- 濃色面は `data-tone="dark"` を付けるだけでよい（`--ed-*` 変数が反転し、同じ `.ed-*` が使える）。
+
+## 色
+
+色は増やさないことで統一する。**`src/app/globals.css` の `@theme inline` にある
+14 色以外をページに直書きしない**（藍 `indigo` / 和紙 `paper*` / 金 `gold` / 状態色）。
+階調は別の色を足すのではなく不透明度（`text-indigo/62` など）で作る。
+以前は同系統の紺が 6 つ・金が 4 つ散在していて、ページごとに色がずれていた。
+
 ## i18n（ja/en）
 
 - **ルート分割ではなく CSS 切替方式**。`<L ja={...} en={...} />`（`src/i18n/Localized.tsx`）が両言語を DOM に出力し、`<html data-locale>` を見るグローバル CSS（globals.css の `.i18n-fragment`）で片方を隠す。静的書き出しのまま Workers で配信でき、ハイドレーションのちらつきが無い。
@@ -141,11 +179,11 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 - **env は `process.env` ではなく `getCloudflareContext({ async: true }).env`** から読む（Server Action / Route Handler 共通パターン）。
 - 注文明細は `items_json` にスナップショット保存（後からカタログ価格が変わっても注文は不変）。金額は全て円・税込の整数。
 - メール送信（`src/lib/email.ts`）は Resend。`RESEND_API_KEY` 未設定ならコンソール出力に落ちる（ローカルで認証リンクを踏める）。
-- `/craft` は `/stories` に redirect 統合済み（詳細 `/craft/[slug]` は残存）。
+- **`/stories` は削除済み**（2026-09-23）。物語の内容は `/craft/[slug]`（水・米・造り）に残る。トップの「造りを読む」導線と `FujisanDiscover` の一覧は `/craft/*` を指す。`/stories` へのリンクを新たに足さないこと。
 
 ## 落とし穴
 
-- **`drizzle/` の journal はずれている**: `0006_user_postal_code.sql` は手書きで追加されており `drizzle/meta/_journal.json` に載っていない。`drizzle-kit generate` を実行すると 0005 のスナップショットから差分を出すため、既に適用済みの列を二重に出力する。当面はマイグレーション SQL を手書きで足す（`wrangler d1 migrations apply` は journal ではなくファイル名順で適用するので動作には影響しない）。
+- **`drizzle-kit generate` は使える**（以前は journal がずれていて禁止だった）。`meta/_journal.json` が `drizzle/` の SQL 15 本と 1 対 1 で対応し、最後の `0014_snapshot.json` が現在のスキーマ。`0006`〜`0013` は手書きで足された経緯から**中間スナップショットが無い**が、`generate` は最後のスナップショットしか読まないので支障はない（`drizzle-kit up` / `drop` は使わないこと）。このズレは `src/db/__tests__/migrations.test.ts` が見張っていて、SQL を足して journal に載せ忘れると落ちる。**SQL を手で足したときは journal にも追記する。**
 - **日付は必ず `src/lib/format-date.ts` のヘルパーで出す**。Workers は UTC で動くため `Intl.DateTimeFormat` に `timeZone: "Asia/Tokyo"` を指定しないと、JST 00:00〜09:00 の出来事が前日の日付になる（領収書の発行日がずれる）。ローカルの OS が JST だと気づけない。
 - **Next.js 16 の `error.js` は `reset` ではなく `unstable_retry`**。旧 API 名のままだと再試行ボタンが動かない。`global-error.js` も同じ。
 - **`cloudflare-env.d.ts` は生成物で `.gitignore` 済み**。`prebuild` が `cf-typegen` を走らせるので `npm run build` は clone 直後でも通るが、エディタの型エラーを消すには一度 `npm run cf-typegen` が要る。
@@ -182,4 +220,6 @@ secret）は [`SETUP.md`](./SETUP.md) にまとめてある。
 
 ## スキル参照
 
-UI 作業は `.claude/skills/design-system`・`flow-ui`（command-center）、Stripe 作業は `.claude/skills/stripe-*` を先に読むこと。
+Stripe 作業は `.claude/skills/stripe-*` を先に読むこと。
+
+**`.claude/skills/design-system` は別アプリ（削除済みの command-center）の配色を書いたもので、このサイトには当てはまらない。** FUJISAN の色・余白・タイポグラフィの出どころは `src/app/globals.css` の `@theme inline`（Tailwind v4）で、和紙色（paper 系）と藍（#0B1A2E）・金（#C9A84C）・朱（#8B1A1A）が基調。

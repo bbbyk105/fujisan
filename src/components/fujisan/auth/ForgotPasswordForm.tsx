@@ -53,7 +53,7 @@ export function ForgotPasswordForm({
         </Notice>
         <Link
           href={loginHref}
-          className="font-semibold text-[#0B1A2E] underline decoration-[#C9A84C]/60 underline-offset-4 transition-colors hover:decoration-[#C9A84C]"
+          className="font-semibold text-indigo underline decoration-gold/60 underline-offset-4 transition-colors hover:decoration-gold"
         >
           <L en="Back to sign in" ja="ログイン画面へ戻る" />
         </Link>
@@ -82,17 +82,17 @@ export function ForgotPasswordForm({
 
       <PrimaryButton disabled={submitting}>
         {submitting ? (
-          <L en="SENDING…" ja="送信中…" />
+          <L en="Sending…" ja="送信中…" />
         ) : (
-          <L en="SEND RESET LINK" ja="再設定リンクを送る" />
+          <L en="Send reset link" ja="再設定リンクを送る" />
         )}
       </PrimaryButton>
 
-      <p className="mt-2 text-[12.5px] leading-[1.7] text-[#1D2432]/72">
+      <p className="mt-2 text-[12.5px] leading-[1.7] text-indigo/72">
         <L en="Remembered your password?" ja="パスワードを思い出しましたか？" />{" "}
         <Link
           href={loginHref}
-          className="font-semibold text-[#0B1A2E] underline decoration-[#C9A84C]/60 underline-offset-4 transition-colors hover:decoration-[#C9A84C]"
+          className="font-semibold text-indigo underline decoration-gold/60 underline-offset-4 transition-colors hover:decoration-gold"
         >
           <L en="Sign in" ja="ログイン" />
         </Link>

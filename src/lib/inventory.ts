@@ -106,17 +106,40 @@ export async function reserveStock(
   }
 }
 
+/** 確定によって在庫が減り、報せる価値が出た SKU。 */
+export type StockWarning = {
+  slug: string;
+  ml: number;
+  /** 確定後に売れる本数。 */
+  available: number;
+  lowStockThreshold: number;
+  /** 完売したか（available === 0）。 */
+  soldOut: boolean;
+};
+
 /**
  * 引き当てを確定する（入金が成立したとき）。
  * `onHand` と `reserved` を同時に減らす。
  *
  * **冪等ではない**ので、Webhook からは「pending → confirmed に実際に
  * 更新できた初回だけ」呼ぶこと。
+ *
+ * 戻り値は「この確定で**はじめて**僅少・完売になった SKU」。
+ * 呼び出し元がこれを人へ知らせる。毎回の在庫を通知すると鬱陶しくて
+ * 読まれなくなるので、**またいだ瞬間だけ**を返す
+ * （確定前から既に僅少だった SKU は含めない）。
  */
-export async function commitStock(items: readonly OrderLine[]): Promise<void> {
+export async function commitStock(
+  items: readonly OrderLine[],
+): Promise<StockWarning[]> {
   const db = await getDb();
+  const warnings: StockWarning[] = [];
+
   for (const line of toStockLines(items)) {
-    await db
+    // 減らす前の状態。しきい値をまたいだかの判定に要る。
+    const before = await readStock(line.slug, line.ml);
+
+    const [row] = await db
       .update(inventory)
       .set({
         onHand: sql`max(0, ${inventory.onHand} - ${line.qty})`,
@@ -127,8 +150,27 @@ export async function commitStock(items: readonly OrderLine[]): Promise<void> {
           eq(inventory.productSlug, line.slug),
           eq(inventory.ml, line.ml),
         ),
-      );
+      )
+      .returning();
+
+    // 管理対象外（行が無い）なら報せることは無い。
+    if (!row || !before) continue;
+
+    const after = toLevel(row);
+    const wasFine = !before.lowStock && before.available > 0;
+    const nowNeedsAttention = after.lowStock || after.available === 0;
+    if (wasFine && nowNeedsAttention) {
+      warnings.push({
+        slug: after.productSlug,
+        ml: after.ml,
+        available: after.available,
+        lowStockThreshold: after.lowStockThreshold,
+        soldOut: after.available === 0,
+      });
+    }
   }
+
+  return warnings;
 }
 
 /**
@@ -214,4 +256,45 @@ function toLevel(row: typeof inventory.$inferSelect): StockLevel {
     // アラートに二重で並んで、仕込むべきものが埋もれる。
     lowStock: available > 0 && available <= row.lowStockThreshold,
   };
+}
+
+/**
+ * 在庫の警告を運用へ知らせる文面。
+ *
+ * **通知は「またいだ瞬間だけ」**（`commitStock` の戻り値がそれ）。
+ * 毎回の在庫を送ると読まれなくなり、本当に仕込みが要るときに気づけない。
+ */
+export function formatStockWarnings(warnings: readonly StockWarning[]): {
+  subject: string;
+  body: string;
+} | null {
+  if (warnings.length === 0) return null;
+
+  const soldOut = warnings.filter((w) => w.soldOut);
+  const low = warnings.filter((w) => !w.soldOut);
+
+  const subject =
+    soldOut.length > 0
+      ? `在庫が切れました（${soldOut.length} SKU）`
+      : `在庫が少なくなりました（${low.length} SKU）`;
+
+  const lines: string[] = [];
+  if (soldOut.length > 0) {
+    lines.push("■ 完売（新規のご注文を受け付けません）");
+    for (const w of soldOut) lines.push(`  ・${w.slug} ${w.ml}ml`);
+    lines.push("");
+  }
+  if (low.length > 0) {
+    lines.push("■ 残りわずか");
+    for (const w of low) {
+      lines.push(
+        `  ・${w.slug} ${w.ml}ml … 残り ${w.available} 本（目安 ${w.lowStockThreshold} 本以下）`,
+      );
+    }
+    lines.push("");
+  }
+  lines.push("仕込みか棚卸しをご検討ください。");
+  lines.push("在庫は /admin/products で確認・変更できます。");
+
+  return { subject, body: lines.join("\n") };
 }

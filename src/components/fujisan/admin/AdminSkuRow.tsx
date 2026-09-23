@@ -48,26 +48,26 @@ export function AdminSkuRow({
   const label = `${row.productName} ${row.variant}（${row.ml}ml）`;
 
   return (
-    <li className="border border-[#0B1A2E]/12 bg-white px-5 py-5 md:px-6">
+    <li className="border border-indigo/12 bg-white px-5 py-5 md:px-6">
       <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
         <div>
-          <p className="font-serif text-[14.5px] font-semibold tracking-[0.04em] text-[#0B1A2E]">
+          <p className="font-serif text-[14.5px] font-semibold tracking-[0.04em] text-indigo">
             {row.productName} {row.variant}
-            <span className="ml-2 font-jp text-[11.5px] text-[#0B1A2E]/55">
+            <span className="ml-2 font-jp text-[11.5px] text-indigo/55">
               {row.variantJp}
             </span>
           </p>
-          <p className="mt-1 text-[11.5px] tracking-[0.06em] text-[#0B1A2E]/60">
+          <p className="mt-1 text-[11.5px] tracking-[0.06em] text-indigo/60">
             {row.ml}ml
             {row.catalogSoldOut && (
-              <span className="ml-2 text-[#8B1A1A]">カタログで販売停止中</span>
+              <span className="ml-2 text-crimson">カタログで販売停止中</span>
             )}
           </p>
         </div>
         <StockSummary row={row} />
       </div>
 
-      <div className="mt-4 flex flex-col gap-4 border-t border-[#0B1A2E]/8 pt-4">
+      <div className="mt-4 flex flex-col gap-4 border-t border-indigo/8 pt-4">
         <PriceSection row={row} canEdit={canEditPrice} label={label} />
         <StockSection row={row} label={label} />
       </div>
@@ -79,7 +79,7 @@ export function AdminSkuRow({
 function StockSummary({ row }: { row: Row }) {
   if (!row.tracked) {
     return (
-      <span className="border border-[#0B1A2E]/20 px-2.5 py-1 text-[10px] tracking-[0.18em] text-[#0B1A2E]/55">
+      <span className="border border-indigo/20 px-2.5 py-1 text-[10px] tracking-[0.18em] text-indigo/55">
         在庫管理なし（無制限）
       </span>
     );
@@ -87,21 +87,21 @@ function StockSummary({ row }: { row: Row }) {
   const soldOut = row.available === 0;
   return (
     <div className="flex items-center gap-5 text-[11.5px] tabular-nums">
-      <span className="text-[#0B1A2E]/60">
+      <span className="text-indigo/60">
         実在庫{" "}
-        <strong className="text-[13px] text-[#0B1A2E]">{row.onHand}</strong>
+        <strong className="text-[13px] text-indigo">{row.onHand}</strong>
       </span>
-      <span className="text-[#0B1A2E]/60">
+      <span className="text-indigo/60">
         決済待ち{" "}
-        <strong className="text-[13px] text-[#0B1A2E]">{row.reserved}</strong>
+        <strong className="text-[13px] text-indigo">{row.reserved}</strong>
       </span>
       <span
         className={
           soldOut
-            ? "text-[#8B1A1A]"
+            ? "text-crimson"
             : row.lowStock
-              ? "text-[#8A6D1F]"
-              : "text-[#2F5A2F]"
+              ? "text-gold-ink"
+              : "text-moss"
         }
       >
         販売可能 <strong className="text-[13px]">{row.available}</strong>
@@ -134,24 +134,24 @@ function PriceSection({
 
   if (!canEdit) {
     return (
-      <div className="flex flex-wrap items-baseline gap-x-6 gap-y-1 text-[12px] text-[#0B1A2E]/70">
-        <span className="text-[10px] font-semibold tracking-[0.24em] text-[#0B1A2E]/45">
+      <div className="flex flex-wrap items-baseline gap-x-6 gap-y-1 text-[12px] text-indigo/70">
+        <span className="text-[10px] font-semibold tracking-[0.24em] text-indigo/45">
           価格
         </span>
         <span className="tabular-nums">
           小売{" "}
-          <strong className="text-[13px] text-[#0B1A2E]">
+          <strong className="text-[13px] text-indigo">
             ¥{yen.format(row.priceJpy)}
           </strong>
         </span>
         <span className="tabular-nums">
           卸{" "}
-          <strong className="text-[13px] text-[#0B1A2E]">
+          <strong className="text-[13px] text-indigo">
             ¥{yen.format(row.wholesalePriceJpy)}
           </strong>
         </span>
         <span className="tabular-nums">{row.caseSize}本/ケース</span>
-        <span className="text-[11px] text-[#0B1A2E]/45">
+        <span className="text-[11px] text-indigo/45">
           {source}・変更は蔵元（owner）のみ
         </span>
       </div>
@@ -226,7 +226,7 @@ function PriceSection({
   return (
     <div>
       <div className="flex flex-wrap items-end gap-x-4 gap-y-3">
-        <span className="pb-2.5 text-[10px] font-semibold tracking-[0.24em] text-[#0B1A2E]/45">
+        <span className="pb-2.5 text-[10px] font-semibold tracking-[0.24em] text-indigo/45">
           価格
         </span>
         <Field
@@ -258,7 +258,7 @@ function PriceSection({
           type="button"
           onClick={save}
           disabled={pending || !dirty}
-          className="border border-[#0B1A2E] bg-[#0B1A2E] px-4 py-2 text-[10.5px] font-semibold tracking-[0.22em] text-paper-card transition-colors hover:bg-[#1D2432] disabled:cursor-not-allowed disabled:opacity-35"
+          className="border border-indigo bg-indigo px-4 py-2 text-[10.5px] font-semibold tracking-[0.22em] text-paper-card transition-colors hover:bg-indigo-lift disabled:cursor-not-allowed disabled:opacity-35"
         >
           保存
         </button>
@@ -267,13 +267,13 @@ function PriceSection({
             type="button"
             onClick={reset}
             disabled={pending}
-            className="px-2 py-2 text-[10.5px] tracking-[0.18em] text-[#0B1A2E]/50 underline decoration-[#0B1A2E]/20 underline-offset-4 transition-colors hover:text-[#0B1A2E] disabled:opacity-40"
+            className="px-2 py-2 text-[10.5px] tracking-[0.18em] text-indigo/50 underline decoration-indigo/20 underline-offset-4 transition-colors hover:text-indigo disabled:opacity-40"
           >
             カタログ価格に戻す
           </button>
         )}
       </div>
-      <p className="mt-2 text-[11px] text-[#0B1A2E]/50">{source}</p>
+      <p className="mt-2 text-[11px] text-indigo/50">{source}</p>
       <Feedback message={message} error={error} />
     </div>
   );
@@ -343,7 +343,7 @@ function StockSection({ row, label }: { row: Row; label: string }) {
   return (
     <div>
       <div className="flex flex-wrap items-end gap-x-4 gap-y-3">
-        <span className="pb-2.5 text-[10px] font-semibold tracking-[0.24em] text-[#0B1A2E]/45">
+        <span className="pb-2.5 text-[10px] font-semibold tracking-[0.24em] text-indigo/45">
           在庫
         </span>
         <Field
@@ -368,7 +368,7 @@ function StockSection({ row, label }: { row: Row; label: string }) {
           type="button"
           onClick={save}
           disabled={pending || !dirty}
-          className="border border-[#0B1A2E] bg-[#0B1A2E] px-4 py-2 text-[10.5px] font-semibold tracking-[0.22em] text-paper-card transition-colors hover:bg-[#1D2432] disabled:cursor-not-allowed disabled:opacity-35"
+          className="border border-indigo bg-indigo px-4 py-2 text-[10.5px] font-semibold tracking-[0.22em] text-paper-card transition-colors hover:bg-indigo-lift disabled:cursor-not-allowed disabled:opacity-35"
         >
           {row.tracked ? "保存" : "管理を開始"}
         </button>
@@ -377,7 +377,7 @@ function StockSection({ row, label }: { row: Row; label: string }) {
             type="button"
             onClick={untrack}
             disabled={pending}
-            className="px-2 py-2 text-[10.5px] tracking-[0.18em] text-[#0B1A2E]/50 underline decoration-[#0B1A2E]/20 underline-offset-4 transition-colors hover:text-[#8B1A1A] disabled:opacity-40"
+            className="px-2 py-2 text-[10.5px] tracking-[0.18em] text-indigo/50 underline decoration-indigo/20 underline-offset-4 transition-colors hover:text-crimson disabled:opacity-40"
           >
             管理をやめる
           </button>
@@ -409,7 +409,7 @@ function Field({
     <div className="flex flex-col gap-1.5">
       <label
         htmlFor={id}
-        className="text-[10px] tracking-[0.14em] text-[#0B1A2E]/55"
+        className="text-[10px] tracking-[0.14em] text-indigo/55"
       >
         {label}
       </label>
@@ -423,9 +423,9 @@ function Field({
           value={value}
           disabled={disabled}
           onChange={(e) => onChange(e.target.value)}
-          className={`${width} border border-[#0B1A2E]/25 bg-white px-3 py-2 text-right text-[13px] tabular-nums text-[#0B1A2E] outline-none focus:border-[#C9A84C] disabled:opacity-60`}
+          className={`${width} border border-indigo/25 bg-white px-3 py-2 text-right text-[13px] tabular-nums text-indigo outline-none focus:border-gold disabled:opacity-60`}
         />
-        <span className="text-[11px] text-[#0B1A2E]/50">{unit}</span>
+        <span className="text-[11px] text-indigo/50">{unit}</span>
       </div>
     </div>
   );
@@ -442,12 +442,12 @@ function Feedback({
   return (
     <>
       {message && (
-        <p className="mt-2 text-[12px] font-semibold text-[#2F5A2F]">
+        <p className="mt-2 text-[12px] font-semibold text-moss">
           {message}
         </p>
       )}
       {error && (
-        <p role="alert" className="mt-2 text-[12px] font-semibold text-[#8B1A1A]">
+        <p role="alert" className="mt-2 text-[12px] font-semibold text-crimson">
           {error}
         </p>
       )}

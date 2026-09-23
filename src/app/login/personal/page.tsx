@@ -21,7 +21,7 @@ export default async function LoginPersonalPage() {
       mode="login"
       brand={{
         kanji: "會員",
-        kickerJp: "― 会員ログイン ―",
+        kickerJp: "会員ログイン",
         titleEn: "Welcome back to the foot of the mountain.",
         titleJp: "ふもとへ、おかえりなさい。",
         textEn:

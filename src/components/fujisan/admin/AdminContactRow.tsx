@@ -18,9 +18,9 @@ const ERROR_MESSAGES: Record<string, string> = {
 };
 
 const STATUS_STYLE: Record<ContactStatus, string> = {
-  new: "border-[#8B1A1A]/45 bg-[#8B1A1A]/8 text-[#8B1A1A]",
-  in_progress: "border-[#C9A84C]/60 bg-[#C9A84C]/12 text-[#8A6F1E]",
-  done: "border-[#2F5A2F]/40 bg-[#2F5A2F]/8 text-[#2F5A2F]",
+  new: "border-crimson/45 bg-crimson/8 text-crimson",
+  in_progress: "border-gold/60 bg-gold/12 text-gold-ink",
+  done: "border-moss/40 bg-moss/8 text-moss",
 };
 
 type Message = {
@@ -63,7 +63,7 @@ export function AdminContactRow({ message }: { message: Message }) {
   };
 
   return (
-    <li className="border border-[#0B1A2E]/12 bg-white px-6 py-5">
+    <li className="border border-indigo/12 bg-white px-6 py-5">
       <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
           <span
@@ -71,44 +71,44 @@ export function AdminContactRow({ message }: { message: Message }) {
           >
             {CONTACT_STATUS_LABELS[status]}
           </span>
-          <h2 className="font-serif text-[16px] font-semibold tracking-[0.04em] text-[#0B1A2E]">
+          <h2 className="font-serif text-[16px] font-semibold tracking-[0.04em] text-indigo">
             {message.name}
           </h2>
-          <span className="text-[11px] tracking-[0.12em] text-[#0B1A2E]/55">
+          <span className="text-[11px] tracking-[0.12em] text-indigo/55">
             {label.ja}
             {message.locale === "en" && (
-              <span className="ml-2 text-[#C9A84C]">EN</span>
+              <span className="ml-2 text-gold">EN</span>
             )}
           </span>
         </div>
-        <span className="text-[11px] tabular-nums text-[#0B1A2E]/55">
+        <span className="text-[11px] tabular-nums text-indigo/55">
           {formatDateTimeJp(message.createdAt)}
         </span>
       </div>
 
-      <p className="mt-3 text-[12.5px] text-[#0B1A2E]/80">
+      <p className="mt-3 text-[12.5px] text-indigo/80">
         <a
           href={`mailto:${message.email}?subject=${encodeURIComponent(`Re: ${label.ja} — FUJISAN SAKE`)}`}
-          className="underline decoration-[#0B1A2E]/25 underline-offset-2 hover:text-[#C9A84C]"
+          className="underline decoration-indigo/25 underline-offset-2 hover:text-gold"
         >
           {message.email}
         </a>
       </p>
 
       <details className="group mt-4">
-        <summary className="cursor-pointer list-none text-[11px] font-semibold tracking-[0.22em] text-[#0B1A2E]/65 hover:text-[#0B1A2E] [&::-webkit-details-marker]:hidden">
+        <summary className="cursor-pointer list-none text-[11px] font-semibold tracking-[0.22em] text-indigo/65 hover:text-indigo [&::-webkit-details-marker]:hidden">
           <span className="group-open:hidden">本文を開く ＋</span>
           <span className="hidden group-open:inline">本文を閉じる −</span>
         </summary>
-        <div className="mt-3 whitespace-pre-wrap border-l-2 border-[#C9A84C]/60 bg-[#F7F1E3]/60 px-4 py-3 text-[13px] leading-[1.85] text-[#0B1A2E]/88">
+        <div className="mt-3 whitespace-pre-wrap border-l-2 border-gold/60 bg-paper-card/60 px-4 py-3 text-[13px] leading-[1.85] text-indigo/88">
           {message.message}
         </div>
       </details>
 
-      <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-[#0B1A2E]/10 pt-4">
+      <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-indigo/10 pt-4">
         <label
           htmlFor={`status-${message.id}`}
-          className="text-[9.5px] font-semibold tracking-[0.28em] text-[#0B1A2E]/50"
+          className="text-[9.5px] font-semibold tracking-[0.28em] text-indigo/50"
         >
           対応状況
         </label>
@@ -117,17 +117,17 @@ export function AdminContactRow({ message }: { message: Message }) {
           value={status}
           disabled={pending}
           onChange={(e) => change(e.target.value as ContactStatus)}
-          className="border border-[#0B1A2E]/25 bg-white px-3 py-2 text-[12.5px] text-[#0B1A2E] outline-none focus:border-[#C9A84C] disabled:opacity-60"
+          className="border border-indigo/25 bg-white px-3 py-2 text-[12.5px] text-indigo outline-none focus:border-gold disabled:opacity-60"
         >
           <option value="new">未対応</option>
           <option value="in_progress">対応中</option>
           <option value="done">対応済み</option>
         </select>
         {pending && (
-          <span className="text-[11px] text-[#0B1A2E]/55">保存中…</span>
+          <span className="text-[11px] text-indigo/55">保存中…</span>
         )}
         {status === "done" && message.handledByEmail && (
-          <span className="text-[11px] text-[#0B1A2E]/55">
+          <span className="text-[11px] text-indigo/55">
             {message.handledByEmail}
             {message.handledAt ? ` / ${formatDateTimeJp(message.handledAt)}` : ""}
           </span>
@@ -135,7 +135,7 @@ export function AdminContactRow({ message }: { message: Message }) {
       </div>
 
       {error && (
-        <p role="alert" className="mt-3 text-[12px] font-semibold text-[#8B1A1A]">
+        <p role="alert" className="mt-3 text-[12px] font-semibold text-crimson">
           {error}
         </p>
       )}

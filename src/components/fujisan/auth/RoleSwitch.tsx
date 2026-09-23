@@ -1,8 +1,12 @@
 import Link from "next/link";
+import { L } from "@/i18n/Localized";
 
 /**
  * 個人 / 法人の入口を明示する切替。今どちらの入口にいるか、もう一方へどう移るかを
  * 一目で分かるようにする（toB / toC のログイン画面の取り違え防止）。
+ *
+ * 枠で囲ったタブにはしない。選ばれている側の下に太い罫を引くだけで、
+ * 「いまここ」は十分に伝わる。
  */
 export function RoleSwitch({
   active,
@@ -13,15 +17,23 @@ export function RoleSwitch({
 }) {
   const base = mode === "login" ? "/login" : "/register";
   const items = [
-    { key: "personal", href: `${base}/personal`, en: "PERSONAL", jp: "個人のお客様" },
-    { key: "business", href: `${base}/business`, en: "TRADE", jp: "法人・取扱店" },
+    {
+      key: "personal",
+      href: `${base}/personal`,
+      label: <L en="Personal" ja="個人のお客様" />,
+    },
+    {
+      key: "business",
+      href: `${base}/business`,
+      label: <L en="Trade" ja="法人・取扱店" />,
+    },
   ] as const;
 
   return (
     <div
       role="tablist"
       aria-label="Account type"
-      className="grid grid-cols-2 border border-[#0B1A2E]/15 bg-[#F1E6CB]/30 p-1"
+      className="grid grid-cols-2 border-b border-[var(--ed-rule)]"
     >
       {items.map((it) => {
         const on = it.key === active;
@@ -31,22 +43,13 @@ export function RoleSwitch({
             href={it.href}
             role="tab"
             aria-selected={on}
-            className={`flex flex-col items-center gap-0.5 px-4 py-3 text-center no-underline transition-colors ${
+            className={`-mb-px flex items-center justify-center border-b-2 px-4 py-3.5 text-center text-[13px] font-semibold tracking-[0.06em] no-underline transition-colors ${
               on
-                ? "bg-[#0B1A2E] text-paper-card"
-                : "text-[#0B1A2E]/50 hover:bg-[#F1E6CB]/55 hover:text-[#0B1A2E]"
+                ? "border-indigo text-indigo"
+                : "border-transparent text-indigo/45 hover:text-indigo/75"
             }`}
           >
-            <span className="text-[10px] font-semibold tracking-[0.24em]">
-              {it.en}
-            </span>
-            <span
-              className={`font-jp text-[10.5px] tracking-[0.18em] ${
-                on ? "text-[#E2C97E]" : "text-[#C9A84C]/80"
-              }`}
-            >
-              {it.jp}
-            </span>
+            {it.label}
           </Link>
         );
       })}

@@ -45,7 +45,7 @@ export default async function AdminContactsPage(props: {
   const unhandled = messages.filter((m) => m.status === "new").length;
 
   return (
-    <main className="flex min-h-screen flex-col bg-paper text-[#0B1A2E]">
+    <main className="flex min-h-screen flex-col bg-paper text-indigo">
       <FujisanNav />
 
       <AdminHeader
@@ -64,14 +64,14 @@ export default async function AdminContactsPage(props: {
 
       {/* Body */}
       <section className="mx-auto w-full max-w-[1280px] flex-1 px-7 pb-24 pt-12 md:px-12 md:pt-14">
-        <div className="flex flex-wrap items-center gap-2 border-b border-[#0B1A2E]/15 pb-4">
+        <div className="flex flex-wrap items-center gap-2 border-b border-indigo/15 pb-4">
           <Link
             href="/admin/contacts"
             aria-current={!openOnly ? "page" : undefined}
             className={`border px-4 py-2 text-[10.5px] font-semibold tracking-[0.26em] no-underline transition-colors ${
               openOnly
-                ? "border-[#0B1A2E]/25 text-[#0B1A2E]/70 hover:border-[#0B1A2E]/60"
-                : "border-[#0B1A2E] bg-[#0B1A2E] text-paper-card"
+                ? "border-indigo/25 text-indigo/70 hover:border-indigo/60"
+                : "border-indigo bg-indigo text-paper-card"
             }`}
           >
             すべて
@@ -81,8 +81,8 @@ export default async function AdminContactsPage(props: {
             aria-current={openOnly ? "page" : undefined}
             className={`border px-4 py-2 text-[10.5px] font-semibold tracking-[0.26em] no-underline transition-colors ${
               openOnly
-                ? "border-[#0B1A2E] bg-[#0B1A2E] text-paper-card"
-                : "border-[#0B1A2E]/25 text-[#0B1A2E]/70 hover:border-[#0B1A2E]/60"
+                ? "border-indigo bg-indigo text-paper-card"
+                : "border-indigo/25 text-indigo/70 hover:border-indigo/60"
             }`}
           >
             未対応・対応中のみ
@@ -92,20 +92,20 @@ export default async function AdminContactsPage(props: {
         {!res.ok && (
           <p
             role="alert"
-            className="mt-6 border border-[#8B1A1A]/40 bg-[#8B1A1A]/6 px-4 py-3 text-[12.5px] text-[#8B1A1A]"
+            className="mt-6 border border-crimson/40 bg-crimson/6 px-4 py-3 text-[12.5px] text-crimson"
           >
             お問い合わせの読み込みに失敗しました。時間をおいて再度お試しください。
           </p>
         )}
 
         {res.ok && messages.length === 0 ? (
-          <div className="mt-10 border border-[#0B1A2E]/15 bg-white px-7 py-16 text-center">
-            <p className="font-serif text-[16px] font-semibold tracking-[0.04em] text-[#0B1A2E]">
+          <div className="mt-10 border border-indigo/15 bg-white px-7 py-16 text-center">
+            <p className="font-serif text-[16px] font-semibold tracking-[0.04em] text-indigo">
               {openOnly
                 ? "未対応・対応中のお問い合わせはありません。"
                 : "まだお問い合わせは届いていません。"}
             </p>
-            <p className="mx-auto mt-3 max-w-[44ch] text-[12.5px] leading-[1.85] text-[#0B1A2E]/65">
+            <p className="mx-auto mt-3 max-w-[44ch] text-[12.5px] leading-[1.85] text-indigo/65">
               /contact のフォームから送信されたご連絡が、ここに新しい順で表示されます。
             </p>
           </div>

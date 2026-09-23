@@ -9,7 +9,7 @@ export default function FujisanHero() {
   return (
     <section
       id="top"
-      className="fujisan-paper relative isolate scroll-mt-[86px] overflow-hidden bg-paper pt-[72px] text-[#0B1A2E] md:pt-[86px]"
+      className="fujisan-paper relative isolate scroll-mt-[86px] overflow-hidden bg-paper pt-[72px] text-indigo md:pt-[86px]"
     >
       <div className="absolute inset-x-0 top-[72px] z-0 h-[620px] overflow-hidden md:top-[86px] md:h-[650px] lg:h-[675px]">
         <Image
@@ -30,7 +30,7 @@ export default function FujisanHero() {
       <div className="relative z-10 mx-auto max-w-[1760px] px-6 pt-10 sm:px-8 md:px-[7vw] md:pt-12 lg:px-[4.5vw] 2xl:px-16">
         <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,730px)_1fr] xl:grid-cols-[minmax(0,820px)_1fr]">
           <div className="max-w-[820px]">
-            <h1 className="font-serif leading-[1.08] tracking-[0.02em] text-[#0B1A2E]">
+            <h1 className="font-serif leading-[1.08] tracking-[0.02em] text-indigo">
               <L
                 en={
                   <>

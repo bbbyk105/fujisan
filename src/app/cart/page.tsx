@@ -1,6 +1,5 @@
-import FujisanNav from "@/components/fujisan/FujisanNav";
-import FujisanFooter from "@/components/fujisan/FujisanFooter";
-import { FujisanInnerHero } from "@/components/fujisan/FujisanInnerHero";
+import { EditorialPage } from "@/components/fujisan/editorial/EditorialPage";
+import { EditorialPageHeader } from "@/components/fujisan/editorial/EditorialPageHeader";
 import { CartView } from "@/components/fujisan/cart/CartView";
 import { L } from "@/i18n/Localized";
 import { buildMetadata } from "@/lib/seo";
@@ -18,31 +17,19 @@ export const dynamic = "force-static";
 
 export default function CartPage() {
   return (
-    <main className="flex min-h-screen flex-col bg-paper text-[#0B1A2E]">
-      <FujisanNav />
-
-      <FujisanInnerHero
-        eyebrow="CART · カート"
-        chapter="Ⅹ"
-        title="YOUR CART."
-        jp="― ご注文の確認 ―"
+    <EditorialPage className="flex flex-col">
+      <EditorialPageHeader
+        kicker={<L en="Purchase" ja="ご購入" />}
+        title={<L en="Your cart" ja="カート" />}
         lead={
           <L
-            en="Review your bottles before checkout. Prices include tax, and every order is hand-checked before it ships."
+            en="Review your bottles before checkout. Prices include tax, and every order is checked by hand before it ships."
             ja="お手続きの前に、お選びいただいた一本一本をご確認ください。価格は税込、すべてのご注文をひとつずつ検品します。"
           />
         }
-        crumbs={[
-          { label: "HOME", href: "/#top" },
-          { label: "PURCHASE", href: "/shop" },
-          { label: "CART", href: "/cart" },
-        ]}
-        bgPosition="object-[50%_42%]"
       />
 
       <CartView />
-
-      <FujisanFooter />
-    </main>
+    </EditorialPage>
   );
 }

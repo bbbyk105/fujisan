@@ -1,6 +1,6 @@
 "use client";
 
-import { ensureGsap, gsap, useGSAP } from "./stories/gsap-setup";
+import { ensureGsap, gsap, useGSAP } from "./gsap-setup";
 
 ensureGsap();
 

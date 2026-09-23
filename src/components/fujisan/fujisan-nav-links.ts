@@ -11,7 +11,7 @@ export type FujisanNavLinkItem = {
   /**
    * Pattern used to derive active state.
    * - Hash form ("#showcase") matches when on `/` and the section is in view
-   * - Path form ("/stories", "/shop") matches when pathname starts with it
+   * - Path form ("/shop") matches when pathname starts with it
    */
   match?: string;
   children?: FujisanNavChild[];
@@ -20,7 +20,6 @@ export type FujisanNavLinkItem = {
 export const FUJISAN_NAV_LINKS: FujisanNavLinkItem[] = [
   { href: "/#top", label: "HOME", match: "#top" },
   { href: "/products", label: "COLLECTION", match: "/products" },
-  { href: "/stories", label: "STORIES", match: "/stories" },
   {
     href: "/shop",
     label: "PURCHASE",

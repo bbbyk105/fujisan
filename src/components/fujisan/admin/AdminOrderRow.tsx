@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import type { OrderStatus } from "@/db/orders-schema";
 import { ORDER_STATUSES } from "@/db/orders-schema";
+import { ORDER_STATUS_LABELS } from "@/data/fujisan-orders";
 import {
   adminUpdateOrderAction,
   adminRefundOrderAction,
@@ -10,15 +11,11 @@ import {
 
 const yen = new Intl.NumberFormat("ja-JP");
 
-const STATUS_LABELS_JA: Record<OrderStatus, string> = {
-  pending: "受付済",
-  confirmed: "注文確定",
-  preparing: "発送準備中",
-  shipped: "発送済み",
-  delivered: "お届け済",
-  cancelled: "キャンセル",
-  refunded: "返金済み",
-};
+/** 表示ラベルは src/data/fujisan-orders.ts が唯一の出どころ。 */
+const ORDER_STATUS_LABELS_JA = Object.fromEntries(
+  Object.entries(ORDER_STATUS_LABELS).map(([k, v]) => [k, v.ja]),
+) as Record<OrderStatus, string>;
+
 
 /** 手動のステータス変更で選べる値（refunded は返金操作からのみ到達させる）。 */
 const SELECTABLE_STATUSES = ORDER_STATUSES.filter((s) => s !== "refunded");
@@ -176,7 +173,7 @@ export function AdminOrderRow({ order, canRefund }: Props) {
   };
 
   return (
-    <li className="border border-[#0B1A2E]/12 bg-white">
+    <li className="border border-indigo/12 bg-white">
       {/* Header (toggle) — モバイルはカード状、md 以上はテーブル行 */}
       <button
         type="button"
@@ -186,23 +183,23 @@ export function AdminOrderRow({ order, canRefund }: Props) {
         {/* Mobile card */}
         <span className="flex flex-col gap-1.5 md:hidden">
           <span className="flex items-center justify-between gap-3">
-            <span className="font-serif text-[13px] font-semibold tracking-[0.04em] text-[#0B1A2E]">
+            <span className="font-serif text-[13px] font-semibold tracking-[0.04em] text-indigo">
               {order.orderRef}
             </span>
             <span className="flex items-center gap-2.5">
               <StatusPill status={order.status} />
-              <span aria-hidden className="text-[#0B1A2E]/50">
+              <span aria-hidden className="text-indigo/50">
                 {open ? "▾" : "▸"}
               </span>
             </span>
           </span>
-          <span className="truncate text-[12px] text-[#0B1A2E]/80">
+          <span className="truncate text-[12px] text-indigo/80">
             {order.customerName}
-            <span className="ml-2 text-[#0B1A2E]/45">
+            <span className="ml-2 text-indigo/45">
               {order.customerEmail}
             </span>
           </span>
-          <span className="text-[11.5px] text-[#0B1A2E]/65">
+          <span className="text-[11.5px] text-indigo/65">
             {fmt(order.createdAt).replace(/\s.+$/, "")} · {order.itemsCount}本 ·
             ¥{yen.format(order.total)}
           </span>
@@ -210,23 +207,23 @@ export function AdminOrderRow({ order, canRefund }: Props) {
 
         {/* Desktop table row（見出し行と同じカラム幅） */}
         <span className="hidden items-center gap-4 md:grid md:grid-cols-[120px_minmax(0,1fr)_110px_100px_130px_24px]">
-          <span className="font-serif text-[13px] font-semibold tracking-[0.04em] text-[#0B1A2E]">
+          <span className="font-serif text-[13px] font-semibold tracking-[0.04em] text-indigo">
             {order.orderRef}
           </span>
-          <span className="min-w-0 truncate text-[12px] text-[#0B1A2E]/80">
+          <span className="min-w-0 truncate text-[12px] text-indigo/80">
             {order.customerName}
-            <span className="ml-2 text-[#0B1A2E]/45">
+            <span className="ml-2 text-indigo/45">
               {order.customerEmail}
             </span>
           </span>
-          <span className="text-[11.5px] text-[#0B1A2E]/65">
+          <span className="text-[11.5px] text-indigo/65">
             {fmt(order.createdAt).replace(/\s.+$/, "")}
           </span>
-          <span className="text-right font-serif text-[13px] tracking-[0.02em] text-[#0B1A2E]">
+          <span className="text-right font-serif text-[13px] tracking-[0.02em] text-indigo">
             ¥{yen.format(order.total)}
           </span>
           <StatusPill status={order.status} />
-          <span aria-hidden className="text-[#0B1A2E]/50">
+          <span aria-hidden className="text-indigo/50">
             {open ? "▾" : "▸"}
           </span>
         </span>
@@ -248,12 +245,12 @@ export function AdminOrderRow({ order, canRefund }: Props) {
       )}
 
       {!open ? null : (
-        <div className="border-t border-[#0B1A2E]/10 px-6 py-6">
+        <div className="border-t border-indigo/10 px-6 py-6">
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
             {/* Left: customer & items */}
             <div className="flex flex-col gap-5">
               <Section title="お届け先">
-                <p className="text-[12.5px] leading-[1.7] text-[#0B1A2E]/82">
+                <p className="text-[12.5px] leading-[1.7] text-indigo/82">
                   〒{order.postalCode}
                   <br />
                   {order.address}
@@ -263,12 +260,12 @@ export function AdminOrderRow({ order, canRefund }: Props) {
               </Section>
 
               <Section title={`商品 (${order.itemsCount}本)`}>
-                <ul className="flex flex-col gap-1.5 text-[12.5px] text-[#0B1A2E]/85">
+                <ul className="flex flex-col gap-1.5 text-[12.5px] text-indigo/85">
                   {order.items.map((it, i) => (
                     <li key={i} className="flex justify-between gap-3">
                       <span>
                         {it.name} {it.variant}
-                        <span className="text-[#0B1A2E]/55">
+                        <span className="text-indigo/55">
                           {" "}
                           · {it.ml}ml × {it.qty}
                         </span>
@@ -280,7 +277,7 @@ export function AdminOrderRow({ order, canRefund }: Props) {
               </Section>
 
               <Section title="ご注文情報">
-                <ul className="grid grid-cols-2 gap-x-3 gap-y-1 text-[12px] text-[#0B1A2E]/75">
+                <ul className="grid grid-cols-2 gap-x-3 gap-y-1 text-[12px] text-indigo/75">
                   <li>注文日時:</li>
                   <li>{fmt(order.createdAt)}</li>
                   {order.shippedAt && (
@@ -311,15 +308,15 @@ export function AdminOrderRow({ order, canRefund }: Props) {
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value as OrderStatus)}
-                  className="w-full border border-[#0B1A2E]/25 bg-white px-3 py-2.5 text-[13px] text-[#0B1A2E] outline-none focus:border-[#C9A84C]"
+                  className="w-full border border-indigo/25 bg-white px-3 py-2.5 text-[13px] text-indigo outline-none focus:border-gold"
                 >
                   {SELECTABLE_STATUSES.map((s) => (
                     <option key={s} value={s}>
-                      {STATUS_LABELS_JA[s]}（{s}）
+                      {ORDER_STATUS_LABELS_JA[s]}（{s}）
                     </option>
                   ))}
                 </select>
-                <p className="mt-2 text-[11px] leading-[1.6] text-[#0B1A2E]/55">
+                <p className="mt-2 text-[11px] leading-[1.6] text-indigo/55">
                   「発送済み」「お届け済」に進めると発送日・お届け日が自動で記録されます。
                 </p>
               </Section>
@@ -331,7 +328,7 @@ export function AdminOrderRow({ order, canRefund }: Props) {
                   onChange={(e) => setCarrier(e.target.value)}
                   list={`carriers-${order.id}`}
                   placeholder="ヤマト運輸 / 佐川 / 日本郵便"
-                  className="w-full border border-[#0B1A2E]/25 bg-white px-3 py-2.5 text-[13px] text-[#0B1A2E] outline-none focus:border-[#C9A84C]"
+                  className="w-full border border-indigo/25 bg-white px-3 py-2.5 text-[13px] text-indigo outline-none focus:border-gold"
                 />
                 <datalist id={`carriers-${order.id}`}>
                   {CARRIER_PRESETS.map((c) => (
@@ -346,7 +343,7 @@ export function AdminOrderRow({ order, canRefund }: Props) {
                   value={number}
                   onChange={(e) => setNumber(e.target.value)}
                   placeholder="例) 1234-5678-9012"
-                  className="w-full border border-[#0B1A2E]/25 bg-white px-3 py-2.5 text-[13px] text-[#0B1A2E] outline-none focus:border-[#C9A84C]"
+                  className="w-full border border-indigo/25 bg-white px-3 py-2.5 text-[13px] text-indigo outline-none focus:border-gold"
                 />
               </Section>
 
@@ -355,16 +352,24 @@ export function AdminOrderRow({ order, canRefund }: Props) {
                   type="button"
                   onClick={handleSave}
                   disabled={!dirty || pending}
-                  className="inline-flex cursor-pointer items-center gap-2 border border-[#0B1A2E] bg-[#0B1A2E] px-5 py-3 text-[11px] font-semibold tracking-[0.26em] text-paper-card transition-colors hover:bg-[#1D2432] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex cursor-pointer items-center gap-2 border border-indigo bg-indigo px-5 py-3 text-[11px] font-semibold tracking-[0.26em] text-paper-card transition-colors hover:bg-indigo-lift disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {pending ? "保存中…" : "保存"}
                 </button>
+                <a
+                  href={`/admin/orders/${order.orderRef}/packing-slip`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 border border-indigo/30 px-5 py-3 text-[10.5px] font-semibold tracking-[0.22em] text-indigo no-underline transition-colors hover:border-indigo"
+                >
+                  納品書を印刷
+                </a>
                 {message && (
                   <span
                     className={`text-[11.5px] ${
                       message.startsWith("保存失敗")
-                        ? "text-[#8B1A1A]"
-                        : "text-[#2F5A2F]"
+                        ? "text-crimson"
+                        : "text-moss"
                     }`}
                   >
                     {message}
@@ -384,7 +389,7 @@ export function AdminOrderRow({ order, canRefund }: Props) {
                       {yen.format(remainingRefundable)}
                     </p>
                   )}
-                  <p className="mt-2 text-[11px] leading-[1.6] text-[#0B1A2E]/60">
+                  <p className="mt-2 text-[11px] leading-[1.6] text-indigo/60">
                     Stripe 経由で返金し、お客様へ返金メールを送ります。取り消せません。
                     一部だけ返した場合、注文は進行中のまま（発送は続きます）で、
                     <strong className="font-semibold">在庫は自動では戻りません</strong>。
@@ -402,7 +407,7 @@ export function AdminOrderRow({ order, canRefund }: Props) {
                         : `全額返金（¥${yen.format(remainingRefundable)}）`}
                     </button>
 
-                    <span className="text-[11px] text-[#0B1A2E]/45">または</span>
+                    <span className="text-[11px] text-indigo/45">または</span>
 
                     <label
                       htmlFor={`refund-amount-${order.id}`}
@@ -420,7 +425,7 @@ export function AdminOrderRow({ order, canRefund }: Props) {
                       value={refundAmount}
                       disabled={refunding}
                       onChange={(e) => setRefundAmount(e.target.value)}
-                      className="w-28 border border-[#0B1A2E]/25 bg-white px-3 py-2.5 text-right text-[12.5px] tabular-nums text-[#0B1A2E] outline-none focus:border-crimson disabled:opacity-60"
+                      className="w-28 border border-indigo/25 bg-white px-3 py-2.5 text-right text-[12.5px] tabular-nums text-indigo outline-none focus:border-crimson disabled:opacity-60"
                     />
                     <button
                       type="button"
@@ -437,7 +442,7 @@ export function AdminOrderRow({ order, canRefund }: Props) {
                         handleRefund(n);
                       }}
                       disabled={refunding}
-                      className="cursor-pointer border border-[#0B1A2E]/30 bg-transparent px-4 py-2.5 text-[11px] font-semibold tracking-[0.18em] text-[#0B1A2E] transition-colors hover:border-[#0B1A2E] disabled:cursor-not-allowed disabled:opacity-50"
+                      className="cursor-pointer border border-indigo/30 bg-transparent px-4 py-2.5 text-[11px] font-semibold tracking-[0.18em] text-indigo transition-colors hover:border-indigo disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       この額を返金
                     </button>
@@ -448,7 +453,7 @@ export function AdminOrderRow({ order, canRefund }: Props) {
                       className={`mt-3 text-[11.5px] leading-normal ${
                         refundMsg.startsWith("返金失敗")
                           ? "text-crimson"
-                          : "text-[#2F5A2F]"
+                          : "text-moss"
                       }`}
                     >
                       {refundMsg}
@@ -473,7 +478,7 @@ function Section({
 }) {
   return (
     <div>
-      <p className="text-[10px] font-semibold tracking-[0.3em] text-[#0B1A2E]/55">
+      <p className="text-[10px] font-semibold tracking-[0.3em] text-indigo/55">
         {title}
       </p>
       <div className="mt-2">{children}</div>
@@ -484,32 +489,32 @@ function Section({
 function StatusPill({ status }: { status: OrderStatus }) {
   const STYLES: Record<OrderStatus, { cls: string; dot: string }> = {
     pending: {
-      cls: "border-[#0B1A2E]/30 bg-paper text-[#0B1A2E]",
-      dot: "bg-[#0B1A2E]/55",
+      cls: "border-indigo/30 bg-paper text-indigo",
+      dot: "bg-indigo/55",
     },
     confirmed: {
-      cls: "border-[#C9A84C]/60 bg-[#F1E6CB]/55 text-[#0B1A2E]",
-      dot: "bg-[#C9A84C]",
+      cls: "border-gold/60 bg-paper-tint/55 text-indigo",
+      dot: "bg-gold",
     },
     preparing: {
-      cls: "border-[#C9A84C]/60 bg-[#F1E6CB]/65 text-[#0B1A2E]",
-      dot: "bg-[#C9A84C]",
+      cls: "border-gold/60 bg-paper-tint/65 text-indigo",
+      dot: "bg-gold",
     },
     shipped: {
-      cls: "border-[#5C8A5C]/60 bg-[#5C8A5C]/[0.10] text-[#2F5A2F]",
-      dot: "bg-[#5C8A5C]",
+      cls: "border-moss/60 bg-moss/[0.10] text-moss",
+      dot: "bg-moss",
     },
     delivered: {
-      cls: "border-[#5C8A5C]/70 bg-[#5C8A5C]/[0.16] text-[#2F5A2F]",
-      dot: "bg-[#5C8A5C]",
+      cls: "border-moss/70 bg-moss/[0.16] text-moss",
+      dot: "bg-moss",
     },
     cancelled: {
-      cls: "border-[#8B1A1A]/45 bg-[#8B1A1A]/[0.08] text-[#8B1A1A]",
-      dot: "bg-[#8B1A1A]",
+      cls: "border-crimson/45 bg-crimson/[0.08] text-crimson",
+      dot: "bg-crimson",
     },
     refunded: {
-      cls: "border-[#8B1A1A]/55 bg-[#8B1A1A]/[0.12] text-[#8B1A1A]",
-      dot: "bg-[#8B1A1A]",
+      cls: "border-crimson/55 bg-crimson/[0.12] text-crimson",
+      dot: "bg-crimson",
     },
   };
   const s = STYLES[status];
@@ -518,7 +523,7 @@ function StatusPill({ status }: { status: OrderStatus }) {
       className={`inline-flex items-center justify-center gap-1.5 border px-2.5 py-1 text-[9.5px] font-semibold tracking-[0.22em] ${s.cls}`}
     >
       <span aria-hidden className={`h-[5px] w-[5px] rounded-full ${s.dot}`} />
-      {STATUS_LABELS_JA[status]}
+      {ORDER_STATUS_LABELS_JA[status]}
     </span>
   );
 }

@@ -44,8 +44,8 @@ export function FujisanInnerHero({
     <section
       className={`relative isolate overflow-hidden pt-[86px] ${
         isDark
-          ? "fujisan-dark-panel bg-[#0F1D30] text-[#F2E4C7]"
-          : "fujisan-paper bg-paper text-[#0B1A2E]"
+          ? "fujisan-dark-panel bg-[#0F1D30] text-linen"
+          : "fujisan-paper bg-paper text-indigo"
       }`}
     >
       <div className="absolute inset-x-0 top-[86px] z-0 h-[460px] overflow-hidden md:h-[520px]">
@@ -82,8 +82,8 @@ export function FujisanInnerHero({
                   href={crumb.href}
                   className={`no-underline transition-colors ${
                     isDark
-                      ? "text-[#F2E4C7]/60 hover:text-[#D7B46A]"
-                      : "text-[#0B1A2E]/60 hover:text-[#C9A84C]"
+                      ? "text-linen/60 hover:text-[#D7B46A]"
+                      : "text-indigo/60 hover:text-gold"
                   }`}
                 >
                   {crumb.label}
@@ -91,7 +91,7 @@ export function FujisanInnerHero({
                 {i < crumbs.length - 1 && (
                   <span
                     aria-hidden
-                    className={isDark ? "text-[#F2E4C7]/30" : "text-[#0B1A2E]/30"}
+                    className={isDark ? "text-linen/30" : "text-indigo/30"}
                   >
                     /
                   </span>
@@ -106,7 +106,7 @@ export function FujisanInnerHero({
             {chapter && (
               <span
                 className={`font-serif text-[11px] font-medium tracking-[0.36em] ${
-                  isDark ? "text-[#D7B46A]" : "text-[#C9A84C]"
+                  isDark ? "text-[#D7B46A]" : "text-gold"
                 }`}
               >
                 {chapter}
@@ -114,12 +114,12 @@ export function FujisanInnerHero({
             )}
             <span
               className={`h-px w-10 ${
-                isDark ? "bg-[#D7B46A]/55" : "bg-[#C9A84C]/55"
+                isDark ? "bg-[#D7B46A]/55" : "bg-gold/55"
               }`}
             />
             <span
               className={`text-[10px] font-semibold uppercase tracking-[0.38em] ${
-                isDark ? "text-[#D7B46A]/85" : "text-[#C9A84C]"
+                isDark ? "text-[#D7B46A]/85" : "text-gold"
               }`}
             >
               {eyebrow}
@@ -129,7 +129,7 @@ export function FujisanInnerHero({
           <Reveal
             as="h1"
             className={`font-serif text-[clamp(36px,5.5vw,72px)] font-semibold leading-[1.05] tracking-[0.04em] ${
-              isDark ? "text-[#F2E4C7]" : "text-[#0B1A2E]"
+              isDark ? "text-linen" : "text-indigo"
             }`}
             delay={revealDelays.d2}
           >
@@ -140,7 +140,7 @@ export function FujisanInnerHero({
             <Reveal
               as="p"
               className={`font-jp text-[13px] tracking-[0.28em] ${
-                isDark ? "text-[#D7B46A]/85" : "text-[#C9A84C]/90"
+                isDark ? "text-[#D7B46A]/85" : "text-gold/90"
               }`}
               delay={revealDelays.d3}
             >
@@ -152,7 +152,7 @@ export function FujisanInnerHero({
             <Reveal
               as="p"
               className={`mt-4 max-w-[580px] text-[14.5px] font-light leading-[1.78] md:text-[15.5px] ${
-                isDark ? "text-[#F2E4C7]/80" : "text-[#2B2419]/82"
+                isDark ? "text-linen/80" : "text-[#2B2419]/82"
               }`}
               delay={revealDelays.d3 + 0.1}
             >

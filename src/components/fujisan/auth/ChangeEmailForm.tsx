@@ -9,7 +9,7 @@ import { L } from "@/i18n/Localized";
 import { RateLimitMessage } from "./ui";
 
 const inputCls =
-  "w-full border-b border-[#0B1A2E]/25 bg-transparent py-2.5 text-[15px] text-[#0B1A2E] outline-none transition-colors placeholder:text-[#0B1A2E]/35 focus:border-[#C9A84C] aria-[invalid=true]:border-[#8B1A1A]";
+  "w-full border-b border-indigo/25 bg-transparent py-2.5 text-[15px] text-indigo outline-none transition-colors placeholder:text-indigo/35 focus:border-gold aria-[invalid=true]:border-crimson";
 
 /**
  * メールアドレスの変更。
@@ -65,12 +65,12 @@ export function ChangeEmailForm({ currentEmail }: { currentEmail: string }) {
     <form
       onSubmit={handleSubmit}
       noValidate
-      className="border border-[#0B1A2E]/12 bg-paper/65 px-7 py-8 md:px-10 md:py-10"
+      className="border border-indigo/12 bg-paper/65 px-7 py-8 md:px-10 md:py-10"
     >
-      <h3 className="font-serif text-[16px] font-semibold tracking-[0.04em] text-[#0B1A2E]">
+      <h3 className="font-serif text-[16px] font-semibold tracking-[0.04em] text-indigo">
         <L en="Change email address" ja="メールアドレスの変更" />
       </h3>
-      <p className="mt-3 max-w-[60ch] text-[12.5px] leading-[1.75] text-[#1D2432]/72">
+      <p className="mt-3 max-w-[60ch] text-[12.5px] leading-[1.75] text-indigo/72">
         <L
           en={`You currently sign in with ${currentEmail}. We'll first email that address to confirm the change, then email the new address to finish it. Your address doesn't change until both links are opened.`}
           ja={`現在のログイン用アドレスは ${currentEmail} です。まずこのアドレス宛に確認のメールをお送りし、承認後に新しいアドレスへも確認メールをお送りします。両方のリンクを開いていただくまで、アドレスは変わりません。`}
@@ -80,7 +80,7 @@ export function ChangeEmailForm({ currentEmail }: { currentEmail: string }) {
       {sentTo && (
         <div
           role="status"
-          className="mt-5 border border-[#5C8A5C]/45 bg-[#5C8A5C]/[0.08] px-4 py-3 text-[12.5px] leading-[1.75] text-[#2F5A2F]"
+          className="mt-5 border border-moss/45 bg-moss/[0.08] px-4 py-3 text-[12.5px] leading-[1.75] text-moss"
         >
           <p className="font-semibold">
             <L
@@ -94,7 +94,7 @@ export function ChangeEmailForm({ currentEmail }: { currentEmail: string }) {
               ja={`現在のアドレス宛に確認リンクをお送りしました。リンクを開いて ${sentTo} への変更をご承認ください。その後、新しいアドレスにも確認メールをお送りします。`}
             />
           </p>
-          <p className="mt-1.5 text-[11.5px] text-[#2F5A2F]/80">
+          <p className="mt-1.5 text-[11.5px] text-moss/80">
             <L
               en="If the new address is already registered to another account, no email will be sent to it."
               ja="新しいアドレスが既に他のアカウントでご登録済みの場合、そちらへのメールは送られません。"
@@ -106,7 +106,7 @@ export function ChangeEmailForm({ currentEmail }: { currentEmail: string }) {
       {sameAsCurrent && (
         <p
           role="alert"
-          className="mt-5 border border-[#8B1A1A]/40 bg-[#8B1A1A]/[0.06] px-4 py-3 text-[12.5px] leading-[1.7] text-[#8B1A1A]"
+          className="mt-5 border border-crimson/40 bg-crimson/[0.06] px-4 py-3 text-[12.5px] leading-[1.7] text-crimson"
         >
           <L
             en="That's already your current email address."
@@ -118,7 +118,7 @@ export function ChangeEmailForm({ currentEmail }: { currentEmail: string }) {
       {errorKey && (
         <p
           role="alert"
-          className="mt-5 border border-[#8B1A1A]/40 bg-[#8B1A1A]/[0.06] px-4 py-3 text-[12.5px] leading-[1.7] text-[#8B1A1A]"
+          className="mt-5 border border-crimson/40 bg-crimson/[0.06] px-4 py-3 text-[12.5px] leading-[1.7] text-crimson"
         >
           {errorKey === "rate" ? (
             <RateLimitMessage />
@@ -139,7 +139,7 @@ export function ChangeEmailForm({ currentEmail }: { currentEmail: string }) {
       <div className="mt-7 flex max-w-[420px] flex-col gap-2">
         <label
           htmlFor="new-email"
-          className="text-[10px] font-semibold tracking-[0.28em] text-[#0B1A2E]/60"
+          className="text-[11px] font-semibold tracking-[0.12em] text-indigo/60"
         >
           <L en="NEW EMAIL ADDRESS" ja="新しいメールアドレス" />
         </label>
@@ -159,10 +159,10 @@ export function ChangeEmailForm({ currentEmail }: { currentEmail: string }) {
       <button
         type="submit"
         disabled={submitting}
-        className="mt-8 inline-flex cursor-pointer items-center justify-center border border-[#0B1A2E] bg-[#0B1A2E] px-7 py-3.5 text-[10.5px] font-semibold tracking-[0.28em] text-paper-card transition-colors hover:bg-[#1D2432] disabled:cursor-wait disabled:opacity-60"
+        className="ed-btn mt-8"
       >
         {submitting ? (
-          <L en="SENDING…" ja="送信中…" />
+          <L en="Sending…" ja="送信中…" />
         ) : (
           <L en="SEND CONFIRMATION" ja="確認メールを送る" />
         )}

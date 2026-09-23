@@ -154,7 +154,7 @@ export function LoginForm({
               ? "/forgot-password/business"
               : "/forgot-password/personal"
           }
-          className="mt-2 w-fit text-[12px] text-[#0B1A2E]/70 underline decoration-[#C9A84C]/50 underline-offset-4 transition-colors hover:text-[#0B1A2E] hover:decoration-[#C9A84C]"
+          className="mt-2 w-fit text-[12px] text-indigo/70 underline decoration-gold/50 underline-offset-4 transition-colors hover:text-indigo hover:decoration-gold"
         >
           <L en="Forgot your password?" ja="パスワードをお忘れですか？" />
         </Link>
@@ -164,7 +164,7 @@ export function LoginForm({
         {submitting ? (
           <L en="SIGNING IN…" ja="ログイン中…" />
         ) : (
-          <L en="SIGN IN" ja="ログイン" />
+          <L en="Sign in" ja="ログイン" />
         )}
       </PrimaryButton>
 
@@ -179,11 +179,11 @@ export function LoginForm({
         </>
       )}
 
-      <p className="mt-2 text-[12.5px] leading-[1.7] text-[#1D2432]/72">
+      <p className="mt-2 text-[12.5px] leading-[1.7] text-indigo/72">
         <L en="No account yet?" ja="アカウントをお持ちでないですか？" />{" "}
         <Link
           href={registerHref}
-          className="font-semibold text-[#0B1A2E] underline decoration-[#C9A84C]/60 underline-offset-4 transition-colors hover:decoration-[#C9A84C]"
+          className="font-semibold text-indigo underline decoration-gold/60 underline-offset-4 transition-colors hover:decoration-gold"
         >
           <L en="Create one" ja="新規登録" />
         </Link>

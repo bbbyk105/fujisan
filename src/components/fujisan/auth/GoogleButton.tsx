@@ -28,7 +28,7 @@ export function GoogleButton({
           setLoading(false);
         }
       }}
-      className="inline-flex w-full cursor-pointer items-center justify-center gap-3 border border-[#0F1F36]/22 bg-transparent px-7 py-3.5 text-[12px] font-medium tracking-[0.1em] text-[#0B1A2E] transition-colors hover:border-[#0F1F36]/45 hover:bg-[#F1E6CB]/35 disabled:cursor-not-allowed disabled:opacity-50"
+      className="inline-flex w-full cursor-pointer items-center justify-center gap-3 border border-indigo/22 bg-transparent px-7 py-3.5 text-[12px] font-medium tracking-[0.1em] text-indigo transition-colors hover:border-indigo/45 hover:bg-paper-tint/35 disabled:cursor-not-allowed disabled:opacity-50"
     >
       <svg aria-hidden width="17" height="17" viewBox="0 0 18 18">
         <path

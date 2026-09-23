@@ -29,26 +29,26 @@ const SOCIAL_LINKS: Array<{ label: string; href: string; icon: "instagram" | "fa
 export default function FujisanFooter() {
   return (
     <footer
-      className="fujisan-dark-glow relative mt-auto overflow-hidden bg-[#0F1D30]"
+      className="fujisan-dark-glow relative mt-auto overflow-hidden bg-indigo"
       id="contact"
     >
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-[#D7B46A]/40 to-transparent"
+        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-gold/40 to-transparent"
       />
       {/* シグネチャー: 稜線の透かし（全ページ共通のフッターでモチーフを通す） */}
       <FujisanRidge
         variant="fill"
-        className="pointer-events-none absolute inset-x-0 bottom-0 mx-auto h-[170px] w-full max-w-[900px] text-[#F2E4C7]/[0.05]"
+        className="pointer-events-none absolute inset-x-0 bottom-0 mx-auto h-[170px] w-full max-w-[900px] text-linen/[0.05]"
       />
 
       {/* 法令対応：未成年飲酒防止表示（全ページ常時掲示） */}
       <div
         role="note"
         aria-label="未成年飲酒防止のお知らせ"
-        className="border-b border-[#F4EBD5]/12 bg-[#0B1A2E]"
+        className="border-b border-paper-tint/12 bg-indigo"
       >
-        <div className="mx-auto flex max-w-[1360px] flex-col items-center gap-1 px-7 py-4 text-center text-[11px] leading-[1.7] tracking-[0.04em] text-[#F4EBD5]/82 md:px-12 md:text-[12px]">
+        <div className="mx-auto flex max-w-[1360px] flex-col items-center gap-1 px-7 py-4 text-center text-[11px] leading-[1.7] tracking-[0.04em] text-paper-tint/82 md:px-12 md:text-[12px]">
           <L
             ja={
               <>
@@ -65,10 +65,10 @@ export default function FujisanFooter() {
               </>
             }
           />
-          <p className="mt-1 text-[10.5px] tracking-[0.06em] text-[#F4EBD5]/55">
+          <p className="mt-1 text-[11.5px] tracking-[0.06em] text-paper-tint/55">
             <Link
               href="/tokushoho"
-              className="text-[#F4EBD5]/70 underline decoration-[#D7B46A]/45 underline-offset-2 transition-colors hover:text-[#D7B46A]"
+              className="text-paper-tint/70 underline decoration-gold/45 underline-offset-2 transition-colors hover:text-gold"
             >
               <L
                 ja="酒類販売管理者標識・通信販売酒類小売業免許情報はこちら"
@@ -79,8 +79,8 @@ export default function FujisanFooter() {
         </div>
       </div>
 
-      <div className="mx-auto flex max-w-[1360px] flex-col items-center justify-between gap-5 px-7 py-7 text-[11px] text-[#F4EBD5]/88 md:flex-row md:px-12">
-        <p className="tracking-[0.12em] text-[#F4EBD5]/70">
+      <div className="mx-auto flex max-w-[1360px] flex-col items-center justify-between gap-5 px-7 py-7 text-[11px] text-paper-tint/88 md:flex-row md:px-12">
+        <p className="tracking-[0.12em] text-paper-tint/70">
           © {new Date().getFullYear()} FUJISAN SAKE · ALL RIGHTS RESERVED
         </p>
 
@@ -89,7 +89,7 @@ export default function FujisanFooter() {
             <li key={item.href}>
               <Link
                 href={item.href}
-                className="text-[10.5px] text-[#F4EBD5]/72 no-underline transition-colors hover:text-[#D7B46A]"
+                className="text-[11.5px] text-paper-tint/72 no-underline transition-colors hover:text-gold"
               >
                 {item.label}
               </Link>
@@ -98,7 +98,7 @@ export default function FujisanFooter() {
         </ul>
 
         {SOCIAL_LINKS.length > 0 && (
-          <div className="flex items-center gap-1 text-[#F4EBD5]/72">
+          <div className="flex items-center gap-1 text-paper-tint/72">
             {SOCIAL_LINKS.map((s) => (
               <a
                 key={s.label}
@@ -106,7 +106,7 @@ export default function FujisanFooter() {
                 aria-label={s.label}
                 target="_blank"
                 rel="noopener noreferrer me"
-                className="p-3 transition-colors hover:text-[#D7B46A]"
+                className="p-3 transition-colors hover:text-gold"
               >
                 {s.icon === "instagram" ? <IconInstagram /> : <IconFacebook />}
               </a>

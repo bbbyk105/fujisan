@@ -18,7 +18,7 @@ export default function LoginBusinessPage() {
       mode="login"
       brand={{
         kanji: "取引",
-        kickerJp: "― 取扱店ログイン ―",
+        kickerJp: "取扱店ログイン",
         titleEn: "Trade access to Bushido.",
         titleJp: "武士道シリーズの、お取引へ。",
         textEn:

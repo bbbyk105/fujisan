@@ -24,7 +24,7 @@ export function ProductCollectionBottles({ products, columns = 5 }: Props) {
         <Link
           key={p.slug}
           href={`/products/${p.slug}`}
-          className="group no-underline outline-none focus-visible:ring-2 focus-visible:ring-[#C9A84C]/60"
+          className="group no-underline outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
         >
           <div className="relative mx-auto flex h-[220px] w-full items-end justify-center overflow-visible md:h-[280px]">
             <div className="fujisan-bottle-drop relative h-[114%] w-[128%]">
@@ -41,12 +41,12 @@ export function ProductCollectionBottles({ products, columns = 5 }: Props) {
                 </ViewTransition>
               </div>
             </div>
-            <span className="absolute bottom-0 left-1/2 h-4 w-[52%] -translate-x-1/2 rounded-[50%] bg-[#0B1A2E]/16 blur-[9px]" />
+            <span className="absolute bottom-0 left-1/2 h-4 w-[52%] -translate-x-1/2 rounded-[50%] bg-indigo/16 blur-[9px]" />
           </div>
-          <p className="mt-3 text-center font-serif text-[11px] font-semibold tracking-[0.18em] text-[#0B1A2E] transition-colors group-hover:text-[#C9A84C] md:text-[13px]">
+          <p className="mt-3 text-center font-serif text-[11px] font-semibold tracking-[0.18em] text-indigo transition-colors group-hover:text-gold md:text-[13px]">
             {p.name}
           </p>
-          <p className="mt-1 whitespace-pre-line text-center text-[9px] font-semibold leading-[1.35] tracking-[0.14em] text-[#0B1A2E]/70 md:text-[10px]">
+          <p className="mt-1 whitespace-pre-line text-center text-[9px] font-semibold leading-[1.35] tracking-[0.14em] text-indigo/70 md:text-[10px]">
             {p.variant}
           </p>
         </Link>

@@ -57,7 +57,7 @@ export function ResetPasswordForm({
         </Notice>
         <Link
           href={forgotHref}
-          className="font-semibold text-[#0B1A2E] underline decoration-[#C9A84C]/60 underline-offset-4 transition-colors hover:decoration-[#C9A84C]"
+          className="font-semibold text-indigo underline decoration-gold/60 underline-offset-4 transition-colors hover:decoration-gold"
         >
           <L en="Request a new link" ja="再設定リンクを再送する" />
         </Link>
@@ -76,7 +76,7 @@ export function ResetPasswordForm({
         </Notice>
         <Link
           href={loginHref}
-          className="font-semibold text-[#0B1A2E] underline decoration-[#C9A84C]/60 underline-offset-4 transition-colors hover:decoration-[#C9A84C]"
+          className="font-semibold text-indigo underline decoration-gold/60 underline-offset-4 transition-colors hover:decoration-gold"
         >
           <L en="Go to sign in" ja="ログイン画面へ" />
         </Link>
@@ -148,7 +148,7 @@ export function ResetPasswordForm({
           placeholder="••••••••"
         />
         <FieldError error={fieldErrors.password} />
-        <p className="mt-2 text-[11.5px] leading-[1.6] text-[#0B1A2E]/55">
+        <p className="mt-2 text-[11.5px] leading-[1.6] text-indigo/55">
           <L
             en="At least 8 characters."
             ja="8文字以上で設定してください。"
@@ -160,7 +160,7 @@ export function ResetPasswordForm({
         {submitting ? (
           <L en="UPDATING…" ja="更新中…" />
         ) : (
-          <L en="SET NEW PASSWORD" ja="パスワードを更新する" />
+          <L en="Set new password" ja="パスワードを更新する" />
         )}
       </PrimaryButton>
     </form>

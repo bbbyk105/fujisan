@@ -122,6 +122,14 @@ export const order = sqliteTable(
      */
     refundedAmount: integer("refunded_amount"),
 
+    /**
+     * 領収書の宛名。null なら `customerName`（注文時の登録名）を使う。
+     *
+     * 「上様」や正式社名を入れたい要望に応えるためのもので、**金額には
+     * 一切関係しない**。お客様がご自身の注文に対してのみ設定できる。
+     */
+    receiptAddressee: text("receipt_addressee"),
+
     /** お客様からのキャンセル依頼（発送前のみ受け付ける）。返金の実行は owner が行う。 */
     cancelRequestedAt: integer("cancel_requested_at", { mode: "timestamp_ms" }),
     cancelReason: text("cancel_reason"),

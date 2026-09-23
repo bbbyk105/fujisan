@@ -86,16 +86,19 @@ Webhook id、ドメイン）をまとめてある。要点だけ再掲する。
 
 ## 技術的負債
 
-### `drizzle/` の journal がずれている
+### ~~`drizzle/` の journal がずれている~~（解消済み）
 
-`0006_user_postal_code.sql` が手書き追加で `drizzle/meta/_journal.json` に載っていない。
-このため **`drizzle-kit generate` を実行してはいけない**（0005 のスナップショットとの
-差分を出すので、適用済みの列を二重に出力する）。
+`0006` 以降が手書き追加で `meta/_journal.json` に載っておらず、`drizzle-kit generate`
+を実行すると適用済みの列を二重に出力する状態だった。journal を SQL 15 本と
+1 対 1 に揃え、現在のスキーマを `0014_snapshot.json` として置き直した。
+`drizzle-kit generate` は「No schema changes」を返す。
 
-当面はマイグレーション SQL を手書きで追加する。`wrangler d1 migrations apply` は
-journal ではなくファイル名順で適用するので動作には影響しない。
+`0006`〜`0013` の**中間スナップショットは無い**（当時の状態を復元できないため）。
+`generate` は最後のスナップショットしか読まないので支障はないが、
+`drizzle-kit up` / `drop` は使わないこと。
 
-直すなら、現在のスキーマから snapshot を作り直して journal を 0013 まで揃える。
+同じズレが再発しないよう `src/db/__tests__/migrations.test.ts` が見張っている
+（SQL を頭から流して DB を作れること・journal が実ファイルと対応すること）。
 
 ### マイグレーション番号が一度衝突した
 

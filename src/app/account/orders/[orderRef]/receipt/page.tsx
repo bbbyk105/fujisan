@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { PrintButton } from "@/components/fujisan/auth/PrintButton";
+import { ReceiptAddresseeForm } from "@/components/fujisan/auth/ReceiptAddresseeForm";
 import { getSession } from "@/lib/session";
 import { getMyOrderByRefAction } from "@/lib/actions/orders";
 import { isReceiptIssuable } from "@/db/orders-schema";
@@ -57,47 +58,55 @@ export default async function ReceiptPage({
   // （全額返金の注文はそもそも isReceiptIssuable が false で、ここへ来ない。）
   const refunded = order.refundedAmount ?? 0;
   const receiptedAmount = order.total - refunded;
-  const addressee = order.customerName.trim() || "—";
+  // 宛名は保存済みの指定 → 登録名 の順。どちらも無ければ「—」。
+  const registeredName = order.customerName.trim();
+  const addressee = order.receiptAddressee?.trim() || registeredName || "—";
 
   return (
-    <main className="min-h-screen bg-[#EDE6D6] py-10 print:bg-white print:py-0">
+    <main className="min-h-screen bg-paper-tint py-10 print:bg-white print:py-0">
       {/* 画面でだけ出る操作列。印刷時は消す。 */}
       <div className="mx-auto mb-6 flex max-w-[760px] flex-wrap items-center justify-between gap-4 px-6 print:hidden">
         <Link
           href={`/account/orders/${order.orderRef}`}
-          className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.24em] text-[#0B1A2E]/75 no-underline hover:text-[#0B1A2E]"
+          className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.12em] text-indigo/75 no-underline hover:text-indigo"
         >
           <span aria-hidden>←</span> 注文詳細へ戻る
         </Link>
         <PrintButton />
       </div>
 
+      <ReceiptAddresseeForm
+        orderRef={order.orderRef}
+        initial={order.receiptAddressee}
+        fallbackName={registeredName || "お名前"}
+      />
+
       {/* 領収書本体（A4 相当） */}
-      <article className="mx-auto max-w-[760px] bg-white px-10 py-12 text-[#0B1A2E] shadow-[0_20px_60px_-40px_rgba(11,26,46,0.5)] print:max-w-none print:px-0 print:py-0 print:shadow-none">
+      <article className="mx-auto max-w-[760px] bg-white px-10 py-12 text-indigo shadow-[0_20px_60px_-40px_rgba(11,26,46,0.5)] print:max-w-none print:px-0 print:py-0 print:shadow-none">
         <header className="text-center">
-          <h1 className="font-serif text-[30px] font-semibold tracking-[0.5em] text-[#0B1A2E]">
+          <h1 className="font-serif text-[30px] font-semibold tracking-[0.5em] text-indigo">
             領収書
           </h1>
-          <p className="mt-1 text-[10px] tracking-[0.3em] text-[#0B1A2E]/50">
+          <p className="mt-1 text-[11px] tracking-[0.12em] text-indigo/50">
             RECEIPT
           </p>
         </header>
 
         <div className="mt-10 flex flex-wrap items-end justify-between gap-6">
           <div className="min-w-[280px] flex-1">
-            <p className="border-b border-[#0B1A2E]/45 pb-2 font-serif text-[20px] tracking-[0.06em]">
+            <p className="border-b border-indigo/45 pb-2 font-serif text-[20px] tracking-[0.06em]">
               {addressee}
-              <span className="ml-3 text-[13px] text-[#0B1A2E]/70">様</span>
+              <span className="ml-3 text-[13px] text-indigo/70">様</span>
             </p>
           </div>
-          <dl className="text-right text-[12px] leading-[1.9] text-[#0B1A2E]/75">
+          <dl className="text-right text-[12px] leading-[1.9] text-indigo/75">
             <div>
               <dt className="inline">発行日：</dt>
               <dd className="inline">{formatDateJp(issuedAt)}</dd>
             </div>
             <div>
               <dt className="inline">注文番号：</dt>
-              <dd className="inline font-semibold text-[#0B1A2E]">
+              <dd className="inline font-semibold text-indigo">
                 {order.orderRef}
               </dd>
             </div>
@@ -105,18 +114,18 @@ export default async function ReceiptPage({
         </div>
 
         {/* 金額 */}
-        <div className="mt-8 border-y-2 border-[#0B1A2E] py-6 text-center">
-          <p className="text-[10px] tracking-[0.3em] text-[#0B1A2E]/55">
+        <div className="mt-8 border-y-2 border-indigo py-6 text-center">
+          <p className="text-[11px] tracking-[0.12em] text-indigo/55">
             金額（税込）
           </p>
           <p className="mt-2 font-serif text-[34px] font-semibold tracking-[0.06em]">
             ¥{yen.format(receiptedAmount)}
-            <span className="ml-2 align-middle text-[13px] text-[#0B1A2E]/60">
+            <span className="ml-2 align-middle text-[13px] text-indigo/60">
               −
             </span>
           </p>
           {refunded > 0 && (
-            <p className="mt-2 text-[11px] tracking-[0.06em] text-[#0B1A2E]/60">
+            <p className="mt-2 text-[11px] tracking-[0.06em] text-indigo/60">
               ご請求 ¥{yen.format(order.total)} − ご返金 ¥{yen.format(refunded)}
             </p>
           )}
@@ -131,7 +140,7 @@ export default async function ReceiptPage({
         {/* 明細 */}
         <table className="mt-10 w-full border-collapse text-[12.5px]">
           <thead>
-            <tr className="border-b border-[#0B1A2E]/35 text-[10px] tracking-[0.2em] text-[#0B1A2E]/60">
+            <tr className="border-b border-indigo/35 text-[11px] tracking-[0.2em] text-indigo/60">
               <th className="py-2 text-left font-semibold">品名</th>
               <th className="py-2 text-right font-semibold">単価</th>
               <th className="py-2 text-right font-semibold">数量</th>
@@ -142,7 +151,7 @@ export default async function ReceiptPage({
             {order.items.map((it) => (
               <tr
                 key={`${it.slug}-${it.ml}`}
-                className="border-b border-[#0B1A2E]/12"
+                className="border-b border-indigo/12"
               >
                 <td className="py-2.5">
                   {it.name} {it.variant}（{it.ml}ml）
@@ -156,7 +165,7 @@ export default async function ReceiptPage({
                 </td>
               </tr>
             ))}
-            <tr className="border-b border-[#0B1A2E]/12">
+            <tr className="border-b border-indigo/12">
               <td className="py-2.5" colSpan={3}>
                 送料
               </td>
@@ -166,7 +175,7 @@ export default async function ReceiptPage({
             </tr>
           </tbody>
           <tfoot>
-            <tr className="border-t-2 border-[#0B1A2E]">
+            <tr className="border-t-2 border-indigo">
               <td
                 className="py-3 text-[11px] font-semibold tracking-[0.2em]"
                 colSpan={3}
@@ -190,7 +199,7 @@ export default async function ReceiptPage({
                     −¥{yen.format(refunded)}
                   </td>
                 </tr>
-                <tr className="border-t border-[#0B1A2E]/35">
+                <tr className="border-t border-indigo/35">
                   <td
                     className="py-3 text-[11px] font-semibold tracking-[0.2em]"
                     colSpan={3}
@@ -208,8 +217,8 @@ export default async function ReceiptPage({
 
         {/* 発行者 */}
         <footer className="mt-12 flex justify-end">
-          <div className="text-[12px] leading-[1.95] text-[#0B1A2E]/85">
-            <p className="font-serif text-[14px] font-semibold tracking-[0.06em] text-[#0B1A2E]">
+          <div className="text-[12px] leading-[1.95] text-indigo/85">
+            <p className="font-serif text-[14px] font-semibold tracking-[0.06em] text-indigo">
               {FUJISAN_LEGAL.sellerName}
             </p>
             <p>{FUJISAN_LEGAL.address}</p>
@@ -224,7 +233,7 @@ export default async function ReceiptPage({
           </div>
         </footer>
 
-        <p className="mt-10 border-t border-[#0B1A2E]/12 pt-4 text-[10.5px] leading-[1.8] text-[#0B1A2E]/55">
+        <p className="mt-10 border-t border-indigo/12 pt-4 text-[11.5px] leading-[1.8] text-indigo/55">
           本領収書は電子的に発行されたものです（電子発行のため収入印紙の貼付は不要です）。
           {!INVOICE_REGISTRATION_NUMBER && (
             <>

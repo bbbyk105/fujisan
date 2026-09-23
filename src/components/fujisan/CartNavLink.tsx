@@ -40,13 +40,13 @@ export function CartNavLink({
       <Link
         href="/cart"
         aria-label={showCount ? `Cart, ${count} items` : "Cart"}
-        className="relative flex h-10 w-10 items-center justify-center border border-[#0F1F36]/20 bg-paper-card/80 text-[#0F1F36] no-underline"
+        className="relative flex h-10 w-10 items-center justify-center border border-indigo/20 bg-paper-card/80 text-indigo no-underline"
       >
         <BagIcon />
         {showCount ? (
           <span
             key={count}
-            className="fujisan-badge-pop absolute -right-1.5 -top-1.5 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#0F1F36] px-1 text-[10px] font-semibold leading-none text-[#F6F0E5]"
+            className="fujisan-badge-pop absolute -right-1.5 -top-1.5 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-indigo px-1 text-[11px] font-semibold leading-none text-paper-card"
           >
             {count}
           </span>
@@ -59,20 +59,20 @@ export function CartNavLink({
     return (
       <Link
         href="/cart"
-        className="flex items-center justify-between border-b border-[#0F1F36]/10 py-4 text-[13px] font-semibold tracking-[0.14em] text-[#0F1F36]/82 no-underline transition-colors hover:text-[#0F1F36]"
+        className="flex items-center justify-between border-b border-indigo/10 py-4 text-[13px] font-semibold tracking-[0.14em] text-indigo/82 no-underline transition-colors hover:text-indigo"
       >
         <span className="inline-flex items-center gap-2">
           <BagIcon />
           <L en="CART" ja="カート" />
           {showCount ? (
-            <span key={count} className="fujisan-badge-pop text-[#C9A84C]">
+            <span key={count} className="fujisan-badge-pop text-gold">
               ({count})
             </span>
           ) : null}
         </span>
         <span
           aria-hidden
-          className="text-[10px] tracking-[0.3em] text-[#C9A84C]"
+          className="text-[11px] tracking-[0.12em] text-gold"
         >
           ●
         </span>
@@ -84,14 +84,14 @@ export function CartNavLink({
     <Link
       href="/cart"
       aria-label={showCount ? `Cart, ${count} items` : "Cart"}
-      className="relative inline-flex items-center gap-1.5 text-[12px] font-semibold tracking-[0.06em] text-[#0F1F36]/75 no-underline transition-colors duration-300 hover:text-[#0F1F36]"
+      className="relative inline-flex items-center gap-1.5 text-[12px] font-semibold tracking-[0.06em] text-indigo/75 no-underline transition-colors duration-300 hover:text-indigo"
     >
       <BagIcon />
       <L en="CART" ja="カート" />
       {showCount ? (
         <span
           key={count}
-          className="fujisan-badge-pop ml-0.5 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#0F1F36] px-1 text-[10px] font-semibold leading-none text-[#F6F0E5]"
+          className="fujisan-badge-pop ml-0.5 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-indigo px-1 text-[11px] font-semibold leading-none text-paper-card"
         >
           {count}
         </span>

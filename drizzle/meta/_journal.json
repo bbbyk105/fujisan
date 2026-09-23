@@ -43,6 +43,69 @@
       "when": 1783658773731,
       "tag": "0005_order_refund",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1784892616000,
+      "tag": "0006_user_postal_code",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1789906330000,
+      "tag": "0007_contact_message",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1789908446000,
+      "tag": "0008_order_cancel_request",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1789927372000,
+      "tag": "0009_inventory",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1790053090000,
+      "tag": "0010_trade_account",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1790084775000,
+      "tag": "0011_rate_limit",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1790086965000,
+      "tag": "0012_product_price",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "6",
+      "when": 1790086985000,
+      "tag": "0013_order_partial_refund",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "6",
+      "when": 1790136640000,
+      "tag": "0014_receipt_addressee",
+      "breakpoints": true
     }
   ]
 }

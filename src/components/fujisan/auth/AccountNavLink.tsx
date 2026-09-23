@@ -21,7 +21,7 @@ export function AccountNavLink({ mobile = false }: { mobile?: boolean }) {
     return (
       <Link
         href={href}
-        className="flex items-center justify-between border-b border-[#0F1F36]/10 py-4 text-[13px] font-semibold tracking-[0.14em] text-[#0F1F36]/82 no-underline transition-colors hover:text-[#0F1F36]"
+        className="flex items-center justify-between border-b border-indigo/10 py-4 text-[13px] font-semibold tracking-[0.14em] text-indigo/82 no-underline transition-colors hover:text-indigo"
       >
         <span>
           {signedIn ? (
@@ -30,7 +30,7 @@ export function AccountNavLink({ mobile = false }: { mobile?: boolean }) {
             <L en="SIGN IN" ja="ログイン" />
           )}
         </span>
-        <span aria-hidden className="text-[10px] tracking-[0.3em] text-[#C9A84C]">
+        <span aria-hidden className="text-[11px] tracking-[0.12em] text-gold">
           ●
         </span>
       </Link>
@@ -40,7 +40,7 @@ export function AccountNavLink({ mobile = false }: { mobile?: boolean }) {
   return (
     <Link
       href={href}
-      className="inline-flex items-center gap-1.5 text-[12px] font-semibold tracking-[0.06em] text-[#0F1F36]/75 no-underline transition-colors duration-300 hover:text-[#0F1F36]"
+      className="inline-flex items-center gap-1.5 text-[12px] font-semibold tracking-[0.06em] text-indigo/75 no-underline transition-colors duration-300 hover:text-indigo"
     >
       <svg aria-hidden width="13" height="13" viewBox="0 0 16 16" fill="none">
         <circle cx="8" cy="5" r="3" stroke="currentColor" strokeWidth="1.2" />

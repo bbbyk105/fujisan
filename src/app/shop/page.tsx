@@ -1,8 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import FujisanNav from "@/components/fujisan/FujisanNav";
-import FujisanFooter from "@/components/fujisan/FujisanFooter";
-import { FujisanInnerHero } from "@/components/fujisan/FujisanInnerHero";
+import { EditorialPage } from "@/components/fujisan/editorial/EditorialPage";
+import { EditorialPageHeader } from "@/components/fujisan/editorial/EditorialPageHeader";
+import { EditorialSection } from "@/components/fujisan/editorial/EditorialSection";
+import { EdDataList } from "@/components/fujisan/editorial/ui";
 import { Reveal } from "@/components/reveal/Reveal";
 import { revealDelays } from "@/components/reveal/constants";
 import { SHIPPING_FEE } from "@/data/fujisan-legal";
@@ -16,245 +17,204 @@ export const metadata = buildMetadata({
   path: "/shop",
 });
 
-const paths = [
+const routes = [
   {
-    num: "Ⅰ",
-    eyebrow: "FOR YOUR TABLE",
-    jp: "個人のお客様",
     href: "/shop/personal",
-    cta: { en: "BROWSE THE COLLECTION", ja: "コレクションを見る" },
     image: "/images/personal.webp",
     imagePos: "object-[55%_50%]",
+    heading: { en: "For your table", ja: "ご家庭へ、贈り物へ" },
     lead: {
-      en: "A single bottle, gift-ready, delivered to your home. Five expressions of Fujisan from ¥1,600, with age verification at every step.",
+      en: "A single bottle, gift-ready, delivered to your home. Five expressions of Fujisan, from ¥1,600.",
       ja: "一本から、ご家庭へ、贈り物へ。富士山の五つの表情を、ひとつずつ丁寧にお届けします。1,600円より。",
     },
-    bullets: [
-      { en: "Single 300 ml & 180 ml bottles from ¥1,600", ja: "300ml・180ml ／ 1,600円より" },
-      { en: "Nationwide shipping ¥1,100 (tax incl.)", ja: SHIPPING_FEE.flat },
-      { en: "Ships within 2 business days", ja: "ご注文確認後 原則 2 営業日以内に発送" },
-      { en: "Age 20+ verified at order & delivery", ja: "20歳未満には販売いたしません" },
+    facts: [
+      {
+        label: { en: "Sizes", ja: "容量" },
+        value: { en: "300 ml & 180 ml, from ¥1,600", ja: "300ml・180ml ／ 1,600円より" },
+      },
+      {
+        label: { en: "Shipping", ja: "送料" },
+        value: { en: SHIPPING_FEE.flatEn, ja: SHIPPING_FEE.flat },
+      },
+      {
+        label: { en: "Dispatch", ja: "発送" },
+        value: {
+          en: "Within two business days",
+          ja: "ご注文確認後、原則2営業日以内",
+        },
+      },
     ],
+    cta: { en: "Browse the collection", ja: "コレクションを見る" },
   },
   {
-    num: "Ⅱ",
-    eyebrow: "FOR YOUR PROGRAMME",
-    jp: "法人・卸 / 取扱店",
     href: "/shop/business",
-    cta: { en: "OPEN A TRADE ACCOUNT", ja: "卸・取扱のご相談へ" },
     image: "/images/restaurant.webp",
     imagePos: "object-[50%_46%]",
+    heading: { en: "For your programme", ja: "飲食店・小売店さまへ" },
     lead: {
-      en: "For restaurants, bars, retailers, and hospitality programmes. Account pricing, dedicated support, and case quantities, by appointment.",
-      ja: "レストラン・バー・小売店・ホテルのみなさまへ。卸価格、ケース単位でのお届け、専任担当によるサポートを、ご相談のうえでご用意します。",
+      en: "For restaurants, bars, retailers, and hospitality programmes. Account pricing, case quantities, and one named contact.",
+      ja: "レストラン・バー・小売店・ホテルのみなさまへ。卸価格、ケース単位でのお届け、専任担当によるサポートをご用意します。",
     },
-    bullets: [
-      { en: "Case pricing (6 / 12 bottles)", ja: "ケース単位（6本／12本）" },
-      { en: "Listing & training support", ja: "メニューづくり・スタッフ研修のお手伝い" },
-      { en: "Quote within 2 business days", ja: "2 営業日以内にお見積りをお送りします" },
-      { en: "Open across Japan, JPY pricing", ja: "全国対応・円建てでのお取引" },
+    facts: [
+      {
+        label: { en: "Unit", ja: "単位" },
+        value: { en: "Case pricing (6 / 12 bottles)", ja: "ケース単位（6本／12本）" },
+      },
+      {
+        label: { en: "Support", ja: "支援" },
+        value: {
+          en: "Listing and staff training",
+          ja: "メニューづくり・スタッフ研修",
+        },
+      },
+      {
+        label: { en: "Quote", ja: "お見積り" },
+        value: {
+          en: "Within two business days, JPY",
+          ja: "2営業日以内・円建て",
+        },
+      },
     ],
+    cta: { en: "Open a trade account", ja: "卸・取扱のご相談へ" },
+  },
+];
+
+const assurances = [
+  {
+    label: { en: "Hand-checked", ja: "検品" },
+    value: {
+      en: "Every order is checked by hand at the kura before it ships, and packed in a chilled outer box.",
+      ja: "すべてのご注文を、出荷前に蔵でひとつずつ検品し、保冷外箱に詰めてお送りします。",
+    },
+  },
+  {
+    label: { en: "Prices", ja: "価格" },
+    value: {
+      en: "All prices include tax. Sale conditions are documented in the Tokutei Shōtorihiki notice.",
+      ja: "価格はすべて税込で表示しています。販売条件は特定商取引法に基づく表示に明記しています。",
+    },
+  },
+  {
+    label: { en: "Age 20+", ja: "年齢確認" },
+    value: {
+      en: "Age is verified at order and again at the door. We do not sell to anyone under 20.",
+      ja: "ご注文時と配送時に年齢を確認します。20歳未満の方へは販売いたしません。",
+    },
   },
 ];
 
 export default function ShopHubPage() {
   return (
-    <main className="bg-paper text-[#0B1A2E] min-h-screen">
-      <FujisanNav />
-
-      <FujisanInnerHero
-        eyebrow="PURCHASE · ご購入"
-        chapter="Ⅸ"
-        title="TWO PATHS, ONE BOTTLE."
-        jp="― 一本のための、二つの道 ―"
+    <EditorialPage>
+      <EditorialPageHeader
+        width="wide"
+        kicker={<L en="Purchase" ja="ご購入" />}
+        title={<L en="How to order" ja="お求めについて" />}
         lead={
           <L
-            en="Whether the bottle ends on your dinner table or on the back bar of a quiet izakaya, we tend to each order by hand. Choose the path that matches your need."
-            ja="ご家庭の食卓へも、静かな居酒屋のカウンターへも。どのご注文も、ひとつずつ手で確かめてお届けします。ご用途に合う方をお選びください。"
+            en="Whether the bottle ends on your dinner table or on the back bar of a quiet izakaya, we tend to each order by hand. Two routes, depending on where it is going."
+            ja="ご家庭の食卓へも、静かな居酒屋のカウンターへも。どのご注文も、ひとつずつ手で確かめてお届けします。行き先に合わせて、二つの窓口をご用意しました。"
           />
         }
-        crumbs={[
-          { label: "HOME", href: "/#top" },
-          { label: "PURCHASE", href: "/shop" },
-        ]}
-        bgSrc="/images/shizuoka.webp"
-        bgPosition="object-[50%_42%]"
       />
 
-      {/* ===== Two paths ===== */}
-      <section className="relative bg-paper">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-[#0B1A2E]/15 to-transparent"
-        />
-        <div className="mx-auto grid max-w-[1320px] grid-cols-1 gap-10 px-7 py-20 md:px-12 md:py-24 lg:grid-cols-2 lg:gap-12">
-          {paths.map((p, i) => (
-            <Reveal
-              key={p.href}
-              as="article"
-              delay={revealDelays.d1 + i * 0.1}
-              className="group relative flex flex-col overflow-hidden border border-[#0B1A2E]/12 bg-paper-card"
-            >
-              <div className="relative h-[260px] w-full overflow-hidden md:h-[300px]">
-                <Image
-                  src={p.image}
-                  alt=""
-                  fill
-                  sizes="(min-width: 1024px) 50vw, 100vw"
-                  className={`object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] ${p.imagePos}`}
-                />
-                <div
-                  aria-hidden
-                  className="absolute inset-0 bg-linear-to-t from-[#0B1A2E]/55 via-transparent to-transparent"
-                />
-                <div className="absolute left-6 top-6 flex items-center gap-3 md:left-9 md:top-9">
-                  <span className="font-serif text-[12px] font-medium tracking-[0.36em] text-[#F2E4C7]">
-                    {p.num}
-                  </span>
-                  <span className="h-px w-10 bg-[#D7B46A]/70" />
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.34em] text-[#D7B46A]">
-                    {p.eyebrow}
-                  </span>
-                </div>
-                <p className="absolute bottom-5 left-6 font-jp text-[12px] tracking-[0.26em] text-[#F2E4C7]/90 md:bottom-7 md:left-9">
-                  {p.jp}
-                </p>
-              </div>
-
-              <div className="flex flex-1 flex-col px-7 py-10 md:px-10 md:py-12">
-                <p className="font-serif text-[clamp(18px,1.6vw,22px)] font-light leading-[1.7] text-[#1D2432]/88">
-                  <L en={p.lead.en} ja={p.lead.ja} />
-                </p>
-
-                <ul className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-x-6">
-                  {p.bullets.map((b) => (
-                    <li
-                      key={b.en}
-                      className="flex items-baseline gap-3 border-t border-[#0B1A2E]/10 pt-3 text-[12px] leading-[1.55] text-[#0B1A2E]/80"
-                    >
-                      <span
-                        aria-hidden
-                        className="mt-1 h-px w-3 shrink-0 bg-[#C9A84C]"
-                      />
-                      <L en={b.en} ja={b.ja} />
-                    </li>
-                  ))}
-                </ul>
-
-                <Link
-                  href={p.href}
-                  className="group/cta mt-10 inline-flex items-center gap-3 self-start border-0 bg-transparent p-0 text-[10.5px] font-semibold tracking-[0.34em] text-[#0B1A2E] no-underline"
-                >
-                  <span className="relative pb-1">
-                    <L en={p.cta.en} ja={p.cta.ja} />
-                    <span className="absolute inset-x-0 -bottom-0 h-px bg-[#0B1A2E]/50 transition-all duration-500 group-hover/cta:bg-[#C9A84C]" />
-                  </span>
-                  <span
-                    aria-hidden
-                    className="transition-transform duration-500 group-hover/cta:translate-x-1 group-hover/cta:text-[#C9A84C]"
-                  >
-                    →
-                  </span>
-                </Link>
-              </div>
+      {routes.map((r, i) => (
+        <EditorialSection key={r.href} width="wide" ruled={i > 0}>
+          <div
+            className={`grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-20 ${
+              i % 2 === 1 ? "lg:[&>*:first-child]:order-2" : ""
+            }`}
+          >
+            <Reveal className="relative aspect-[4/3] w-full overflow-hidden lg:aspect-[5/4]">
+              <Image
+                src={r.image}
+                alt=""
+                fill
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                className={`fujisan-grade object-cover ${r.imagePos}`}
+              />
             </Reveal>
-          ))}
-        </div>
-      </section>
 
-      {/* ===== Reassurance band ===== */}
-      <section className="border-t border-[#0B1A2E]/10 bg-paper-tint">
-        <div className="mx-auto max-w-[1180px] px-7 py-14 md:px-12 md:py-16">
-          <div className="grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-12">
-            {[
-              {
-                num: "01",
-                en: "Order with care",
-                ja: "ひとつずつ、手で確かめる",
-                desc: {
-                  en: "Every order is hand-checked at the kura before it ships, and packed in a chilled outer box.",
-                  ja: "すべてのご注文を、出荷前に蔵でひとつずつ検品し、保冷外箱に詰めてお送りします。",
-                },
-              },
-              {
-                num: "02",
-                en: "Transparent legalese",
-                ja: "価格も販売条件も、包み隠さず",
-                desc: {
-                  en: "Prices include tax. Sale conditions are documented in the Tokutei Shōtorihiki notice.",
-                  ja: "価格はすべて税込で表示しています。販売条件は、特定商取引法に基づく表示に明記しています。",
-                },
-              },
-              {
-                num: "03",
-                en: "Age 20+ only",
-                ja: "20歳未満には販売いたしません",
-                desc: {
-                  en: "Age verification at order, and once again at the door. We never sell to minors.",
-                  ja: "ご注文時と配送時に、年齢を確認します。20歳未満の方へは販売いたしません。",
-                },
-              },
-            ].map((item) => (
-              <div key={item.num} className="flex flex-col gap-3">
-                <p className="font-serif text-[10.5px] font-medium tracking-[0.32em] text-[#C9A84C]">
-                  {item.num}
-                </p>
-                <p className="font-serif text-[clamp(15px,1.4vw,17px)] font-semibold tracking-[0.04em] text-[#0B1A2E]">
-                  <L en={item.en} ja={item.ja} />
-                </p>
-                <p className="text-[12.5px] leading-[1.7] text-[#1D2432]/76">
-                  <L en={item.desc.en} ja={item.desc.ja} />
-                </p>
-              </div>
-            ))}
+            <div>
+              <Reveal as="p" className="ed-num">
+                {String(i + 1).padStart(2, "0")}
+              </Reveal>
+
+              <Reveal as="h2" className="ed-h2 mt-3" delay={revealDelays.d1}>
+                <L en={r.heading.en} ja={r.heading.ja} />
+              </Reveal>
+
+              <Reveal as="p" className="ed-p mt-5" delay={revealDelays.d1}>
+                <L en={r.lead.en} ja={r.lead.ja} />
+              </Reveal>
+
+              <Reveal delay={revealDelays.d2}>
+                <EdDataList
+                  className="mt-9"
+                  rows={r.facts.map((f) => ({
+                    label: <L en={f.label.en} ja={f.label.ja} />,
+                    value: <L en={f.value.en} ja={f.value.ja} />,
+                  }))}
+                />
+              </Reveal>
+
+              <Reveal delay={revealDelays.d3} className="mt-10">
+                <Link href={r.href} className="ed-btn">
+                  <L en={r.cta.en} ja={r.cta.ja} />
+                </Link>
+              </Reveal>
+            </div>
           </div>
+        </EditorialSection>
+      ))}
 
-          <p className="mt-12 text-[11.5px] leading-[1.7] text-[#0B1A2E]/65">
-            <L
-              en={
-                <>
-                  Sale conditions are listed in our{" "}
-                  <Link
-                    href="/tokushoho"
-                    className="underline decoration-[#C9A84C]/60 underline-offset-2 hover:text-[#C9A84C]"
-                  >
-                    Tokutei Shōtorihiki Hō notice
-                  </Link>
-                  . For shipping see our{" "}
-                  <Link
-                    href="/shipping"
-                    className="underline decoration-[#C9A84C]/60 underline-offset-2 hover:text-[#C9A84C]"
-                  >
-                    shipping & delivery page
-                  </Link>
-                  .
-                </>
-              }
-              ja={
-                <>
-                  販売条件は
-                  <Link
-                    href="/tokushoho"
-                    className="ml-1 underline decoration-[#C9A84C]/60 underline-offset-2 hover:text-[#C9A84C]"
-                  >
-                    特定商取引法に基づく表示
-                  </Link>
-                  、配送条件は
-                  <Link
-                    href="/shipping"
-                    className="ml-1 underline decoration-[#C9A84C]/60 underline-offset-2 hover:text-[#C9A84C]"
-                  >
-                    送料・お届けについて
-                  </Link>
-                  をご確認ください。
-                </>
-              }
-            />
-          </p>
-        </div>
-      </section>
+      <EditorialSection>
+        <h2 className="ed-h2">
+          <L
+            en="The same care, whichever route you take."
+            ja="どちらの窓口でも、扱いは変わりません。"
+          />
+        </h2>
 
-      <FujisanFooter />
-    </main>
+        <EdDataList
+          className="mt-10"
+          rows={assurances.map((a) => ({
+            label: <L en={a.label.en} ja={a.label.ja} />,
+            value: <L en={a.value.en} ja={a.value.ja} />,
+          }))}
+        />
+
+        <p className="ed-small mt-10">
+          <L
+            en={
+              <>
+                Sale conditions are listed in the{" "}
+                <Link href="/tokushoho" className="ed-link">
+                  Tokutei Shōtorihiki notice
+                </Link>
+                , and delivery terms on the{" "}
+                <Link href="/shipping" className="ed-link">
+                  shipping page
+                </Link>
+                .
+              </>
+            }
+            ja={
+              <>
+                販売条件は
+                <Link href="/tokushoho" className="ed-link">
+                  特定商取引法に基づく表示
+                </Link>
+                、配送条件は
+                <Link href="/shipping" className="ed-link">
+                  お届けと返品
+                </Link>
+                に記しています。
+              </>
+            }
+          />
+        </p>
+      </EditorialSection>
+    </EditorialPage>
   );
 }

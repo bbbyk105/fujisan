@@ -65,7 +65,7 @@ export function ReorderButton({ items }: { items: OrderLine[] }) {
       type="button"
       onClick={reorder}
       disabled={busy}
-      className="inline-flex cursor-pointer items-center justify-center gap-2 border border-[#0B1A2E]/30 bg-transparent px-6 py-3.5 text-[10.5px] font-semibold tracking-[0.28em] text-[#0B1A2E] transition-colors hover:border-[#0B1A2E] disabled:cursor-wait disabled:opacity-60"
+      className="ed-btn-ghost"
     >
       <L en="ORDER AGAIN" ja="同じ内容で注文する" />
     </button>

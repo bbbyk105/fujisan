@@ -19,7 +19,7 @@ type Notice =
   | null;
 
 const inputCls =
-  "w-full border-b border-[#0B1A2E]/25 bg-transparent py-2.5 text-[15px] text-[#0B1A2E] outline-none transition-colors placeholder:text-[#0B1A2E]/35 focus:border-[#C9A84C]";
+  "w-full border-b border-indigo/25 bg-transparent py-2.5 text-[15px] text-indigo outline-none transition-colors placeholder:text-indigo/35 focus:border-gold";
 
 /**
  * ダッシュボードの「登録情報」を編集するフォーム。
@@ -81,7 +81,7 @@ export function ProfileEditForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="border border-[#0B1A2E]/12 bg-paper/65 px-7 py-8 md:px-10 md:py-10"
+      className="border border-indigo/12 bg-paper/65 px-7 py-8 md:px-10 md:py-10"
     >
       <div className="grid grid-cols-1 gap-x-14 gap-y-7 sm:grid-cols-2">
         <FieldBlock labelEn="NAME" labelJp="ご担当者・お名前" required>
@@ -96,7 +96,7 @@ export function ProfileEditForm({
 
         {/* メールは変更不可（変更にはサポート対応が必要）。読み取り専用で表示。 */}
         <FieldBlock labelEn="EMAIL" labelJp="メールアドレス">
-          <p className="border-b border-transparent py-2.5 text-[15px] text-[#0B1A2E]/60">
+          <p className="border-b border-transparent py-2.5 text-[15px] text-indigo/60">
             {initial.email}
           </p>
         </FieldBlock>
@@ -158,14 +158,14 @@ export function ProfileEditForm({
         <button
           type="submit"
           disabled={pending || !dirty}
-          className="inline-flex cursor-pointer items-center justify-center gap-2 border border-[#0B1A2E] bg-[#0B1A2E] px-7 py-3 text-[10.5px] font-semibold tracking-[0.28em] text-paper-card transition-colors hover:bg-[#1D2432] disabled:cursor-not-allowed disabled:opacity-50"
+          className="ed-btn"
         >
           {pending ? "保存中…" : "変更を保存"}
         </button>
         {notice && (
           <span
             className={`text-[12px] ${
-              notice.tone === "ok" ? "text-[#2F5A2F]" : "text-[#8B1A1A]"
+              notice.tone === "ok" ? "text-moss" : "text-crimson"
             }`}
           >
             {notice.text}
@@ -173,7 +173,7 @@ export function ProfileEditForm({
         )}
       </div>
 
-      <p className="mt-5 text-[11.5px] leading-[1.7] text-[#0B1A2E]/55">
+      <p className="mt-5 text-[11.5px] leading-[1.7] text-indigo/55">
         <L
           en="Save your postal code and address here to skip the address form at checkout — we'll ship to the address on file."
           ja="郵便番号と住所を登録しておくと、ご注文時の住所入力を省略し、登録のお届け先へ発送します。メールアドレスの変更はお問い合わせください。"
@@ -196,9 +196,9 @@ function FieldBlock({
 }) {
   return (
     <div className="flex flex-col gap-2">
-      <span className="text-[10px] font-semibold tracking-[0.28em] text-[#0B1A2E]/55">
+      <span className="text-[11px] font-semibold tracking-[0.12em] text-indigo/55">
         <L en={labelEn} ja={labelJp} />
-        {required && <span className="ml-1 text-[#8B1A1A]">*</span>}
+        {required && <span className="ml-1 text-crimson">*</span>}
       </span>
       {children}
     </div>

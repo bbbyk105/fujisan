@@ -69,13 +69,13 @@ export function LocaleSwitch({
         onClick={() => switchTo("ja")}
         className={`cursor-pointer px-1 transition-colors ${
           locale === "ja"
-            ? "text-[#0F1F36]"
-            : "text-[#0F1F36]/40 hover:text-[#0F1F36]/80"
+            ? "text-indigo"
+            : "text-indigo/40 hover:text-indigo/80"
         }`}
       >
         JP
       </button>
-      <span aria-hidden className="text-[#0F1F36]/30">
+      <span aria-hidden className="text-indigo/30">
         |
       </span>
       <button
@@ -84,8 +84,8 @@ export function LocaleSwitch({
         onClick={() => switchTo("en")}
         className={`cursor-pointer px-1 transition-colors ${
           locale === "en"
-            ? "text-[#0F1F36]"
-            : "text-[#0F1F36]/40 hover:text-[#0F1F36]/80"
+            ? "text-indigo"
+            : "text-indigo/40 hover:text-indigo/80"
         }`}
       >
         EN

@@ -50,18 +50,18 @@ export function AdminInviteForm() {
   };
 
   const roleCls =
-    "border border-[#0B1A2E]/25 bg-white px-3 py-2.5 text-[12.5px] text-[#0B1A2E] outline-none focus:border-[#C9A84C]";
+    "border border-indigo/25 bg-white px-3 py-2.5 text-[12.5px] text-indigo outline-none focus:border-gold";
 
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-3 border border-[#0B1A2E]/12 bg-white px-6 py-5"
+      className="flex flex-col gap-3 border border-indigo/12 bg-white px-6 py-5"
     >
       <div className="flex flex-col gap-1">
-        <h2 className="font-serif text-[14px] font-semibold tracking-[0.04em] text-[#0B1A2E]">
+        <h2 className="font-serif text-[14px] font-semibold tracking-[0.04em] text-indigo">
           メールアドレスで招待
         </h2>
-        <p className="text-[11.5px] leading-[1.6] text-[#0B1A2E]/60">
+        <p className="text-[11.5px] leading-[1.6] text-indigo/60">
           まだ登録していない相手も招待できます。未登録なら招待メールを送り、登録時に自動で権限が付きます。
         </p>
       </div>
@@ -74,7 +74,7 @@ export function AdminInviteForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="staff@example.com"
-          className="min-w-0 flex-1 border-b border-[#0B1A2E]/30 bg-transparent px-1 py-2.5 text-[14px] text-[#0B1A2E] outline-none placeholder:text-[#0B1A2E]/40 focus:border-[#C9A84C] sm:border sm:px-3"
+          className="min-w-0 flex-1 border-b border-indigo/30 bg-transparent px-1 py-2.5 text-[14px] text-indigo outline-none placeholder:text-indigo/40 focus:border-gold sm:border sm:px-3"
         />
         <select
           value={role}
@@ -87,7 +87,7 @@ export function AdminInviteForm() {
         <button
           type="submit"
           disabled={pending}
-          className="inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 border border-[#0B1A2E] bg-[#0B1A2E] px-6 py-2.5 text-[10.5px] font-semibold tracking-[0.26em] text-paper-card transition-colors hover:bg-[#1D2432] disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 border border-indigo bg-indigo px-6 py-2.5 text-[10.5px] font-semibold tracking-[0.26em] text-paper-card transition-colors hover:bg-indigo-lift disabled:cursor-not-allowed disabled:opacity-50"
         >
           {pending ? "送信中…" : "招待する"}
         </button>
@@ -96,7 +96,7 @@ export function AdminInviteForm() {
       {notice && (
         <p
           className={`text-[11.5px] leading-[1.6] ${
-            notice.tone === "ok" ? "text-[#2F5A2F]" : "text-[#8B1A1A]"
+            notice.tone === "ok" ? "text-moss" : "text-crimson"
           }`}
         >
           {notice.text}

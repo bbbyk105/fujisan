@@ -9,7 +9,7 @@ import { L } from "@/i18n/Localized";
 import { RateLimitMessage } from "./ui";
 
 const inputCls =
-  "w-full border-b border-[#0B1A2E]/25 bg-transparent py-2.5 text-[15px] text-[#0B1A2E] outline-none transition-colors placeholder:text-[#0B1A2E]/35 focus:border-[#C9A84C] aria-[invalid=true]:border-[#8B1A1A]";
+  "w-full border-b border-indigo/25 bg-transparent py-2.5 text-[15px] text-indigo outline-none transition-colors placeholder:text-indigo/35 focus:border-gold aria-[invalid=true]:border-crimson";
 
 /**
  * ログイン中のパスワード変更。
@@ -74,12 +74,12 @@ export function ChangePasswordForm() {
     <form
       onSubmit={handleSubmit}
       noValidate
-      className="border border-[#0B1A2E]/12 bg-paper/65 px-7 py-8 md:px-10 md:py-10"
+      className="border border-indigo/12 bg-paper/65 px-7 py-8 md:px-10 md:py-10"
     >
-      <h3 className="font-serif text-[16px] font-semibold tracking-[0.04em] text-[#0B1A2E]">
+      <h3 className="font-serif text-[16px] font-semibold tracking-[0.04em] text-indigo">
         <L en="Change password" ja="パスワードの変更" />
       </h3>
-      <p className="mt-3 max-w-[60ch] text-[12.5px] leading-[1.75] text-[#1D2432]/72">
+      <p className="mt-3 max-w-[60ch] text-[12.5px] leading-[1.75] text-indigo/72">
         <L
           en="Enter your current password to set a new one. For your safety, changing it signs you out on every other device."
           ja="現在のパスワードをご確認のうえ、新しいパスワードを設定してください。安全のため、変更すると他の端末のログインはすべて解除されます。"
@@ -89,7 +89,7 @@ export function ChangePasswordForm() {
       {done && (
         <p
           role="status"
-          className="mt-5 border border-[#5C8A5C]/45 bg-[#5C8A5C]/[0.08] px-4 py-3 text-[12.5px] leading-[1.7] text-[#2F5A2F]"
+          className="mt-5 border border-moss/45 bg-moss/[0.08] px-4 py-3 text-[12.5px] leading-[1.7] text-moss"
         >
           <L
             en="Your password has been changed. Other devices have been signed out."
@@ -101,7 +101,7 @@ export function ChangePasswordForm() {
       {mismatch && (
         <p
           role="alert"
-          className="mt-5 border border-[#8B1A1A]/40 bg-[#8B1A1A]/[0.06] px-4 py-3 text-[12.5px] leading-[1.7] text-[#8B1A1A]"
+          className="mt-5 border border-crimson/40 bg-crimson/[0.06] px-4 py-3 text-[12.5px] leading-[1.7] text-crimson"
         >
           <L
             en="The two new password fields don't match."
@@ -113,7 +113,7 @@ export function ChangePasswordForm() {
       {errorKey && (
         <p
           role="alert"
-          className="mt-5 border border-[#8B1A1A]/40 bg-[#8B1A1A]/[0.06] px-4 py-3 text-[12.5px] leading-[1.7] text-[#8B1A1A]"
+          className="mt-5 border border-crimson/40 bg-crimson/[0.06] px-4 py-3 text-[12.5px] leading-[1.7] text-crimson"
         >
           {errorKey === "rate" ? (
             <RateLimitMessage />
@@ -150,9 +150,9 @@ export function ChangePasswordForm() {
         <div className="flex flex-col gap-2">
           <label
             htmlFor="current-password"
-            className="text-[10px] font-semibold tracking-[0.28em] text-[#0B1A2E]/60"
+            className="text-[11px] font-semibold tracking-[0.12em] text-indigo/60"
           >
-            <L en="CURRENT PASSWORD" ja="現在のパスワード" />
+            <L en="Current password" ja="現在のパスワード" />
           </label>
           <input
             id="current-password"
@@ -170,9 +170,9 @@ export function ChangePasswordForm() {
         <div className="flex flex-col gap-2">
           <label
             htmlFor="new-password"
-            className="text-[10px] font-semibold tracking-[0.28em] text-[#0B1A2E]/60"
+            className="text-[11px] font-semibold tracking-[0.12em] text-indigo/60"
           >
-            <L en="NEW PASSWORD" ja="新しいパスワード" />
+            <L en="New password" ja="新しいパスワード" />
           </label>
           <input
             id="new-password"
@@ -190,9 +190,9 @@ export function ChangePasswordForm() {
         <div className="flex flex-col gap-2">
           <label
             htmlFor="confirm-password"
-            className="text-[10px] font-semibold tracking-[0.28em] text-[#0B1A2E]/60"
+            className="text-[11px] font-semibold tracking-[0.12em] text-indigo/60"
           >
-            <L en="CONFIRM NEW PASSWORD" ja="新しいパスワード（確認）" />
+            <L en="Confirm new password" ja="新しいパスワード（確認）" />
           </label>
           <input
             id="confirm-password"
@@ -210,12 +210,12 @@ export function ChangePasswordForm() {
       <button
         type="submit"
         disabled={submitting}
-        className="mt-8 inline-flex cursor-pointer items-center justify-center border border-[#0B1A2E] bg-[#0B1A2E] px-7 py-3.5 text-[10.5px] font-semibold tracking-[0.28em] text-paper-card transition-colors hover:bg-[#1D2432] disabled:cursor-wait disabled:opacity-60"
+        className="ed-btn mt-8"
       >
         {submitting ? (
           <L en="SAVING…" ja="変更中…" />
         ) : (
-          <L en="CHANGE PASSWORD" ja="パスワードを変更する" />
+          <L en="Change password" ja="パスワードを変更する" />
         )}
       </button>
     </form>

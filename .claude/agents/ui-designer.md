@@ -74,9 +74,11 @@ Never skip step 4.
 
 ## Design Tokens (Source of Truth)
 
-Tailwind config at `command-center/tailwind.config.js` is the single source of truth for:
-- colors.ink.* (neutral ramp)
-- colors.accent (single accent)
-- animation keyframes (fade-in, slide-up)
+`src/app/globals.css` の `@theme inline`（Tailwind v4）が唯一の出どころ:
+- `--color-paper-*` … 和紙の地色
+- `--color-ink` / `#0B1A2E` … 藍（文字・暗色パネル）
+- `#C9A84C` … 金（強調）、`#8B1A1A` … 朱（警告・完売）
+
+`tailwind.config.js` は存在しない（v4 は CSS 側でトークンを定義する）。
 
 Do NOT introduce ad-hoc hex values in components. Always extend the token layer first.

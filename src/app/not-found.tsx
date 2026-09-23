@@ -1,6 +1,5 @@
 import Link from "next/link";
-import FujisanNav from "@/components/fujisan/FujisanNav";
-import FujisanFooter from "@/components/fujisan/FujisanFooter";
+import { EditorialPage } from "@/components/fujisan/editorial/EditorialPage";
 import { L } from "@/i18n/Localized";
 
 export const metadata = {
@@ -11,59 +10,39 @@ export const metadata = {
 /** 存在しない URL、および notFound() を呼んだセグメントの表示。 */
 export default function NotFound() {
   return (
-    <main className="flex min-h-screen flex-col bg-paper text-[#0B1A2E]">
-      <FujisanNav />
+    <EditorialPage className="flex flex-col">
+      <section className="ed-wrap ed-wrap-narrow flex flex-1 flex-col justify-center pb-24 pt-[150px] md:pt-[190px]">
+        <p className="ed-label">404</p>
 
-      <section className="mx-auto flex w-full max-w-[720px] flex-1 flex-col items-center justify-center px-7 pb-24 pt-[150px] text-center md:pt-[190px]">
-        <p className="font-serif text-[11px] font-semibold tracking-[0.34em] text-[#C9A84C]">
-          404 · NOT FOUND
-        </p>
-        <span aria-hidden className="mt-6 h-px w-10 bg-[#C9A84C]/55" />
-
-        <h1 className="mt-7 font-serif text-[clamp(26px,3vw,36px)] font-semibold leading-[1.2] tracking-[0.05em] text-[#0B1A2E]">
+        <h1 className="ed-title mt-4">
           <L
             en="This page has gone quiet."
             ja="お探しのページは見つかりませんでした。"
           />
         </h1>
 
-        <p className="mx-auto mt-5 max-w-[460px] text-[13.5px] leading-[1.85] text-[#1D2432]/78">
+        <p className="ed-lead mt-7">
           <L
             en="The page you were looking for may have moved, or the link may be out of date. The collection is still here."
             ja="ページが移動したか、リンクが古くなっている可能性があります。コレクションは、こちらからご覧いただけます。"
           />
         </p>
 
-        <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Link
-            href="/products"
-            className="group/btn inline-flex items-center justify-center gap-3 border border-[#0B1A2E] bg-[#0B1A2E] px-8 py-4 text-[10.5px] font-semibold tracking-[0.32em] text-paper-card no-underline transition-colors hover:bg-[#1D2432]"
-          >
-            <L en="BROWSE THE COLLECTION" ja="コレクションを見る" />
-            <span
-              aria-hidden
-              className="transition-transform duration-500 group-hover/btn:translate-x-1"
-            >
-              →
-            </span>
+        <div className="mt-12 flex flex-wrap items-center gap-x-10 gap-y-4">
+          <Link href="/products" className="ed-btn">
+            <L en="Browse the collection" ja="コレクションを見る" />
           </Link>
-          <Link
-            href="/"
-            className="inline-flex items-center justify-center border border-[#0B1A2E]/25 px-8 py-4 text-[10.5px] font-semibold tracking-[0.28em] text-[#0B1A2E] no-underline transition-colors hover:border-[#0B1A2E]"
-          >
-            <L en="BACK TO HOME" ja="トップへ戻る" />
+          <Link href="/" className="ed-link text-[13px]">
+            <L en="Back to home" ja="トップへ戻る" />
           </Link>
         </div>
 
-        <p className="mt-9 text-[11.5px] leading-[1.7] text-[#0B1A2E]/55">
+        <p className="ed-small mt-10">
           <L
             en={
               <>
                 Still can&apos;t find it?{" "}
-                <Link
-                  href="/contact"
-                  className="font-semibold text-[#0B1A2E] underline decoration-gold/60 underline-offset-2 transition-colors hover:decoration-gold"
-                >
+                <Link href="/contact" className="ed-link">
                   Contact us
                 </Link>
                 .
@@ -72,10 +51,7 @@ export default function NotFound() {
             ja={
               <>
                 お探しのものが見つからない場合は
-                <Link
-                  href="/contact"
-                  className="font-semibold text-[#0B1A2E] underline decoration-gold/60 underline-offset-2 transition-colors hover:decoration-gold"
-                >
+                <Link href="/contact" className="ed-link">
                   お問い合わせ
                 </Link>
                 ください。
@@ -84,8 +60,6 @@ export default function NotFound() {
           />
         </p>
       </section>
-
-      <FujisanFooter />
-    </main>
+    </EditorialPage>
   );
 }

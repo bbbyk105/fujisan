@@ -1,6 +1,11 @@
-import FujisanInfoPage, {
-  type InfoSection,
-} from "@/components/fujisan/FujisanInfoPage";
+import { EditorialPage } from "@/components/fujisan/editorial/EditorialPage";
+import { EditorialPageHeader } from "@/components/fujisan/editorial/EditorialPageHeader";
+import {
+  EditorialSection,
+  EditorialSectionHead,
+} from "@/components/fujisan/editorial/EditorialSection";
+import { EdFaq } from "@/components/fujisan/editorial/ui";
+import { FUJISAN_LEGAL, SHIPPING_FEE } from "@/data/fujisan-legal";
 import { L } from "@/i18n/Localized";
 import { buildMetadata } from "@/lib/seo";
 
@@ -11,152 +16,215 @@ export const metadata = buildMetadata({
   path: "/faq",
 });
 
-const sections: InfoSection[] = [
+/**
+ * 問いは「読み手が困る順」に束ねる。
+ * 8 つを平らに並べると、探している一問が見つからない。
+ */
+const groups = [
   {
-    num: "01",
-    heading: (
-      <L
-        en="How should I store an unopened bottle?"
-        ja="未開封のボトルはどう保管すればよいですか？"
-      />
-    ),
-    jp: "未開封の保管",
-    body: [
-      <L
-        key="b"
-        en="Keep the bottle upright in a dark place between 5°C and 12°C. A wine fridge is ideal. Avoid direct sunlight and sudden temperature shifts — sake is sensitive to UV and heat."
-        ja="直射日光を避け、5〜12℃の暗所で立てて保管してください。ワインセラーが理想的です。日本酒は紫外線と熱に弱いため、急な温度変化も避けてください。"
-      />,
+    label: <L en="Serving" ja="味わう" />,
+    heading: <L en="Choosing and serving the bottle" ja="選ぶ、そして注ぐ" />,
+    items: [
+      {
+        q: (
+          <L
+            en="What is the right serving temperature?"
+            ja="飲み頃の温度は？"
+          />
+        ),
+        a: (
+          <L
+            en="Each bottle carries a recommended temperature on its product page. As a starting point: aroma-driven daiginjo around 8°C, junmai chilled or lightly warmed to about 40°C. Several labels are good both ways."
+            ja="おすすめの温度は各商品ページに記しています。目安は、香りの高い大吟醸で8℃前後、純米は冷やすか40℃前後のぬる燗で。冷やでも燗でも楽しめる銘柄もあります。"
+          />
+        ),
+      },
+      {
+        q: <L en="Which bottle should I start with?" ja="最初の一本は？" />,
+        a: (
+          <L
+            en="If sake is new to you, a junmai is generous and easy to meet. From there a junmai ginjo opens the floral side, and a junmai daiginjo brings the perfume of the orchard."
+            ja="日本酒がはじめての方には、ふくらみがあって親しみやすい純米から。そこから純米吟醸で華やかな香りへ、純米大吟醸で果実のような芳香へと広げてみてください。"
+          />
+        ),
+      },
+      {
+        q: (
+          <L
+            en="How should I store an unopened bottle?"
+            ja="未開封のまま保管するには？"
+          />
+        ),
+        a: (
+          <L
+            en="Upright, in the dark, between 5°C and 12°C — a wine fridge is ideal. Sake is sensitive to UV and heat, so keep it out of direct sunlight and away from sudden temperature swings."
+            ja="直射日光を避け、5〜12℃の暗所で立てて保管してください。ワインセラーが理想です。紫外線と熱に弱いため、急な温度変化も避けてください。"
+          />
+        ),
+      },
+      {
+        q: <L en="How long does it keep once opened?" ja="開栓後の日持ちは？" />,
+        a: (
+          <L
+            en="Refrigerate it, and finish daiginjo and ginjo within seven to ten days, richer junmai styles within two weeks. It will not spoil quickly — but the first week is when it is at its best."
+            ja="冷蔵庫で保管し、大吟醸・吟醸は7〜10日、コクのある純米は2週間ほどを目安に。すぐに悪くなるわけではありませんが、最初の一週間がいちばんです。"
+          />
+        ),
+      },
     ],
   },
   {
-    num: "02",
-    heading: (
-      <L
-        en="How long does sake keep once opened?"
-        ja="開栓後はどれくらい日持ちしますか？"
-      />
-    ),
-    jp: "開栓後の目安",
-    body: [
-      <L
-        key="b"
-        en="Once opened, store the bottle in the refrigerator and enjoy within seven to ten days for daiginjo and ginjo, and within two weeks for richer junmai styles. The sake will not spoil quickly, but its freshness is at its peak in the first week."
-        ja="開栓後は冷蔵庫で保管し、大吟醸・吟醸は7〜10日、コクのある純米は2週間ほどを目安にお楽しみください。すぐに悪くなるわけではありませんが、最初の一週間が最も新鮮です。"
-      />,
+    label: <L en="Ordering" ja="注文する" />,
+    heading: <L en="Before you order" ja="ご注文の前に" />,
+    items: [
+      {
+        q: <L en="Can I send a bottle as a gift?" ja="ギフトとして贈れますか？" />,
+        a: (
+          <L
+            en="Every bottle ships in a presentation box wrapped in washi, so it arrives ready to give. Noshi wrapping and message cards are not yet available at checkout — write to us before ordering and we will do what we can."
+            ja="各ボトルは和紙で包んだ化粧箱でお届けしますので、そのまま贈り物にお使いいただけます。のし紙やメッセージカードは、現在ご購入手続きの中では承っておりません。ご注文前にご連絡いただければ、できる限り対応いたします。"
+          />
+        ),
+      },
+      {
+        q: (
+          <L
+            en="Where do you ship, and how much is postage?"
+            ja="配送地域と送料は？"
+          />
+        ),
+        a: (
+          <L
+            en={
+              <>
+                Within Japan only. {SHIPPING_FEE.flatEn}. {SHIPPING_FEE.freeEn}.
+                Full details are on the{" "}
+                <a href="/shipping" className="ed-link">
+                  shipping page
+                </a>
+                .
+              </>
+            }
+            ja={
+              <>
+                お届けは日本国内のみです。送料は{SHIPPING_FEE.flat}、
+                {SHIPPING_FEE.free}。詳しくは
+                <a href="/shipping" className="ed-link">
+                  お届けと返品
+                </a>
+                をご覧ください。
+              </>
+            }
+          />
+        ),
+      },
     ],
   },
   {
-    num: "03",
-    heading: (
-      <L
-        en="What is the right serving temperature?"
-        ja="適切な飲み頃の温度は？"
-      />
-    ),
-    jp: "適温",
-    body: [
-      <L
-        key="b"
-        en="Each bottle in the collection has a recommended temperature on its product page. As a starting point: aroma-driven daiginjo around 8°C, junmai chilled or lightly warmed around 40°C, and several labels enjoyable both chilled and warm."
-        ja="各商品ページにおすすめの温度を記しています。目安として、香り高い大吟醸は8℃前後、純米は冷やすか40℃前後のぬる燗で。冷やでも燗でも楽しめる銘柄もあります。"
-      />,
-    ],
-  },
-  {
-    num: "04",
-    heading: (
-      <L
-        en="Which sake should I choose first?"
-        ja="最初の一本はどれがおすすめ？"
-      />
-    ),
-    jp: "はじめての一本",
-    body: [
-      <L
-        key="b"
-        en="If you are new to sake, a junmai is a generous, approachable starting point. From there, a junmai ginjo opens up the floral side of the spectrum, and a junmai daiginjo brings the perfume of the orchard."
-        ja="日本酒が初めての方には、ふくらみがあり親しみやすい純米から。そこから純米吟醸で華やかな香りへ、純米大吟醸で果実のような芳香へと広げてみてください。"
-      />,
-    ],
-  },
-  {
-    num: "05",
-    heading: (
-      <L en="Can I gift Fujisan sake?" ja="ギフトとして贈れますか？" />
-    ),
-    jp: "ギフトについて",
-    body: [
-      <L
-        key="b"
-        en="Each bottle ships in a presentation box wrapped in washi paper, so it arrives ready to give. Gift options such as noshi wrapping or a message card are not yet available at checkout — if you need them, please contact us before ordering and we will do what we can."
-        ja="各ボトルは和紙で包んだ化粧箱でお届けしますので、そのまま贈り物としてお使いいただけます。のし紙やメッセージカードなどのギフト対応は、現在ご購入手続きの中では承っておりません。ご希望の場合はご注文前にお問い合わせください。できる限り対応いたします。"
-      />,
-    ],
-  },
-  {
-    num: "06",
-    heading: (
-      <L en="Do you offer brewery visits?" ja="蔵見学はできますか？" />
-    ),
-    jp: "蔵見学",
-    body: [
-      <L
-        key="b"
-        en="Small-group visits to Makino Shuzo, the kura that brews the Bushido series, can be arranged by appointment. Visits run from November through March, when the brewhouse is at work. Please write to mtfujipharmacy@gmail.com to enquire."
-        ja="武士道シリーズを醸す牧野酒造合資会社の蔵見学を、ご予約制・少人数で承っております。仕込みの行われる11月〜3月に実施しています。mtfujipharmacy@gmail.com までお問い合わせください。"
-      />,
-    ],
-  },
-  {
-    num: "07",
-    heading: (
-      <L
-        en="I work in the trade — can we discuss wholesale?"
-        ja="業務用・卸の相談はできますか？"
-      />
-    ),
-    jp: "業務用・卸",
-    body: [
-      <L
-        key="b"
-        en="We work with a small, considered list of restaurants and retailers. If our sake fits your programme, please contact mtfujipharmacy@gmail.com with a brief introduction to your venue."
-        ja="限られた数の飲食店・小売店さまとお取引しています。貴店に合いそうでしたら、お店のご紹介を添えて mtfujipharmacy@gmail.com までご連絡ください。"
-      />,
-    ],
-  },
-  {
-    num: "08",
-    heading: (
-      <L en="How do I reach a real person?" ja="担当者に直接連絡するには？" />
-    ),
-    jp: "お問い合わせ",
-    body: [
-      <L
-        key="b"
-        en="Email mtfujipharmacy@gmail.com. Our small team is in Shizuoka and replies in Japanese or English, usually within two business days."
-        ja="mtfujipharmacy@gmail.com までメールをお送りください。静岡の小さなチームが、通常2営業日以内に日本語または英語でご返信します。"
-      />,
+    label: <L en="The kura" ja="蔵のこと" />,
+    heading: <L en="Visiting, and working together" ja="訪ねる、取り扱う" />,
+    items: [
+      {
+        q: <L en="Can I visit the brewery?" ja="蔵見学はできますか？" />,
+        a: (
+          <L
+            en="Small-group visits to Makino Shuzo, the kura that brews the Bushido series, can be arranged by appointment. Visits run from November through March, while the brewhouse is at work."
+            ja="武士道シリーズを醸す牧野酒造合資会社の蔵見学を、ご予約制・少人数で承っています。仕込みの行われる11月から3月までの実施です。"
+          />
+        ),
+      },
+      {
+        q: (
+          <L
+            en="I work in the trade — can we talk wholesale?"
+            ja="業務用・卸の相談はできますか？"
+          />
+        ),
+        a: (
+          <L
+            en={
+              <>
+                We work with a small, considered list of restaurants and
+                retailers. Tell us about your venue from the{" "}
+                <a href="/shop/business" className="ed-link">
+                  trade page
+                </a>
+                .
+              </>
+            }
+            ja={
+              <>
+                限られた数の飲食店・小売店さまとお取引しています。
+                <a href="/shop/business" className="ed-link">
+                  取扱・卸のご案内
+                </a>
+                から、お店のことをお聞かせください。
+              </>
+            }
+          />
+        ),
+      },
     ],
   },
 ];
 
 export default function FaqPage() {
   return (
-    <FujisanInfoPage
-      eyebrow="GUIDANCE · FAQ"
-      chapter="Ⅶ"
-      title="FREQUENTLY ASKED"
-      jp="― よくあるご質問 ―"
-      lead={
-        <L
-          en="A short field guide for storing, serving, and ordering Fujisan sake. If your question is not here, write to us — we read every email."
-          ja="富士山の酒の保管・楽しみ方・ご注文についての、短い手引きです。お探しの答えがなければ、お気軽にご連絡ください。すべてのメールに目を通しています。"
-        />
-      }
-      crumb={{ label: "FAQ", href: "/faq" }}
-      updated="2026.09"
-      sections={sections}
-    />
+    <EditorialPage>
+      <EditorialPageHeader
+        kicker={<L en="Guidance" ja="ご案内" />}
+        title={<L en="Frequently asked" ja="よくあるご質問" />}
+        lead={
+          <L
+            en="A short field guide to storing, serving, and ordering Fujisan sake."
+            ja="富士山の酒の保管・楽しみ方・ご注文についての、短い手引きです。"
+          />
+        }
+        meta={<L en="Last updated 2026.09" ja="最終更新 2026.09" />}
+      />
+
+      {groups.map((g, i) => (
+        <EditorialSection key={i} ruled={i > 0} className="py-14 md:py-20">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-[minmax(0,230px)_minmax(0,1fr)] md:gap-16">
+            <EditorialSectionHead
+              label={g.label}
+              heading={g.heading}
+              className="md:sticky md:top-[112px] md:self-start"
+            />
+            <EdFaq items={g.items} />
+          </div>
+        </EditorialSection>
+      ))}
+
+      {/* 問答で解けないときの行き先。FAQ の 1 項目にすると見落とされる */}
+      <EditorialSection>
+        <p className="ed-label">
+          <L en="Still stuck" ja="解決しないとき" />
+        </p>
+        <p className="ed-h2 mt-4">
+          <L
+            en="Write to us — a person reads every message."
+            ja="お便りください。ひとつずつ、人が読んでいます。"
+          />
+        </p>
+        <p className="ed-p mt-5">
+          <L
+            en="Our small team is in Shizuoka and replies in Japanese or English, usually within two business days."
+            ja="静岡の小さなチームが、日本語・英語のどちらでも、通常2営業日以内にご返信します。"
+          />
+        </p>
+        <div className="mt-8 flex flex-wrap items-center gap-x-10 gap-y-4">
+          <a href="/contact" className="ed-btn">
+            <L en="Contact form" ja="お問い合わせフォーム" />
+          </a>
+          <a
+            href={`mailto:${FUJISAN_LEGAL.email}`}
+            className="ed-link text-[13.5px]"
+          >
+            {FUJISAN_LEGAL.email}
+          </a>
+        </div>
+      </EditorialSection>
+    </EditorialPage>
   );
 }

@@ -18,7 +18,7 @@ export default function ForgotPasswordBusinessPage() {
       showRoleSwitch={false}
       brand={{
         kanji: "再設",
-        kickerJp: "― パスワード再設定 ―",
+        kickerJp: "パスワード再設定",
         titleEn: "Back to your trade account.",
         titleJp: "お取引アカウントへ。",
         textEn:
