@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import FujisanNav from "@/components/fujisan/FujisanNav";
 import FujisanFooter from "@/components/fujisan/FujisanFooter";
 import { AdminOrderRow } from "@/components/fujisan/admin/AdminOrderRow";
+import { AdminOrderToolbar } from "@/components/fujisan/admin/AdminOrderToolbar";
 import {
   AdminForbidden,
   AdminFooterBar,
@@ -29,7 +30,7 @@ export const metadata = buildMetadata({
 
 export const dynamic = "force-dynamic";
 
-type SearchParams = Promise<{ filter?: string }>;
+type SearchParams = Promise<{ filter?: string; from?: string; to?: string }>;
 
 /** ステータス絞り込みタブ。「要対応」= 入金確認〜発送準備の、蔵側の作業が残っている注文。 */
 const FILTERS: Array<{
@@ -43,6 +44,16 @@ const FILTERS: Array<{
   { key: "delivered", label: "お届け済", statuses: ["delivered"] },
   { key: "closed", label: "キャンセル・返金", statuses: ["cancelled", "refunded"] },
 ];
+
+/** ステータスタブのリンク。**期間の指定は保つ**（切り替えるたびに外れると使えない）。 */
+function buildFilterHref(key: string, from: string, to: string): string {
+  const q = new URLSearchParams();
+  if (key !== "all") q.set("filter", key);
+  if (from) q.set("from", from);
+  if (to) q.set("to", to);
+  const qs = q.toString();
+  return qs ? `/admin/orders?${qs}` : "/admin/orders";
+}
 
 export default async function AdminOrdersPage(props: {
   searchParams?: SearchParams;
@@ -65,10 +76,17 @@ export default async function AdminOrdersPage(props: {
   }
   const isOwnerUser = isOwner(role);
 
-  const res = await adminListOrdersAction();
+  const params = (await props.searchParams) ?? {};
+  // 期間は SQL 側で絞る（取得してから捨てると、上限 200 件が期間外の注文で
+  // 埋まって、指定した期間の注文が出てこない）。
+  const from = params.from ?? "";
+  const to = params.to ?? "";
+  const res = await adminListOrdersAction({
+    from: from || undefined,
+    to: to || undefined,
+  });
   const orders = res.ok ? res.orders : [];
 
-  const params = (await props.searchParams) ?? {};
   const filter =
     FILTERS.find((f) => f.key === params.filter) ?? FILTERS[0];
   const visibleOrders = filter.statuses
@@ -136,6 +154,8 @@ export default async function AdminOrdersPage(props: {
           </div>
         ) : (
           <>
+            <AdminOrderToolbar from={from} to={to} />
+
             {/* ステータス絞り込みタブ */}
             <nav
               aria-label="注文の絞り込み"
@@ -149,11 +169,7 @@ export default async function AdminOrdersPage(props: {
                 return (
                   <Link
                     key={f.key}
-                    href={
-                      f.key === "all"
-                        ? "/admin/orders"
-                        : `/admin/orders?filter=${f.key}`
-                    }
+                    href={buildFilterHref(f.key, from, to)}
                     aria-current={active ? "page" : undefined}
                     className={`inline-flex items-center gap-2 border px-4 py-2 text-[10.5px] font-semibold tracking-[0.2em] no-underline transition-colors ${
                       active

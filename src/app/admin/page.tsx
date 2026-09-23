@@ -11,7 +11,7 @@ import {
 import { getSession } from "@/lib/session";
 import { getEffectiveAdminRole, isOwner, isStaffOrAbove } from "@/lib/admin";
 import { adminDashboardAction } from "@/lib/actions/admin-dashboard";
-import type { OrderStatus } from "@/db/orders-schema";
+import { orderStatusJp } from "@/data/fujisan-orders";
 import { formatDayTimeJp } from "@/lib/format-date";
 import { buildMetadata } from "@/lib/seo";
 
@@ -25,16 +25,6 @@ export const metadata = buildMetadata({
 export const dynamic = "force-dynamic";
 
 const yen = new Intl.NumberFormat("ja-JP");
-
-const STATUS_LABEL: Record<OrderStatus, string> = {
-  pending: "受付済",
-  confirmed: "注文確定",
-  preparing: "準備中",
-  shipped: "発送済み",
-  delivered: "お届け済",
-  cancelled: "キャンセル",
-  refunded: "返金済み",
-};
 
 export default async function AdminDashboardPage() {
   const session = await getSession();
@@ -137,7 +127,7 @@ export default async function AdminDashboardPage() {
                         </div>
                         <div className="flex items-baseline gap-4">
                           <span className="text-[10.5px] font-semibold tracking-[0.18em] text-[#0B1A2E]/60">
-                            {STATUS_LABEL[o.status]}
+                            {orderStatusJp(o.status)}
                           </span>
                           <span className="text-[11px] tabular-nums text-[#0B1A2E]/45">
                             {formatDayTimeJp(o.createdAt)}

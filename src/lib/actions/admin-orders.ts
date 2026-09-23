@@ -2,13 +2,21 @@
 
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { and, desc, eq, isNull, ne } from "drizzle-orm";
+import { and, desc, eq, gte, isNull, lt, ne } from "drizzle-orm";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getAuth } from "@/lib/auth";
 import { getEffectiveAdminRole, isOwner, isStaffOrAbove } from "@/lib/admin";
 import { getStripe } from "@/lib/stripe";
+import { toCsv } from "@/lib/csv";
+import { orderStatusJp } from "@/data/fujisan-orders";
+import { formatDateTimeJp } from "@/lib/format-date";
 import { getDb } from "@/db";
-import { commitStock, releaseStock, restockCommitted } from "@/lib/inventory";
+import {
+  commitStock,
+  formatStockWarnings,
+  releaseStock,
+  restockCommitted,
+} from "@/lib/inventory";
 import {
   order as orderTable,
   ORDER_STATUSES,
@@ -87,10 +95,52 @@ const REFUNDABLE_STATUSES: OrderStatus[] = [
   "delivered",
 ];
 
+/** 注文一覧・CSV で共通に使う絞り込み。 */
+export type AdminOrderFilter = {
+  /** 期間の開始（この日の 0:00 JST から）。YYYY-MM-DD。 */
+  from?: string;
+  /** 期間の終了（この日の 23:59:59 JST まで）。YYYY-MM-DD。 */
+  to?: string;
+};
+
 /**
- * 管理者向け: 全注文を新しい順で取得する。非 admin にはエラー（空配列ではなく明示）。
+ * 絞り込みを SQL の条件にする。
+ *
+ * 期間は**日本時間で解釈する**。Worker は UTC で動くので、`new Date("2026-09-01")`
+ * をそのまま使うと JST の 9:00 起点になり、午前の注文が前日に落ちる。
  */
-export async function adminListOrdersAction(): Promise<
+function orderFilterWhere(filter: AdminOrderFilter | undefined) {
+  const conditions = [ne(orderTable.status, "pending")];
+
+  const from = parseJstDate(filter?.from);
+  if (from) conditions.push(gte(orderTable.createdAt, from));
+
+  const to = parseJstDate(filter?.to);
+  if (to) {
+    // 終了日は「その日いっぱい」を含める。日付だけ指定して当日の注文が
+    // 入らないと、指定が効いていないように見える。
+    conditions.push(lt(orderTable.createdAt, new Date(to.getTime() + DAY_MS)));
+  }
+
+  return and(...conditions);
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** "YYYY-MM-DD" を日本時間のその日 0:00 として解釈する。不正なら undefined。 */
+function parseJstDate(value: string | undefined): Date | undefined {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return undefined;
+  // 末尾の +09:00 で日本時間として読ませる。
+  const parsed = new Date(`${value}T00:00:00+09:00`);
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed;
+}
+
+/**
+ * 管理者向け: 注文を新しい順で取得する。非 admin にはエラー（空配列ではなく明示）。
+ */
+export async function adminListOrdersAction(
+  filter?: AdminOrderFilter,
+): Promise<
   | { ok: true; orders: AdminOrderListItem[] }
   | { ok: false; error: "unauth" | "forbidden" | "db" }
 > {
@@ -103,7 +153,7 @@ export async function adminListOrdersAction(): Promise<
     const rows = await db
       .select()
       .from(orderTable)
-      .where(ne(orderTable.status, "pending"))
+      .where(orderFilterWhere(filter))
       .orderBy(desc(orderTable.createdAt))
       .limit(200);
 
@@ -206,7 +256,13 @@ export async function adminUpdateOrderAction(input: {
       try {
         if (prevStatus === "pending" && input.status === "confirmed") {
           // 入金を手で確定した。押さえていた分を実在庫から落とす。
-          await commitStock(items);
+          const warnings = await commitStock(items);
+          // Webhook 経由と同じく、しきい値をまたいだときだけ知らせる。
+          const message = formatStockWarnings(warnings);
+          if (message) {
+            const { alertOps } = await import("@/lib/ops-alert");
+            await alertOps(message.subject, message.body);
+          }
         } else if (input.status === "cancelled") {
           if (prevStatus === "pending") {
             // 未入金のまま取消。引き当てを戻すだけ（実在庫は減っていない）。
@@ -460,5 +516,158 @@ function safeParseItems(json: string): OrderLine[] {
     return parsed as OrderLine[];
   } catch {
     return [];
+  }
+}
+
+/**
+ * 注文を CSV で書き出す（staff 以上）。
+ *
+ * ファイルはクライアントで Blob にして保存させる。Server Action は
+ * ストリームを返せないが、注文 CSV の規模なら文字列で十分足りる。
+ * API Route を足さずに済むので、認可を `requireStaff` に一本化できる。
+ *
+ * **1 注文 = 1 行**。明細は「銘柄 容量×本数」を 1 セルにまとめる。
+ * 明細を行に展開すると会計ソフトで合計が二重になるため。
+ */
+export async function adminExportOrdersCsvAction(
+  filter?: AdminOrderFilter,
+): Promise<
+  | { ok: true; filename: string; csv: string; count: number }
+  | { ok: false; error: "unauth" | "forbidden" | "db" }
+> {
+  const gate = await requireStaff();
+  if (!gate.ok) return { ok: false, error: gate.reason };
+
+  try {
+    const db = await getDb();
+    const rows = await db
+      .select()
+      .from(orderTable)
+      .where(orderFilterWhere(filter))
+      .orderBy(desc(orderTable.createdAt))
+      // 一覧（200 件）より多く出す。書き出しは目視ではなく会計処理に使うため。
+      .limit(5000);
+
+    const headers = [
+      "注文番号",
+      "注文日時",
+      "ステータス",
+      "お名前",
+      "メールアドレス",
+      "郵便番号",
+      "住所",
+      "電話番号",
+      "商品",
+      "本数",
+      "小計",
+      "送料",
+      "合計",
+      "返金額",
+      "入金日時",
+      "発送日時",
+      "お届け日時",
+      "配送業者",
+      "追跡番号",
+    ];
+
+    const body = rows.map((row) => [
+      row.orderRef,
+      formatDateTimeJp(row.createdAt),
+      orderStatusJp(row.status),
+      row.customerName,
+      row.customerEmail,
+      row.postalCode,
+      row.address,
+      row.phone,
+      safeParseItems(row.itemsJson)
+        .map((it) => `${it.name} ${it.variant} ${it.ml}ml×${it.qty}`)
+        .join(" / "),
+      row.itemsCount,
+      row.subtotal,
+      row.shipping,
+      row.total,
+      row.refundedAmount ?? 0,
+      row.paidAt ? formatDateTimeJp(row.paidAt) : "",
+      row.shippedAt ? formatDateTimeJp(row.shippedAt) : "",
+      row.deliveredAt ? formatDateTimeJp(row.deliveredAt) : "",
+      row.trackingCarrier ?? "",
+      row.trackingNumber ?? "",
+    ]);
+
+    const range =
+      filter?.from || filter?.to
+        ? `_${filter?.from ?? "start"}_${filter?.to ?? "end"}`
+        : "";
+
+    return {
+      ok: true,
+      filename: `fujisan-orders${range}.csv`,
+      csv: toCsv(headers, body),
+      count: body.length,
+    };
+  } catch {
+    return { ok: false, error: "db" };
+  }
+}
+
+/**
+ * 納品書のために 1 注文を引く（staff 以上）。
+ *
+ * 顧客向けの `getMyOrderByRefAction` と違い **userId では絞らない** —
+ * 蔵の人は他人の注文を扱うのが仕事だから。そのぶん、ここに来る前に
+ * `requireStaff` で確実に止める。
+ */
+export async function adminGetOrderByRefAction(
+  orderRef: string,
+): Promise<
+  | { ok: true; order: AdminOrderListItem }
+  | { ok: false; error: "unauth" | "forbidden" | "not_found" | "db" }
+> {
+  const gate = await requireStaff();
+  if (!gate.ok) return { ok: false, error: gate.reason };
+
+  const ref = orderRef.trim();
+  if (!ref) return { ok: false, error: "not_found" };
+
+  try {
+    const db = await getDb();
+    const [row] = await db
+      .select()
+      .from(orderTable)
+      .where(eq(orderTable.orderRef, ref))
+      .limit(1);
+    if (!row) return { ok: false, error: "not_found" };
+
+    return {
+      ok: true,
+      order: {
+        id: row.id,
+        userId: row.userId,
+        orderRef: row.orderRef,
+        status: row.status as OrderStatus,
+        items: safeParseItems(row.itemsJson),
+        itemsCount: row.itemsCount,
+        subtotal: row.subtotal,
+        shipping: row.shipping,
+        total: row.total,
+        customerName: row.customerName,
+        customerEmail: row.customerEmail,
+        postalCode: row.postalCode,
+        address: row.address,
+        phone: row.phone,
+        trackingCarrier: row.trackingCarrier,
+        trackingNumber: row.trackingNumber,
+        shippedAt: row.shippedAt ?? null,
+        deliveredAt: row.deliveredAt ?? null,
+        refundedAt: row.refundedAt ?? null,
+        refundedAmount: row.refundedAmount ?? null,
+        cancelRequestedAt: row.cancelRequestedAt ?? null,
+        cancelReason: row.cancelReason,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+      },
+    };
+  } catch {
+    return { ok: false, error: "db" };
   }
 }

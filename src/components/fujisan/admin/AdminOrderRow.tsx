@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import type { OrderStatus } from "@/db/orders-schema";
 import { ORDER_STATUSES } from "@/db/orders-schema";
+import { ORDER_STATUS_LABELS } from "@/data/fujisan-orders";
 import {
   adminUpdateOrderAction,
   adminRefundOrderAction,
@@ -10,15 +11,11 @@ import {
 
 const yen = new Intl.NumberFormat("ja-JP");
 
-const STATUS_LABELS_JA: Record<OrderStatus, string> = {
-  pending: "受付済",
-  confirmed: "注文確定",
-  preparing: "発送準備中",
-  shipped: "発送済み",
-  delivered: "お届け済",
-  cancelled: "キャンセル",
-  refunded: "返金済み",
-};
+/** 表示ラベルは src/data/fujisan-orders.ts が唯一の出どころ。 */
+const ORDER_STATUS_LABELS_JA = Object.fromEntries(
+  Object.entries(ORDER_STATUS_LABELS).map(([k, v]) => [k, v.ja]),
+) as Record<OrderStatus, string>;
+
 
 /** 手動のステータス変更で選べる値（refunded は返金操作からのみ到達させる）。 */
 const SELECTABLE_STATUSES = ORDER_STATUSES.filter((s) => s !== "refunded");
@@ -315,7 +312,7 @@ export function AdminOrderRow({ order, canRefund }: Props) {
                 >
                   {SELECTABLE_STATUSES.map((s) => (
                     <option key={s} value={s}>
-                      {STATUS_LABELS_JA[s]}（{s}）
+                      {ORDER_STATUS_LABELS_JA[s]}（{s}）
                     </option>
                   ))}
                 </select>
@@ -359,6 +356,14 @@ export function AdminOrderRow({ order, canRefund }: Props) {
                 >
                   {pending ? "保存中…" : "保存"}
                 </button>
+                <a
+                  href={`/admin/orders/${order.orderRef}/packing-slip`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 border border-[#0B1A2E]/30 px-5 py-3 text-[10.5px] font-semibold tracking-[0.22em] text-[#0B1A2E] no-underline transition-colors hover:border-[#0B1A2E]"
+                >
+                  納品書を印刷
+                </a>
                 {message && (
                   <span
                     className={`text-[11.5px] ${
@@ -518,7 +523,7 @@ function StatusPill({ status }: { status: OrderStatus }) {
       className={`inline-flex items-center justify-center gap-1.5 border px-2.5 py-1 text-[9.5px] font-semibold tracking-[0.22em] ${s.cls}`}
     >
       <span aria-hidden className={`h-[5px] w-[5px] rounded-full ${s.dot}`} />
-      {STATUS_LABELS_JA[status]}
+      {ORDER_STATUS_LABELS_JA[status]}
     </span>
   );
 }
