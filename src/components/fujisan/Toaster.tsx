@@ -19,11 +19,11 @@ export function Toaster() {
         <div
           key={toast.id}
           role="status"
-          className={`fujisan-toast pointer-events-auto flex w-full max-w-[360px] items-center gap-4 border border-[#C9A84C]/30 bg-[#0B1A2E] px-5 py-3.5 text-paper-card shadow-[0_18px_44px_rgba(11,26,46,0.4)] ${
+          className={`fujisan-toast pointer-events-auto flex w-full max-w-[360px] items-center gap-4 border border-gold/30 bg-indigo px-5 py-3.5 text-paper-card shadow-[0_18px_44px_rgba(11,26,46,0.4)] ${
             toast.leaving ? "fujisan-toast--leaving" : ""
           }`}
         >
-          <span className="text-[#C9A84C]" aria-hidden>
+          <span className="text-gold" aria-hidden>
             ✓
           </span>
           <p className="flex-1 text-[12.5px] leading-[1.5] tracking-[0.04em]">
@@ -34,11 +34,11 @@ export function Toaster() {
               <Link
                 href={toast.action.href}
                 onClick={() => dismissToast(toast.id)}
-                className="group/toast shrink-0 text-[10.5px] font-semibold tracking-[0.18em] text-[#C9A84C] no-underline"
+                className="group/toast shrink-0 text-[11.5px] font-semibold tracking-[0.18em] text-gold no-underline"
               >
                 <span className="relative pb-0.5">
                   <L en={toast.action.en} ja={toast.action.ja} />
-                  <span className="absolute inset-x-0 bottom-0 h-px bg-[#C9A84C]/40 transition-colors duration-300 group-hover/toast:bg-[#C9A84C]" />
+                  <span className="absolute inset-x-0 bottom-0 h-px bg-gold/40 transition-colors duration-300 group-hover/toast:bg-gold" />
                 </span>
               </Link>
             ) : (
@@ -48,11 +48,11 @@ export function Toaster() {
                   toast.action?.onClick?.();
                   dismissToast(toast.id);
                 }}
-                className="group/toast shrink-0 cursor-pointer text-[10.5px] font-semibold tracking-[0.18em] text-[#C9A84C]"
+                className="group/toast shrink-0 cursor-pointer text-[11.5px] font-semibold tracking-[0.18em] text-gold"
               >
                 <span className="relative pb-0.5">
                   <L en={toast.action.en} ja={toast.action.ja} />
-                  <span className="absolute inset-x-0 bottom-0 h-px bg-[#C9A84C]/40 transition-colors duration-300 group-hover/toast:bg-[#C9A84C]" />
+                  <span className="absolute inset-x-0 bottom-0 h-px bg-gold/40 transition-colors duration-300 group-hover/toast:bg-gold" />
                 </span>
               </button>
             )

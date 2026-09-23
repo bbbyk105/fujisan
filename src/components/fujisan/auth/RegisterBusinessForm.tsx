@@ -102,7 +102,7 @@ export function RegisterBusinessForm() {
         <ResendVerification email={email} role="business" />
         <Link
           href="/login/business"
-          className="font-semibold text-[#0B1A2E] underline decoration-[#C9A84C]/60 underline-offset-4 transition-colors hover:decoration-[#C9A84C]"
+          className="font-semibold text-indigo underline decoration-gold/60 underline-offset-4 transition-colors hover:decoration-gold"
         >
           <L en="Go to trade sign in" ja="取扱店ログインへ" />
         </Link>
@@ -226,7 +226,7 @@ export function RegisterBusinessForm() {
           {/* option の中では <L> が両言語とも見えてしまうので、
               属性値と同じく useLocale() で文言を切り替える。 */}
           <option value="">
-            {locale === "ja" ? "― 選択してください ―" : "— Select —"}
+            {locale === "ja" ? "選択してください" : "Select"}
           </option>
           {TRADE_BUSINESS_TYPES.map((type) => (
             <option key={type} value={type}>
@@ -235,7 +235,7 @@ export function RegisterBusinessForm() {
           ))}
         </select>
         {businessType && (
-          <p className="mt-2 text-[11px] leading-[1.7] text-[#0F1F36]/55">
+          <p className="mt-2 text-[11px] leading-[1.7] text-indigo/55">
             <L
               en={TRADE_BUSINESS_TYPE_LABELS[businessType].note.en}
               ja={TRADE_BUSINESS_TYPE_LABELS[businessType].note.ja}
@@ -266,7 +266,7 @@ export function RegisterBusinessForm() {
             className={inputCls}
             placeholder="〇〇税務署 第〇〇号"
           />
-          <p className="mt-2 text-[11px] leading-[1.7] text-[#0F1F36]/55">
+          <p className="mt-2 text-[11px] leading-[1.7] text-indigo/55">
             <L
               en="We verify the licence before opening your account."
               ja="口座開設の前に、蔵で内容を確認いたします。"
@@ -293,7 +293,7 @@ export function RegisterBusinessForm() {
         <FieldError error={fieldErrors.password} />
       </Field>
 
-      <p className="text-[11px] leading-[1.65] text-[#0F1F36]/55">
+      <p className="text-[11px] leading-[1.65] text-indigo/55">
         <L
           en="Registering opens an application, not an account. We check the details by hand — wholesale pricing is shown only after approval. By applying you confirm your business handles, or is licensed to handle, alcoholic beverages."
           ja="ご登録は「お申し込み」です。内容を蔵で確認のうえ承認した後に、卸価格が表示されます。お申し込みをもって、貴社が酒類を取り扱う（または取り扱う免許を有する）ことを確認したものとみなします。"
@@ -304,15 +304,15 @@ export function RegisterBusinessForm() {
         {submitting ? (
           <L en="SUBMITTING…" ja="送信中…" />
         ) : (
-          <L en="APPLY FOR A TRADE ACCOUNT" ja="取扱口座を申し込む" />
+          <L en="Apply for a trade account" ja="取扱口座を申し込む" />
         )}
       </PrimaryButton>
 
-      <p className="mt-2 text-[12.5px] leading-[1.7] text-[#1D2432]/72">
+      <p className="mt-2 text-[12.5px] leading-[1.7] text-indigo/72">
         <L en="Already have an account?" ja="すでにアカウントをお持ちですか？" />{" "}
         <Link
           href="/login/business"
-          className="font-semibold text-[#0B1A2E] underline decoration-[#C9A84C]/60 underline-offset-4 transition-colors hover:decoration-[#C9A84C]"
+          className="font-semibold text-indigo underline decoration-gold/60 underline-offset-4 transition-colors hover:decoration-gold"
         >
           <L en="Sign in" ja="ログイン" />
         </Link>

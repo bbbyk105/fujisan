@@ -1,8 +1,9 @@
-import Link from "next/link";
-import FujisanNav from "@/components/fujisan/FujisanNav";
-import FujisanFooter from "@/components/fujisan/FujisanFooter";
-import { FujisanInnerHero } from "@/components/fujisan/FujisanInnerHero";
+import { EditorialPage } from "@/components/fujisan/editorial/EditorialPage";
+import { EditorialPageHeader } from "@/components/fujisan/editorial/EditorialPageHeader";
+import { EditorialSection } from "@/components/fujisan/editorial/EditorialSection";
+import { EdDataList } from "@/components/fujisan/editorial/ui";
 import { FujisanContactForm } from "@/components/fujisan/FujisanContactForm";
+import { FUJISAN_LEGAL } from "@/data/fujisan-legal";
 import { Reveal } from "@/components/reveal/Reveal";
 import { revealDelays } from "@/components/reveal/constants";
 import { L } from "@/i18n/Localized";
@@ -15,280 +16,132 @@ export const metadata = buildMetadata({
   path: "/contact",
 });
 
-const CONTACT_EMAIL = "mtfujipharmacy@gmail.com";
-
-const promises = [
+/**
+ * 連絡先は装飾を足さない。ラベルと値だけの素の組みにする。
+ * バッジやピルで「2営業日以内」と書き、本文でも同じことを言う――という
+ * 二重表示をしない。
+ */
+const desk = [
   {
-    label: <L en="REPLY TIME" ja="返信目安" />,
-    value: <L en="Within two business days" ja="通常2営業日以内にご返信" />,
+    label: <L en="Email" ja="メール" />,
+    value: (
+      <a href={`mailto:${FUJISAN_LEGAL.email}`} className="ed-link">
+        {FUJISAN_LEGAL.email}
+      </a>
+    ),
   },
   {
-    label: <L en="LANGUAGES" ja="対応言語" />,
-    value: <L en="Japanese & English" ja="日本語・英語" />,
+    label: <L en="Phone" ja="電話" />,
+    value: (
+      <>
+        <span className="block">{FUJISAN_LEGAL.phone}</span>
+        <span className="ed-small mt-1 block">{FUJISAN_LEGAL.phoneHours}</span>
+      </>
+    ),
+  },
+  {
+    label: <L en="Reply" ja="ご返信" />,
+    value: (
+      <L
+        en="Within two business days, in Japanese or English."
+        ja="通常2営業日以内に、日本語または英語でご返信します。"
+      />
+    ),
+  },
+  {
+    label: <L en="Address" ja="所在地" />,
+    value: (
+      <>
+        <span className="block">〒417-0051</span>
+        <span className="block">静岡県富士市吉原 2-8-21</span>
+        <span className="ed-small mt-1 block">
+          2-8-21 Yoshiwara, Fuji, Shizuoka 417-0051, Japan
+        </span>
+      </>
+    ),
   },
 ];
 
 const hours = [
   {
-    day: "MON — FRI",
-    dayJa: "月 — 金",
-    value: "09:00 — 17:00 JST",
-    valueJa: "09:00 — 17:00 JST",
+    label: <L en="Mon – Fri" ja="月〜金" />,
+    value: "09:00 – 17:00 JST",
   },
   {
-    day: "SATURDAY",
-    dayJa: "土曜",
-    value: "10:00 — 15:00 JST",
-    valueJa: "10:00 — 15:00 JST",
+    label: <L en="Saturday" ja="土曜" />,
+    value: "10:00 – 15:00 JST",
   },
   {
-    day: "SUNDAY · HOLIDAYS",
-    dayJa: "日曜・祝日",
-    value: "Closed",
-    valueJa: "休業",
+    label: <L en="Sunday & holidays" ja="日曜・祝日" />,
+    value: <L en="Closed" ja="休業" />,
   },
 ];
 
 export default function ContactPage() {
   return (
-    <main className="flex min-h-screen flex-col bg-paper text-[#0B1A2E]">
-      <FujisanNav />
-
-      <FujisanInnerHero
-        eyebrow="A LETTER · CONTACT"
-        chapter="Ⅷ"
-        title="GET IN TOUCH"
-        jp="― 一献の便り、お預かりします ―"
+    <EditorialPage>
+      <EditorialPageHeader
+        width="wide"
+        kicker={<L en="Contact" ja="お問い合わせ" />}
+        title={<L en="Write to us" ja="お便りをお預かりします" />}
         lead={
           <L
-            en="Whether you have a question about a bottle, are considering Fujisan for your restaurant, or simply want to visit the kura — write to us. Our small team in Shizuoka reads every message by hand."
-            ja="一本についてのご質問も、お店での採用のご相談も、蔵見学のお問い合わせも。どうぞお気軽にご連絡ください。静岡の小さなチームが、いただいたお便りにひとつずつ目を通します。"
+            en="A question about a bottle, a listing for your restaurant, or a visit to the kura — our small team in Shizuoka reads every message by hand."
+            ja="一本についてのご質問も、お店での採用のご相談も、蔵見学のお問い合わせも。静岡の小さなチームが、いただいたお便りにひとつずつ目を通します。"
           />
         }
-        crumbs={[
-          { label: "HOME", href: "/#top" },
-          { label: "CONTACT", href: "/contact" },
-        ]}
-        bgSrc="/images/lake.webp"
-        bgPosition="object-[50%_42%]"
       />
 
-      {/* ===== Form + Channels ===== */}
-      <section className="relative bg-paper">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-[#0B1A2E]/15 to-transparent"
-        />
-        <div className="mx-auto grid max-w-[1280px] grid-cols-1 gap-14 px-7 py-20 lg:grid-cols-[1.15fr_1fr] lg:gap-20 md:px-12 md:py-24">
-          {/* Form */}
+      <EditorialSection width="wide" ruled={false}>
+        <div className="grid grid-cols-1 gap-14 lg:grid-cols-[1.1fr_minmax(0,380px)] lg:gap-24">
+          {/* フォーム */}
           <div>
-            <Reveal className="flex items-center gap-3">
-              <span className="font-serif text-[11px] font-medium tracking-[0.32em] text-[#C9A84C]">
-                Ⅷ.I
-              </span>
-              <span className="h-px w-10 bg-[#C9A84C]/55" />
-              <span className="text-[10px] font-semibold uppercase tracking-[0.36em] text-[#0B1A2E]/65">
-                <L en="Send a message" ja="メッセージを送る" />
-              </span>
-            </Reveal>
-
-            <Reveal
-              as="h2"
-              className="mt-5 max-w-[560px] font-serif text-[clamp(24px,2.6vw,34px)] font-semibold leading-[1.18] tracking-[0.06em] text-[#0B1A2E]"
-              delay={revealDelays.d1}
-            >
-              <L en="Write to us." ja="私たちへ、お便りを。" />
-            </Reveal>
-
-            <Reveal delay={revealDelays.d2}>
-              <span className="fujisan-hairline mt-6 block h-px w-16 bg-[#C9A84C]" />
-            </Reveal>
-
-            <Reveal
-              as="p"
-              className="mt-4 max-w-[520px] text-[14px] font-light leading-[1.78] text-[#1D2432]/82"
-              delay={revealDelays.d2}
-            >
-              <L
-                en="We reply, in Japanese or English, usually within two business days."
-                ja="日本語・英語のどちらでも、通常2営業日以内にご返信します。"
-              />
-            </Reveal>
-
-            <Reveal className="mt-10" delay={revealDelays.d3}>
+            <h2 className="ed-label">
+              <L en="Send a message" ja="メッセージを送る" />
+            </h2>
+            <Reveal className="mt-8" delay={revealDelays.d1}>
               <FujisanContactForm />
             </Reveal>
           </div>
 
-          {/* Direct channels */}
-          <aside className="lg:border-l lg:border-[#0B1A2E]/12 lg:pl-14">
-            <Reveal className="flex items-center gap-3">
-              <span className="font-serif text-[11px] font-medium tracking-[0.32em] text-[#C9A84C]">
-                Ⅷ.II
-              </span>
-              <span className="h-px w-10 bg-[#C9A84C]/55" />
-              <span className="text-[10px] font-semibold uppercase tracking-[0.36em] text-[#0B1A2E]/65">
-                <L en="Direct" ja="直接のご連絡" />
-              </span>
-            </Reveal>
+          {/* 直接の連絡先 */}
+          <aside className="lg:border-l lg:border-[var(--ed-rule)] lg:pl-14">
+            <h2 className="ed-label">
+              <L en="Or reach us directly" ja="直接のご連絡" />
+            </h2>
 
-            <Reveal
-              as="h2"
-              className="mt-5 font-serif text-[clamp(22px,2.2vw,28px)] font-semibold leading-[1.2] tracking-[0.06em] text-[#0B1A2E]"
-              delay={revealDelays.d1}
-            >
-              <L en="Or write to us directly." ja="メールでも、直接どうぞ。" />
-            </Reveal>
+            <EdDataList className="mt-6" rows={desk} />
 
-            <Reveal delay={revealDelays.d2}>
-              <span className="fujisan-hairline mt-6 block h-px w-16 bg-[#C9A84C]" />
-            </Reveal>
+            <h2 className="ed-label mt-14">
+              <L en="Opening hours" ja="営業時間" />
+            </h2>
+            <EdDataList className="mt-6" rows={hours} />
 
-            {/* 窓口は一つのメールアドレスに集約。用件はメール本文でお知らせください。 */}
-            <Reveal as="div" delay={revealDelays.d2} className="mt-7">
-              <a
-                href={`mailto:${CONTACT_EMAIL}`}
-                className="group/email inline-flex items-center gap-2 font-serif text-[clamp(18px,1.8vw,22px)] text-[#0B1A2E] no-underline transition-colors hover:text-[#C9A84C]"
-              >
-                <span className="relative pb-0.5">
-                  {CONTACT_EMAIL}
-                  <span className="absolute inset-x-0 -bottom-0 h-px bg-[#0B1A2E]/35 transition-all duration-500 group-hover/email:bg-[#C9A84C]" />
-                </span>
-                <span
-                  aria-hidden
-                  className="text-[13px] transition-transform duration-500 group-hover/email:translate-x-1"
-                >
-                  ↗
-                </span>
-              </a>
-              <p className="mt-4 max-w-[400px] text-[12.5px] font-light leading-[1.7] text-[#1D2432]/76">
-                <L
-                  en="All enquiries reach the same small desk in Shizuoka. A short note about your purpose helps us reply faster."
-                  ja="どのご用件も、静岡の同じ窓口でお受けしています。ご用件を一言添えていただけると、よりスムーズにご返信できます。"
-                />
-              </p>
-            </Reveal>
-
-            {/* 返信の約束 — 窓口の安心材料を3行で */}
-            <Reveal as="div" delay={revealDelays.d3} className="mt-10">
-              <p className="flex items-center gap-4 text-[10px] font-semibold uppercase tracking-[0.36em] text-[#0B1A2E]/65">
-                <L en="Our promise" ja="お返事の約束" />
-                <span aria-hidden className="h-px flex-1 bg-[#0B1A2E]/12" />
-              </p>
-              <dl className="mt-5 flex flex-col">
-                {promises.map((p, i) => (
-                  <div
-                    key={i}
-                    className="flex flex-col gap-1 border-t border-[#0B1A2E]/12 py-3.5 last:border-b sm:flex-row sm:items-baseline sm:justify-between sm:gap-6"
-                  >
-                    <dt className="text-[10px] font-semibold tracking-[0.28em] text-[#C9A84C]">
-                      {p.label}
-                    </dt>
-                    <dd className="font-serif text-[13px] tracking-[0.04em] text-[#0B1A2E] sm:text-right">
-                      {p.value}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-            </Reveal>
+            <p className="ed-small mt-10">
+              <L
+                en={
+                  <>
+                    Many questions are already answered on the{" "}
+                    <a href="/faq" className="ed-link">
+                      FAQ page
+                    </a>
+                    .
+                  </>
+                }
+                ja={
+                  <>
+                    よくいただくご質問は
+                    <a href="/faq" className="ed-link">
+                      FAQ
+                    </a>
+                    にまとめています。
+                  </>
+                }
+              />
+            </p>
           </aside>
         </div>
-      </section>
-
-      {/* ===== Brewery + Hours (dark) ===== */}
-      <section className="relative bg-[#0F1D30] text-[#F2E4C7]">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-[#D7B46A]/40 to-transparent"
-        />
-        <div className="mx-auto max-w-[1280px]">
-          <div className="fujisan-dark-panel relative px-7 py-16 sm:px-10 md:px-14 md:py-20">
-            <span
-              aria-hidden
-              className="fujisan-breathe pointer-events-none absolute right-6 top-6 select-none font-jp text-[160px] leading-none text-[#D7B46A]/[0.06] md:text-[200px]"
-            >
-              便
-            </span>
-
-            <Reveal className="flex items-center gap-3">
-              <span className="font-serif text-[11px] font-medium tracking-[0.32em] text-[#D7B46A]">
-                Ⅷ.III
-              </span>
-              <span className="h-px w-10 bg-[#D7B46A]/55" />
-              <span className="text-[10px] font-semibold uppercase tracking-[0.36em] text-[#D7B46A]/85">
-                <L en="Visit · Hours" ja="ご来訪・営業時間" />
-              </span>
-            </Reveal>
-
-            <Reveal
-              as="h2"
-              className="mt-5 font-serif text-[clamp(22px,2.2vw,28px)] font-semibold leading-[1.2] tracking-[0.06em] text-[#F2E4C7]"
-              delay={revealDelays.d1}
-            >
-              <L en="At the foot of Fujisan." ja="富士山の麓で。" />
-            </Reveal>
-
-            <Reveal delay={revealDelays.d2}>
-              <span className="fujisan-hairline mt-6 block h-px w-16 bg-[#D7B46A]" />
-            </Reveal>
-
-            <Reveal as="div" className="mt-9" delay={revealDelays.d2}>
-              <p className="text-[10px] font-semibold tracking-[0.32em] text-[#D7B46A]/85">
-                <L en="ADDRESS" ja="所在地" />
-              </p>
-              <p className="mt-3 font-serif text-[15px] leading-[1.78] text-[#F2E4C7]">
-                〒417-0051
-                <br />
-                静岡県富士市吉原 2-8-21
-              </p>
-              <p className="mt-3 text-[12.5px] font-light leading-[1.6] text-[#F2E4C7]/68">
-                2-8-21 Yoshiwara, Fuji, Shizuoka 417-0051, Japan
-              </p>
-            </Reveal>
-
-            <Reveal as="div" className="mt-9" delay={revealDelays.d3}>
-              <p className="text-[10px] font-semibold tracking-[0.32em] text-[#D7B46A]/85">
-                HOURS · 営業時間
-              </p>
-              <dl className="mt-4 flex flex-col gap-3">
-                {hours.map((h) => (
-                  <div
-                    key={h.day}
-                    className="flex items-baseline justify-between gap-4 border-b border-[#F2E4C7]/12 pb-3 text-[12.5px]"
-                  >
-                    <dt className="font-semibold tracking-[0.24em] text-[#F2E4C7]/70">
-                      <L en={h.day} ja={h.dayJa} />
-                    </dt>
-                    <dd className="font-serif text-[14px] text-[#F2E4C7]">
-                      <L en={h.value} ja={h.valueJa} />
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-            </Reveal>
-
-            <Reveal className="mt-10" delay={revealDelays.d3 + 0.1}>
-              <Link
-                href="/faq"
-                className="group/link inline-flex items-center gap-3 text-[10.5px] font-semibold tracking-[0.34em] text-[#F2E4C7] no-underline"
-              >
-                <span className="relative pb-1">
-                  <L en="READ THE FAQ FIRST" ja="まず FAQ をご覧ください" />
-                  <span className="absolute inset-x-0 -bottom-0 h-px bg-[#F2E4C7]/50 transition-all duration-500 group-hover/link:bg-[#D7B46A]" />
-                </span>
-                <span
-                  aria-hidden
-                  className="transition-transform duration-500 group-hover/link:translate-x-1 group-hover/link:text-[#D7B46A]"
-                >
-                  →
-                </span>
-              </Link>
-            </Reveal>
-          </div>
-        </div>
-      </section>
-
-      <FujisanFooter />
-    </main>
+      </EditorialSection>
+    </EditorialPage>
   );
 }

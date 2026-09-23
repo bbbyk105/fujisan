@@ -5,7 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { FujisanNavLinkItem } from "./fujisan-nav-links";
-import { ensureGsap, gsap, useGSAP } from "./stories/gsap-setup";
+import { ensureGsap, gsap, useGSAP } from "./gsap-setup";
 import { LocaleSwitch } from "@/i18n/LocaleSwitch";
 import { L } from "@/i18n/Localized";
 import { AccountNavLink } from "./auth/AccountNavLink";
@@ -170,7 +170,7 @@ export function FujisanNavClient({ links }: Props) {
 
   const isActive = (link: FujisanNavLinkItem) => {
     const match = link.match ?? link.href;
-    // Path-style match (e.g. "/stories" or "/shop")
+    // Path-style match (e.g. "/shop" or "/craft")
     if (match.startsWith("/") && !match.startsWith("/#")) {
       return pathname === match || pathname.startsWith(`${match}/`);
     }
@@ -206,7 +206,7 @@ export function FujisanNavClient({ links }: Props) {
     <header
       ref={headerRef}
       style={{ viewTransitionName: "site-header" }}
-      className={`fixed top-0 inset-x-0 z-50 border-b border-[#0F1F36]/14 transition-shadow duration-500 ${
+      className={`fixed top-0 inset-x-0 z-50 border-b border-indigo/14 transition-shadow duration-500 ${
         scrolled ? "shadow-[0_6px_28px_rgba(15,31,54,0.08)]" : ""
       }`}
     >
@@ -216,7 +216,7 @@ export function FujisanNavClient({ links }: Props) {
       <div
         aria-hidden
         className={`absolute inset-0 -z-10 ${
-          scrolled ? "bg-[#F6F0E5]/95 backdrop-blur-md" : "bg-[#F6F0E5]/96"
+          scrolled ? "bg-paper-card/95 backdrop-blur-md" : "bg-paper-card/96"
         }`}
       />
       <div className="mx-auto flex h-[72px] max-w-[1760px] items-center justify-between px-5 sm:px-7 md:h-[86px] md:px-9 lg:px-[4.5vw] 2xl:px-16">
@@ -249,13 +249,13 @@ export function FujisanNavClient({ links }: Props) {
                   href={link.href}
                   className={`relative text-[12px] font-semibold tracking-[0.06em] no-underline transition-colors duration-300 ${
                     active
-                      ? "text-[#0F1F36]"
-                      : "text-[#0F1F36]/75 hover:text-[#0F1F36]"
+                      ? "text-indigo"
+                      : "text-indigo/75 hover:text-indigo"
                   }`}
                 >
                   {link.label}
                   {active ? (
-                    <span className="absolute -bottom-2 left-0 right-0 h-px bg-[#0F1F36]/80" />
+                    <span className="absolute -bottom-2 left-0 right-0 h-px bg-indigo/80" />
                   ) : null}
                 </Link>
               );
@@ -287,8 +287,8 @@ export function FujisanNavClient({ links }: Props) {
                   aria-expanded={menuOpen}
                   className={`relative inline-flex items-center gap-1.5 text-[12px] font-semibold tracking-[0.06em] no-underline transition-colors duration-300 ${
                     active
-                      ? "text-[#0F1F36]"
-                      : "text-[#0F1F36]/75 hover:text-[#0F1F36]"
+                      ? "text-indigo"
+                      : "text-indigo/75 hover:text-indigo"
                   }`}
                 >
                   {link.label}
@@ -310,7 +310,7 @@ export function FujisanNavClient({ links }: Props) {
                     />
                   </svg>
                   {active ? (
-                    <span className="absolute -bottom-2 left-0 right-0 h-px bg-[#0F1F36]/80" />
+                    <span className="absolute -bottom-2 left-0 right-0 h-px bg-indigo/80" />
                   ) : null}
                 </Link>
 
@@ -321,10 +321,10 @@ export function FujisanNavClient({ links }: Props) {
                       : "pointer-events-none -translate-y-1 opacity-0"
                   }`}
                 >
-                  <div className="w-[340px] border border-[#0F1F36]/12 bg-paper-card/98 shadow-[0_28px_60px_rgba(15,31,54,0.18)] backdrop-blur-md">
+                  <div className="w-[340px] border border-indigo/12 bg-paper-card/98 shadow-[0_28px_60px_rgba(15,31,54,0.18)] backdrop-blur-md">
                     <div
                       aria-hidden
-                      className="h-px w-full bg-linear-to-r from-transparent via-[#C9A84C]/55 to-transparent"
+                      className="h-px w-full bg-linear-to-r from-transparent via-gold/55 to-transparent"
                     />
                     <ul className="flex flex-col py-3">
                       {link.children!.map((child, i) => (
@@ -332,22 +332,22 @@ export function FujisanNavClient({ links }: Props) {
                           <Link
                             href={child.href}
                             onClick={closeMenuNow}
-                            className="group/sub flex items-start gap-4 px-6 py-3.5 no-underline transition-colors hover:bg-[#F1E6CB]/64"
+                            className="group/sub flex items-start gap-4 px-6 py-3.5 no-underline transition-colors hover:bg-paper-tint/64"
                           >
-                            <span className="mt-1 font-serif text-[10px] font-medium tracking-[0.32em] text-[#C9A84C]">
+                            <span className="mt-1 font-serif text-[11px] font-medium tracking-[0.12em] text-gold">
                               {String(i + 1).padStart(2, "0")}
                             </span>
                             <span className="flex flex-col gap-0.5">
-                              <span className="font-serif text-[12px] font-semibold tracking-[0.18em] text-[#0F1F36] transition-colors group-hover/sub:text-[#C9A84C]">
+                              <span className="font-serif text-[12px] font-semibold tracking-[0.18em] text-indigo transition-colors group-hover/sub:text-gold">
                                 {child.label}
                               </span>
                               {child.jp && (
-                                <span className="font-jp text-[10.5px] tracking-[0.24em] text-[#C9A84C]/85">
+                                <span className="font-jp text-[11.5px] tracking-[0.12em] text-gold/85">
                                   {child.jp}
                                 </span>
                               )}
                               {child.desc && (
-                                <span className="mt-1 text-[11px] leading-[1.55] text-[#0F1F36]/65">
+                                <span className="mt-1 text-[11px] leading-[1.55] text-indigo/65">
                                   {child.desc}
                                 </span>
                               )}
@@ -375,19 +375,19 @@ export function FujisanNavClient({ links }: Props) {
             aria-expanded={open}
             aria-controls="fujisan-mobile-menu"
             onClick={() => setOpen((v) => !v)}
-            className="relative z-[60] flex h-10 w-10 cursor-pointer flex-col items-center justify-center gap-[6px] border border-[#0F1F36]/20 bg-paper-card/80 p-0"
+            className="relative z-[60] flex h-10 w-10 cursor-pointer flex-col items-center justify-center gap-[6px] border border-indigo/20 bg-paper-card/80 p-0"
           >
             <span
               ref={lineTopRef}
-              className="block h-px w-5 bg-[#0F1F36]"
+              className="block h-px w-5 bg-indigo"
             />
             <span
               ref={lineMidRef}
-              className="block h-px w-5 bg-[#0F1F36]"
+              className="block h-px w-5 bg-indigo"
             />
             <span
               ref={lineBotRef}
-              className="block h-px w-5 bg-[#0F1F36]"
+              className="block h-px w-5 bg-indigo"
             />
           </button>
         </div>
@@ -398,23 +398,23 @@ export function FujisanNavClient({ links }: Props) {
         ref={panelRef}
         id="fujisan-mobile-menu"
         aria-hidden={!open}
-        className="fujisan-paper fixed inset-0 z-50 flex flex-col bg-[#F6F0E5] lg:hidden"
+        className="fujisan-paper fixed inset-0 z-50 flex flex-col bg-paper-card lg:hidden"
         style={{ visibility: "hidden", pointerEvents: "none" }}
       >
         <div
           aria-hidden
-          className="mt-[72px] h-px w-full shrink-0 bg-linear-to-r from-transparent via-[#C9A84C]/55 to-transparent md:mt-[86px]"
+          className="mt-[72px] h-px w-full shrink-0 bg-linear-to-r from-transparent via-gold/55 to-transparent md:mt-[86px]"
         />
         <nav
           aria-label="Mobile"
           className="flex min-h-0 flex-1 flex-col overflow-y-auto px-7 pb-8 pt-9 sm:px-9"
         >
           <p data-menu-item className="flex items-center gap-4">
-            <span className="font-serif text-[10px] font-medium tracking-[0.36em] text-[#C9A84C]">
+            <span className="font-serif text-[11px] font-medium tracking-[0.12em] text-gold">
               MENU
             </span>
-            <span className="h-px w-10 bg-[#C9A84C]/55" />
-            <span className="font-jp text-[10.5px] tracking-[0.3em] text-[#0F1F36]/55">
+            <span className="h-px w-10 bg-gold/55" />
+            <span className="font-jp text-[11.5px] tracking-[0.12em] text-indigo/55">
               <L en="NAVIGATION" ja="メニュー" />
             </span>
           </p>
@@ -426,21 +426,21 @@ export function FujisanNavClient({ links }: Props) {
                 <li
                   key={link.href}
                   data-menu-item
-                  className="border-b border-[#0F1F36]/10"
+                  className="border-b border-indigo/10"
                 >
                   <Link
                     href={link.href}
                     onClick={() => setOpen(false)}
-                    className="group flex items-baseline gap-4 py-[18px] no-underline outline-none focus-visible:ring-2 focus-visible:ring-[#C9A84C]/60"
+                    className="group flex items-baseline gap-4 py-[18px] no-underline outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
                   >
-                    <span className="font-serif text-[10.5px] font-medium tracking-[0.3em] text-[#C9A84C]">
+                    <span className="font-serif text-[11.5px] font-medium tracking-[0.12em] text-gold">
                       {String(i + 1).padStart(2, "0")}
                     </span>
                     <span
                       className={`font-serif text-[22px] font-semibold tracking-[0.1em] transition-colors duration-300 sm:text-[24px] ${
                         active
-                          ? "text-[#0F1F36]"
-                          : "text-[#0F1F36]/85 group-hover:text-[#0F1F36]"
+                          ? "text-indigo"
+                          : "text-indigo/85 group-hover:text-indigo"
                       }`}
                     >
                       {link.label}
@@ -448,7 +448,7 @@ export function FujisanNavClient({ links }: Props) {
                     {active ? (
                       <span
                         aria-hidden
-                        className="ml-auto h-px w-10 self-center bg-[#C9A84C]"
+                        className="ml-auto h-px w-10 self-center bg-gold"
                       />
                     ) : null}
                   </Link>
@@ -460,17 +460,17 @@ export function FujisanNavClient({ links }: Props) {
                           <Link
                             href={child.href}
                             onClick={() => setOpen(false)}
-                            className="group/sub flex items-baseline gap-3 py-2 no-underline outline-none focus-visible:ring-2 focus-visible:ring-[#C9A84C]/60"
+                            className="group/sub flex items-baseline gap-3 py-2 no-underline outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
                           >
                             <span
                               aria-hidden
-                              className="h-px w-4 self-center bg-[#C9A84C]/50 transition-all duration-300 group-hover/sub:w-6 group-hover/sub:bg-[#C9A84C]"
+                              className="h-px w-4 self-center bg-gold/50 transition-all duration-300 group-hover/sub:w-6 group-hover/sub:bg-gold"
                             />
-                            <span className="font-serif text-[12.5px] font-semibold tracking-[0.18em] text-[#0F1F36]/80 transition-colors duration-300 group-hover/sub:text-[#0F1F36]">
+                            <span className="font-serif text-[12.5px] font-semibold tracking-[0.18em] text-indigo/80 transition-colors duration-300 group-hover/sub:text-indigo">
                               {child.label}
                             </span>
                             {child.jp ? (
-                              <span className="font-jp text-[10px] tracking-[0.22em] text-[#C9A84C]/85">
+                              <span className="font-jp text-[11px] tracking-[0.22em] text-gold/85">
                                 {child.jp}
                               </span>
                             ) : null}
@@ -485,13 +485,13 @@ export function FujisanNavClient({ links }: Props) {
           </ul>
 
           <div data-menu-item className="mt-auto pt-8">
-            <div className="border-t border-[#0F1F36]/12">
+            <div className="border-t border-indigo/12">
               <AccountNavLink mobile />
               <CartNavLink mobile />
             </div>
             <div className="mt-6 flex items-center justify-between gap-4">
               <LocaleSwitch />
-              <p className="font-jp text-[10px] tracking-[0.24em] text-[#0F1F36]/45">
+              <p className="font-jp text-[11px] tracking-[0.12em] text-indigo/45">
                 <L en="SAKE FROM THE FOOT OF MT. FUJI" ja="富士山麓の日本酒" />
               </p>
             </div>

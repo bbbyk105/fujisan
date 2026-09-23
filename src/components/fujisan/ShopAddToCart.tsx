@@ -84,7 +84,7 @@ export function ShopAddToCart({
     return (
       <Link
         href={`/products/${slug}`}
-        className={`inline-flex items-center justify-center gap-2 border border-[#0B1A2E]/25 bg-[#0B1A2E]/6 px-5 py-3.5 text-[10.5px] font-semibold tracking-[0.26em] text-[#0B1A2E]/70 no-underline transition-colors hover:border-[#0B1A2E]/45 ${className}`}
+        className={`inline-flex items-center justify-center gap-2 border border-indigo/25 bg-indigo/6 px-5 py-3.5 text-[10.5px] font-semibold tracking-[0.26em] text-indigo/70 no-underline transition-colors hover:border-indigo/45 ${className}`}
       >
         {allSoldOut ? (
           <L en="SOLD OUT" ja="完売しました" />
@@ -101,7 +101,7 @@ export function ShopAddToCart({
   return (
     <div className={className}>
       {low && (
-        <p className="mb-2 text-center text-[10.5px] font-semibold tracking-[0.18em] text-[#8A6D1F]">
+        <p className="mb-2 text-center text-[10.5px] font-semibold tracking-[0.18em] text-gold-ink">
           <L en="ONLY A FEW LEFT" ja="残りわずか" />
         </p>
       )}
@@ -109,7 +109,7 @@ export function ShopAddToCart({
         type="button"
         onClick={onAdd}
         aria-live="polite"
-        className="inline-flex w-full cursor-pointer items-center justify-center gap-2 border border-[#0B1A2E] bg-[#0B1A2E] px-5 py-3.5 text-[10.5px] font-semibold tracking-[0.26em] text-paper-card transition-colors hover:bg-[#1D2432]"
+        className="inline-flex w-full cursor-pointer items-center justify-center gap-2 border border-indigo bg-indigo px-5 py-3.5 text-[10.5px] font-semibold tracking-[0.26em] text-paper-card transition-colors hover:bg-[#1D2432]"
       >
         <span key={added ? "added" : "idle"} className="fujisan-swap gap-2">
           {added ? (

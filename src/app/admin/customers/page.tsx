@@ -74,7 +74,7 @@ export default async function AdminCustomersPage(props: {
   };
 
   return (
-    <main className="flex min-h-screen flex-col bg-paper text-[#0B1A2E]">
+    <main className="flex min-h-screen flex-col bg-paper text-indigo">
       <FujisanNav />
 
       <AdminHeader
@@ -85,7 +85,7 @@ export default async function AdminCustomersPage(props: {
           ) : (
             <>
               法人登録された会社情報と、取扱口座の審査状況です。
-              <strong className="font-semibold text-[#E2C97E]">
+              <strong className="font-semibold text-gold">
                 承認するまで卸価格は表示されません。
               </strong>
               免許番号と業態を確認のうえ、承認または見送りを選んでください。
@@ -123,7 +123,7 @@ export default async function AdminCustomersPage(props: {
         {/* タブ */}
         <nav
           aria-label="顧客の種別"
-          className="mb-6 flex flex-wrap items-center gap-2 border-b border-[#0B1A2E]/15 pb-4"
+          className="mb-6 flex flex-wrap items-center gap-2 border-b border-indigo/15 pb-4"
         >
           {TABS.map((t) => {
             const active = t.key === tab;
@@ -134,8 +134,8 @@ export default async function AdminCustomersPage(props: {
                 aria-current={active ? "page" : undefined}
                 className={`inline-flex items-center gap-2 border px-4 py-2 text-[10.5px] font-semibold tracking-[0.2em] no-underline transition-colors ${
                   active
-                    ? "border-[#0B1A2E] bg-[#0B1A2E] text-paper-card"
-                    : "border-[#0B1A2E]/20 bg-transparent text-[#0B1A2E]/70 hover:border-[#0B1A2E]/50 hover:text-[#0B1A2E]"
+                    ? "border-indigo bg-indigo text-paper-card"
+                    : "border-indigo/20 bg-transparent text-indigo/70 hover:border-indigo/50 hover:text-indigo"
                 }`}
               >
                 {t.label}
@@ -147,25 +147,25 @@ export default async function AdminCustomersPage(props: {
         {/* Search */}
         <form
           action="/admin/customers"
-          className="flex flex-wrap items-center gap-2 border-b border-[#0B1A2E]/15 pb-4"
+          className="flex flex-wrap items-center gap-2 border-b border-indigo/15 pb-4"
         >
           <input
             type="search"
             name="q"
             defaultValue={q}
             placeholder="会社名 / 担当者 / メールで検索"
-            className="w-[280px] max-w-full border border-[#0B1A2E]/25 bg-white px-3 py-2 text-[12.5px] outline-none focus:border-[#C9A84C]"
+            className="w-[280px] max-w-full border border-indigo/25 bg-white px-3 py-2 text-[12.5px] outline-none focus:border-gold"
           />
           <button
             type="submit"
-            className="border border-[#0B1A2E] bg-[#0B1A2E] px-4 py-2 text-[10.5px] font-semibold tracking-[0.26em] text-paper-card hover:bg-[#1D2432]"
+            className="border border-indigo bg-indigo px-4 py-2 text-[10.5px] font-semibold tracking-[0.26em] text-paper-card hover:bg-indigo-lift"
           >
             検索
           </button>
           {q && (
             <Link
               href="/admin/customers"
-              className="text-[10.5px] font-semibold tracking-[0.26em] text-[#0B1A2E]/65 no-underline hover:text-[#0B1A2E]"
+              className="text-[10.5px] font-semibold tracking-[0.26em] text-indigo/65 no-underline hover:text-indigo"
             >
               クリア
             </Link>
@@ -175,8 +175,8 @@ export default async function AdminCustomersPage(props: {
         {/* List */}
         {tab === "personal" ? (
           personals.length === 0 ? (
-            <div className="mt-10 border border-[#0B1A2E]/15 bg-white px-7 py-16 text-center">
-              <p className="font-serif text-[16px] font-semibold tracking-[0.04em] text-[#0B1A2E]">
+            <div className="mt-10 border border-indigo/15 bg-white px-7 py-16 text-center">
+              <p className="font-serif text-[16px] font-semibold tracking-[0.04em] text-indigo">
                 {q
                   ? `「${q}」に一致する個人のお客様はいません。`
                   : "まだ個人のお客様の登録はありません。"}
@@ -189,20 +189,20 @@ export default async function AdminCustomersPage(props: {
                   <AdminPersonalRow key={c.id} customer={c} />
                 ))}
               </ul>
-              <p className="mt-4 text-[11.5px] leading-[1.75] text-[#0B1A2E]/55">
+              <p className="mt-4 text-[11.5px] leading-[1.75] text-indigo/55">
                 ご注文の件数と金額は、キャンセル・返金を除いた集計です（ダッシュボードと同じ規則）。
                 新しく登録された順に最大 200 名まで表示します。
               </p>
             </>
           )
         ) : accounts.length === 0 ? (
-          <div className="mt-10 border border-[#0B1A2E]/15 bg-white px-7 py-16 text-center">
-            <p className="font-serif text-[16px] font-semibold tracking-[0.04em] text-[#0B1A2E]">
+          <div className="mt-10 border border-indigo/15 bg-white px-7 py-16 text-center">
+            <p className="font-serif text-[16px] font-semibold tracking-[0.04em] text-indigo">
               {q
                 ? `「${q}」に一致する法人アカウントはありません。`
                 : "まだ法人アカウントの登録はありません。"}
             </p>
-            <p className="mx-auto mt-3 max-w-[44ch] text-[12.5px] leading-[1.85] text-[#0B1A2E]/65">
+            <p className="mx-auto mt-3 max-w-[44ch] text-[12.5px] leading-[1.85] text-indigo/65">
               法人のお客様が /register/business から登録すると、ここに会社情報が表示されます。
             </p>
           </div>

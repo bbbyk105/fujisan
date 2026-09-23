@@ -78,19 +78,19 @@ export function AdminTeamRow({ member }: Props) {
   };
 
   return (
-    <li className="flex flex-col gap-4 border border-[#0B1A2E]/12 bg-white px-6 py-5 md:flex-row md:flex-wrap md:items-center md:gap-x-6 md:gap-y-3">
+    <li className="flex flex-col gap-4 border border-indigo/12 bg-white px-6 py-5 md:flex-row md:flex-wrap md:items-center md:gap-x-6 md:gap-y-3">
       {/* 左: 氏名 + メール + ロールバッジ（隣接させる） */}
       <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:items-center sm:gap-5">
         <div className="flex min-w-0 flex-col gap-1">
-          <span className="font-serif text-[14px] font-semibold tracking-[0.04em] text-[#0B1A2E]">
+          <span className="font-serif text-[14px] font-semibold tracking-[0.04em] text-indigo">
             {member.name || "（名前なし）"}
             {member.isSelf && (
-              <span className="ml-2 text-[10px] font-semibold tracking-[0.24em] text-[#C9A84C]">
+              <span className="ml-2 text-[10px] font-semibold tracking-[0.24em] text-gold">
                 YOU
               </span>
             )}
           </span>
-          <span className="truncate text-[12px] text-[#0B1A2E]/65">
+          <span className="truncate text-[12px] text-indigo/65">
             {member.email}
           </span>
         </div>
@@ -107,7 +107,7 @@ export function AdminTeamRow({ member }: Props) {
             onChange={(e) =>
               setRole(e.target.value as "owner" | "staff" | "none")
             }
-            className="w-full border border-[#0B1A2E]/25 bg-white px-3 py-2 text-[12.5px] text-[#0B1A2E] outline-none focus:border-[#C9A84C] disabled:bg-[#0B1A2E]/[0.04] disabled:text-[#0B1A2E]/50 sm:w-[210px]"
+            className="w-full border border-indigo/25 bg-white px-3 py-2 text-[12.5px] text-indigo outline-none focus:border-gold disabled:bg-indigo/[0.04] disabled:text-indigo/50 sm:w-[210px]"
           >
             <option value="owner">{ROLE_LABEL.owner}</option>
             <option value="staff">{ROLE_LABEL.staff}</option>
@@ -118,12 +118,12 @@ export function AdminTeamRow({ member }: Props) {
             type="button"
             onClick={handleSave}
             disabled={!dirty || isEnvLocked || pending}
-            className="inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 border border-[#0B1A2E] bg-[#0B1A2E] px-5 text-[10.5px] font-semibold tracking-[0.26em] text-paper-card transition-colors hover:bg-[#1D2432] disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 border border-indigo bg-indigo px-5 text-[10.5px] font-semibold tracking-[0.26em] text-paper-card transition-colors hover:bg-indigo-lift disabled:cursor-not-allowed disabled:opacity-50"
           >
             {pending ? "保存中…" : "保存"}
           </button>
         </div>
-        <span className="text-[10.5px] text-[#0B1A2E]/55">
+        <span className="text-[10.5px] text-indigo/55">
           登録: {formatDateShortJp(member.createdAt)}
         </span>
       </div>
@@ -131,7 +131,7 @@ export function AdminTeamRow({ member }: Props) {
       {message && (
         <span
           className={`w-full text-[11.5px] md:basis-full ${
-            message === "保存しました" ? "text-[#2F5A2F]" : "text-[#8B1A1A]"
+            message === "保存しました" ? "text-moss" : "text-crimson"
           }`}
         >
           {message}
@@ -161,20 +161,20 @@ function RoleBadge({
     <span className="inline-flex items-baseline gap-2 whitespace-nowrap">
       <span
         className={`font-serif text-[14px] tracking-[0.08em] ${
-          m.muted ? "text-[#0B1A2E]/45" : "text-[#0B1A2E]"
+          m.muted ? "text-indigo/45" : "text-indigo"
         }`}
       >
         {m.jp}
       </span>
       <span
         className={`text-[9px] font-semibold tracking-[0.3em] ${
-          m.accent ? "text-[#C9A84C]" : "text-[#0B1A2E]/40"
+          m.accent ? "text-gold" : "text-indigo/40"
         }`}
       >
         {m.en}
       </span>
       {envOwner && (
-        <span className="border-l border-[#0B1A2E]/15 pl-2 text-[9px] tracking-[0.22em] text-[#0B1A2E]/40">
+        <span className="border-l border-indigo/15 pl-2 text-[9px] tracking-[0.22em] text-indigo/40">
           env固定
         </span>
       )}

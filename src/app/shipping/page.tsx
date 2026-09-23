@@ -1,6 +1,6 @@
-import FujisanInfoPage, {
-  type InfoSection,
-} from "@/components/fujisan/FujisanInfoPage";
+import DocumentPage, {
+  type DocumentSection,
+} from "@/components/fujisan/editorial/DocumentPage";
 import { SHIPPING_FEE } from "@/data/fujisan-legal";
 import { L } from "@/i18n/Localized";
 import { buildMetadata } from "@/lib/seo";
@@ -12,7 +12,7 @@ export const metadata = buildMetadata({
   path: "/shipping",
 });
 
-const sections: InfoSection[] = [
+const sections: DocumentSection[] = [
   {
     num: "01",
     heading: <L en="Where we ship" ja="お届けできる地域" />,
@@ -122,18 +122,15 @@ const sections: InfoSection[] = [
 
 export default function ShippingPage() {
   return (
-    <FujisanInfoPage
-      eyebrow="ORDERING · SHIPPING"
-      chapter="Ⅵ"
-      title="SHIPPING & RETURNS"
-      jp="― お届けと返品 ―"
+    <DocumentPage
+      kicker={<L en="Ordering" ja="ご注文" />}
+      title={<L en="Shipping & Returns" ja="お届けと返品" />}
       lead={
         <L
-          en="Sake is a living product. The way it travels matters as much as the way it is brewed. Here is how we send each bottle to your door."
-          ja="日本酒は生きものです。どう運ばれるかは、どう醸されるかと同じくらい大切です。一本一本をご自宅へお届けするまでの方法をご案内します。"
+          en="Sake is a living product — how it travels matters as much as how it is brewed. Here is how each bottle reaches your door."
+          ja="日本酒は生きものです。どう運ばれるかは、どう醸されるかと同じだけ大切にしています。一本がご自宅に届くまでを記しています。"
         />
       }
-      crumb={{ label: "SHIPPING", href: "/shipping" }}
       updated="2026.09"
       sections={sections}
     />

@@ -81,7 +81,7 @@ export function RegisterPersonalForm({
         <ResendVerification email={email} role="personal" />
         <Link
           href="/login/personal"
-          className="font-semibold text-[#0B1A2E] underline decoration-[#C9A84C]/60 underline-offset-4 transition-colors hover:decoration-[#C9A84C]"
+          className="font-semibold text-indigo underline decoration-gold/60 underline-offset-4 transition-colors hover:decoration-gold"
         >
           <L en="Go to sign in" ja="ログイン画面へ" />
         </Link>
@@ -169,7 +169,7 @@ export function RegisterPersonalForm({
         {submitting ? (
           <L en="CREATING…" ja="登録中…" />
         ) : (
-          <L en="CREATE ACCOUNT" ja="アカウントを作成" />
+          <L en="Create account" ja="アカウントを作成" />
         )}
       </PrimaryButton>
 
@@ -184,11 +184,11 @@ export function RegisterPersonalForm({
         </>
       )}
 
-      <p className="mt-2 text-[12.5px] leading-[1.7] text-[#1D2432]/72">
+      <p className="mt-2 text-[12.5px] leading-[1.7] text-indigo/72">
         <L en="Already have an account?" ja="すでにアカウントをお持ちですか？" />{" "}
         <Link
           href="/login/personal"
-          className="font-semibold text-[#0B1A2E] underline decoration-[#C9A84C]/60 underline-offset-4 transition-colors hover:decoration-[#C9A84C]"
+          className="font-semibold text-indigo underline decoration-gold/60 underline-offset-4 transition-colors hover:decoration-gold"
         >
           <L en="Sign in" ja="ログイン" />
         </Link>

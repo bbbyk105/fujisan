@@ -138,6 +138,33 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 - **法令情報の唯一の出どころ**: `src/data/fujisan-legal.ts`。未成年飲酒防止表示（`UNDERAGE_NOTICE_JP/EN`、フッター・商品ページ・特商法ページで参照）、送料 `SHIPPING_FEE`（一律1,100円 / 15,000円以上無料 — カート計算・全ページ表記がこの定数を参照）、特商法・通販酒類小売業免許・酒類販売管理者標識。**未確定の値はダミー文字列で埋めず `null` にする**（`LIQUOR_LICENCE` / `INVOICE_REGISTRATION_NUMBER`）。それらしい伏せ字は本物に見えたまま公開されうる。`npm run deploy` は predeploy で `scripts/check-legal-disclosure.mjs` を実行し、未確定が残っていればデプロイを止める（dev / build / CI は止めない）。
 - 発送は日本国内のみ（Stripe の `allowed_countries: ["JP"]` と checkout の郵便番号7桁バリデーションで担保）。
 
+## 編集レイヤー（.fjs-ed）
+
+**トップページ（`/`）と `/products`（コレクション）はデザインの参照元として凍結**し、
+それ以外の全ページは `.fjs-ed` という編集レイヤーの上に組み直してある
+（`src/app/globals.css` の EDITORIAL LAYER、`src/components/fujisan/editorial/`）。
+
+- 共通 CSS は**すべて `.fjs-ed` 配下に閉じる**。`.fjs-ed` / `.ed-*` は凍結ページの
+  マークアップに一つも現れないので、接頭辞を守る限り凍結ページの computed style は動かない。
+- CSS は **`@layer components`** に置く。Tailwind v4 は `theme → base → components → utilities`
+  の順なので、レイヤー外に書くと全 utility より強くなり、ページ側の `text-[10px]` /
+  `min-h-[44px]` が黙って無視される。既定の文字色は `@layer base`。
+  **フォーカス指定だけは例外**でレイヤー外に置く（globals.css 冒頭の共通指定と揃える）。
+- ページの扉は `EditorialPageHeader`。**`FujisanInnerHero`（写真ヒーロー）は `/products` 専用**なので混ぜない。
+  扉の `width` は本文の章（`EditorialSection`）と必ず揃える（左端がずれる）。
+- 規約・ポリシーは `editorial/DocumentPage`、法定表示のような一覧は `EdDataList` で表に組む。
+- **カードを作らない。** 情報は罫・番号・余白で整理する。金（`gold`）は「いま選ばれている」ことを
+  示すときだけで、飾りには使わない。装飾の `→` / `↗`、大文字＋広いレタースペースの見出し、
+  `― ○○ ―` の囲み、同じ内容を日英で二度言う組み方は入れないこと。
+- 濃色面は `data-tone="dark"` を付けるだけでよい（`--ed-*` 変数が反転し、同じ `.ed-*` が使える）。
+
+## 色
+
+色は増やさないことで統一する。**`src/app/globals.css` の `@theme inline` にある
+14 色以外をページに直書きしない**（藍 `indigo` / 和紙 `paper*` / 金 `gold` / 状態色）。
+階調は別の色を足すのではなく不透明度（`text-indigo/62` など）で作る。
+以前は同系統の紺が 6 つ・金が 4 つ散在していて、ページごとに色がずれていた。
+
 ## i18n（ja/en）
 
 - **ルート分割ではなく CSS 切替方式**。`<L ja={...} en={...} />`（`src/i18n/Localized.tsx`）が両言語を DOM に出力し、`<html data-locale>` を見るグローバル CSS（globals.css の `.i18n-fragment`）で片方を隠す。静的書き出しのまま Workers で配信でき、ハイドレーションのちらつきが無い。
@@ -152,7 +179,7 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 - **env は `process.env` ではなく `getCloudflareContext({ async: true }).env`** から読む（Server Action / Route Handler 共通パターン）。
 - 注文明細は `items_json` にスナップショット保存（後からカタログ価格が変わっても注文は不変）。金額は全て円・税込の整数。
 - メール送信（`src/lib/email.ts`）は Resend。`RESEND_API_KEY` 未設定ならコンソール出力に落ちる（ローカルで認証リンクを踏める）。
-- `/craft` は `/stories` に redirect 統合済み（詳細 `/craft/[slug]` は残存）。
+- **`/stories` は削除済み**（2026-09-23）。物語の内容は `/craft/[slug]`（水・米・造り）に残る。トップの「造りを読む」導線と `FujisanDiscover` の一覧は `/craft/*` を指す。`/stories` へのリンクを新たに足さないこと。
 
 ## 落とし穴
 

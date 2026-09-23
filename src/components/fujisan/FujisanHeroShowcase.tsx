@@ -38,7 +38,7 @@ export function FujisanHeroShowcase({ products }: Props) {
               key={`${p.slug}-bottle`}
               href={`/products/${p.slug}`}
               aria-label={`${p.name} ${p.variantLine}`}
-              className={`group relative flex h-[270px] items-end justify-center overflow-visible no-underline outline-none focus-visible:ring-2 focus-visible:ring-[#C9A84C]/60 sm:h-[330px] md:h-[390px] lg:h-[430px] xl:h-[455px] ${stagger(i)}`}
+              className={`group relative flex h-[270px] items-end justify-center overflow-visible no-underline outline-none focus-visible:ring-2 focus-visible:ring-gold/60 sm:h-[330px] md:h-[390px] lg:h-[430px] xl:h-[455px] ${stagger(i)}`}
               style={{ zIndex: 20 - i }}
             >
               <div
@@ -65,7 +65,7 @@ export function FujisanHeroShowcase({ products }: Props) {
               </div>
               <span
                 data-hero-shadow
-                className="absolute bottom-0 left-1/2 h-5 w-[66%] -translate-x-1/2 rounded-[50%] bg-[#0B1A2E]/18 opacity-0 blur-[10px]"
+                className="absolute bottom-0 left-1/2 h-5 w-[66%] -translate-x-1/2 rounded-[50%] bg-indigo/18 opacity-0 blur-[10px]"
               />
             </Link>
           ))}
@@ -78,13 +78,13 @@ export function FujisanHeroShowcase({ products }: Props) {
             <Link
               key={`${p.slug}-info`}
               href={`/products/${p.slug}`}
-              className={`fujisan-rise group flex flex-col items-center px-1 text-center no-underline outline-none focus-visible:ring-2 focus-visible:ring-[#C9A84C]/60 ${stagger(i)}`}
+              className={`fujisan-rise group flex flex-col items-center px-1 text-center no-underline outline-none focus-visible:ring-2 focus-visible:ring-gold/60 ${stagger(i)}`}
               style={{ animationDelay: `${1400 + i * 120}ms` }}
             >
-              <p className="font-serif text-[12px] font-semibold tracking-[0.16em] text-[#0B1A2E] transition-colors duration-300 group-hover:text-[#C9A84C] md:text-[15px] md:tracking-[0.18em]">
+              <p className="font-serif text-[12px] font-semibold tracking-[0.16em] text-indigo transition-colors duration-300 group-hover:text-gold md:text-[15px] md:tracking-[0.18em]">
                 {p.name}
               </p>
-              <p className="mt-1 whitespace-pre-line text-[9px] font-semibold leading-[1.35] tracking-[0.13em] text-[#0B1A2E]/80 md:text-[10px] md:tracking-[0.16em]">
+              <p className="mt-1 whitespace-pre-line text-[9px] font-semibold leading-[1.35] tracking-[0.13em] text-indigo/80 md:text-[10px] md:tracking-[0.16em]">
                 {p.variant}
               </p>
             </Link>
@@ -97,22 +97,22 @@ export function FujisanHeroShowcase({ products }: Props) {
         className="fujisan-rise relative z-20 mx-auto flex max-w-[1330px] flex-col items-center gap-4 px-4 pb-8 pt-4 md:flex-row md:justify-center md:gap-8 md:pb-14 md:pt-8 xl:max-w-[1660px]"
         style={{ animationDelay: "1900ms" }}
       >
-        <span aria-hidden className="h-px w-16 bg-[#0B1A2E]/22 md:w-24" />
+        <span aria-hidden className="h-px w-16 bg-indigo/22 md:w-24" />
         <Link
           href="/products"
-          className="group/all inline-flex items-center gap-3 border border-[#0B1A2E]/35 bg-paper/65 px-7 py-3.5 text-[10.5px] font-semibold tracking-[0.34em] text-[#0B1A2E] no-underline backdrop-blur-sm transition-colors hover:border-[#0B1A2E] hover:bg-[#F1E6CB]/80 hover:text-[#0B1A2E] md:px-9 md:py-4"
+          className="group/all inline-flex items-center gap-3 border border-indigo/35 bg-paper/65 px-7 py-3.5 text-[10.5px] font-semibold tracking-[0.34em] text-indigo no-underline backdrop-blur-sm transition-colors hover:border-indigo hover:bg-[#F1E6CB]/80 hover:text-indigo md:px-9 md:py-4"
         >
           <span className="relative">
             <L en="VIEW THE COLLECTION" ja="銘柄一覧を見る" />
           </span>
           <span
             aria-hidden
-            className="transition-transform duration-500 group-hover/all:translate-x-1 group-hover/all:text-[#C9A84C]"
+            className="transition-transform duration-500 group-hover/all:translate-x-1 group-hover/all:text-gold"
           >
             →
           </span>
         </Link>
-        <span aria-hidden className="h-px w-16 bg-[#0B1A2E]/22 md:w-24" />
+        <span aria-hidden className="h-px w-16 bg-indigo/22 md:w-24" />
       </div>
     </>
   );

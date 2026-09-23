@@ -1,10 +1,16 @@
-import Link from "next/link";
-import FujisanNav from "@/components/fujisan/FujisanNav";
-import FujisanFooter from "@/components/fujisan/FujisanFooter";
-import { FujisanInnerHero } from "@/components/fujisan/FujisanInnerHero";
+import { EditorialPage } from "@/components/fujisan/editorial/EditorialPage";
+import { EditorialPageHeader } from "@/components/fujisan/editorial/EditorialPageHeader";
+import {
+  EditorialSection,
+  EditorialSectionHead,
+} from "@/components/fujisan/editorial/EditorialSection";
+import {
+  EdActions,
+  EdDataList,
+  EdNote,
+  EdSteps,
+} from "@/components/fujisan/editorial/ui";
 import { ShopCollectionGrid } from "@/components/fujisan/ShopCollectionGrid";
-import { Reveal } from "@/components/reveal/Reveal";
-import { revealDelays } from "@/components/reveal/constants";
 import { fujisanProducts } from "@/data/fujisan-products";
 import {
   FUJISAN_LEGAL,
@@ -25,31 +31,31 @@ const yen = new Intl.NumberFormat("ja-JP");
 
 const steps = [
   {
-    num: "Ⅰ",
-    en: "Choose your bottle",
-    ja: "一本を選ぶ",
-    desc: {
-      en: "Browse five expressions of Fujisan and open the bottle that calls to you. Each detail page shows its temperature and brewer notes.",
-      ja: "五種の銘柄から、気になる一本をお選びください。各商品ページに、おすすめの温度・造り手の言葉を記しています。",
-    },
+    heading: <L en="Choose your bottle" ja="一本を選ぶ" />,
+    body: (
+      <L
+        en="Five expressions of Fujisan. Each detail page carries its serving temperature and the brewer's notes."
+        ja="五種の銘柄から、気になる一本を。各商品ページに、おすすめの温度と造り手の言葉を記しています。"
+      />
+    ),
   },
   {
-    num: "Ⅱ",
-    en: "Confirm age & quantity",
-    ja: "年齢確認と、本数の選択",
-    desc: {
-      en: "On the bottle page, confirm you are 20 years of age or older and choose how many bottles you'd like.",
-      ja: "商品ページで、20歳以上であることをご確認のうえ、ご希望の本数をお選びください。",
-    },
+    heading: <L en="Confirm age and quantity" ja="年齢を確かめ、本数を決める" />,
+    body: (
+      <L
+        en="On the bottle page, confirm that you are 20 or older and choose how many bottles you would like."
+        ja="商品ページで、20歳以上であることをご確認のうえ、ご希望の本数をお選びください。"
+      />
+    ),
   },
   {
-    num: "Ⅲ",
-    en: "Receive it at home",
-    ja: "ご自宅でお受け取り",
-    desc: {
-      en: "Hand-checked one by one and shipped within two business days in a chilled outer box — the courier will verify age again at the door.",
-      ja: "ひとつずつ検品し、保冷外箱に詰めて原則 2 営業日以内に発送します。お受け取りの際にも、年齢の確認をお願いいたします。",
-    },
+    heading: <L en="Receive it at home" ja="ご自宅で受け取る" />,
+    body: (
+      <L
+        en="Checked by hand, packed in a chilled outer box, and dispatched within two business days. The courier verifies age again at the door."
+        ja="ひとつずつ検品し、保冷外箱に詰めて、原則2営業日以内に発送します。お受け取りの際にも年齢の確認をお願いします。"
+      />
+    ),
   },
 ];
 
@@ -59,282 +65,177 @@ const allPrices = fujisanProducts.flatMap((p) =>
 const priceMin = Math.min(...allPrices);
 const priceMax = Math.max(...allPrices);
 
+const practical = [
+  {
+    label: <L en="Shipping" ja="送料" />,
+    value: (
+      <>
+        <span className="block">
+          <L
+            en={FUJISAN_LEGAL.shippingFeeNoteEn}
+            ja={FUJISAN_LEGAL.shippingFeeNote}
+          />
+        </span>
+        <span className="ed-small mt-1 block">
+          <L
+            en={FUJISAN_LEGAL.deliveryTimingEn}
+            ja={FUJISAN_LEGAL.deliveryTiming}
+          />
+        </span>
+      </>
+    ),
+  },
+  {
+    label: <L en="Payment" ja="お支払い" />,
+    value: (
+      <>
+        <span className="block">
+          <L
+            en={FUJISAN_LEGAL.paymentMethodsEn}
+            ja={FUJISAN_LEGAL.paymentMethods}
+          />
+        </span>
+        <span className="ed-small mt-1 block">
+          <L
+            en={FUJISAN_LEGAL.paymentTimingEn}
+            ja={FUJISAN_LEGAL.paymentTiming}
+          />
+        </span>
+      </>
+    ),
+  },
+  {
+    label: <L en="Returns" ja="返品" />,
+    value: (
+      <>
+        <span className="block">
+          <L
+            en="Alcohol cannot be returned for change of mind. For breakage, wrong items, or defects, write to us within seven days of arrival."
+            ja={FUJISAN_LEGAL.returnsPolicy}
+          />
+        </span>
+        <span className="ed-small mt-1 block">
+          <L
+            en="Full conditions are in the Tokutei Shōtorihiki notice."
+            ja="詳しい条件は特定商取引法に基づく表示をご確認ください。"
+          />
+        </span>
+      </>
+    ),
+  },
+];
+
 export default function ShopPersonalPage() {
   return (
-    <main className="bg-paper text-[#0B1A2E] min-h-screen">
-      <FujisanNav />
-
-      <FujisanInnerHero
-        eyebrow="FOR YOUR TABLE · 個人のお客様"
-        chapter="Ⅸ.Ⅰ"
-        title="A BOTTLE, BY THE BOTTLE."
-        jp="― 一本から、家へ ―"
+    <EditorialPage>
+      <EditorialPageHeader
+        width="wide"
+        kicker={<L en="Purchase / Personal" ja="ご購入 ／ 個人のお客様" />}
+        title={<L en="A bottle, by the bottle" ja="一本から、家へ" />}
         lead={
           <L
-            en="Single bottles in 300 ml and 180 ml, gift-ready, shipped with care from Shizuoka. We hand-check every order — and verify age at order and at delivery."
+            en="Single bottles in 300 ml and 180 ml, gift-ready, shipped with care from Shizuoka. Every order is checked by hand, and age is verified both at order and at delivery."
             ja="300ml・180ml の単品を、贈り物にも。静岡から、ひとつずつ検品してお届けします。ご注文時とお届け時に、年齢を確認します。"
           />
         }
-        crumbs={[
-          { label: "HOME", href: "/#top" },
-          { label: "PURCHASE", href: "/shop" },
-          { label: "PERSONAL", href: "/shop/personal" },
-        ]}
-        bgPosition="object-[50%_44%]"
       />
 
-      {/* ===== Three-step flow ===== */}
-      <section className="relative bg-paper">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-[#0B1A2E]/15 to-transparent"
+      {/* ===== 選ぶ ===== */}
+      <EditorialSection width="wide" ruled={false}>
+        <EditorialSectionHead
+          label={<L en="The collection" ja="銘柄" />}
+          heading={<L en="Five expressions of Fujisan" ja="富士山、五つの表情" />}
+          lead={
+            <L
+              en={`Available in 300 ml and 180 ml, from ¥${yen.format(
+                priceMin,
+              )} to ¥${yen.format(
+                priceMax,
+              )} including tax. Add a bottle to your cart, or open one to read the brewer's notes first.`}
+              ja={`300ml・180ml をご用意しています。価格は ¥${yen.format(
+                priceMin,
+              )} 〜 ¥${yen.format(
+                priceMax,
+              )}（税込）。そのままカートへ、あるいは一本を開いて造り手の言葉から。`}
+            />
+          }
         />
-        <div className="mx-auto max-w-[1280px] px-7 py-20 md:px-12 md:py-24">
-          <Reveal className="flex items-center gap-3">
-            <span className="font-serif text-[11px] font-medium tracking-[0.32em] text-[#C9A84C]">
-              Ⅸ.Ⅰ
-            </span>
-            <span className="h-px w-10 bg-[#C9A84C]/55" />
-            <span className="text-[10px] font-semibold uppercase tracking-[0.36em] text-[#0B1A2E]/65">
-              HOW IT WORKS · ご購入の流れ
-            </span>
-          </Reveal>
 
-          <Reveal
-            as="h2"
-            className="mt-6 max-w-[640px] font-serif text-[clamp(24px,2.6vw,34px)] font-semibold leading-[1.18] tracking-[0.06em] text-[#0B1A2E]"
-            delay={revealDelays.d1}
-          >
-            <L
-              en="Three quiet steps, from Shizuoka to your door."
-              ja="静岡から、玄関先まで。三つの静かな手順。"
-            />
-          </Reveal>
+        <ShopCollectionGrid products={fujisanProducts} />
+      </EditorialSection>
 
-          <ol className="mt-14 grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-8">
-            {steps.map((s, i) => (
-              <Reveal
-                key={s.num}
-                as="li"
-                delay={revealDelays.d2 + i * 0.08}
-                className="relative flex flex-col gap-4 border-t border-[#0B1A2E]/15 pt-7"
-              >
-                <div className="flex items-baseline gap-3">
-                  <span className="font-serif text-[11px] font-medium tracking-[0.36em] text-[#C9A84C]">
-                    {s.num}
-                  </span>
-                  <span className="text-[10px] font-semibold tracking-[0.3em] text-[#0B1A2E]/55">
-                    STEP {String(i + 1).padStart(2, "0")}
-                  </span>
-                </div>
-                <h3 className="font-serif text-[clamp(18px,1.7vw,22px)] font-semibold leading-[1.3] tracking-[0.04em] text-[#0B1A2E]">
-                  <L en={s.en} ja={s.ja} />
-                </h3>
-                <p className="text-[13px] leading-[1.78] text-[#1D2432]/78">
-                  <L en={s.desc.en} ja={s.desc.ja} />
-                </p>
-              </Reveal>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      {/* ===== Collection ===== */}
-      <section className="border-t border-[#0B1A2E]/10 bg-paper-tint">
-        <div className="mx-auto max-w-[1280px] px-7 py-20 md:px-12 md:py-24">
-          <div className="flex flex-wrap items-end justify-between gap-6">
-            <div>
-              <Reveal className="flex items-center gap-3">
-                <span className="font-serif text-[11px] font-medium tracking-[0.32em] text-[#C9A84C]">
-                  Ⅸ.Ⅰ.ii
-                </span>
-                <span className="h-px w-10 bg-[#C9A84C]/55" />
-                <span className="text-[10px] font-semibold uppercase tracking-[0.36em] text-[#0B1A2E]/65">
-                  CHOOSE YOUR BOTTLE
-                </span>
-              </Reveal>
-              <Reveal
-                as="h2"
-                delay={revealDelays.d1}
-                className="mt-5 max-w-[560px] font-serif text-[clamp(24px,2.6vw,32px)] font-semibold leading-[1.18] tracking-[0.06em] text-[#0B1A2E]"
-              >
-                <L
-                  en="Five expressions of Fujisan."
-                  ja="富士山、五つの表情。"
-                />
-              </Reveal>
-              <Reveal
-                as="p"
-                delay={revealDelays.d2}
-                className="mt-4 max-w-[520px] text-[13.5px] leading-[1.78] text-[#1D2432]/78"
-              >
-                <L
-                  en={`Available in 300 ml and 180 ml. Prices range from ¥${yen.format(
-                    priceMin,
-                  )} to ¥${yen.format(priceMax)} (tax incl.). Add a bottle to your cart, or tap it to read the brewer notes first.`}
-                  ja={
-                    <>
-                      <span className="inline-block">300ml・180ml をご用意。</span>
-                      <span className="inline-block">
-                        価格は ¥{yen.format(priceMin)} 〜 ¥
-                        {yen.format(priceMax)}（税込）。
-                      </span>
-                      <span className="inline-block">
-                        そのままカートへ、または一本をタップして詳細から。
-                      </span>
-                    </>
-                  }
-                />
-              </Reveal>
-            </div>
-          </div>
-
-          <ShopCollectionGrid products={fujisanProducts} />
-        </div>
-      </section>
-
-      {/* ===== Practical info: shipping · payment · age ===== */}
-      <section className="border-t border-[#0B1A2E]/10 bg-paper">
-        <div className="mx-auto max-w-[1280px] px-7 py-20 md:px-12 md:py-24">
-          <Reveal className="flex items-center gap-3">
-            <span className="font-serif text-[11px] font-medium tracking-[0.32em] text-[#C9A84C]">
-              Ⅸ.Ⅰ.iii
-            </span>
-            <span className="h-px w-10 bg-[#C9A84C]/55" />
-            <span className="text-[10px] font-semibold uppercase tracking-[0.36em] text-[#0B1A2E]/65">
-              PRACTICAL · ご利用について
-            </span>
-          </Reveal>
-
-          <Reveal
-            as="h2"
-            delay={revealDelays.d1}
-            className="mt-6 max-w-[640px] font-serif text-[clamp(24px,2.6vw,32px)] font-semibold leading-[1.18] tracking-[0.06em] text-[#0B1A2E]"
-          >
-            <L
-              en="Shipping, payment, and the legalese in plain language."
-              ja="送料・お支払い・販売条件を、わかりやすい言葉で。"
-            />
-          </Reveal>
-
-          <div className="mt-12 grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-12">
-            {[
-              {
-                num: "01",
-                eyebrow: { en: "SHIPPING", ja: "送料" },
-                body: {
-                  en: FUJISAN_LEGAL.shippingFeeNoteEn,
-                  ja: FUJISAN_LEGAL.shippingFeeNote,
-                },
-                meta: {
-                  en: FUJISAN_LEGAL.deliveryTimingEn,
-                  ja: FUJISAN_LEGAL.deliveryTiming,
-                },
-              },
-              {
-                num: "02",
-                eyebrow: { en: "PAYMENT", ja: "お支払い" },
-                body: {
-                  en: FUJISAN_LEGAL.paymentMethodsEn,
-                  ja: FUJISAN_LEGAL.paymentMethods,
-                },
-                meta: {
-                  en: FUJISAN_LEGAL.paymentTimingEn,
-                  ja: FUJISAN_LEGAL.paymentTiming,
-                },
-              },
-              {
-                num: "03",
-                eyebrow: { en: "RETURNS", ja: "返品について" },
-                body: {
-                  en: "Alcohol cannot be returned for customer-side reasons. Damaged or wrongly delivered items: write within 7 days of arrival.",
-                  ja: FUJISAN_LEGAL.returnsPolicy,
-                },
-                meta: {
-                  en: "Read the full Tokutei Shōtorihiki notice for details.",
-                  ja: "詳細は特定商取引法に基づく表示をご確認ください。",
-                },
-              },
-            ].map((b) => (
-              <div key={b.num} className="flex flex-col gap-4 border-t border-[#0B1A2E]/15 pt-7">
-                <p className="font-serif text-[10.5px] font-medium tracking-[0.32em] text-[#C9A84C]">
-                  {b.num}
-                </p>
-                <p className="text-[10px] font-semibold tracking-[0.3em] text-[#0B1A2E]/65">
-                  <L en={b.eyebrow.en} ja={b.eyebrow.ja} />
-                </p>
-                <p className="text-[13px] leading-[1.78] text-[#1D2432]/82">
-                  <L en={b.body.en} ja={b.body.ja} />
-                </p>
-                <p className="text-[11.5px] leading-[1.7] text-[#0B1A2E]/60">
-                  <L en={b.meta.en} ja={b.meta.ja} />
-                </p>
-              </div>
-            ))}
-          </div>
-
-          {/* ===== Underage notice — always JA per regulation ===== */}
-          <div
-            role="note"
-            aria-label="未成年飲酒防止のお知らせ"
-            className="mt-14 border border-[#C9A84C]/35 bg-paper-tint/80 px-6 py-5 text-[12.5px] leading-[1.8] text-[#1D2432]/86"
-          >
-            <p className="font-serif text-[10px] font-medium tracking-[0.32em] text-[#C9A84C]">
+      {/* ===== 流れ ===== */}
+      <EditorialSection>
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-[minmax(0,260px)_minmax(0,1fr)] md:gap-16">
+          <EditorialSectionHead
+            label={<L en="How it works" ja="ご購入の流れ" />}
+            heading={
               <L
-                ja="AGE 20+ · 未成年飲酒防止"
-                en="AGE 20+ · UNDERAGE DRINKING PREVENTION"
+                en="From Shizuoka to your door"
+                ja="静岡から、玄関先まで"
               />
-            </p>
-            <div className="mt-3 space-y-1">
-              <L
-                ja={
-                  <>
-                    {UNDERAGE_NOTICE_JP.map((line) => (
-                      <p key={line}>{line}</p>
-                    ))}
-                  </>
-                }
-                en={
-                  <>
-                    {UNDERAGE_NOTICE_EN.map((line) => (
-                      <p key={line}>{line}</p>
-                    ))}
-                  </>
-                }
-              />
-            </div>
-          </div>
-
-          <div className="mt-12 flex flex-wrap items-center gap-6">
-            <Link
-              href={`/products/${fujisanProducts[0].slug}`}
-              className="group/btn inline-flex items-center justify-center gap-3 border border-[#0B1A2E] bg-[#0B1A2E] px-8 py-4 text-[10.5px] font-semibold tracking-[0.34em] text-paper-card no-underline transition-colors hover:bg-[#1D2432]"
-            >
-              <L en="START WITH OUR FLAGSHIP" ja="代表銘柄から選ぶ" />
-              <span aria-hidden className="transition-transform duration-500 group-hover/btn:translate-x-1">
-                →
-              </span>
-            </Link>
-            <Link
-              href="/contact"
-              className="group/link inline-flex items-center gap-3 text-[10.5px] font-semibold tracking-[0.34em] text-[#0B1A2E] no-underline"
-            >
-              <span className="relative pb-1">
-                <L en="QUESTIONS? WRITE TO US" ja="ご質問はこちら" />
-                <span className="absolute inset-x-0 -bottom-0 h-px bg-[#0B1A2E]/40 transition-all duration-500 group-hover/link:bg-[#C9A84C]" />
-              </span>
-              <span
-                aria-hidden
-                className="transition-transform duration-500 group-hover/link:translate-x-1 group-hover/link:text-[#C9A84C]"
-              >
-                →
-              </span>
-            </Link>
-          </div>
+            }
+            className="md:sticky md:top-[112px] md:self-start"
+          />
+          <EdSteps steps={steps} />
         </div>
-      </section>
+      </EditorialSection>
 
-      <FujisanFooter />
-    </main>
+      {/* ===== 実務 ===== */}
+      <EditorialSection>
+        <EditorialSectionHead
+          label={<L en="Practical" ja="ご利用について" />}
+          heading={
+            <L
+              en="Shipping, payment, and returns"
+              ja="送料・お支払い・返品"
+            />
+          }
+        />
+
+        <EdDataList className="mt-10" rows={practical} />
+
+        {/* 未成年飲酒防止表示は法令上の必須表示。装飾を足さず、位置で目立たせる */}
+        <EdNote
+          role="note"
+          aria-label="未成年飲酒防止のお知らせ"
+          className="mt-14"
+          label={<L en="Age 20+" ja="未成年者の飲酒防止" />}
+        >
+          <L
+            ja={
+              <>
+                {UNDERAGE_NOTICE_JP.map((line) => (
+                  <p key={line} className="ed-p">
+                    {line}
+                  </p>
+                ))}
+              </>
+            }
+            en={
+              <>
+                {UNDERAGE_NOTICE_EN.map((line) => (
+                  <p key={line} className="ed-p">
+                    {line}
+                  </p>
+                ))}
+              </>
+            }
+          />
+        </EdNote>
+
+        <EdActions
+          className="mt-14"
+          primary={{
+            href: `/products/${fujisanProducts[0].slug}`,
+            label: <L en="Start with our flagship" ja="代表銘柄から選ぶ" />,
+          }}
+          secondary={{
+            href: "/contact",
+            label: <L en="Questions? Write to us" ja="ご質問はこちら" />,
+          }}
+        />
+      </EditorialSection>
+    </EditorialPage>
   );
 }

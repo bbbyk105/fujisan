@@ -15,13 +15,13 @@ export function AdminKpi({
 }) {
   return (
     <div className="flex flex-col gap-1">
-      <dt className="text-[9px] font-semibold tracking-[0.32em] text-[#F2E4C7]/55">
+      <dt className="text-[9px] font-semibold tracking-[0.32em] text-linen/55">
         {label}
       </dt>
-      <dd className="font-serif text-[16px] tracking-[0.02em] text-[#F2E4C7] md:text-[18px]">
+      <dd className="font-serif text-[16px] tracking-[0.02em] text-linen md:text-[18px]">
         {value}
         {suffix && (
-          <span className="ml-1 text-[11px] text-[#F2E4C7]/55">{suffix}</span>
+          <span className="ml-1 text-[11px] text-linen/55">{suffix}</span>
         )}
       </dd>
     </div>
@@ -73,8 +73,8 @@ export function AdminNav({
             aria-current={active ? "page" : undefined}
             className={`inline-flex items-center gap-3 border px-4 py-2.5 text-[10.5px] font-semibold tracking-[0.24em] no-underline transition-colors ${
               active
-                ? "border-[#E2C97E] bg-[#E2C97E] text-[#0B1A2E]"
-                : "border-[#E2C97E]/45 text-[#E2C97E] hover:border-[#E2C97E] hover:bg-[#E2C97E]/[0.08]"
+                ? "border-gold bg-gold text-indigo"
+                : "border-gold/45 text-gold hover:border-gold hover:bg-gold/[0.08]"
             }`}
           >
             {s.label}
@@ -92,16 +92,16 @@ export function AdminNav({
  */
 export function AdminForbidden({ email }: { email: string | undefined }) {
   return (
-    <main className="flex min-h-screen flex-col bg-paper text-[#0B1A2E]">
+    <main className="flex min-h-screen flex-col bg-paper text-indigo">
       <FujisanNav />
       <section className="mx-auto flex w-full max-w-[680px] flex-1 flex-col items-center justify-center px-7 pt-[140px] pb-24 text-center md:pt-[180px]">
-        <p className="font-serif text-[10px] font-semibold tracking-[0.34em] text-[#8B1A1A]">
+        <p className="font-serif text-[10px] font-semibold tracking-[0.34em] text-crimson">
           ADMIN ACCESS REQUIRED
         </p>
-        <h1 className="mt-5 font-serif text-[28px] font-semibold leading-[1.18] tracking-[0.04em] text-[#0B1A2E]">
+        <h1 className="mt-5 font-serif text-[28px] font-semibold leading-[1.18] tracking-[0.04em] text-indigo">
           このページは蔵元の管理者専用です。
         </h1>
-        <p className="mt-5 text-[13px] leading-[1.85] text-[#1D2432]/78">
+        <p className="mt-5 text-[13px] leading-[1.85] text-indigo/78">
           現在のログイン:{" "}
           <span className="font-semibold">{email ?? "（未ログイン）"}</span>
           <br />
@@ -110,7 +110,7 @@ export function AdminForbidden({ email }: { email: string | undefined }) {
         <div className="mt-9 flex items-center justify-center gap-6">
           <Link
             href="/account"
-            className="text-[11px] font-semibold tracking-[0.3em] text-[#0B1A2E]/75 no-underline hover:text-[#0B1A2E]"
+            className="text-[11px] font-semibold tracking-[0.3em] text-indigo/75 no-underline hover:text-indigo"
           >
             ← アカウントへ
           </Link>
@@ -140,26 +140,26 @@ export function AdminHeader({
   kpis?: React.ReactNode;
 }) {
   return (
-    <section className="fujisan-dark-panel bg-[#0B1A2E] text-[#F2E4C7]">
+    <section className="fujisan-dark-panel bg-indigo text-linen">
       <div className="mx-auto flex max-w-[1480px] flex-col gap-5 px-7 pt-[124px] pb-10 md:flex-row md:items-end md:justify-between md:px-12 md:pt-[150px] md:pb-12">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-2 bg-[#E2C97E] px-3 py-1.5 text-[10px] font-semibold tracking-[0.24em] text-[#0B1A2E]">
+            <span className="inline-flex items-center gap-2 bg-gold px-3 py-1.5 text-[10px] font-semibold tracking-[0.24em] text-indigo">
               ADMIN · 蔵 内
             </span>
-            <span className="inline-flex items-center gap-2 border border-[#E2C97E]/55 px-3 py-1.5 text-[10px] font-semibold tracking-[0.24em] text-[#E2C97E]">
+            <span className="inline-flex items-center gap-2 border border-gold/55 px-3 py-1.5 text-[10px] font-semibold tracking-[0.24em] text-gold">
               {isOwnerUser ? "OWNER · 蔵元" : "STAFF · 蔵スタッフ"}
             </span>
           </div>
-          <h1 className="mt-5 font-serif text-[clamp(22px,2.6vw,30px)] font-semibold leading-[1.18] tracking-[0.04em] text-[#F2E4C7]">
+          <h1 className="mt-5 font-serif text-[clamp(22px,2.6vw,30px)] font-semibold leading-[1.18] tracking-[0.04em] text-linen">
             {title}
           </h1>
           {lead && (
-            <p className="mt-4 max-w-[56ch] text-[12.5px] leading-[1.85] tracking-[0.02em] text-[#F2E4C7]/72">
+            <p className="mt-4 max-w-[56ch] text-[12.5px] leading-[1.85] tracking-[0.02em] text-linen/72">
               {lead}
             </p>
           )}
-          <p className="mt-3 text-[12.5px] tracking-[0.02em] text-[#F2E4C7]/70">
+          <p className="mt-3 text-[12.5px] tracking-[0.02em] text-linen/70">
             {email}
           </p>
           <AdminNav current={current} isOwnerUser={isOwnerUser} />
@@ -178,7 +178,7 @@ export function AdminHeader({
 /** 管理画面の下端。ログアウトだけを置く（行き来はヘッダーのナビに集約）。 */
 export function AdminFooterBar() {
   return (
-    <div className="mt-12 flex items-center justify-end border-t border-[#0B1A2E]/12 pt-8">
+    <div className="mt-12 flex items-center justify-end border-t border-indigo/12 pt-8">
       <LogoutButton />
     </div>
   );

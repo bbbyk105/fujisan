@@ -86,35 +86,35 @@ export default function ProductPurchaseBlock({
   return (
     <section
       aria-labelledby="purchase-heading"
-      className="border-t border-[#0B1A2E]/10 bg-paper"
+      className="border-t border-indigo/10 bg-paper"
     >
       <div className="mx-auto grid max-w-[1280px] grid-cols-1 gap-12 px-7 py-16 md:grid-cols-[1.1fr_1fr] md:gap-14 md:px-12 md:py-20">
         <div>
-          <p className="font-serif text-[11px] font-semibold tracking-[0.3em] text-[#0B1A2E]/66">
+          <p className="font-serif text-[11px] font-semibold tracking-[0.3em] text-indigo/66">
             <L en="PURCHASE" ja="ご購入" />
           </p>
-          <div className="mt-4 h-px w-8 bg-[#0B1A2E]/30" />
+          <div className="mt-4 h-px w-8 bg-indigo/30" />
 
           <h2
             id="purchase-heading"
-            className="mt-6 font-serif text-[clamp(22px,2.4vw,30px)] font-semibold leading-[1.2] tracking-[0.04em] text-[#0B1A2E]"
+            className="mt-6 font-serif text-[clamp(22px,2.4vw,30px)] font-semibold leading-[1.2] tracking-[0.04em] text-indigo"
           >
             {productName}{" "}
             <L en={variant} ja={`${variant} ${variantJp}`} />{" "}
-            <span className="text-[#0B1A2E]/60">/ {variantLine}</span>
+            <span className="text-indigo/60">/ {variantLine}</span>
           </h2>
 
           {/* 金額は年齢確認より小さくする（国税局指導）。拡大しないこと。 */}
-          <p className="mt-6 font-serif text-[22px] font-semibold leading-[1.15] tracking-[0.02em] text-[#0B1A2E] md:text-[24px]">
+          <p className="mt-6 font-serif text-[22px] font-semibold leading-[1.15] tracking-[0.02em] text-indigo md:text-[24px]">
             <LivePrice slug={slug} ml={selected.ml} fallback={selected.priceJpy} />
-            <span className="ml-2 align-middle text-[12px] font-medium tracking-[0.18em] text-[#0B1A2E]/60">
+            <span className="ml-2 align-middle text-[12px] font-medium tracking-[0.18em] text-indigo/60">
               <L en="(tax incl.)" ja="（税込）" />
             </span>
           </p>
 
           {/* 容量の選択（複数容量がある場合のみボタン表示） */}
           <div className="mt-6">
-            <span className="text-[10.5px] font-semibold tracking-[0.28em] text-[#0B1A2E]/70">
+            <span className="text-[10.5px] font-semibold tracking-[0.28em] text-indigo/70">
               <L en="VOLUME" ja="容量" />
             </span>
             <div className="mt-3 flex flex-wrap gap-3">
@@ -130,15 +130,15 @@ export default function ProductPurchaseBlock({
                     disabled={volumes.length === 1}
                     className={`min-w-[88px] cursor-pointer border px-4 py-3 text-[12px] font-semibold tracking-[0.1em] transition-colors disabled:cursor-default ${
                       active
-                        ? "border-[#0B1A2E] bg-[#0B1A2E] text-paper-card"
-                        : "border-[#0B1A2E]/30 bg-transparent text-[#0B1A2E]/80 hover:border-[#0B1A2E]"
+                        ? "border-indigo bg-indigo text-paper-card"
+                        : "border-indigo/30 bg-transparent text-indigo/80 hover:border-indigo"
                     } ${vSoldOut ? "opacity-55" : ""}`}
                   >
                     {v.ml}ml
                     <span
                       className={`ml-1.5 text-[10.5px] font-medium ${
                         vSoldOut ? "line-through" : ""
-                      } ${active ? "text-paper-card/75" : "text-[#0B1A2E]/70"}`}
+                      } ${active ? "text-paper-card/75" : "text-indigo/70"}`}
                     >
                       <LivePrice slug={slug} ml={v.ml} fallback={v.priceJpy} />
                     </span>
@@ -178,7 +178,7 @@ export default function ProductPurchaseBlock({
                     Full sale conditions are listed in our{" "}
                     <Link
                       href="/tokushoho"
-                      className="underline decoration-[#C9A84C]/60 underline-offset-2 hover:text-[#C9A84C]"
+                      className="underline decoration-gold/60 underline-offset-2 hover:text-gold"
                     >
                       Tokutei Shōtorihiki Hō (Specified Commercial Transactions
                       Act) notice
@@ -191,7 +191,7 @@ export default function ProductPurchaseBlock({
                     詳細な販売条件は
                     <Link
                       href="/tokushoho"
-                      className="ml-1 underline decoration-[#C9A84C]/60 underline-offset-2 hover:text-[#C9A84C]"
+                      className="ml-1 underline decoration-gold/60 underline-offset-2 hover:text-gold"
                     >
                       特定商取引法に基づく表示
                     </Link>
@@ -204,7 +204,7 @@ export default function ProductPurchaseBlock({
 
           <div className="mt-7 flex items-center gap-4">
             <span
-              className="text-[10.5px] font-semibold tracking-[0.28em] text-[#0B1A2E]/70"
+              className="text-[10.5px] font-semibold tracking-[0.28em] text-indigo/70"
             >
               <L en="QTY" ja="数量" />
             </span>
@@ -213,7 +213,7 @@ export default function ProductPurchaseBlock({
                 type="button"
                 aria-label="数量を減らす"
                 onClick={() => setQty((q) => Math.max(1, q - 1))}
-                className="flex h-11 w-11 cursor-pointer items-center justify-center text-[18px] font-light text-[#0B1A2E]/45 transition-colors hover:text-[#0B1A2E]"
+                className="flex h-11 w-11 cursor-pointer items-center justify-center text-[18px] font-light text-indigo/45 transition-colors hover:text-indigo"
               >
                 −
               </button>
@@ -221,7 +221,7 @@ export default function ProductPurchaseBlock({
                 id="qty"
                 aria-live="polite"
                 aria-label={`数量 ${qty}`}
-                className="w-9 border-b border-[#0B1A2E]/30 pb-0.5 text-center text-[13px] font-semibold tracking-[0.1em] text-[#0B1A2E]"
+                className="w-9 border-b border-indigo/30 pb-0.5 text-center text-[13px] font-semibold tracking-[0.1em] text-indigo"
               >
                 {qty}
               </span>
@@ -229,7 +229,7 @@ export default function ProductPurchaseBlock({
                 type="button"
                 aria-label="数量を増やす"
                 onClick={() => setQty((q) => Math.min(12, q + 1))}
-                className="flex h-11 w-11 cursor-pointer items-center justify-center text-[18px] font-light text-[#0B1A2E]/45 transition-colors hover:text-[#0B1A2E]"
+                className="flex h-11 w-11 cursor-pointer items-center justify-center text-[18px] font-light text-indigo/45 transition-colors hover:text-indigo"
               >
                 ＋
               </button>
@@ -238,17 +238,17 @@ export default function ProductPurchaseBlock({
         </div>
 
         {/* 年齢確認・未成年防止表示・購入ボタン */}
-        <div className="md:border-l md:border-[#0B1A2E]/12 md:pl-14">
-          <p className="font-serif text-[11px] font-semibold tracking-[0.3em] text-[#0B1A2E]/66">
+        <div className="md:border-l md:border-indigo/12 md:pl-14">
+          <p className="font-serif text-[11px] font-semibold tracking-[0.3em] text-indigo/66">
             <L en="AGE VERIFICATION" ja="年齢確認" />
           </p>
-          <div className="mt-4 h-px w-8 bg-[#0B1A2E]/30" />
+          <div className="mt-4 h-px w-8 bg-indigo/30" />
 
           {/* 未成年飲酒防止表示 — 法令上、日本語表記は常に必要 */}
           <div
             role="note"
             aria-label="未成年飲酒防止のお知らせ"
-            className="mt-7 border border-[#C9A84C]/35 bg-paper-tint/80 px-5 py-5 text-[22px] font-medium leading-[1.55] text-[#1D2432]/86 md:text-[24px]"
+            className="mt-7 border border-gold/35 bg-paper-tint/80 px-5 py-5 text-[22px] font-medium leading-[1.55] text-[#1D2432]/86 md:text-[24px]"
           >
             <L
               ja={
@@ -274,9 +274,9 @@ export default function ProductPurchaseBlock({
 
           {/* 国税局の指導: 「20歳以上」は金額より大きく。縮小しないこと。 */}
           <label
-            className={`mt-6 flex cursor-pointer items-start gap-4 text-[24px] leading-[1.7] text-[#0B1A2E] select-none md:text-[26px] ${
+            className={`mt-6 flex cursor-pointer items-start gap-4 text-[24px] leading-[1.7] text-indigo select-none md:text-[26px] ${
               needsConfirm
-                ? "outline outline-2 outline-offset-8 outline-[#8B1A1A]/65"
+                ? "outline outline-2 outline-offset-8 outline-crimson/65"
                 : ""
             }`}
           >
@@ -288,7 +288,7 @@ export default function ProductPurchaseBlock({
                 setConfirmed(e.target.checked);
                 if (e.target.checked) setNeedsConfirm(false);
               }}
-              className="mt-1.5 h-[22px] w-[22px] shrink-0 cursor-pointer border-[#0B1A2E]/50 accent-[#0B1A2E]"
+              className="mt-1.5 h-[22px] w-[22px] shrink-0 cursor-pointer border-indigo/50 accent-indigo"
               aria-describedby="age-check-note"
               aria-invalid={needsConfirm}
             />
@@ -316,7 +316,7 @@ export default function ProductPurchaseBlock({
           {needsConfirm ? (
             <p
               role="alert"
-              className="mt-3 pl-7 text-[11px] font-semibold leading-[1.6] text-[#8B1A1A]"
+              className="mt-3 pl-7 text-[11px] font-semibold leading-[1.6] text-crimson"
             >
               <L
                 en="Please confirm your age above to add this item to the cart."
@@ -326,7 +326,7 @@ export default function ProductPurchaseBlock({
           ) : null}
           <p
             id="age-check-note"
-            className="mt-2 pl-7 text-[10.5px] leading-[1.6] text-[#0B1A2E]/72"
+            className="mt-2 pl-7 text-[10.5px] leading-[1.6] text-indigo/72"
           >
             <L
               en="* Age verification may also be performed at delivery."
@@ -341,10 +341,10 @@ export default function ProductPurchaseBlock({
             disabled={soldOut}
             className={`mt-7 inline-flex w-full items-center justify-center gap-3 px-7 py-4 text-[11px] font-semibold tracking-[0.28em] transition-all ${
               soldOut
-                ? "cursor-not-allowed border border-[#0B1A2E]/25 bg-[#0B1A2E]/[0.07] text-[#0B1A2E]/45"
+                ? "cursor-not-allowed border border-indigo/25 bg-indigo/[0.07] text-indigo/45"
                 : confirmed
-                  ? "cursor-pointer border border-[#0B1A2E] bg-[#0B1A2E] text-paper-card hover:bg-[#1D2432]"
-                  : "cursor-pointer border border-[#0B1A2E]/35 bg-[#0B1A2E]/15 text-[#0B1A2E]/60"
+                  ? "cursor-pointer border border-indigo bg-indigo text-paper-card hover:bg-[#1D2432]"
+                  : "cursor-pointer border border-indigo/35 bg-indigo/15 text-indigo/60"
             }`}
           >
             {soldOut ? (
@@ -366,7 +366,7 @@ export default function ProductPurchaseBlock({
             )}
           </button>
           {soldOut ? (
-            <p className="mt-3 text-[11.5px] leading-[1.7] text-[#0B1A2E]/70">
+            <p className="mt-3 text-[11.5px] leading-[1.7] text-indigo/70">
               <L
                 en="This size is currently sold out. Please check back soon or contact us for restock updates."
                 ja="この容量は現在完売しています。入荷までいましばらくお待ちください。"
@@ -374,7 +374,7 @@ export default function ProductPurchaseBlock({
             </p>
           ) : null}
 
-          <p className="mt-4 text-[10.5px] leading-[1.7] text-[#0B1A2E]/72">
+          <p className="mt-4 text-[10.5px] leading-[1.7] text-indigo/72">
             <L
               en="Before completing your order, age verification and shipping conditions will be confirmed once more at checkout."
               ja="ご注文の確定前に、ご購入手続き画面で再度年齢確認と配送条件をご確認いただきます。"

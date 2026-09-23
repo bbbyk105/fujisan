@@ -3,7 +3,7 @@ import { L } from "@/i18n/Localized";
 
 // 未入力・不正な項目は枠を赤くする（aria-invalid="true" の入力に適用）。
 export const inputCls =
-  "w-full border-b border-[#0F1F36]/30 bg-transparent py-3 text-[15px] text-[#0F1F36] outline-none transition-colors placeholder:text-[#0F1F36]/40 focus:border-[#C9A84C] aria-[invalid=true]:border-[#8B1A1A] aria-[invalid=true]:focus:border-[#8B1A1A]";
+  "w-full border-b border-indigo/25 bg-transparent py-3 text-[15px] text-indigo outline-none transition-colors placeholder:text-indigo/35 focus:border-gold aria-[invalid=true]:border-crimson aria-[invalid=true]:focus:border-crimson";
 
 export function Field({
   id,
@@ -22,11 +22,11 @@ export function Field({
     <div className="flex flex-col gap-2">
       <label
         htmlFor={id}
-        className="text-[12px] font-semibold tracking-[0.16em] text-[#0B1A2E]/75"
+        className="ed-label"
       >
         <L ja={jp} en={label} />
         {required && (
-          <span aria-hidden className="ml-1 text-[#8B1A1A]">
+          <span aria-hidden className="ml-1 text-crimson">
             *
           </span>
         )}
@@ -47,7 +47,7 @@ export function PrimaryButton({
     <button
       type="submit"
       disabled={disabled}
-      className="mt-2 inline-flex w-full cursor-pointer items-center justify-center gap-3 border border-[#0B1A2E] bg-[#0B1A2E] px-7 py-3.5 text-[11px] font-semibold tracking-[0.28em] text-paper-card transition-colors hover:bg-[#16273d] disabled:cursor-not-allowed disabled:opacity-50"
+      className="ed-btn mt-2 w-full"
     >
       {children}
     </button>
@@ -61,15 +61,16 @@ export function Notice({
   tone: "error" | "info" | "success";
   children: ReactNode;
 }) {
+  // 囲み枠ではなく左の罫で示す。枠を足すほど画面が騒がしくなる
   const cls =
     tone === "error"
-      ? "border-[#8B1A1A]/40 bg-[#8B1A1A]/[0.06] text-[#8B1A1A]"
-      : "border-[#C9A84C]/50 bg-[#F1E6CB]/55 text-[#0B1A2E]";
+      ? "border-crimson text-crimson"
+      : "border-gold text-indigo";
   return (
     <div
       role="status"
       aria-live="polite"
-      className={`border px-4 py-3 text-[12.5px] leading-[1.65] ${cls}`}
+      className={`border-l-2 py-1 pl-4 text-[12.5px] leading-[1.75] ${cls}`}
     >
       {children}
     </div>
@@ -95,11 +96,9 @@ export function RateLimitMessage() {
 export function OrDivider({ children }: { children: ReactNode }) {
   return (
     <div className="flex items-center gap-4 py-1">
-      <span className="h-px flex-1 bg-[#0F1F36]/14" />
-      <span className="text-[10px] font-semibold tracking-[0.3em] text-[#0F1F36]/45">
-        {children}
-      </span>
-      <span className="h-px flex-1 bg-[#0F1F36]/14" />
+      <span aria-hidden className="ed-rule flex-1" />
+      <span className="ed-label">{children}</span>
+      <span aria-hidden className="ed-rule flex-1" />
     </div>
   );
 }

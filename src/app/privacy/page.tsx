@@ -1,6 +1,6 @@
-import FujisanInfoPage, {
-  type InfoSection,
-} from "@/components/fujisan/FujisanInfoPage";
+import DocumentPage, {
+  type DocumentSection,
+} from "@/components/fujisan/editorial/DocumentPage";
 import { FUJISAN_LEGAL } from "@/data/fujisan-legal";
 import { L } from "@/i18n/Localized";
 import { buildMetadata } from "@/lib/seo";
@@ -18,7 +18,7 @@ export const metadata = buildMetadata({
  * 記載内容は実装と一致させる — 実装していない機能（メールマガジン配信や
  * アクセス解析など）を書いてはならない。
  */
-const sections: InfoSection[] = [
+const sections: DocumentSection[] = [
   {
     num: "01",
     heading: <L en="Who handles your data" ja="個人情報取扱事業者" />,
@@ -288,18 +288,15 @@ const sections: InfoSection[] = [
 
 export default function PrivacyPage() {
   return (
-    <FujisanInfoPage
-      eyebrow="LEGAL · PRIVACY"
-      chapter="Ⅳ"
-      title="PRIVACY POLICY"
-      jp="― プライバシーポリシー ―"
+    <DocumentPage
+      kicker={<L en="Legal" ja="規約" />}
+      title={<L en="Privacy Policy" ja="プライバシーポリシー" />}
       lead={
         <L
-          en="We collect only what we need, treat it with care, and keep it for no longer than necessary. This page explains how."
-          ja="必要な情報だけを取得し、丁寧に取り扱い、必要な期間を超えて保持しません。その方法をこのページでご説明します。"
+          en="We collect only what we need, treat it with care, and keep it no longer than necessary. This page explains how."
+          ja="必要な情報だけをいただき、丁寧に取り扱い、必要な期間を超えて持ちません。その具体を記しています。"
         />
       }
-      crumb={{ label: "PRIVACY", href: "/privacy" }}
       updated="2026.09"
       sections={sections}
     />

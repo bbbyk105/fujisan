@@ -10,12 +10,14 @@ import {
 import { ShopAddToCart } from "./ShopAddToCart";
 import { L } from "@/i18n/Localized";
 
-
 /**
- * 一覧カード。Server Component — カート追加ボタン（ShopAddToCart）だけが
+ * 一覧の一本。Server Component — カート追加ボタン（ShopAddToCart）だけが
  * クライアント境界。
+ *
+ * 枠と地色で囲わない。瓶は和紙の上にそのまま置き、区切りは上の罫だけで作る。
+ * 囲むと 5 本が「商品カード」になり、蔵の棚に並んだ見え方が消える。
  */
-function ShopBottleCard({ product }: { product: FujisanProduct }) {
+function ShopBottle({ product }: { product: FujisanProduct }) {
   const base = primaryVolume(product);
   const multiVolume = product.volumes.length > 1;
   // 完売の出し分けは ShopAddToCart（クライアント）が行う。
@@ -26,14 +28,14 @@ function ShopBottleCard({ product }: { product: FujisanProduct }) {
   }));
 
   return (
-    <article className="group flex flex-col border border-[#0B1A2E]/12 bg-paper-card transition-colors hover:border-[#C9A84C]/55">
+    <article className="group flex flex-col border-t border-[var(--ed-rule)] pt-8">
       <Link
         href={`/products/${product.slug}`}
-        className="no-underline outline-none focus-visible:ring-2 focus-visible:ring-[#C9A84C]/60"
+        className="no-underline outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
       >
-        <div className="relative flex h-[260px] w-full items-end justify-center overflow-visible pt-7 md:h-[300px]">
-          <div className="fujisan-bottle-drop relative h-[104%] w-[58%] max-w-[200px]">
-            <div className="fujisan-bottle relative h-full w-full transition-transform duration-500 group-hover:-translate-y-[6px]">
+        <div className="relative flex h-[250px] w-full items-end justify-center overflow-visible md:h-[290px]">
+          <div className="fujisan-bottle-drop relative h-full w-[56%] max-w-[190px]">
+            <div className="fujisan-bottle relative h-full w-full transition-transform duration-700 ease-out group-hover:-translate-y-[7px]">
               <ViewTransition name={`bottle-${product.slug}`} share="morph">
                 <Image
                   src={product.img}
@@ -46,7 +48,10 @@ function ShopBottleCard({ product }: { product: FujisanProduct }) {
               </ViewTransition>
             </div>
           </div>
-          <span className="absolute bottom-3 left-1/2 h-4 w-[42%] -translate-x-1/2 rounded-[50%] bg-[#0B1A2E]/16 blur-[9px]" />
+          <span
+            aria-hidden
+            className="absolute bottom-1 left-1/2 h-4 w-[40%] -translate-x-1/2 rounded-[50%] bg-indigo/14 blur-[9px]"
+          />
           <SoldOutBadge
             slug={product.slug}
             ml={base.ml}
@@ -55,46 +60,43 @@ function ShopBottleCard({ product }: { product: FujisanProduct }) {
         </div>
       </Link>
 
-      <div className="flex flex-1 flex-col px-6 pb-6 pt-2 md:px-7">
+      <div className="flex flex-1 flex-col pt-7">
         <Link
           href={`/products/${product.slug}`}
           className="no-underline outline-none"
         >
-          <h3 className="font-serif text-[15px] font-semibold tracking-[0.14em] text-[#0B1A2E] transition-colors group-hover:text-[#C9A84C]">
+          <h3 className="ed-h3 transition-colors group-hover:text-gold-ink">
             {product.name}
           </h3>
-          <p className="mt-1 whitespace-pre-line text-[10px] font-semibold leading-[1.4] tracking-[0.16em] text-[#0B1A2E]/65">
+          <p className="ed-small mt-1.5">
             {product.variant.replace(/\n/g, " ")}
-            <span className="mx-1.5 text-[#0B1A2E]/30">·</span>
-            <L
-              en={product.variantLine}
-              ja={product.variantLineJp}
-            />
+            <span aria-hidden className="mx-2 opacity-40">
+              /
+            </span>
+            <L en={product.variantLine} ja={product.variantLineJp} />
           </p>
         </Link>
 
-        <p className="mt-3 text-[12px] leading-[1.6] text-[#1D2432]/72">
+        <p className="ed-p mt-4 text-[13px] md:text-[13px]">
           <L en={product.title} ja={product.titleJp} />
         </p>
 
-        <div className="mt-auto flex items-end justify-between gap-3 pt-5">
-          <div>
-            <p className="font-serif text-[20px] font-semibold tracking-[0.02em] text-[#0B1A2E]">
-              <LivePrice
-                slug={product.slug}
-                ml={base.ml}
-                fallback={base.priceJpy}
-              />
-              <span className="ml-1.5 align-middle text-[10px] font-medium tracking-[0.14em] text-[#0B1A2E]/75">
-                <L en={`${base.ml}ml · tax incl.`} ja={`${base.ml}ml・税込`} />
-              </span>
+        <div className="mt-auto pt-7">
+          <p className="font-serif text-[19px] font-medium tabular-nums tracking-[0.02em] text-indigo">
+            <LivePrice
+              slug={product.slug}
+              ml={base.ml}
+              fallback={base.priceJpy}
+            />
+            <span className="ml-2 align-middle text-[11px] font-normal tracking-[0.06em] text-indigo/60">
+              <L en={`${base.ml}ml, tax incl.`} ja={`${base.ml}ml・税込`} />
+            </span>
+          </p>
+          {multiVolume ? (
+            <p className="ed-small mt-1">
+              <L en="Other sizes available" ja="他の容量もあります" />
             </p>
-            {multiVolume ? (
-              <p className="mt-0.5 text-[10px] tracking-[0.12em] text-[#0B1A2E]/70">
-                <L en="Other sizes available" ja="他の容量もあります" />
-              </p>
-            ) : null}
-          </div>
+          ) : null}
         </div>
 
         <ShopAddToCart
@@ -114,9 +116,9 @@ export function ShopCollectionGrid({
   products: FujisanProduct[];
 }) {
   return (
-    <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 md:gap-6 lg:grid-cols-3">
+    <div className="mt-14 grid grid-cols-1 gap-x-10 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
       {products.map((p) => (
-        <ShopBottleCard key={p.slug} product={p} />
+        <ShopBottle key={p.slug} product={p} />
       ))}
     </div>
   );

@@ -61,7 +61,7 @@ export default async function AdminTeamPage() {
   const staffCount = members.filter((m) => m.adminRole === "staff").length;
 
   return (
-    <main className="flex min-h-screen flex-col bg-paper text-[#0B1A2E]">
+    <main className="flex min-h-screen flex-col bg-paper text-indigo">
       <FujisanNav />
 
       <AdminHeader
@@ -88,15 +88,15 @@ export default async function AdminTeamPage() {
         {/* 招待中（保留中の招待がある時だけ出す。常時 0 件の枠は視界の無駄） */}
         {invites.length > 0 && (
           <div className="mb-10">
-            <div className="flex items-baseline gap-4 border-b border-[#0B1A2E]/15 pb-4">
-              <span className="font-jp text-[12px] tracking-[0.3em] text-[#C9A84C]">
+            <div className="flex items-baseline gap-4 border-b border-indigo/15 pb-4">
+              <span className="font-jp text-[12px] tracking-[0.3em] text-gold">
                 招待中
               </span>
-              <span className="h-px flex-1 bg-[#0B1A2E]/12" />
-              <span className="text-[11px] tracking-[0.22em] text-[#0B1A2E]/55">
+              <span className="h-px flex-1 bg-indigo/12" />
+              <span className="text-[11px] tracking-[0.22em] text-indigo/55">
                 {invites.length} 件
                 {expiredCount > 0 && (
-                  <span className="ml-2 text-[#8B1A1A]">
+                  <span className="ml-2 text-crimson">
                     うち期限切れ {expiredCount} 件
                   </span>
                 )}
@@ -109,7 +109,7 @@ export default async function AdminTeamPage() {
               ))}
             </ul>
 
-            <p className="mt-4 text-[11.5px] leading-[1.75] text-[#0B1A2E]/60">
+            <p className="mt-4 text-[11.5px] leading-[1.75] text-indigo/60">
               招待は <strong>14 日</strong>で失効します。招待した方が登録を済ませると、
               この一覧から消えて「現在のメンバー」に移ります。
             </p>
@@ -117,23 +117,23 @@ export default async function AdminTeamPage() {
         )}
 
         {/* メンバー見出し */}
-        <div className="flex items-baseline gap-4 border-b border-[#0B1A2E]/15 pb-4">
-          <span className="font-jp text-[12px] tracking-[0.3em] text-[#C9A84C]">
+        <div className="flex items-baseline gap-4 border-b border-indigo/15 pb-4">
+          <span className="font-jp text-[12px] tracking-[0.3em] text-gold">
             現在のメンバー
           </span>
-          <span className="h-px flex-1 bg-[#0B1A2E]/12" />
-          <span className="text-[11px] tracking-[0.22em] text-[#0B1A2E]/55">
+          <span className="h-px flex-1 bg-indigo/12" />
+          <span className="text-[11px] tracking-[0.22em] text-indigo/55">
             {members.length} 名
           </span>
         </div>
 
         {/* List */}
         {members.length === 0 ? (
-          <div className="mt-10 border border-[#0B1A2E]/15 bg-white px-7 py-16 text-center">
-            <p className="font-serif text-[16px] font-semibold tracking-[0.04em] text-[#0B1A2E]">
+          <div className="mt-10 border border-indigo/15 bg-white px-7 py-16 text-center">
+            <p className="font-serif text-[16px] font-semibold tracking-[0.04em] text-indigo">
               まだメンバーはあなただけです。
             </p>
-            <p className="mx-auto mt-3 max-w-[44ch] text-[12.5px] leading-[1.85] text-[#0B1A2E]/65">
+            <p className="mx-auto mt-3 max-w-[44ch] text-[12.5px] leading-[1.85] text-indigo/65">
               上の「メールアドレスで招待」から、蔵人をお招きください。
             </p>
           </div>

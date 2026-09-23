@@ -39,7 +39,7 @@ export default async function AdminProductsPage() {
   const overridden = rows.filter((r) => r.priceOverridden);
 
   return (
-    <main className="flex min-h-screen flex-col bg-paper text-[#0B1A2E]">
+    <main className="flex min-h-screen flex-col bg-paper text-indigo">
       <FujisanNav />
 
       <AdminHeader
@@ -70,14 +70,14 @@ export default async function AdminProductsPage() {
         {!res.ok && (
           <p
             role="alert"
-            className="mb-6 border border-[#8B1A1A]/40 bg-[#8B1A1A]/6 px-4 py-3 text-[12.5px] text-[#8B1A1A]"
+            className="mb-6 border border-crimson/40 bg-crimson/6 px-4 py-3 text-[12.5px] text-crimson"
           >
             商品情報の読み込みに失敗しました。時間をおいて再度お試しください。
           </p>
         )}
 
         {soldOut.length > 0 && (
-          <p className="mb-3 border border-[#8B1A1A]/35 bg-[#8B1A1A]/[0.06] px-5 py-3 text-[12.5px] leading-[1.7] text-[#8B1A1A]">
+          <p className="mb-3 border border-crimson/35 bg-crimson/[0.06] px-5 py-3 text-[12.5px] leading-[1.7] text-crimson">
             <strong className="font-semibold">
               {soldOut.length} SKU が完売です
             </strong>
@@ -85,7 +85,7 @@ export default async function AdminProductsPage() {
           </p>
         )}
         {lowStock.length > 0 && (
-          <p className="mb-6 border border-[#C9A84C]/50 bg-[#C9A84C]/[0.08] px-5 py-3 text-[12.5px] leading-[1.7] text-[#8A6D1F]">
+          <p className="mb-6 border border-gold/50 bg-gold/[0.08] px-5 py-3 text-[12.5px] leading-[1.7] text-gold-ink">
             <strong className="font-semibold">
               {lowStock.length} SKU が在庫僅少です
             </strong>
@@ -104,8 +104,8 @@ export default async function AdminProductsPage() {
         </ul>
 
         <div className="mt-10 grid gap-6 md:grid-cols-2">
-          <div className="border border-[#0B1A2E]/12 bg-paper/70 px-6 py-5 text-[12px] leading-[1.85] text-[#0B1A2E]/72">
-            <p className="font-semibold text-[#0B1A2E]">在庫の数え方</p>
+          <div className="border border-indigo/12 bg-paper/70 px-6 py-5 text-[12px] leading-[1.85] text-indigo/72">
+            <p className="font-semibold text-indigo">在庫の数え方</p>
             <ul className="mt-2 flex list-disc flex-col gap-1 pl-5">
               <li>
                 <strong>実在庫</strong> …
@@ -125,8 +125,8 @@ export default async function AdminProductsPage() {
             </ul>
           </div>
 
-          <div className="border border-[#0B1A2E]/12 bg-paper/70 px-6 py-5 text-[12px] leading-[1.85] text-[#0B1A2E]/72">
-            <p className="font-semibold text-[#0B1A2E]">価格について</p>
+          <div className="border border-indigo/12 bg-paper/70 px-6 py-5 text-[12px] leading-[1.85] text-indigo/72">
+            <p className="font-semibold text-indigo">価格について</p>
             <ul className="mt-2 flex list-disc flex-col gap-1 pl-5">
               <li>
                 変更できるのは<strong>蔵元（owner）</strong>のみです。蔵スタッフには表示だけ見えます。

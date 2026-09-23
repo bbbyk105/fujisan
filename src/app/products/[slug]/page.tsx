@@ -79,7 +79,7 @@ export default async function ProductDetailPage({
   const others = fujisanProducts.filter((p) => p.slug !== slug);
 
   return (
-    <main className="bg-paper text-[#0B1A2E] min-h-screen">
+    <main className="bg-paper text-indigo min-h-screen">
       {/* 構造化データ: 商品リッチリザルト用 */}
       <script
         type="application/ld+json"
@@ -124,26 +124,26 @@ export default async function ProductDetailPage({
           <div className="max-w-[620px]">
             <Link
               href="/#showcase"
-              className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.24em] text-[#0B1A2E]/70 no-underline transition-colors hover:text-[#C9A84C]"
+              className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.24em] text-indigo/70 no-underline transition-colors hover:text-gold"
             >
               <span aria-hidden>←</span> <L en="OUR SAKE" ja="日本酒一覧へ" />
             </Link>
 
-            <p className="mt-5 font-serif text-[12px] font-semibold tracking-[0.28em] text-[#C9A84C]">
+            <p className="mt-5 font-serif text-[12px] font-semibold tracking-[0.28em] text-gold">
               <L
                 en={product.variantLine.toUpperCase()}
                 ja={product.variantLineJp}
               />
             </p>
 
-            <h1 className="mt-3 font-serif leading-[0.95] tracking-[0.02em] text-[#0B1A2E]">
+            <h1 className="mt-3 font-serif leading-[0.95] tracking-[0.02em] text-indigo">
               <span className="block text-[clamp(36px,4.6vw,60px)] font-medium tracking-[0.06em] text-[#1D2432]/80">
                 {product.name}
               </span>
               <span className="mt-2 block text-[clamp(40px,6vw,84px)] font-semibold tracking-[0.04em]">
                 <L en={product.variant} ja={product.variantJp} />
               </span>
-              <span className="mt-2 block font-jp text-[clamp(13px,1.1vw,15px)] font-semibold tracking-[0.34em] text-[#C9A84C]">
+              <span className="mt-2 block font-jp text-[clamp(13px,1.1vw,15px)] font-semibold tracking-[0.34em] text-gold">
                 <L en={product.variantJp} ja={product.variant} />
               </span>
             </h1>
@@ -153,15 +153,15 @@ export default async function ProductDetailPage({
             </p>
 
             <div className="mt-7 flex flex-wrap items-center gap-3">
-              <span className="border border-[#0B1A2E]/30 bg-white/64 px-3 py-1 text-[10px] font-semibold tracking-[0.18em] text-[#0B1A2E]">
+              <span className="border border-indigo/30 bg-white/64 px-3 py-1 text-[10px] font-semibold tracking-[0.18em] text-indigo">
                 {product.smv}
               </span>
-              <span className="border border-[#0B1A2E]/30 bg-white/64 px-3 py-1 text-[10px] font-semibold tracking-[0.18em] text-[#0B1A2E]">
+              <span className="border border-indigo/30 bg-white/64 px-3 py-1 text-[10px] font-semibold tracking-[0.18em] text-indigo">
                 <L en={product.grade.toUpperCase()} ja={product.gradeJp} />
               </span>
             </div>
 
-            <p className="mt-7 max-w-[460px] whitespace-pre-line font-serif text-[clamp(18px,1.8vw,24px)] italic leading-[1.55] text-[#0B1A2E]/88">
+            <p className="mt-7 max-w-[460px] whitespace-pre-line font-serif text-[clamp(18px,1.8vw,24px)] italic leading-[1.55] text-indigo/88">
               <L en={product.hero} ja={product.heroJp} />
             </p>
 
@@ -173,11 +173,11 @@ export default async function ProductDetailPage({
           <div className="relative flex h-[440px] items-end justify-center md:h-[620px] lg:h-[680px]">
             <div
               aria-hidden
-              className="absolute left-1/2 top-1/2 h-[68%] w-[70%] -translate-x-1/2 -translate-y-1/2 rounded-[50%] bg-[#C9A84C]/16 blur-[60px]"
+              className="absolute left-1/2 top-1/2 h-[68%] w-[70%] -translate-x-1/2 -translate-y-1/2 rounded-[50%] bg-gold/16 blur-[60px]"
             />
             <span
               aria-hidden
-              className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-[54%] select-none font-jp text-[clamp(160px,24vw,320px)] font-light text-[#0B1A2E]/[0.06]"
+              className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-[54%] select-none font-jp text-[clamp(160px,24vw,320px)] font-light text-indigo/[0.06]"
             >
               富士
             </span>
@@ -186,7 +186,7 @@ export default async function ProductDetailPage({
               src={product.img}
               alt={`${product.name} ${product.variantLine}`}
             />
-            <span className="absolute bottom-6 left-1/2 h-6 w-[58%] -translate-x-1/2 rounded-[50%] bg-[#0B1A2E]/22 blur-[14px]" />
+            <span className="absolute bottom-6 left-1/2 h-6 w-[58%] -translate-x-1/2 rounded-[50%] bg-indigo/22 blur-[14px]" />
           </div>
         </div>
       </section>
@@ -203,7 +203,7 @@ export default async function ProductDetailPage({
             {product.storyEn.map((para, i) => (
               <p
                 key={i}
-                className="mt-6 font-serif text-[clamp(15px,1.4vw,17px)] leading-[1.85] text-[#F2E4C7]/86"
+                className="mt-6 font-serif text-[clamp(15px,1.4vw,17px)] leading-[1.85] text-linen/86"
               >
                 {para}
               </p>
@@ -218,7 +218,7 @@ export default async function ProductDetailPage({
             {product.storyJp.map((para, i) => (
               <p
                 key={i}
-                className="mt-6 whitespace-pre-line font-jp text-[clamp(14px,1.25vw,15.5px)] leading-[2] text-[#F2E4C7]/82"
+                className="mt-6 whitespace-pre-line font-jp text-[clamp(14px,1.25vw,15.5px)] leading-[2] text-linen/82"
               >
                 {para}
               </p>
@@ -243,32 +243,32 @@ export default async function ProductDetailPage({
       <section className="bg-paper">
         <div className="mx-auto grid max-w-[1280px] grid-cols-1 gap-12 px-7 py-16 md:grid-cols-[1.1fr_1fr] md:gap-14 md:px-12 md:py-20">
           <div>
-            <p className="font-serif text-[11px] font-semibold tracking-[0.3em] text-[#0B1A2E]/66">
+            <p className="font-serif text-[11px] font-semibold tracking-[0.3em] text-indigo/66">
               <L en="SPECIFICATIONS" ja="商品仕様" />
             </p>
-            <div className="mt-4 h-px w-8 bg-[#0B1A2E]/30" />
+            <div className="mt-4 h-px w-8 bg-indigo/30" />
             <dl className="mt-7 grid grid-cols-2 gap-x-8 gap-y-5 sm:grid-cols-3">
               {product.specs.map((s) => (
                 <div key={s.label}>
-                  <dt className="text-[10px] font-semibold tracking-[0.2em] text-[#0B1A2E]/56">
+                  <dt className="text-[10px] font-semibold tracking-[0.2em] text-indigo/56">
                     <L en={s.label.toUpperCase()} ja={specLabelJp(s.label)} />
                   </dt>
-                  <dd className="mt-1.5 font-serif text-[17px] text-[#0B1A2E]">
+                  <dd className="mt-1.5 font-serif text-[17px] text-indigo">
                     {s.value}
                   </dd>
                 </div>
               ))}
             </dl>
           </div>
-          <div className="md:border-l md:border-[#0B1A2E]/12 md:pl-14">
-            <p className="font-serif text-[11px] font-semibold tracking-[0.3em] text-[#0B1A2E]/66">
+          <div className="md:border-l md:border-indigo/12 md:pl-14">
+            <p className="font-serif text-[11px] font-semibold tracking-[0.3em] text-indigo/66">
               <L en="SERVING" ja="飲み方" />
             </p>
-            <div className="mt-4 h-px w-8 bg-[#0B1A2E]/30" />
-            <p className="mt-7 text-[10px] font-semibold tracking-[0.2em] text-[#0B1A2E]/56">
+            <div className="mt-4 h-px w-8 bg-indigo/30" />
+            <p className="mt-7 text-[10px] font-semibold tracking-[0.2em] text-indigo/56">
               <L en="SUGGESTED TEMPERATURE" ja="おすすめ温度" />
             </p>
-            <p className="mt-2 font-serif text-[18px] text-[#0B1A2E]">
+            <p className="mt-2 font-serif text-[18px] text-indigo">
               <L en={product.serveTemp} ja={product.serveTempJp} />
             </p>
           </div>
@@ -276,28 +276,28 @@ export default async function ProductDetailPage({
       </section>
 
       {/* ===== Collection strip ===== */}
-      <section className="border-t border-[#0B1A2E]/10 bg-paper">
+      <section className="border-t border-indigo/10 bg-paper">
         <div className="mx-auto max-w-[1280px] px-7 py-14 md:px-12 md:py-20">
           <div className="flex items-end justify-between gap-6">
             <div>
-              <p className="font-serif text-[11px] font-semibold tracking-[0.3em] text-[#0B1A2E]/66">
+              <p className="font-serif text-[11px] font-semibold tracking-[0.3em] text-indigo/66">
                 <L en="THE COLLECTION" ja="ザ・コレクション" />
               </p>
-              <h2 className="mt-3 font-serif text-[clamp(22px,2.4vw,30px)] font-semibold tracking-[0.06em] text-[#0B1A2E]">
+              <h2 className="mt-3 font-serif text-[clamp(22px,2.4vw,30px)] font-semibold tracking-[0.06em] text-indigo">
                 <L en="Explore other Fujisan" ja="他の富士山シリーズを見る" />
               </h2>
             </div>
             <Link
               href="/shop/personal"
-              className="group/all inline-flex shrink-0 items-center gap-2.5 text-[11px] font-semibold tracking-[0.22em] text-[#0B1A2E]/70 no-underline"
+              className="group/all inline-flex shrink-0 items-center gap-2.5 text-[11px] font-semibold tracking-[0.22em] text-indigo/70 no-underline"
             >
               <span className="relative pb-1">
                 <L en="VIEW ALL" ja="一覧を見る" />
-                <span className="absolute inset-x-0 bottom-0 h-px bg-[#0B1A2E]/35 transition-colors duration-500 group-hover/all:bg-[#C9A84C]" />
+                <span className="absolute inset-x-0 bottom-0 h-px bg-indigo/35 transition-colors duration-500 group-hover/all:bg-gold" />
               </span>
               <span
                 aria-hidden
-                className="transition-transform duration-500 group-hover/all:translate-x-1 group-hover/all:text-[#C9A84C]"
+                className="transition-transform duration-500 group-hover/all:translate-x-1 group-hover/all:text-gold"
               >
                 →
               </span>
@@ -309,7 +309,7 @@ export default async function ProductDetailPage({
       </section>
 
       {/* ===== Prev / Next ===== */}
-      <section className="border-t border-[#0B1A2E]/10 bg-paper-tint">
+      <section className="border-t border-indigo/10 bg-paper-tint">
         <div className="mx-auto grid max-w-[1280px] grid-cols-1 md:grid-cols-2">
           {[
             {
@@ -330,13 +330,13 @@ export default async function ProductDetailPage({
             <Link
               key={p.slug}
               href={`/products/${p.slug}`}
-              className={`group flex flex-col gap-2 border-[#0B1A2E]/10 px-7 py-10 no-underline transition-colors hover:bg-paper md:px-12 md:py-14 ${
+              className={`group flex flex-col gap-2 border-indigo/10 px-7 py-10 no-underline transition-colors hover:bg-paper md:px-12 md:py-14 ${
                 align === "right"
                   ? "md:items-end md:text-right md:border-l"
                   : "md:items-start border-b md:border-b-0"
               }`}
             >
-              <span className="text-[10px] font-semibold tracking-[0.28em] text-[#0B1A2E]/60">
+              <span className="text-[10px] font-semibold tracking-[0.28em] text-indigo/60">
                 <L
                   en={
                     align === "left"
@@ -350,10 +350,10 @@ export default async function ProductDetailPage({
                   }
                 />
               </span>
-              <span className="font-serif text-[clamp(22px,2.4vw,30px)] font-semibold tracking-[0.04em] text-[#0B1A2E] group-hover:text-[#C9A84C]">
+              <span className="font-serif text-[clamp(22px,2.4vw,30px)] font-semibold tracking-[0.04em] text-indigo group-hover:text-gold">
                 {p.name} <L en={p.variant} ja={p.variantJp} />
               </span>
-              <span className="text-[11px] font-semibold tracking-[0.16em] text-[#0B1A2E]/72">
+              <span className="text-[11px] font-semibold tracking-[0.16em] text-indigo/72">
                 <L en={p.variantLine} ja={p.variantLineJp} />
               </span>
             </Link>

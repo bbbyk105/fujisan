@@ -20,7 +20,7 @@ export default async function RegisterPersonalPage() {
       mode="register"
       brand={{
         kanji: "登録",
-        kickerJp: "― 新規会員登録 ―",
+        kickerJp: "新規会員登録",
         titleEn: "A quiet place at the table.",
         titleJp: "食卓に、ひとつの居場所を。",
         textEn:

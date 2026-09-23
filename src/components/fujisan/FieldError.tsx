@@ -36,7 +36,7 @@ export function FieldError({ error }: { error?: FieldErrorKey }) {
   return (
     <p
       role="alert"
-      className="mt-1.5 text-[11.5px] leading-[1.5] text-[#8B1A1A]"
+      className="mt-1.5 text-[11.5px] leading-[1.5] text-crimson"
     >
       <L en={m.en} ja={m.ja} />
     </p>

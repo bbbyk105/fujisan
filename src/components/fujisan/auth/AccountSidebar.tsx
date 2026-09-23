@@ -7,7 +7,6 @@ export type SidebarItem = {
   id: string;
   en: string;
   ja: string;
-  number: string;
 };
 
 type Props = {
@@ -53,32 +52,16 @@ export function AccountSidebar({ items }: Props) {
         {items.map((item) => {
           const isActive = active === item.id;
           return (
-            <li key={item.id} className="lg:border-b lg:border-[#0B1A2E]/8">
+            <li key={item.id}>
               <a
                 href={`#${item.id}`}
-                className={`group flex items-center gap-3 whitespace-nowrap px-4 py-3 text-[11px] font-semibold tracking-[0.26em] no-underline transition-colors lg:px-2 lg:py-4 ${
+                className={`flex whitespace-nowrap border-l-2 py-2.5 pl-4 text-[13px] font-semibold tracking-[0.06em] no-underline transition-colors lg:py-3 ${
                   isActive
-                    ? "text-[#0B1A2E]"
-                    : "text-[#0B1A2E]/45 hover:text-[#0B1A2E]/80"
+                    ? "border-indigo text-indigo"
+                    : "border-transparent text-indigo/45 hover:text-indigo/80"
                 }`}
               >
-                <span
-                  className={`font-serif text-[12px] tracking-[0.3em] transition-colors ${
-                    isActive ? "text-[#C9A84C]" : "text-[#0B1A2E]/30"
-                  }`}
-                >
-                  {item.number}
-                </span>
-                <span
-                  className={`h-px w-4 transition-all duration-500 ${
-                    isActive ? "w-8 bg-[#C9A84C]" : "bg-[#0B1A2E]/15"
-                  }`}
-                />
-                <span className="flex flex-col items-start gap-[2px]">
-                  <span>
-                    <L en={item.en} ja={item.ja} />
-                  </span>
-                </span>
+                <L en={item.en} ja={item.ja} />
               </a>
             </li>
           );

@@ -116,7 +116,7 @@ export default async function AdminOrdersPage(props: {
     .reduce((sum, o) => sum + o.total, 0);
 
   return (
-    <main className="flex min-h-screen flex-col bg-paper text-[#0B1A2E]">
+    <main className="flex min-h-screen flex-col bg-paper text-indigo">
       <FujisanNav />
 
       <AdminHeader
@@ -144,11 +144,11 @@ export default async function AdminOrdersPage(props: {
       {/* Body */}
       <section className="mx-auto w-full max-w-[1480px] flex-1 px-7 pb-24 pt-12 md:px-12 md:pt-14">
         {orders.length === 0 ? (
-          <div className="border border-dashed border-[#0B1A2E]/25 bg-paper/55 px-7 py-16 text-center">
-            <p className="font-serif text-[15px] font-semibold tracking-[0.04em] text-[#0B1A2E]">
+          <div className="border border-dashed border-indigo/25 bg-paper/55 px-7 py-16 text-center">
+            <p className="font-serif text-[15px] font-semibold tracking-[0.04em] text-indigo">
               まだ注文がありません。
             </p>
-            <p className="mx-auto mt-3 max-w-[42ch] text-[12.5px] leading-[1.75] text-[#0B1A2E]/70">
+            <p className="mx-auto mt-3 max-w-[42ch] text-[12.5px] leading-[1.75] text-indigo/70">
               お客様の決済が完了すると、ここに表示されステータスや追跡番号を更新できます。
             </p>
           </div>
@@ -159,7 +159,7 @@ export default async function AdminOrdersPage(props: {
             {/* ステータス絞り込みタブ */}
             <nav
               aria-label="注文の絞り込み"
-              className="flex flex-wrap items-center gap-2 border-b border-[#0B1A2E]/15 pb-4"
+              className="flex flex-wrap items-center gap-2 border-b border-indigo/15 pb-4"
             >
               {FILTERS.map((f) => {
                 const active = f.key === filter.key;
@@ -173,14 +173,14 @@ export default async function AdminOrdersPage(props: {
                     aria-current={active ? "page" : undefined}
                     className={`inline-flex items-center gap-2 border px-4 py-2 text-[10.5px] font-semibold tracking-[0.2em] no-underline transition-colors ${
                       active
-                        ? "border-[#0B1A2E] bg-[#0B1A2E] text-paper-card"
-                        : "border-[#0B1A2E]/20 bg-transparent text-[#0B1A2E]/70 hover:border-[#0B1A2E]/50 hover:text-[#0B1A2E]"
+                        ? "border-indigo bg-indigo text-paper-card"
+                        : "border-indigo/20 bg-transparent text-indigo/70 hover:border-indigo/50 hover:text-indigo"
                     }`}
                   >
                     {f.label}
                     <span
                       className={`font-serif text-[11.5px] tracking-normal ${
-                        active ? "text-paper-card/75" : "text-[#0B1A2E]/45"
+                        active ? "text-paper-card/75" : "text-indigo/45"
                       }`}
                     >
                       {count}
@@ -191,15 +191,15 @@ export default async function AdminOrdersPage(props: {
             </nav>
 
             {visibleOrders.length === 0 ? (
-              <div className="mt-8 border border-dashed border-[#0B1A2E]/25 bg-paper/55 px-7 py-14 text-center">
-                <p className="font-serif text-[14px] font-semibold tracking-[0.04em] text-[#0B1A2E]">
+              <div className="mt-8 border border-dashed border-indigo/25 bg-paper/55 px-7 py-14 text-center">
+                <p className="font-serif text-[14px] font-semibold tracking-[0.04em] text-indigo">
                   「{filter.label}」の注文はありません。
                 </p>
               </div>
             ) : (
               <>
                 {/* Table header（モバイルは各行がカード表示になるため非表示） */}
-                <div className="mt-6 hidden grid-cols-[120px_minmax(0,1fr)_110px_100px_130px_24px] items-center gap-4 border-b border-[#0B1A2E]/15 px-6 pb-3 text-[10px] font-semibold tracking-[0.28em] text-[#0B1A2E]/55 md:grid">
+                <div className="mt-6 hidden grid-cols-[120px_minmax(0,1fr)_110px_100px_130px_24px] items-center gap-4 border-b border-indigo/15 px-6 pb-3 text-[10px] font-semibold tracking-[0.28em] text-indigo/55 md:grid">
                   <span>注文番号</span>
                   <span>顧客</span>
                   <span>注文日</span>

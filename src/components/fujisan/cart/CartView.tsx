@@ -48,7 +48,7 @@ function QtyStepper({
         type="button"
         aria-label="数量を減らす"
         onClick={() => onChange(qty - 1)}
-        className="flex h-11 w-11 cursor-pointer items-center justify-center text-[18px] font-light text-[#0B1A2E]/45 transition-colors hover:text-[#0B1A2E]"
+        className="flex h-11 w-11 cursor-pointer items-center justify-center text-[18px] font-light text-indigo/45 transition-colors hover:text-indigo"
       >
         −
       </button>
@@ -60,13 +60,13 @@ function QtyStepper({
         value={qty}
         onChange={(e) => onChange(Number(e.target.value) || 1)}
         aria-label="数量"
-        className="w-9 border-b border-[#0B1A2E]/30 bg-transparent pb-0.5 text-center text-[13px] font-semibold tracking-[0.08em] text-[#0B1A2E] outline-none"
+        className="w-9 border-b border-indigo/30 bg-transparent pb-0.5 text-center text-[13px] font-semibold tracking-[0.08em] text-indigo outline-none"
       />
       <button
         type="button"
         aria-label="数量を増やす"
         onClick={() => onChange(qty + 1)}
-        className="flex h-11 w-11 cursor-pointer items-center justify-center text-[18px] font-light text-[#0B1A2E]/45 transition-colors hover:text-[#0B1A2E]"
+        className="flex h-11 w-11 cursor-pointer items-center justify-center text-[18px] font-light text-indigo/45 transition-colors hover:text-indigo"
       >
         ＋
       </button>
@@ -90,7 +90,7 @@ function LineStockNotice({ stock }: { stock: LineStock }) {
   if (!stock) return null;
   if (stock.kind === "soldout") {
     return (
-      <p className="mt-2 text-[11.5px] font-semibold leading-[1.6] text-[#8B1A1A]">
+      <p className="mt-2 text-[11.5px] font-semibold leading-[1.6] text-crimson">
         <L
           en="Sold out — please remove this item to continue."
           ja="完売しました。お手数ですが削除してお進みください。"
@@ -99,7 +99,7 @@ function LineStockNotice({ stock }: { stock: LineStock }) {
     );
   }
   return (
-    <p className="mt-2 text-[11.5px] font-semibold leading-[1.6] text-[#8A6D1F]">
+    <p className="mt-2 text-[11.5px] font-semibold leading-[1.6] text-gold-ink">
       <L
         en={`Only ${stock.available} left — please reduce the quantity.`}
         ja={`残り ${stock.available} 本です。数量を減らしてください。`}
@@ -206,7 +206,7 @@ export function CartView() {
       en: `${name} ${ml}ml removed from your cart`,
       action: {
         ja: "元に戻す",
-        en: "UNDO",
+        en: "Undo",
         onClick: () => add(slug, ml, qty),
       },
     });
@@ -225,16 +225,16 @@ export function CartView() {
     return (
       <section className="bg-paper">
         <div className="mx-auto max-w-[1280px] px-7 py-24 text-center md:px-12 md:py-32">
-          <p className="font-serif text-[11px] font-semibold tracking-[0.3em] text-[#0B1A2E]/55">
-            <L en="YOUR CART IS EMPTY" ja="カートは空です" />
+          <p className="ed-label">
+            <L en="Your cart is empty" ja="カートは空です" />
           </p>
-          <h2 className="mt-5 font-serif text-[clamp(22px,2.4vw,30px)] font-semibold tracking-[0.04em] text-[#0B1A2E]">
+          <h2 className="mt-5 font-serif text-[clamp(22px,2.4vw,30px)] font-semibold tracking-[0.04em] text-indigo">
             <L
               en="No bottles yet."
               ja="まだ、何も入っていません。"
             />
           </h2>
-          <p className="mx-auto mt-4 max-w-[440px] text-[13.5px] leading-[1.78] text-[#1D2432]/76">
+          <p className="mx-auto mt-4 max-w-[440px] text-[13.5px] leading-[1.78] text-indigo/76">
             <L
               en="Browse the collection and add the bottle that calls to you."
               ja="コレクションから、一本お選びください。"
@@ -242,21 +242,15 @@ export function CartView() {
           </p>
           <Link
             href="/shop/personal"
-            className="group/btn mt-9 inline-flex items-center justify-center gap-3 border border-[#0B1A2E] bg-[#0B1A2E] px-8 py-4 text-[10.5px] font-semibold tracking-[0.32em] text-paper-card no-underline transition-colors hover:bg-[#1D2432]"
+            className="ed-btn mt-9"
           >
-            <L en="BROWSE THE COLLECTION" ja="コレクションを見る" />
-            <span
-              aria-hidden
-              className="transition-transform duration-500 group-hover/btn:translate-x-1"
-            >
-              →
-            </span>
+            <L en="Browse the collection" ja="コレクションを見る" />
           </Link>
 
           {/* 人気の銘柄サジェスト */}
-          <div className="mt-16 border-t border-[#0B1A2E]/12 pt-12">
-            <p className="font-serif text-[11px] font-semibold tracking-[0.3em] text-[#0B1A2E]/55">
-              <L en="POPULAR BOTTLES" ja="人気の銘柄" />
+          <div className="mt-16 border-t border-indigo/12 pt-12">
+            <p className="ed-label">
+              <L en="Popular bottles" ja="人気の銘柄" />
             </p>
             <div className="mx-auto mt-8 grid max-w-[680px] grid-cols-1 gap-6 sm:grid-cols-3">
               {fujisanProducts.slice(0, 3).map((p) => (
@@ -275,12 +269,12 @@ export function CartView() {
                   </Link>
                   <Link
                     href={`/products/${p.slug}`}
-                    className="mt-3 font-serif text-[13.5px] font-semibold tracking-[0.08em] text-[#0B1A2E] no-underline transition-colors hover:text-[#C9A84C]"
+                    className="mt-3 font-serif text-[13.5px] font-semibold tracking-[0.08em] text-indigo no-underline transition-colors hover:text-gold"
                   >
                     {p.name}{" "}
-                    <span className="text-[#0B1A2E]/55">{p.variant}</span>
+                    <span className="text-indigo/55">{p.variant}</span>
                   </Link>
-                  <p className="mt-1 font-serif text-[13px] font-semibold text-[#0B1A2E]">
+                  <p className="mt-1 font-serif text-[13px] font-semibold text-indigo">
                     <LivePrice
                       slug={p.slug}
                       ml={primaryVolume(p).ml}
@@ -290,9 +284,9 @@ export function CartView() {
                   <button
                     type="button"
                     onClick={() => quickAdd(p.slug, primaryVolume(p).ml, p.name)}
-                    className="mt-3 cursor-pointer border border-[#0B1A2E]/30 px-5 py-2 text-[10px] font-semibold tracking-[0.24em] text-[#0B1A2E] transition-colors hover:border-[#0B1A2E] hover:bg-[#0B1A2E] hover:text-paper-card"
+                    className="ed-btn mt-3"
                   >
-                    <L en="ADD" ja="追加" />
+                    <L en="Add" ja="追加" />
                   </button>
                 </div>
               ))}
@@ -317,11 +311,11 @@ export function CartView() {
       <div className="mx-auto grid max-w-[1280px] grid-cols-1 gap-12 px-7 py-16 md:px-12 md:py-20 lg:grid-cols-[1.5fr_1fr] lg:gap-16">
         {/* Line items */}
         <div>
-          <div className="flex items-baseline justify-between border-b border-[#0B1A2E]/15 pb-4">
-            <p className="font-serif text-[11px] font-semibold tracking-[0.3em] text-[#0B1A2E]/66">
-              <L en="ITEMS" ja="ご注文の商品" />
+          <div className="flex items-baseline justify-between border-b border-indigo/15 pb-4">
+            <p className="ed-label">
+              <L en="Items" ja="ご注文の商品" />
             </p>
-            <p className="text-[11px] font-semibold tracking-[0.2em] text-[#0B1A2E]/60">
+            <p className="text-[11px] font-semibold tracking-[0.2em] text-indigo/60">
               <L en={`${count} bottle(s)`} ja={`${count} 本`} />
             </p>
           </div>
@@ -340,7 +334,7 @@ export function CartView() {
               return (
               <li
                 key={lineKey}
-                className="flex gap-5 border-b border-[#0B1A2E]/10 py-7"
+                className="flex gap-5 border-b border-indigo/10 py-7"
               >
                 <Link
                   href={`/products/${slug}`}
@@ -360,20 +354,20 @@ export function CartView() {
                     <div>
                       <Link
                         href={`/products/${slug}`}
-                        className="font-serif text-[15px] font-semibold tracking-[0.1em] text-[#0B1A2E] no-underline transition-colors hover:text-[#C9A84C]"
+                        className="font-serif text-[15px] font-semibold tracking-[0.1em] text-indigo no-underline transition-colors hover:text-gold"
                       >
                         {product.name}
                       </Link>
-                      <p className="mt-1 text-[10.5px] font-semibold tracking-[0.16em] text-[#0B1A2E]/62">
+                      <p className="mt-1 text-[11.5px] font-semibold tracking-[0.16em] text-indigo/62">
                         <L
                           en={product.variantLine}
                           ja={product.variantLineJp}
                         />
-                        <span className="mx-1.5 text-[#0B1A2E]/30">·</span>
+                        <span className="mx-1.5 text-indigo/30">·</span>
                         {ml}ml
                       </p>
                     </div>
-                    <p className="shrink-0 font-serif text-[15px] font-semibold tracking-[0.02em] text-[#0B1A2E]">
+                    <p className="shrink-0 font-serif text-[15px] font-semibold tracking-[0.02em] text-indigo">
                       ¥{yen.format(lineTotal)}
                     </p>
                   </div>
@@ -387,7 +381,7 @@ export function CartView() {
                     />
                     {confirmingKey === lineKey ? (
                       <div className="flex items-center gap-3 text-[11px] tracking-[0.14em]">
-                        <span className="text-[#0B1A2E]/70">
+                        <span className="text-indigo/70">
                           <L en="Remove?" ja="削除しますか？" />
                         </span>
                         <button
@@ -395,14 +389,14 @@ export function CartView() {
                           onClick={() =>
                             confirmRemove(slug, ml, product.name, qty)
                           }
-                          className="cursor-pointer font-semibold text-[#8B1A1A] underline decoration-[#8B1A1A]/30 underline-offset-4 transition-colors hover:decoration-[#8B1A1A]"
+                          className="cursor-pointer font-semibold text-crimson underline decoration-crimson/30 underline-offset-4 transition-colors hover:decoration-crimson"
                         >
                           <L en="Yes" ja="削除する" />
                         </button>
                         <button
                           type="button"
                           onClick={() => setConfirmingKey(null)}
-                          className="cursor-pointer text-[#0B1A2E]/55 transition-colors hover:text-[#0B1A2E]"
+                          className="cursor-pointer text-indigo/55 transition-colors hover:text-indigo"
                         >
                           <L en="Cancel" ja="キャンセル" />
                         </button>
@@ -411,7 +405,7 @@ export function CartView() {
                       <button
                         type="button"
                         onClick={() => setConfirmingKey(lineKey)}
-                        className="cursor-pointer text-[11px] tracking-[0.18em] text-[#0B1A2E]/55 underline decoration-[#0B1A2E]/20 underline-offset-4 transition-colors hover:text-[#8B1A1A]"
+                        className="cursor-pointer text-[11px] tracking-[0.18em] text-indigo/55 underline decoration-indigo/20 underline-offset-4 transition-colors hover:text-crimson"
                       >
                         <L en="Remove" ja="削除" />
                       </button>
@@ -425,21 +419,20 @@ export function CartView() {
 
           <Link
             href="/shop/personal"
-            className="group/link mt-7 inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.22em] text-[#0B1A2E]/70 no-underline transition-colors hover:text-[#0B1A2E]"
+            className="group/link mt-7 inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.22em] text-indigo/70 no-underline transition-colors hover:text-indigo"
           >
             <span aria-hidden>←</span>
-            <L en="CONTINUE SHOPPING" ja="買い物を続ける" />
+            <L en="Continue shopping" ja="買い物を続ける" />
           </Link>
         </div>
 
         {/* Summary */}
-        <aside className="h-fit border border-[#0B1A2E]/12 bg-paper-card px-7 py-9 lg:sticky lg:top-[104px]">
-          <p className="font-serif text-[11px] font-semibold tracking-[0.3em] text-[#0B1A2E]/66">
-            <L en="ORDER SUMMARY" ja="ご注文内容" />
+        <aside className="h-fit border-t-2 border-indigo bg-paper-tint/40 px-6 py-8 lg:sticky lg:top-[104px]">
+          <p className="ed-label">
+            <L en="Order summary" ja="ご注文内容" />
           </p>
-          <div className="mt-4 h-px w-8 bg-[#0B1A2E]/30" />
 
-          <dl className="mt-7 space-y-3 text-[13px] text-[#1D2432]/85">
+          <dl className="mt-7 space-y-3 text-[13px] text-indigo/85">
             <div className="flex items-center justify-between">
               <dt>
                 <L en="Subtotal (tax incl.)" ja="小計（税込）" />
@@ -463,13 +456,13 @@ export function CartView() {
           {/* 送料無料までの進捗 */}
           {SHIPPING_FEE.freeThresholdJpy > 0 ? (
             <div className="mt-6">
-              <p className="text-[11px] leading-[1.6] tracking-[0.02em] text-[#0B1A2E]/72">
+              <p className="text-[11px] leading-[1.6] tracking-[0.02em] text-indigo/72">
                 {freeReached ? (
                   <L
                     en="Your order ships free."
                     ja={
                       <>
-                        <span className="font-semibold text-[#0B1A2E]">
+                        <span className="font-semibold text-indigo">
                           送料無料
                         </span>
                         でお届けします。
@@ -482,7 +475,7 @@ export function CartView() {
                     ja={
                       <>
                         あと
-                        <span className="font-semibold text-[#0B1A2E]">
+                        <span className="font-semibold text-indigo">
                           ¥{yen.format(toFree)}
                         </span>
                         で送料無料
@@ -491,26 +484,26 @@ export function CartView() {
                   />
                 )}
               </p>
-              <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-[#0B1A2E]/10">
+              <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-indigo/10">
                 <div
-                  className="h-full rounded-full bg-[#C9A84C] transition-[width] duration-500"
+                  className="h-full rounded-full bg-gold transition-[width] duration-500"
                   style={{ width: `${freeProgress}%` }}
                 />
               </div>
             </div>
           ) : null}
 
-          <div className="mt-5 flex items-baseline justify-between border-t border-[#0B1A2E]/15 pt-5">
-            <p className="text-[11px] font-semibold tracking-[0.2em] text-[#0B1A2E]/70">
-              <L en="TOTAL" ja="合計" />
+          <div className="mt-5 flex items-baseline justify-between border-t border-indigo/15 pt-5">
+            <p className="text-[11px] font-semibold tracking-[0.2em] text-indigo/70">
+              <L en="Total" ja="合計" />
             </p>
             {/* 金額は年齢確認より小さくする（国税局指導）。拡大しないこと。 */}
-            <p className="font-serif text-[18px] font-semibold tracking-[0.02em] text-[#0B1A2E]">
+            <p className="font-serif text-[18px] font-semibold tracking-[0.02em] text-indigo">
               ¥{yen.format(total)}
             </p>
           </div>
 
-          <p className="mt-3 text-[10.5px] leading-[1.7] text-[#0B1A2E]/55">
+          <p className="mt-3 text-[11.5px] leading-[1.7] text-indigo/55">
             <L
               en={`${SHIPPING_FEE.flatEn} · ${SHIPPING_FEE.freeEn}`}
               ja={`${SHIPPING_FEE.flat}・${SHIPPING_FEE.free}`}
@@ -521,7 +514,7 @@ export function CartView() {
           {canceled ? (
             <p
               role="status"
-              className="mt-6 border border-gold/45 bg-paper-tint/80 px-4 py-3 text-[11.5px] leading-[1.7] text-[#1D2432]/85"
+              className="mt-6 border border-gold/45 bg-paper-tint/80 px-4 py-3 text-[11.5px] leading-[1.7] text-indigo/85"
             >
               <L
                 en="Payment was canceled — your cart is unchanged. You can try again anytime."
@@ -531,14 +524,14 @@ export function CartView() {
           ) : null}
 
           {/* 国内発送のみ・海外案内 */}
-          <p className="mt-6 text-[11px] leading-[1.7] text-[#0B1A2E]/60">
+          <p className="mt-6 text-[11px] leading-[1.7] text-indigo/60">
             <L
               en={
                 <>
                   We ship within Japan only. For delivery outside Japan, please{" "}
                   <Link
                     href="/contact"
-                    className="font-semibold text-[#0B1A2E] underline decoration-gold/60 underline-offset-2 transition-colors hover:decoration-gold"
+                    className="font-semibold text-indigo underline decoration-gold/60 underline-offset-2 transition-colors hover:decoration-gold"
                   >
                     contact us
                   </Link>
@@ -550,7 +543,7 @@ export function CartView() {
                   発送は日本国内のみです。海外発送をご希望の方は
                   <Link
                     href="/contact"
-                    className="font-semibold text-[#0B1A2E] underline decoration-gold/60 underline-offset-2 transition-colors hover:decoration-gold"
+                    className="font-semibold text-indigo underline decoration-gold/60 underline-offset-2 transition-colors hover:decoration-gold"
                   >
                     お問い合わせ
                   </Link>
@@ -562,7 +555,7 @@ export function CartView() {
 
           {/* 年齢確認（酒類のため法令上必須） */}
           {/* 国税局の指導: 「20歳以上」は金額より大きく。縮小しないこと。 */}
-          <label className="mt-6 flex cursor-pointer items-start gap-4 border border-[#0B1A2E]/30 bg-paper-tint/70 px-5 py-5 select-none">
+          <label className="mt-6 flex cursor-pointer items-start gap-4 border border-indigo/30 bg-paper-tint/70 px-5 py-5 select-none">
             <input
               type="checkbox"
               checked={ageConfirmed}
@@ -571,9 +564,9 @@ export function CartView() {
                 if (e.target.checked) setCheckoutError(null);
               }}
               aria-invalid={checkoutError === "age" ? "true" : undefined}
-              className="mt-1.5 h-[22px] w-[22px] shrink-0 cursor-pointer border-[#0B1A2E]/50 accent-[#0B1A2E]"
+              className="mt-1.5 h-[22px] w-[22px] shrink-0 cursor-pointer border-indigo/50 accent-indigo"
             />
-            <span className="text-[22px] leading-[1.7] text-[#0B1A2E] md:text-[24px]">
+            <span className="text-[22px] leading-[1.7] text-indigo md:text-[24px]">
               <L
                 en={
                   <>
@@ -607,7 +600,7 @@ export function CartView() {
           {!isPending && !loggedIn ? (
             <div
               role="note"
-              className="mt-5 border border-gold/45 bg-paper-tint/80 px-4 py-4 text-[12px] leading-[1.7] text-[#1D2432]/88"
+              className="mt-5 border border-gold/45 bg-paper-tint/80 px-4 py-4 text-[12px] leading-[1.7] text-indigo/88"
             >
               <p className="font-semibold">
                 <L
@@ -618,15 +611,15 @@ export function CartView() {
               <div className="mt-3 flex flex-wrap gap-3">
                 <Link
                   href="/login/personal"
-                  className="inline-flex items-center gap-2 border border-[#0B1A2E] bg-[#0B1A2E] px-5 py-2.5 text-[10.5px] font-semibold tracking-[0.24em] text-paper-card no-underline transition-colors hover:bg-[#1D2432]"
+                  className="ed-btn"
                 >
-                  <L en="SIGN IN" ja="ログイン" />
+                  <L en="Sign in" ja="ログイン" />
                 </Link>
                 <Link
                   href="/register/personal"
-                  className="inline-flex items-center gap-2 border border-[#0B1A2E]/30 px-5 py-2.5 text-[10.5px] font-semibold tracking-[0.24em] text-[#0B1A2E] no-underline transition-colors hover:border-[#0B1A2E]"
+                  className="ed-btn-ghost"
                 >
-                  <L en="CREATE ACCOUNT" ja="新規登録" />
+                  <L en="Create account" ja="新規登録" />
                 </Link>
               </div>
             </div>
@@ -704,7 +697,7 @@ export function CartView() {
           {blockedByStock ? (
             <p
               role="alert"
-              className="mt-6 border border-[#8B1A1A]/40 bg-[#8B1A1A]/[0.06] px-4 py-3 text-[12px] leading-[1.7] text-[#8B1A1A]"
+              className="mt-6 border border-crimson/40 bg-crimson/[0.06] px-4 py-3 text-[12px] leading-[1.7] text-crimson"
             >
               <L
                 en="Some items in your cart are no longer available in the quantity you selected. Please adjust them above to continue."
@@ -717,10 +710,10 @@ export function CartView() {
             type="button"
             onClick={handleCheckout}
             disabled={submitting || (!isPending && !loggedIn) || blockedByStock}
-            className={`group/btn mt-6 inline-flex w-full items-center justify-center gap-3 px-7 py-4 text-[11px] font-semibold tracking-[0.28em] transition-all ${
+            className={`group/btn mt-6 inline-flex w-full items-center justify-center gap-3 px-7 py-4 text-[11px] font-semibold tracking-[0.12em] transition-all ${
               submitting || (!isPending && !loggedIn) || blockedByStock
-                ? "cursor-not-allowed border border-[#0B1A2E]/25 bg-[#0B1A2E]/12 text-[#0B1A2E]/45"
-                : "cursor-pointer border border-[#0B1A2E] bg-[#0B1A2E] text-paper-card hover:bg-[#1D2432]"
+                ? "cursor-not-allowed border border-indigo/25 bg-indigo/12 text-indigo/45"
+                : "cursor-pointer border border-indigo bg-indigo text-paper-card hover:bg-indigo-lift"
             }`}
           >
             {submitting ? (
@@ -731,17 +724,11 @@ export function CartView() {
                   en={`PROCEED TO PAYMENT · ¥${yen.format(total)}`}
                   ja={`お支払いへ進む · ¥${yen.format(total)}`}
                 />
-                <span
-                  aria-hidden
-                  className="transition-transform duration-500 group-hover/btn:translate-x-1"
-                >
-                  →
-                </span>
               </>
             )}
           </button>
 
-          <p className="mt-4 text-[10.5px] leading-[1.7] text-[#0B1A2E]/55">
+          <p className="mt-4 text-[11.5px] leading-[1.7] text-indigo/55">
             <L
               en="Payment is completed securely on the next screen (Stripe). We ship to the address on your account — if none is saved, you'll enter it at checkout."
               ja="お支払いは次の画面（Stripe の安全な決済ページ）で行います。お届け先はご登録の住所へ。未登録の場合は決済画面でご入力いただきます。"

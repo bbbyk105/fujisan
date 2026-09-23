@@ -23,10 +23,10 @@ const ERROR_MESSAGES: Record<string, string> = {
 type DisplayStatus = TradeStatus | "none";
 
 const STATUS_STYLE: Record<DisplayStatus, string> = {
-  none: "border-[#0B1A2E]/30 bg-[#0B1A2E]/6 text-[#0B1A2E]/70",
-  pending: "border-[#C9A84C]/60 bg-[#C9A84C]/12 text-[#8A6F1E]",
-  approved: "border-[#2F5A2F]/40 bg-[#2F5A2F]/8 text-[#2F5A2F]",
-  rejected: "border-[#8B1A1A]/45 bg-[#8B1A1A]/8 text-[#8B1A1A]",
+  none: "border-indigo/30 bg-indigo/6 text-indigo/70",
+  pending: "border-gold/60 bg-gold/12 text-gold-ink",
+  approved: "border-moss/40 bg-moss/8 text-moss",
+  rejected: "border-crimson/45 bg-crimson/8 text-crimson",
 };
 
 const STATUS_TEXT: Record<DisplayStatus, string> = {
@@ -90,7 +90,7 @@ export function AdminTradeRow({ account }: { account: TradeAccountRow }) {
     : null;
 
   return (
-    <li className="border border-[#0B1A2E]/12 bg-white px-6 py-5">
+    <li className="border border-indigo/12 bg-white px-6 py-5">
       <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
           <span
@@ -98,18 +98,18 @@ export function AdminTradeRow({ account }: { account: TradeAccountRow }) {
           >
             {STATUS_TEXT[status]}
           </span>
-          <h2 className="font-serif text-[16px] font-semibold tracking-[0.04em] text-[#0B1A2E]">
+          <h2 className="font-serif text-[16px] font-semibold tracking-[0.04em] text-indigo">
             {account.companyName || "（会社名未登録）"}
           </h2>
           {typeLabel && (
-            <span className="text-[11px] tracking-[0.12em] text-[#0B1A2E]/55">
+            <span className="text-[11px] tracking-[0.12em] text-indigo/55">
               {typeLabel}
             </span>
           )}
         </div>
         <span
           className={`text-[10px] font-semibold tracking-[0.24em] ${
-            account.emailVerified ? "text-[#2F5A2F]" : "text-[#8B1A1A]"
+            account.emailVerified ? "text-moss" : "text-crimson"
           }`}
         >
           {account.emailVerified ? "メール認証済" : "メール未認証"}
@@ -127,17 +127,17 @@ export function AdminTradeRow({ account }: { account: TradeAccountRow }) {
         </div>
       </dl>
 
-      <div className="mt-5 border-t border-[#0B1A2E]/10 pt-4">
+      <div className="mt-5 border-t border-indigo/10 pt-4">
         {status === "approved" ? (
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-            <p className="text-[12px] text-[#0B1A2E]/70">
+            <p className="text-[12px] text-indigo/70">
               承認済み。卸価格が表示されます。
             </p>
             <button
               type="button"
               disabled={pending}
               onClick={() => review("rejected")}
-              className="border border-[#8B1A1A]/45 px-4 py-2 text-[10.5px] font-semibold tracking-[0.24em] text-[#8B1A1A] hover:bg-[#8B1A1A]/8 disabled:opacity-60"
+              className="border border-crimson/45 px-4 py-2 text-[10.5px] font-semibold tracking-[0.24em] text-crimson hover:bg-crimson/8 disabled:opacity-60"
             >
               承認を取り消す
             </button>
@@ -146,7 +146,7 @@ export function AdminTradeRow({ account }: { account: TradeAccountRow }) {
           <div className="flex flex-col gap-3">
             <label
               htmlFor={`note-${account.id}`}
-              className="text-[9.5px] font-semibold tracking-[0.28em] text-[#0B1A2E]/50"
+              className="text-[9.5px] font-semibold tracking-[0.28em] text-indigo/50"
             >
               見送りの理由（お客様へのメールにそのまま載ります）
             </label>
@@ -157,14 +157,14 @@ export function AdminTradeRow({ account }: { account: TradeAccountRow }) {
               rows={2}
               onChange={(e) => setNote(e.target.value)}
               placeholder="例：酒類販売業免許の確認が取れなかったため"
-              className="w-full border border-[#0B1A2E]/25 bg-white px-3 py-2 text-[12.5px] text-[#0B1A2E] outline-none focus:border-[#C9A84C]"
+              className="w-full border border-indigo/25 bg-white px-3 py-2 text-[12.5px] text-indigo outline-none focus:border-gold"
             />
             <div className="flex flex-wrap items-center gap-3">
               <button
                 type="button"
                 disabled={pending}
                 onClick={() => review("approved")}
-                className="border border-[#0B1A2E] bg-[#0B1A2E] px-5 py-2 text-[10.5px] font-semibold tracking-[0.24em] text-paper-card hover:bg-[#1D2432] disabled:opacity-60"
+                className="border border-indigo bg-indigo px-5 py-2 text-[10.5px] font-semibold tracking-[0.24em] text-paper-card hover:bg-indigo-lift disabled:opacity-60"
               >
                 承認して口座を開く
               </button>
@@ -172,19 +172,19 @@ export function AdminTradeRow({ account }: { account: TradeAccountRow }) {
                 type="button"
                 disabled={pending}
                 onClick={() => review("rejected")}
-                className="border border-[#8B1A1A]/45 px-5 py-2 text-[10.5px] font-semibold tracking-[0.24em] text-[#8B1A1A] hover:bg-[#8B1A1A]/8 disabled:opacity-60"
+                className="border border-crimson/45 px-5 py-2 text-[10.5px] font-semibold tracking-[0.24em] text-crimson hover:bg-crimson/8 disabled:opacity-60"
               >
                 見送る
               </button>
               {pending && (
-                <span className="text-[11px] text-[#0B1A2E]/55">保存中…</span>
+                <span className="text-[11px] text-indigo/55">保存中…</span>
               )}
             </div>
           </div>
         )}
 
         {account.reviewedByEmail && (
-          <p className="mt-3 text-[11px] text-[#0B1A2E]/55">
+          <p className="mt-3 text-[11px] text-indigo/55">
             審査: {account.reviewedByEmail}
             {account.reviewedAt ? ` / ${formatDateTimeJp(account.reviewedAt)}` : ""}
           </p>
@@ -192,7 +192,7 @@ export function AdminTradeRow({ account }: { account: TradeAccountRow }) {
       </div>
 
       {error && (
-        <p role="alert" className="mt-3 text-[12px] font-semibold text-[#8B1A1A]">
+        <p role="alert" className="mt-3 text-[12px] font-semibold text-crimson">
           {error}
         </p>
       )}
@@ -203,10 +203,10 @@ export function AdminTradeRow({ account }: { account: TradeAccountRow }) {
 function Field({ label, value }: { label: string; value?: string | null }) {
   return (
     <div className="flex flex-col gap-1">
-      <span className="text-[9.5px] font-semibold tracking-[0.28em] text-[#0B1A2E]/50">
+      <span className="text-[9.5px] font-semibold tracking-[0.28em] text-indigo/50">
         {label}
       </span>
-      <span className="text-[13px] leading-[1.6] text-[#0B1A2E]/85">
+      <span className="text-[13px] leading-[1.6] text-indigo/85">
         {value || "—"}
       </span>
     </div>

@@ -70,15 +70,15 @@ export function ReceiptAddresseeForm({
   return (
     <form
       onSubmit={submit}
-      className="mx-auto mb-6 max-w-[760px] border border-[#0B1A2E]/15 bg-paper-card px-6 py-5 print:hidden"
+      className="mx-auto mb-6 max-w-[760px] border border-indigo/15 bg-paper-card px-6 py-5 print:hidden"
     >
       <label
         htmlFor="receipt-addressee"
-        className="text-[10px] font-semibold tracking-[0.28em] text-[#0B1A2E]/60"
+        className="text-[11px] font-semibold tracking-[0.12em] text-indigo/60"
       >
-        <L en="ADDRESSEE" ja="宛名" />
+        <L en="Addressee" ja="宛名" />
       </label>
-      <p className="mt-2 text-[12px] leading-[1.75] text-[#0B1A2E]/70">
+      <p className="mt-2 text-[12px] leading-[1.75] text-indigo/70">
         <L
           en="Leave blank to use the name on your account. Common entries include a company's registered name."
           ja="空欄にすると登録名が使われます。正式社名や「上様」などをご指定いただけます。"
@@ -94,28 +94,28 @@ export function ReceiptAddresseeForm({
           disabled={pending}
           onChange={(e) => setValue(e.target.value)}
           placeholder={fallbackName}
-          className="min-w-[240px] flex-1 border-b border-[#0B1A2E]/25 bg-transparent py-2 text-[15px] text-[#0B1A2E] outline-none transition-colors placeholder:text-[#0B1A2E]/35 focus:border-[#C9A84C] disabled:opacity-60"
+          className="min-w-[240px] flex-1 border-b border-indigo/25 bg-transparent py-2 text-[15px] text-indigo outline-none transition-colors placeholder:text-indigo/35 focus:border-gold disabled:opacity-60"
         />
         <button
           type="submit"
           disabled={pending}
-          className="cursor-pointer border border-[#0B1A2E] bg-[#0B1A2E] px-6 py-2.5 text-[10.5px] font-semibold tracking-[0.24em] text-paper-card transition-colors hover:bg-[#1D2432] disabled:cursor-wait disabled:opacity-60"
+          className="ed-btn"
         >
           {pending ? (
             <L en="SAVING…" ja="保存中…" />
           ) : (
-            <L en="SAVE" ja="保存する" />
+            <L en="Save" ja="保存する" />
           )}
         </button>
       </div>
 
       {saved && (
-        <p role="status" className="mt-3 text-[12px] font-semibold text-[#2F5A2F]">
+        <p role="status" className="mt-3 text-[12px] font-semibold text-moss">
           <L en="Saved." ja="保存しました。" />
         </p>
       )}
       {error && (
-        <p role="alert" className="mt-3 text-[12px] font-semibold text-[#8B1A1A]">
+        <p role="alert" className="mt-3 text-[12px] font-semibold text-crimson">
           <L
             ja={(ERRORS[error] ?? ERRORS.db).ja}
             en={(ERRORS[error] ?? ERRORS.db).en}

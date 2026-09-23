@@ -72,15 +72,15 @@ export function AdminOrderToolbar({
   };
 
   const inputCls =
-    "border border-[#0B1A2E]/25 bg-white px-3 py-2 text-[12.5px] text-[#0B1A2E] outline-none focus:border-[#C9A84C]";
+    "border border-indigo/25 bg-white px-3 py-2 text-[12.5px] text-indigo outline-none focus:border-gold";
 
   return (
-    <div className="mb-6 border border-[#0B1A2E]/12 bg-paper/70 px-5 py-4">
+    <div className="mb-6 border border-indigo/12 bg-paper/70 px-5 py-4">
       <div className="flex flex-wrap items-end gap-x-4 gap-y-3">
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="orders-from"
-            className="text-[10px] tracking-[0.18em] text-[#0B1A2E]/55"
+            className="text-[10px] tracking-[0.18em] text-indigo/55"
           >
             開始日
           </label>
@@ -93,11 +93,11 @@ export function AdminOrderToolbar({
             className={inputCls}
           />
         </div>
-        <span className="pb-2.5 text-[#0B1A2E]/40">〜</span>
+        <span className="pb-2.5 text-indigo/40">〜</span>
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="orders-to"
-            className="text-[10px] tracking-[0.18em] text-[#0B1A2E]/55"
+            className="text-[10px] tracking-[0.18em] text-indigo/55"
           >
             終了日
           </label>
@@ -114,7 +114,7 @@ export function AdminOrderToolbar({
         <button
           type="button"
           onClick={() => apply(start, end)}
-          className="border border-[#0B1A2E] bg-[#0B1A2E] px-5 py-2.5 text-[10.5px] font-semibold tracking-[0.22em] text-paper-card transition-colors hover:bg-[#1D2432]"
+          className="border border-indigo bg-indigo px-5 py-2.5 text-[10.5px] font-semibold tracking-[0.22em] text-paper-card transition-colors hover:bg-indigo-lift"
         >
           この期間で絞る
         </button>
@@ -127,7 +127,7 @@ export function AdminOrderToolbar({
               setEnd("");
               apply("", "");
             }}
-            className="px-2 py-2.5 text-[10.5px] tracking-[0.18em] text-[#0B1A2E]/50 underline decoration-[#0B1A2E]/20 underline-offset-4 transition-colors hover:text-[#0B1A2E]"
+            className="px-2 py-2.5 text-[10.5px] tracking-[0.18em] text-indigo/50 underline decoration-indigo/20 underline-offset-4 transition-colors hover:text-indigo"
           >
             期間を解除
           </button>
@@ -139,23 +139,23 @@ export function AdminOrderToolbar({
           type="button"
           onClick={download}
           disabled={exporting}
-          className="border border-[#0B1A2E]/30 bg-transparent px-5 py-2.5 text-[10.5px] font-semibold tracking-[0.22em] text-[#0B1A2E] transition-colors hover:border-[#0B1A2E] disabled:cursor-wait disabled:opacity-50"
+          className="border border-indigo/30 bg-transparent px-5 py-2.5 text-[10.5px] font-semibold tracking-[0.22em] text-indigo transition-colors hover:border-indigo disabled:cursor-wait disabled:opacity-50"
         >
           {exporting ? "書き出し中…" : "CSV でダウンロード"}
         </button>
       </div>
 
-      <p className="mt-3 text-[11px] leading-[1.7] text-[#0B1A2E]/55">
+      <p className="mt-3 text-[11px] leading-[1.7] text-indigo/55">
         日付は日本時間。終了日はその日いっぱいを含みます。CSV
         は画面と同じ条件で、1 注文 1 行で書き出します（一覧の表示上限
         200 件に対し、CSV は 5,000 件まで）。
       </p>
 
       {message && (
-        <p className="mt-2 text-[12px] font-semibold text-[#2F5A2F]">{message}</p>
+        <p className="mt-2 text-[12px] font-semibold text-moss">{message}</p>
       )}
       {error && (
-        <p role="alert" className="mt-2 text-[12px] font-semibold text-[#8B1A1A]">
+        <p role="alert" className="mt-2 text-[12px] font-semibold text-crimson">
           {error}
         </p>
       )}

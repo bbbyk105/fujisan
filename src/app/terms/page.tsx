@@ -1,6 +1,6 @@
-import FujisanInfoPage, {
-  type InfoSection,
-} from "@/components/fujisan/FujisanInfoPage";
+import DocumentPage, {
+  type DocumentSection,
+} from "@/components/fujisan/editorial/DocumentPage";
 import { L } from "@/i18n/Localized";
 import { buildMetadata } from "@/lib/seo";
 
@@ -11,7 +11,7 @@ export const metadata = buildMetadata({
   path: "/terms",
 });
 
-const sections: InfoSection[] = [
+const sections: DocumentSection[] = [
   {
     num: "01",
     heading: <L en="Acceptance" ja="ご同意" />,
@@ -103,18 +103,15 @@ const sections: InfoSection[] = [
 
 export default function TermsPage() {
   return (
-    <FujisanInfoPage
-      eyebrow="LEGAL · TERMS"
-      chapter="Ⅴ"
-      title="TERMS OF USE"
-      jp="― 利用規約 ―"
+    <DocumentPage
+      kicker={<L en="Legal" ja="規約" />}
+      title={<L en="Terms of Use" ja="利用規約" />}
       lead={
         <L
-          en="These terms set out how we work together — what you can expect from us, and what we expect from you, when you visit our site or buy our sake."
-          ja="本規約は、当サイトのご利用や当社の酒のご購入にあたり、私たちと皆さまの双方が大切にする約束を定めるものです。"
+          en="What you can expect from us, and what we expect from you, when you visit this site or buy our sake."
+          ja="当サイトのご利用とご購入にあたって、私たちと皆さまの双方が守る約束をまとめています。"
         />
       }
-      crumb={{ label: "TERMS", href: "/terms" }}
       updated="2026.09"
       sections={sections}
     />
