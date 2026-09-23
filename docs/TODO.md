@@ -1,6 +1,6 @@
 # やるべきこと
 
-最終更新: 2026-09-22
+最終更新: 2026-09-24
 
 ---
 
@@ -9,20 +9,15 @@
 環境を触る作業は [`../SETUP.md`](../SETUP.md) に手順と実際の値（DNS レコード、
 Webhook id、ドメイン）をまとめてある。要点だけ再掲する。
 
-1. **`feat/integrate-admin-dashboard-catalog` を main へマージする** — 本番 Worker は
-   いまだに `feat/admin-products-inventory`（未マージ）で動いている。main だけを
-   デプロイすると商品管理画面と在庫上限が消える。
-2. **本番 D1 に `0007`〜`0013` を適用する** — 7 本未適用。`0012` が旧 `product_sku` を
-   `inventory` + `product_price` へ移す。
-3. **`ADMIN_EMAILS` を設定する** — ソースのフォールバック owner を撤去したので**必須**。
+1. **`ADMIN_EMAILS` を設定する** — ソースのフォールバック owner を撤去したので**必須**。
    未設定だと誰も `/admin` に入れない。
-4. **Stripe Webhook に `charge.refunded` と `charge.dispute.created` を足す** — 現在 4 件。
-5. **Resend のドメイン認証と `RESEND_FROM`** — 未認証のあいだ、確認メールは
+2. **Stripe Webhook に `charge.refunded` と `charge.dispute.created` を足す** — 現在 4 件。
+3. **Resend のドメイン認証と `RESEND_FROM`** — 未認証のあいだ、確認メールは
    アカウント所有者にしか届かない＝誰も会員登録を完了できない。
-6. **通信販売酒類小売業免許の番号を入れる** — `src/data/fujisan-legal.ts` の
+4. **通信販売酒類小売業免許の番号を入れる** — `src/data/fujisan-legal.ts` の
    `LIQUOR_LICENCE`。未設定のあいだ `npm run deploy` は predeploy で止まる。
    **それらしい伏せ字で埋めないこと**（本物に見えたまま公開される）。
-7. **実在庫を入れる** — 本番は全 SKU 一律 24 本の暫定値。`/admin/products` で差し替える。
+5. **実在庫を入れる** — 本番は全 SKU 一律 24 本の暫定値。`/admin/products` で差し替える。
 
 ### 既存の法人アカウントを承認する
 

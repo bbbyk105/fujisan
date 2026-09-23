@@ -214,9 +214,10 @@ npm run cf-typegen # cloudflare-env.d.ts 再生成（バインディング変更
 作業（免許番号・Stripe の Webhook・本番マイグレーション・Resend のドメイン認証・
 secret）は [`SETUP.md`](./SETUP.md) にまとめてある。
 
-**本番 Worker は main ではなく未マージのブランチで動いている**期間があり、
-在庫の実装が 2 系統に分かれていた。`0012` で `product_price` + `inventory` に
-一本化済みだが、本番へ反映するまではこのズレが残る（SETUP.md の冒頭を参照）。
+本番 Worker は main から Cloudflare Workers Builds が自動デプロイする
+（2026-09-24 に main と本番が揃った）。D1 のマイグレーションは `0014` まで
+本番へ適用済み。**マイグレーションは自動では流れない**ので、スキーマを変えたときは
+push より先に `wrangler d1 migrations apply fujisan-db --remote` を実行すること。
 
 ## スキル参照
 
