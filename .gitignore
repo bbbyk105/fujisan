@@ -58,3 +58,11 @@ skills/
 skills-lock.json
 .claude/skills/
 .gstack/
+
+# iCloud / ファイル同期が作る複製（"gsap-setup 2.ts" のような名前）。
+# 中身は元ファイルと同一で、import されることもないが、git add -A で
+# 紛れ込むと本物と紛らわしい。実際に一度コミットされた。
+*\ [0-9].ts
+*\ [0-9].tsx
+*\ [0-9].json
+*\ [0-9].css

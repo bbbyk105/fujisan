@@ -61,16 +61,13 @@ export function Notice({
   tone: "error" | "info" | "success";
   children: ReactNode;
 }) {
-  // 囲み枠ではなく左の罫で示す。枠を足すほど画面が騒がしくなる
-  const cls =
-    tone === "error"
-      ? "border-crimson text-crimson"
-      : "border-gold text-indigo";
+  // 枠も帯も作らない。入力欄のすぐ隣に出るので、色と字面だけで足りる
+  const cls = tone === "error" ? "text-crimson" : "text-indigo";
   return (
     <div
       role="status"
       aria-live="polite"
-      className={`border-l-2 py-1 pl-4 text-[12.5px] leading-[1.75] ${cls}`}
+      className={`text-[12.5px] font-medium leading-[1.75] ${cls}`}
     >
       {children}
     </div>

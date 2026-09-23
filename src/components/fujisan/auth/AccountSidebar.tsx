@@ -55,10 +55,10 @@ export function AccountSidebar({ items }: Props) {
             <li key={item.id}>
               <a
                 href={`#${item.id}`}
-                className={`flex whitespace-nowrap border-l-2 py-2.5 pl-4 text-[13px] font-semibold tracking-[0.06em] no-underline transition-colors lg:py-3 ${
+                className={`flex whitespace-nowrap py-2.5 pr-6 text-[13px] tracking-[0.06em] no-underline transition-colors lg:py-3 ${
                   isActive
-                    ? "border-indigo text-indigo"
-                    : "border-transparent text-indigo/45 hover:text-indigo/80"
+                    ? "font-semibold text-indigo"
+                    : "font-normal text-indigo/45 hover:text-indigo/80"
                 }`}
               >
                 <L en={item.en} ja={item.ja} />

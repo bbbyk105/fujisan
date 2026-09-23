@@ -9,16 +9,16 @@ import type { OrderStatus } from "@/db/orders-schema";
  * 以前はアカウント画面にベタ書きされていて `refunded` が抜けており、
  * 返金済みの注文が「受付済」と表示されていた。
  *
- * 丸ドット付きのピルにはしない。状態は色のついた短い罫と文字で足りる。
+ * ピルにも、左に帯を立てた形にもしない。状態は文字の色だけで足りる。
  */
 const STYLES: Record<OrderStatus, string> = {
-  pending: "border-indigo/35 text-indigo/70",
-  confirmed: "border-gold text-indigo",
-  preparing: "border-gold text-indigo",
-  shipped: "border-moss text-moss",
-  delivered: "border-moss text-moss",
-  cancelled: "border-crimson text-crimson",
-  refunded: "border-crimson text-crimson",
+  pending: "text-indigo/60",
+  confirmed: "text-gold-ink",
+  preparing: "text-gold-ink",
+  shipped: "text-moss",
+  delivered: "text-moss",
+  cancelled: "text-crimson",
+  refunded: "text-crimson",
 };
 
 export function OrderStatusPill({ status }: { status: OrderStatus }) {
@@ -28,7 +28,7 @@ export function OrderStatusPill({ status }: { status: OrderStatus }) {
   const label = ORDER_STATUS_LABELS[status] ?? ORDER_STATUS_LABELS.pending;
   return (
     <span
-      className={`inline-flex shrink-0 items-center border-l-2 pl-3 text-[12px] font-semibold tracking-[0.08em] ${cls}`}
+      className={`inline-flex shrink-0 items-center text-[12.5px] font-semibold tracking-[0.08em] ${cls}`}
     >
       <L en={label.en} ja={label.ja} />
     </span>
