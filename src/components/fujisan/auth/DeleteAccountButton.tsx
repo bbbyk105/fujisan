@@ -44,16 +44,10 @@ export function DeleteAccountButton() {
   if (!open) {
     return (
       <div className="border-t border-crimson/25 pt-8">
-        <div className="flex items-center gap-3">
-          <span className="text-[11px] font-semibold tracking-[0.12em] text-crimson/80">
-            DELETE ACCOUNT
-          </span>
-          <span className="h-px w-8 bg-crimson/40" />
-          <span className="font-jp text-[11px] tracking-[0.12em] text-crimson/85">
-            退会について
-          </span>
-        </div>
-        <p className="mt-4 max-w-[60ch] text-[12.5px] leading-[1.75] text-indigo/72">
+        <h3 className="font-serif text-[18px] font-medium text-crimson">
+          <L en="Delete account" ja="退会" />
+        </h3>
+        <p className="mt-3 max-w-[62ch] text-[14px] leading-[1.9] text-indigo/75">
           <L
             en="Deleting your account removes your registration, sessions, and connected providers. This action cannot be undone."
             ja="退会すると、ご登録情報・ログインセッション・連携アカウントがすべて削除され、元に戻すことはできません。"
@@ -65,7 +59,7 @@ export function DeleteAccountButton() {
             reset();
             setOpen(true);
           }}
-          className="group/del mt-5 inline-flex cursor-pointer items-center gap-3 border-0 bg-transparent p-0 text-[11.5px] font-semibold tracking-[0.12em] text-crimson"
+          className="group/del mt-5 inline-flex cursor-pointer items-center gap-3 border-0 bg-transparent p-0 text-[13.5px] font-semibold text-crimson"
         >
           <span className="relative pb-1">
             <L en="Delete my account" ja="退会する" />
@@ -78,18 +72,12 @@ export function DeleteAccountButton() {
 
   return (
     <div className="border-t border-crimson/25 pt-8">
-      <div className="flex items-center gap-3">
-        <span className="text-[11px] font-semibold tracking-[0.12em] text-crimson/80">
-          CONFIRM DELETION
-        </span>
-        <span className="h-px w-8 bg-crimson/40" />
-        <span className="font-jp text-[11px] tracking-[0.12em] text-crimson/85">
-          最終確認
-        </span>
-      </div>
+      <h3 className="font-serif text-[18px] font-medium text-crimson">
+        <L en="Confirm deletion" ja="退会の最終確認" />
+      </h3>
 
       <div className="mt-5 border border-crimson/35 bg-crimson/[0.05] px-5 py-5">
-        <p className="text-[12.5px] leading-[1.75] text-indigo">
+        <p className="text-[14px] leading-[1.85] text-indigo">
           <L
             en={
               <>
@@ -116,7 +104,7 @@ export function DeleteAccountButton() {
           className="mt-4 w-full border-b border-crimson/40 bg-transparent py-2.5 text-[15px] text-indigo outline-none transition-colors placeholder:text-indigo/30 focus:border-crimson"
         />
 
-        <label className="mt-4 flex cursor-pointer items-start gap-3 text-[12px] leading-[1.6] text-indigo/85">
+        <label className="mt-4 flex cursor-pointer items-start gap-3 text-[13.5px] leading-[1.7] text-indigo/85">
           <input
             type="checkbox"
             checked={agreed}
@@ -134,7 +122,7 @@ export function DeleteAccountButton() {
         {error && (
           <p
             role="alert"
-            className="mt-4 text-[12.5px] leading-[1.65] text-crimson"
+            className="mt-4 text-[13.5px] leading-[1.8] text-crimson"
           >
             {error === "active-orders" ? (
               <L
@@ -155,10 +143,10 @@ export function DeleteAccountButton() {
             type="button"
             disabled={!canSubmit}
             onClick={handleDelete}
-            className="inline-flex cursor-pointer items-center justify-center gap-3 border border-crimson bg-crimson px-6 py-3 text-[11.5px] font-semibold tracking-[0.12em] text-paper-card transition-colors hover:bg-crimson-deep disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex cursor-pointer items-center justify-center gap-3 border border-crimson bg-crimson px-6 py-3 text-[13.5px] font-semibold text-paper-card transition-colors hover:bg-crimson-deep disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading ? (
-              <L en="DELETING…" ja="退会処理中…" />
+              <L en="Deleting…" ja="退会処理中…" />
             ) : (
               <L en="Permanently delete" ja="退会を確定する" />
             )}
@@ -170,7 +158,7 @@ export function DeleteAccountButton() {
               setOpen(false);
               reset();
             }}
-            className="inline-flex cursor-pointer items-center gap-2 border-0 bg-transparent p-0 text-[11.5px] font-semibold tracking-[0.12em] text-indigo/75 hover:text-indigo disabled:opacity-50"
+            className="inline-flex cursor-pointer items-center gap-2 border-0 bg-transparent p-0 text-[13.5px] text-indigo/75 underline decoration-indigo/25 underline-offset-4 hover:text-indigo disabled:opacity-50"
           >
             <L en="Cancel" ja="キャンセル" />
           </button>

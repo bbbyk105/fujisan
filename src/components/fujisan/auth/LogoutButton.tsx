@@ -17,11 +17,11 @@ export function LogoutButton() {
         // フルリロードでナビのセッション表示をクリア状態に同期
         window.location.href = "/";
       }}
-      className="group/btn inline-flex cursor-pointer items-center gap-3 border-0 bg-transparent p-0 text-[11.5px] font-semibold tracking-[0.12em] text-indigo disabled:opacity-50"
+      className="group/btn inline-flex cursor-pointer items-center gap-3 border-0 bg-transparent p-0 text-[13.5px] font-semibold text-indigo disabled:opacity-50"
     >
       <span className="relative pb-1">
         {loading ? (
-          <L en="SIGNING OUT…" ja="ログアウト中…" />
+          <L en="Signing out…" ja="ログアウト中…" />
         ) : (
           <L en="Sign out" ja="ログアウト" />
         )}

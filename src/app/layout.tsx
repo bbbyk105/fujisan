@@ -2,6 +2,7 @@ import { Noto_Serif, Noto_Serif_JP, Shippori_Mincho } from "next/font/google";
 import "./globals.css";
 import AgeGate from "@/components/fujisan/AgeGate";
 import { Toaster } from "@/components/fujisan/Toaster";
+import { UnsavedChangesGuard } from "@/components/fujisan/UnsavedChangesGuard";
 import { LocaleBoot } from "@/i18n/LocaleBoot";
 import { buildMetadata } from "@/lib/seo";
 
@@ -62,6 +63,7 @@ export default function RootLayout({
         {children}
         <AgeGate />
         <Toaster />
+        <UnsavedChangesGuard />
       </body>
     </html>
   );

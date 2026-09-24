@@ -9,6 +9,7 @@ import {
   type AdminSkuRow as Row,
   type AdminProductsError,
 } from "@/lib/actions/admin-products";
+import { useUnsavedChanges } from "@/lib/unsaved-changes";
 
 const ERRORS: Record<AdminProductsError, string> = {
   unauth: "ログインが切れています。再度ログインしてください。",
@@ -132,6 +133,12 @@ function PriceSection({
     ? "管理画面で上書き中"
     : `カタログ価格（¥${yen.format(row.catalogPriceJpy)}）で販売中`;
 
+  const dirty =
+    price.trim() !== String(row.priceJpy) ||
+    wholesale.trim() !== String(row.wholesalePriceJpy) ||
+    caseSize.trim() !== String(row.caseSize);
+  useUnsavedChanges(canEdit && dirty);
+
   if (!canEdit) {
     return (
       <div className="flex flex-wrap items-baseline gap-x-6 gap-y-1 text-[12px] text-indigo/70">
@@ -150,18 +157,13 @@ function PriceSection({
             ¥{yen.format(row.wholesalePriceJpy)}
           </strong>
         </span>
-        <span className="tabular-nums">{row.caseSize}本/ケース</span>
+        <span className="tabular-nums">1ケース {row.caseSize}本</span>
         <span className="text-[11px] text-indigo/45">
           {source}・変更は蔵元（owner）のみ
         </span>
       </div>
     );
   }
-
-  const dirty =
-    price.trim() !== String(row.priceJpy) ||
-    wholesale.trim() !== String(row.wholesalePriceJpy) ||
-    caseSize.trim() !== String(row.caseSize);
 
   const save = () => {
     setError(null);
@@ -247,7 +249,7 @@ function PriceSection({
         />
         <Field
           id={`case-${row.slug}-${row.ml}`}
-          label="ケース入数"
+          label="1ケースの本数"
           unit="本"
           value={caseSize}
           onChange={setCaseSize}
@@ -273,7 +275,12 @@ function PriceSection({
           </button>
         )}
       </div>
-      <p className="mt-2 text-[11px] text-indigo/50">{source}</p>
+      <p className="mt-2 text-[12px] leading-[1.8] text-indigo/55">
+        {source}
+        <br />
+        「1ケースの本数」は、取扱店向けの卸価格表で「1ケース」の金額（卸 ×
+        本数）を出すのに使います。
+      </p>
       <Feedback message={message} error={error} />
     </div>
   );
@@ -296,6 +303,13 @@ function StockSection({ row, label }: { row: Row; label: string }) {
         ? onHand.trim() !== String(row.onHand) ||
           threshold.trim() !== String(row.lowStockThreshold)
         : true;
+
+  // 移動を止めるのは「書き換えたとき」だけ。未管理の行は保存ボタンが常に押せるが、
+  // それを未保存扱いにすると、在庫管理していない銘柄がある限り画面から出られなくなる
+  const edited =
+    onHand.trim() !== String(row.onHand) ||
+    threshold.trim() !== String(row.lowStockThreshold);
+  useUnsavedChanges(edited);
 
   const save = () => {
     setError(null);

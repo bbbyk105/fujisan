@@ -56,8 +56,8 @@ export default async function AdminContactsPage(props: {
         current="contacts"
         kpis={
           <>
-            <AdminKpi label="UNHANDLED" value={`${unhandled}`} suffix="件" />
-            <AdminKpi label="SHOWN" value={`${messages.length}`} suffix="件" />
+            <AdminKpi label="未対応" value={`${unhandled}`} suffix="件" />
+            <AdminKpi label="表示中" value={`${messages.length}`} suffix="件" />
           </>
         }
       />

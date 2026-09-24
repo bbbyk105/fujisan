@@ -120,6 +120,7 @@ export default async function AdminOrdersPage(props: {
       <FujisanNav />
 
       <AdminHeader
+        wide
         title="注文・配送の管理"
         email={email}
         isOwnerUser={isOwnerUser}

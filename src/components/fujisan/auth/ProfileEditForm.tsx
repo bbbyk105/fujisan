@@ -3,6 +3,7 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import { updateMyProfileAction } from "@/lib/actions/account";
 import { L } from "@/i18n/Localized";
+import { useUnsavedChanges } from "@/lib/unsaved-changes";
 
 type Initial = {
   name: string;
@@ -48,6 +49,7 @@ export function ProfileEditForm({
     postalCode !== initial.postalCode ||
     address !== initial.address ||
     (isBusiness && companyName !== initial.companyName);
+  useUnsavedChanges(dirty);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -81,10 +83,10 @@ export function ProfileEditForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="border border-indigo/12 bg-paper/65 px-7 py-8 md:px-10 md:py-10"
+      className="max-w-[860px]"
     >
       <div className="grid grid-cols-1 gap-x-14 gap-y-7 sm:grid-cols-2">
-        <FieldBlock labelEn="NAME" labelJp="ご担当者・お名前" required>
+        <FieldBlock labelEn="Name" labelJp="ご担当者・お名前" required>
           <input
             type="text"
             autoComplete="name"
@@ -95,14 +97,14 @@ export function ProfileEditForm({
         </FieldBlock>
 
         {/* メールは変更不可（変更にはサポート対応が必要）。読み取り専用で表示。 */}
-        <FieldBlock labelEn="EMAIL" labelJp="メールアドレス">
+        <FieldBlock labelEn="Email" labelJp="メールアドレス">
           <p className="border-b border-transparent py-2.5 text-[15px] text-indigo/60">
             {initial.email}
           </p>
         </FieldBlock>
 
         {isBusiness && (
-          <FieldBlock labelEn="COMPANY" labelJp="会社・店舗名">
+          <FieldBlock labelEn="Company" labelJp="会社・店舗名">
             <input
               type="text"
               autoComplete="organization"
@@ -114,7 +116,7 @@ export function ProfileEditForm({
           </FieldBlock>
         )}
 
-        <FieldBlock labelEn="PHONE" labelJp="電話番号">
+        <FieldBlock labelEn="Phone" labelJp="電話番号">
           <input
             type="tel"
             autoComplete="tel"
@@ -125,7 +127,7 @@ export function ProfileEditForm({
           />
         </FieldBlock>
 
-        <FieldBlock labelEn="POSTAL CODE" labelJp="郵便番号">
+        <FieldBlock labelEn="Postal code" labelJp="郵便番号">
           <input
             type="text"
             inputMode="numeric"
@@ -139,7 +141,7 @@ export function ProfileEditForm({
 
         <div className={isBusiness ? "sm:col-span-2" : ""}>
           <FieldBlock
-            labelEn="ADDRESS"
+            labelEn="Address"
             labelJp={isBusiness ? "所在地・お届け先" : "お届け先住所"}
           >
             <input
@@ -173,10 +175,10 @@ export function ProfileEditForm({
         )}
       </div>
 
-      <p className="mt-5 text-[11.5px] leading-[1.7] text-indigo/55">
+      <p className="mt-5 text-[12.5px] leading-[1.8] text-indigo/60">
         <L
-          en="Save your postal code and address here to skip the address form at checkout — we'll ship to the address on file."
-          ja="郵便番号と住所を登録しておくと、ご注文時の住所入力を省略し、登録のお届け先へ発送します。メールアドレスの変更はお問い合わせください。"
+          en="Save your postal code and address here to skip the address form at checkout — we'll ship to the address on file. To change your email address, use the Security tab."
+          ja="郵便番号と住所を登録しておくと、ご注文時の住所入力を省略し、登録のお届け先へ発送します。メールアドレスは「ログインと退会」から変更できます。"
         />
       </p>
     </form>
@@ -196,7 +198,7 @@ function FieldBlock({
 }) {
   return (
     <div className="flex flex-col gap-2">
-      <span className="text-[11px] font-semibold tracking-[0.12em] text-indigo/55">
+      <span className="text-[13px] text-indigo/70">
         <L en={labelEn} ja={labelJp} />
         {required && <span className="ml-1 text-crimson">*</span>}
       </span>

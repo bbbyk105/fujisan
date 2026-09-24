@@ -23,23 +23,23 @@ const STEPS: Step[] = [
 export function OrderTimeline({ status }: { status: OrderStatus }) {
   if (status === "cancelled") {
     return (
-      <div className="border border-crimson/30 bg-crimson/[0.06] px-5 py-4 text-[12px] leading-[1.7] text-crimson">
+      <p className="text-[13.5px] font-medium leading-[1.8] text-crimson">
         <L
           en="This order has been cancelled. Contact us if you need help."
           ja="このご注文はキャンセルされました。ご不明な点はお問い合わせください。"
         />
-      </div>
+      </p>
     );
   }
 
   if (status === "refunded") {
     return (
-      <div className="border border-crimson/30 bg-crimson/[0.06] px-5 py-4 text-[12px] leading-[1.7] text-crimson">
+      <p className="text-[13.5px] font-medium leading-[1.8] text-crimson">
         <L
           en="This order has been refunded. It can take a few days for the amount to appear on your card statement."
           ja="このご注文は返金済みです。カード会社の締め日によっては、明細への反映まで数日かかることがあります。"
         />
-      </div>
+      </p>
     );
   }
 
@@ -54,32 +54,38 @@ export function OrderTimeline({ status }: { status: OrderStatus }) {
         const segReached = i < safeIndex; // この点と次の点の間の線
 
         return (
-          <li key={step.key} className="relative flex flex-col items-center">
-            {/* Connector line (right side of dot, except last) */}
+          <li
+            key={step.key}
+            aria-current={isCurrent ? "step" : undefined}
+            className="relative flex flex-col items-center"
+          >
             {i < STEPS.length - 1 && (
               <span
                 aria-hidden
-                className={`absolute left-1/2 top-[7px] h-px w-full transition-colors duration-500 ${
-                  segReached ? "bg-gold" : "bg-indigo/15"
+                className={`absolute left-1/2 top-[5px] h-px w-full ${
+                  segReached ? "bg-indigo/70" : "bg-indigo/15"
                 }`}
               />
             )}
 
-            {/* Dot */}
             <span
               aria-hidden
-              className={`relative z-10 block h-[14px] w-[14px] rounded-full border transition-all duration-500 ${
-                reached
-                  ? isCurrent
-                    ? "border-gold bg-gold ring-4 ring-gold/25"
-                    : "border-gold bg-gold"
-                  : "border-indigo/20 bg-paper"
+              className={`relative z-10 block h-[11px] w-[11px] rounded-full border ${
+                isCurrent
+                  ? "border-gold bg-gold"
+                  : reached
+                    ? "border-indigo/70 bg-indigo/70"
+                    : "border-indigo/25 bg-paper"
               }`}
             />
 
             <span
-              className={`mt-3 text-center text-[11px] font-semibold tracking-[0.2em] transition-colors ${
-                reached ? "text-indigo" : "text-indigo/45"
+              className={`mt-2.5 text-center text-[12.5px] leading-[1.4] ${
+                isCurrent
+                  ? "font-semibold text-indigo"
+                  : reached
+                    ? "text-indigo/70"
+                    : "text-indigo/40"
               }`}
             >
               <L en={step.en} ja={step.ja} />

@@ -111,7 +111,7 @@ export default async function AdminCustomersPage(props: {
             </>
           ) : (
             <>
-              <AdminKpi label="ACCOUNTS" value={`${accounts.length}`} suffix="社" />
+              <AdminKpi label="取扱店" value={`${accounts.length}`} suffix="社" />
               <AdminKpi label="審査待ち" value={`${awaitingReview}`} suffix="社" />
             </>
           )

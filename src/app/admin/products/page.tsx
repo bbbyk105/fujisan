@@ -43,6 +43,7 @@ export default async function AdminProductsPage() {
       <FujisanNav />
 
       <AdminHeader
+        wide
         title="商品・在庫の管理"
         lead="数えた本数を入れると、その SKU の在庫管理が始まります。管理を開始した SKU は在庫を超える注文を受け付けません。未設定の SKU はこれまでどおり数量無制限で販売されます。"
         email={u?.email}

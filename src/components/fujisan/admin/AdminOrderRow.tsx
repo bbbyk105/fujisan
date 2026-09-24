@@ -8,6 +8,7 @@ import {
   adminUpdateOrderAction,
   adminRefundOrderAction,
 } from "@/lib/actions/admin-orders";
+import { useUnsavedChanges } from "@/lib/unsaved-changes";
 
 const yen = new Intl.NumberFormat("ja-JP");
 
@@ -106,6 +107,7 @@ export function AdminOrderRow({ order, canRefund }: Props) {
     status !== order.status ||
     carrier !== (order.trackingCarrier ?? "") ||
     number !== (order.trackingNumber ?? "");
+  useUnsavedChanges(dirty);
 
   // owner かつ「支払い済み」で、まだ返せる残額がある注文にだけ返金欄を出す。
   const showRefund =
@@ -173,7 +175,11 @@ export function AdminOrderRow({ order, canRefund }: Props) {
   };
 
   return (
-    <li className="border border-indigo/12 bg-white">
+    // ダッシュボードの「直近の注文」から #order-<番号> で飛んでこられるようにする
+    <li
+      id={`order-${order.orderRef}`}
+      className="scroll-mt-[120px] border border-indigo/12 bg-white target:border-gold"
+    >
       {/* Header (toggle) — モバイルはカード状、md 以上はテーブル行 */}
       <button
         type="button"
