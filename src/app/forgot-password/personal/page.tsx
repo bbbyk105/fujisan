@@ -17,7 +17,7 @@ export default function ForgotPasswordPersonalPage() {
       mode="login"
       showRoleSwitch={false}
       brand={{
-        kanji: "再設",
+        kanji: "設定",
         kickerJp: "個人のお客様",
         titleEn: "Resetting your password",
         titleJp: "パスワードの再設定",

@@ -293,8 +293,8 @@ export default function PrivacyPage() {
       title={<L en="Privacy Policy" ja="プライバシーポリシー" />}
       lead={
         <L
-          en="We collect only what we need, treat it with care, and keep it no longer than necessary. This page explains how."
-          ja="必要な情報だけをいただき、丁寧に取り扱い、必要な期間を超えて持ちません。その具体を記しています。"
+          en="What we collect, why we use it, who handles it, how long we keep it, and how to ask us to disclose or delete it."
+          ja="取得する情報、利用目的、委託先、保存期間、開示や削除のご請求の方法をまとめています。"
         />
       }
       updated="2026.09"

@@ -51,7 +51,7 @@ export const fujisanCraftPillars: CraftPillar[] = [
     chapter: "Ⅰ",
     eyebrow: "Water",
     title: "Water from Mt. Fuji",
-    jp: "富士の水",
+    jp: "水",
     catchJp: "富士山の湧水",
     lead: "Snow that falls on Mt. Fuji filters down through the mountain for forty to sixty years and rises near the brewery as soft water.",
     leadJp:
@@ -82,11 +82,11 @@ export const fujisanCraftPillars: CraftPillar[] = [
       },
       {
         label: "AGE OF SPRING",
-        labelJp: "湧水の年齢",
+        labelJp: "湧き出るまで",
         value: "40–60 yr",
         valueJp: "40〜60年",
         caption: "Filtered by basalt",
-        captionJp: "玄武岩が濾過",
+        captionJp: "玄武岩の層でこされる",
       },
       {
         label: "pH",
@@ -112,7 +112,7 @@ export const fujisanCraftPillars: CraftPillar[] = [
         jp: "降雪",
         desc: "Fresh snow settles on the slopes between 1,500m and 3,776m through long Fuji winters.",
         descJp:
-          "長い富士の冬を通じて、標高1,500m〜3,776mの斜面に新雪が降り積もります。",
+          "冬のあいだ、標高1,500〜3,776mの斜面に雪が降り積もります。",
       },
       {
         num: "Ⅱ",
@@ -120,7 +120,7 @@ export const fujisanCraftPillars: CraftPillar[] = [
         jp: "濾過",
         desc: "Decades of slow descent through volcanic strata strip impurities from the meltwater.",
         descJp:
-          "火山岩の層を数十年かけてゆっくり下る間に、雪解け水から不純物が取り除かれます。",
+          "雪解け水は数十年かけて火山岩の層を下り、そのあいだに不純物がこされます。",
       },
       {
         num: "Ⅲ",
@@ -144,8 +144,8 @@ export const fujisanCraftPillars: CraftPillar[] = [
     chapter: "Ⅱ",
     eyebrow: "Rice",
     title: "Sake rice",
-    jp: "酒米",
-    catchJp: "酒造りのための米",
+    jp: "米",
+    catchJp: "山田錦と誉富士",
     lead: "Two sake-rice varieties, Yamadanishiki and Homarefuji, grown by contract farms in Hyogo and Shizuoka.",
     leadJp:
       "使う酒米は山田錦と誉富士の2種類。兵庫県と静岡県の契約農家が育てています。",
@@ -179,7 +179,7 @@ export const fujisanCraftPillars: CraftPillar[] = [
         value: "40–60%",
         valueJp: "40〜60%",
         caption: "By weight remaining",
-        captionJp: "残る重量比",
+        captionJp: "削ったあとに残る割合",
       },
       {
         label: "PARTNER FARMS",
@@ -187,7 +187,7 @@ export const fujisanCraftPillars: CraftPillar[] = [
         value: "12",
         valueJp: "12 軒",
         caption: "Across 2 prefectures",
-        captionJp: "2 県にわたる",
+        captionJp: "兵庫・静岡",
       },
       {
         label: "HARVEST",
@@ -204,7 +204,7 @@ export const fujisanCraftPillars: CraftPillar[] = [
         en: "Harvest",
         jp: "収穫",
         desc: "Sakamai is gathered late September after the grain has fully matured on the panicle.",
-        descJp: "穂の上で十分に実った酒米を、9月下旬に収穫します。",
+        descJp: "よく実った酒米を、9月下旬に刈り取ります。",
       },
       {
         num: "Ⅱ",
@@ -227,7 +227,7 @@ export const fujisanCraftPillars: CraftPillar[] = [
         jp: "蒸米",
         desc: "Slow steaming firms the outside while keeping the core soft for the koji.",
         descJp:
-          "じっくり蒸すことで外側を締め、麹のために芯はやわらかく保ちます。",
+          "外は硬く、中はやわらかく蒸し上げます。麹を育てやすい蒸米にするためです。",
       },
     ],
   },
@@ -237,7 +237,7 @@ export const fujisanCraftPillars: CraftPillar[] = [
     chapter: "Ⅲ",
     eyebrow: "Brewing",
     title: "Winter brewing",
-    jp: "伝統醸造",
+    jp: "造り",
     catchJp: "冬の仕込み",
     lead: "From late October to March, the toji and kurabito of Makino Shuzo take the sake from koji-making to pressing.",
     leadJp:
@@ -298,7 +298,7 @@ export const fujisanCraftPillars: CraftPillar[] = [
         jp: "麹造り",
         desc: "Steamed rice is cultured with koji-kin for forty hours in a warm cedar muro.",
         descJp:
-          "蒸した米に麹菌をつけ、温かい杉の麹室で四十時間かけて育てます。",
+          "蒸した米に麹菌をつけ、温かい杉の麹室で40時間かけて育てます。",
       },
       {
         num: "Ⅱ",

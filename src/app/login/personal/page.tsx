@@ -20,7 +20,7 @@ export default async function LoginPersonalPage() {
       role="personal"
       mode="login"
       brand={{
-        kanji: "會員",
+        kanji: "会員",
         kickerJp: "会員ログイン",
         titleEn: "What you can do with an account",
         titleJp: "ログインしてできること",

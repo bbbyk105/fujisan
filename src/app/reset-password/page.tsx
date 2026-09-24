@@ -18,7 +18,7 @@ export default function ResetPasswordPage() {
       mode="login"
       showRoleSwitch={false}
       brand={{
-        kanji: "再設",
+        kanji: "設定",
         kickerJp: "パスワード再設定",
         titleEn: "Set a new password",
         titleJp: "新しいパスワードを設定",

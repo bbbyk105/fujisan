@@ -22,7 +22,6 @@ export const metadata = buildMetadata({
  */
 const groups = [
   {
-    label: <L en="Serving" ja="味わう" />,
     heading: <L en="Choosing and serving" ja="選び方と飲み方" />,
     items: [
       {
@@ -74,7 +73,6 @@ const groups = [
     ],
   },
   {
-    label: <L en="Ordering" ja="注文する" />,
     heading: <L en="Before you order" ja="ご注文の前に" />,
     items: [
       {
@@ -121,7 +119,6 @@ const groups = [
     ],
   },
   {
-    label: <L en="The kura" ja="蔵のこと" />,
     heading: <L en="Visits and trade" ja="蔵見学とお取引" />,
     items: [
       {
@@ -176,8 +173,8 @@ export default function FaqPage() {
         title={<L en="Frequently asked" ja="よくあるご質問" />}
         lead={
           <L
-            en="A short field guide to storing, serving, and ordering Fujisan sake."
-            ja="富士山の酒の保管・楽しみ方・ご注文についての、短い手引きです。"
+            en="Common questions about storing, serving, and ordering our sake."
+            ja="保管や飲み方、ご注文について、よくいただくご質問をまとめています。"
           />
         }
         meta={<L en="Last updated 2026.09" ja="最終更新 2026.09" />}
@@ -187,7 +184,6 @@ export default function FaqPage() {
         <EditorialSection key={i} ruled={i > 0} className="py-14 md:py-20">
           <div className="grid grid-cols-1 gap-8 md:grid-cols-[minmax(0,230px)_minmax(0,1fr)] md:gap-16">
             <EditorialSectionHead
-              label={g.label}
               heading={g.heading}
               className="md:sticky md:top-[112px] md:self-start"
             />

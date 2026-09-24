@@ -168,7 +168,6 @@ export default function ShopBusinessPage() {
       {/* ===== 取引条件 ===== */}
       <EditorialSection ruled={false}>
         <EditorialSectionHead
-          label={<L en="Trade account" ja="お取引口座" />}
           heading={
             <L
               en="Trade terms"
@@ -182,7 +181,6 @@ export default function ShopBusinessPage() {
       {/* ===== 卸価格表 ===== */}
       <EditorialSection>
         <EditorialSectionHead
-          label={<L en="Price list" ja="卸価格表" />}
           heading={
             <L
               en="Wholesale prices by bottle"
@@ -199,7 +197,6 @@ export default function ShopBusinessPage() {
       <EditorialSection>
         <div className="grid grid-cols-1 gap-10 md:grid-cols-[minmax(0,260px)_minmax(0,1fr)] md:gap-16">
           <EditorialSectionHead
-            label={<L en="How we work" ja="取引の流れ" />}
             heading={
               <L
                 en="Opening an account"
@@ -217,7 +214,6 @@ export default function ShopBusinessPage() {
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1.15fr_1fr] lg:gap-20">
           <div>
             <EditorialSectionHead
-              label={<L en="Contact" ja="ご相談" />}
               heading={
                 <L
                   en="Trade enquiries"
@@ -267,7 +263,6 @@ export default function ShopBusinessPage() {
       <EditorialSection>
         <div className="grid grid-cols-1 gap-10 md:grid-cols-[minmax(0,260px)_minmax(0,1fr)] md:gap-16">
           <EditorialSectionHead
-            label={<L en="Trade FAQ" ja="よくあるご質問" />}
             heading={
               <L en="Common trade questions" ja="よくいただくお取引のご質問" />
             }

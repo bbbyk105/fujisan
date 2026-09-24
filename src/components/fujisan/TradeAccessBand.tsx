@@ -35,12 +35,12 @@ export async function TradeAccessBand() {
             {approved ? (
               <L
                 en={`Signed in as ${who || "your account"} — wholesale pricing is shown below.`}
-                ja={`${who || "アカウント"}さま — 下記に卸価格を表示しています。`}
+                ja={`${who ? `${who}さま。` : ""}下に卸価格を表示しています。`}
               />
             ) : (
               <L
                 en={`Signed in as ${who || "your account"} — wholesale pricing appears once your account has been approved.`}
-                ja={`${who || "アカウント"}さま — 卸価格は審査の完了後に表示されます。`}
+                ja={`${who ? `${who}さま。` : ""}卸価格は、審査が済むと表示されます。`}
               />
             )}
           </p>

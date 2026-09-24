@@ -245,7 +245,7 @@ export default async function AccountPage() {
                   {tradeStatus === "rejected" ? (
                     <L
                       en="This account is not currently open for trade pricing. Please contact us if your situation has changed."
-                      ja="現在、このアカウントでは卸価格をご案内しておりません。ご状況が変わりましたら、お問い合わせよりご相談ください。"
+                      ja="現在、このアカウントでは卸価格をご案内しておりません。状況が変わりましたら、お問い合わせからご相談ください。"
                     />
                   ) : (
                     <L

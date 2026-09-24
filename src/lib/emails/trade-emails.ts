@@ -157,7 +157,7 @@ export async function sendTradeApprovedEmail(data: {
 
   const html = `
   <div style="font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#0B1A2E;">
-    <p style="font-size:12px;letter-spacing:.2em;color:#C9A84C;margin:0 0 16px;">― 取扱口座を開設しました ―</p>
+    <p style="font-size:12px;letter-spacing:.2em;color:#C9A84C;margin:0 0 16px;">取扱口座を開設しました</p>
     <p style="font-size:15px;line-height:1.9;">${escapeHtml(data.companyName)}<br />${escapeHtml(data.contactName)} 様</p>
     <p style="font-size:14px;line-height:1.9;">
       取扱店アカウントの審査が完了しました。ログインいただくと卸価格をご覧いただけます。

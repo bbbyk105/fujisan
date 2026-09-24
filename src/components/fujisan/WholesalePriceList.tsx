@@ -181,7 +181,7 @@ function UnderReviewPanel({ rejected }: { rejected: boolean }) {
         ) : (
           <L
             en="Your trade account is under review."
-            ja="取扱口座の審査を承っております。"
+            ja="お申し込みを審査しています。"
           />
         )
       }
@@ -189,7 +189,7 @@ function UnderReviewPanel({ rejected }: { rejected: boolean }) {
         rejected ? (
           <L
             en="If your situation has changed, please get in touch — we are happy to look again."
-            ja="ご状況が変わりましたら、いつでも改めてご相談ください。担当があらためて確認いたします。"
+            ja="状況が変わりましたら、いつでもご相談ください。あらためて確認します。"
           />
         ) : (
           <L

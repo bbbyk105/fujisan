@@ -19,7 +19,7 @@ const features = [
   {
     num: "02",
     title: "SAKE RICE",
-    titleJp: "酒造好適米",
+    titleJp: "山田錦と誉富士",
     jp: "米",
     desc: "Yamadanishiki and Homarefuji rice, polished to 40–60%.",
     descJp: "兵庫県産の山田錦と静岡県産の誉富士を、精米歩合40〜60%まで磨いて使います。",
@@ -30,7 +30,7 @@ const features = [
   {
     num: "03",
     title: "BREWING",
-    titleJp: "伝統醸造",
+    titleJp: "冬の仕込み",
     jp: "造り",
     desc: "Brewed through the winter, late October to March, by the toji and kurabito of Makino Shuzo.",
     descJp: "10月下旬から3月の冬のあいだに、牧野酒造の杜氏と蔵人が仕込みます。",
@@ -108,7 +108,7 @@ export default function FujisanDiscover() {
                     <span className="font-serif text-[17px] font-semibold tracking-[0.14em] text-indigo transition-colors duration-500 group-hover:text-gold md:text-[21px]">
                       <L en={f.title} ja={f.titleJp} />
                     </span>
-                    <span className="font-jp text-[11px] tracking-[0.3em] text-gold md:text-[11.5px]">
+                    <span className="i18n-en font-jp text-[11px] tracking-[0.3em] text-gold md:text-[11.5px]">
                       {f.jp}
                     </span>
                   </span>

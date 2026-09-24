@@ -20,7 +20,7 @@ const sections: DocumentSection[] = [
       <L
         key="b"
         en="Orders placed on this site ship within Japan only. Delivery outside Japan cannot be arranged through checkout — please contact us and we will discuss the options with you directly."
-        ja="当サイトからのご注文は、日本国内のみへのお届けとなります。海外へのお届けは購入手続きからは承れませんので、お問い合わせフォームよりご相談ください。"
+        ja="当サイトからのご注文は、日本国内にのみお届けします。海外へのお届けは購入手続きからはお受けできないため、お問い合わせフォームからご相談ください。"
       />,
     ],
     bullets: [
@@ -36,8 +36,8 @@ const sections: DocumentSection[] = [
       />,
       <L
         key="3"
-        en="Outside Japan — by arrangement only; please enquire"
-        ja="海外 — 個別のご相談のうえ対応（お問い合わせください）"
+        en="Outside Japan: by arrangement only; please enquire"
+        ja="海外: お問い合わせのうえ、個別に対応します"
       />,
     ],
   },
@@ -92,7 +92,7 @@ const sections: DocumentSection[] = [
       <L
         key="b2"
         en="An adult of legal drinking age must sign for delivery, and the carrier may verify age at the door. If no one is available, the carrier will leave a card; please re-deliver as soon as possible to keep the sake out of warm storage."
-        ja="お受け取りの際は満20歳以上の方が必ずご署名・ご捺印をお願いいたします。配送業者が年齢確認を行う場合があります。ご不在の場合は不在票によりお預かり後、速やかに再配達をご依頼ください。"
+        ja="お受け取り（サインまたは押印）は、20歳以上の方にお願いしています。配送業者が年齢を確認する場合があります。ご不在で不在票が入っていたときは、お酒が暖かい場所に置かれたままにならないよう、早めに再配達をご依頼ください。"
       />,
     ],
   },
@@ -127,8 +127,8 @@ export default function ShippingPage() {
       title={<L en="Shipping & Returns" ja="お届けと返品" />}
       lead={
         <L
-          en="Sake is a living product — how it travels matters as much as how it is brewed. Here is how each bottle reaches your door."
-          ja="日本酒は生きものです。どう運ばれるかは、どう醸されるかと同じだけ大切にしています。一本がご自宅に届くまでを記しています。"
+          en="Where we ship, how we pack, delivery times, receiving your order, and what to do about damage or returns."
+          ja="お届けできる地域、梱包、発送までの日数、お受け取り、破損や返品のときの対応をまとめています。"
         />
       }
       updated="2026.09"

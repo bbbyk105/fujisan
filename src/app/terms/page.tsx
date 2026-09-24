@@ -51,7 +51,7 @@ const sections: DocumentSection[] = [
       <L
         key="b"
         en="Sake is an agricultural product. Subtle variations between batches and vintages are part of its character. We make every reasonable effort to describe the product accurately, but minor differences in colour, aroma, or label may occur."
-        ja="日本酒は農産物です。仕込みや年度によるわずかな違いも、その個性のひとつです。商品の説明には最善を尽くしていますが、色・香り・ラベルに細かな差異が生じることがあります。"
+        ja="日本酒は米から造るため、仕込みの時期や年度によって、色や香りがわずかに変わることがあります。ラベルの細部が写真と異なる場合もあります。"
       />,
     ],
   },
@@ -108,8 +108,8 @@ export default function TermsPage() {
       title={<L en="Terms of Use" ja="利用規約" />}
       lead={
         <L
-          en="What you can expect from us, and what we expect from you, when you visit this site or buy our sake."
-          ja="当サイトのご利用とご購入にあたって、私たちと皆さまの双方が守る約束をまとめています。"
+          en="The terms that apply when you use this site or buy our sake."
+          ja="当サイトのご利用とご購入についての取り決めです。"
         />
       }
       updated="2026.09"

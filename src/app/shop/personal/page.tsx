@@ -143,7 +143,6 @@ export default function ShopPersonalPage() {
       {/* ===== 選ぶ ===== */}
       <EditorialSection width="wide" ruled={false}>
         <EditorialSectionHead
-          label={<L en="The collection" ja="銘柄" />}
           heading={<L en="The five Bushido bottles" ja="武士道シリーズ 5銘柄" />}
           lead={
             <L
@@ -168,7 +167,6 @@ export default function ShopPersonalPage() {
       <EditorialSection>
         <div className="grid grid-cols-1 gap-10 md:grid-cols-[minmax(0,260px)_minmax(0,1fr)] md:gap-16">
           <EditorialSectionHead
-            label={<L en="How it works" ja="ご購入の流れ" />}
             heading={
               <L
                 en="From order to delivery"
@@ -184,7 +182,6 @@ export default function ShopPersonalPage() {
       {/* ===== 実務 ===== */}
       <EditorialSection>
         <EditorialSectionHead
-          label={<L en="Practical" ja="ご利用について" />}
           heading={
             <L
               en="Shipping, payment, and returns"
