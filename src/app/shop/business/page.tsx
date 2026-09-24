@@ -32,8 +32,8 @@ const terms = [
     label: <L en="Pricing" ja="卸価格" />,
     value: (
       <L
-        en="Case pricing in 6- and 12-bottle units, with tiered terms beyond ten cases per month."
-        ja="6本／12本のケース単位で卸価格をご用意しています。月10ケースを超える場合は、数量に応じた条件をご相談いただけます。"
+        en="Case pricing in 15-bottle cases, with tiered terms beyond ten cases per month."
+        ja="15本入りのケース単位で卸価格をご用意しています。月10ケースを超える場合は、数量に応じた条件をご相談いただけます。"
       />
     ),
   },
@@ -110,8 +110,8 @@ const faqs = [
     q: <L en="What is your minimum order quantity?" ja="最低発注ロットは？" />,
     a: (
       <L
-        en="Domestic orders begin at one case (300 ml × 12 or 180 ml × 24 bottles). Export shipments start at 3,000 bottles, mixed SKUs allowed. Details can be discussed."
-        ja="国内は1ケース（300ml × 12本／180ml × 24本）より承ります。輸出は1出荷3,000本（銘柄混載可）が最小ロットです。内容に応じてご相談ください。"
+        en="Domestic orders begin at one case (15 bottles, for both 300 ml and 180 ml). Export shipments start at 3,000 bottles, mixed SKUs allowed. Details can be discussed."
+        ja="国内は1ケース（300ml・180ml とも15本入り）より承ります。輸出は1出荷3,000本（銘柄混載可）が最小ロットです。内容に応じてご相談ください。"
       />
     ),
   },

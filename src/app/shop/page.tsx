@@ -58,7 +58,7 @@ const routes = [
     facts: [
       {
         label: { en: "Unit", ja: "単位" },
-        value: { en: "Case pricing (6 / 12 bottles)", ja: "ケース単位（6本／12本）" },
+        value: { en: "Case pricing (15 bottles a case)", ja: "ケース単位（15本入り）" },
       },
       {
         label: { en: "Support", ja: "支援" },

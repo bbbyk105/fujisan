@@ -90,8 +90,8 @@ export const fujisanProducts: FujisanProduct[] = [
     grade: "Light, Slightly Sweet",
     gradeJp: "淡麗・やや甘口",
     volumes: [
-      { ml: 300, priceJpy: 2750, wholesalePriceJpy: 1651, caseSize: 12 },
-      { ml: 180, priceJpy: 1950, wholesalePriceJpy: 1155, caseSize: 24 },
+      { ml: 300, priceJpy: 2750, wholesalePriceJpy: 1651, caseSize: 15 },
+      { ml: 180, priceJpy: 1950, wholesalePriceJpy: 1155, caseSize: 15 },
     ],
   },
   {
@@ -134,8 +134,8 @@ export const fujisanProducts: FujisanProduct[] = [
     grade: "Light, Slightly Sweet",
     gradeJp: "淡麗・やや甘口",
     volumes: [
-      { ml: 300, priceJpy: 2750, wholesalePriceJpy: 1651, caseSize: 12 },
-      { ml: 180, priceJpy: 1950, wholesalePriceJpy: 1155, caseSize: 24 },
+      { ml: 300, priceJpy: 2750, wholesalePriceJpy: 1651, caseSize: 15 },
+      { ml: 180, priceJpy: 1950, wholesalePriceJpy: 1155, caseSize: 15 },
     ],
   },
   {
@@ -178,7 +178,7 @@ export const fujisanProducts: FujisanProduct[] = [
     grade: "Light, Slightly Sweet",
     gradeJp: "淡麗・やや甘口",
     volumes: [
-      { ml: 300, priceJpy: 2100, wholesalePriceJpy: 1254, caseSize: 12 },
+      { ml: 300, priceJpy: 2100, wholesalePriceJpy: 1254, caseSize: 15 },
     ],
   },
   {
@@ -221,7 +221,7 @@ export const fujisanProducts: FujisanProduct[] = [
     grade: "Light, Dry",
     gradeJp: "淡麗・辛口",
     volumes: [
-      { ml: 300, priceJpy: 1850, wholesalePriceJpy: 1105, caseSize: 12 },
+      { ml: 300, priceJpy: 1850, wholesalePriceJpy: 1105, caseSize: 15 },
     ],
   },
   {
@@ -264,7 +264,7 @@ export const fujisanProducts: FujisanProduct[] = [
     grade: "Dry",
     gradeJp: "辛口",
     volumes: [
-      { ml: 300, priceJpy: 1600, wholesalePriceJpy: 956, caseSize: 12 },
+      { ml: 300, priceJpy: 1600, wholesalePriceJpy: 956, caseSize: 15 },
     ],
   },
 ];
