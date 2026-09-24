@@ -66,12 +66,12 @@ export const fujisanProducts: FujisanProduct[] = [
     storyEn: [
       "The most polished bottle in the Bushido series: a Junmai Daiginjo with the rice milled to 40%, made from Hyogo Yamadanishiki and brewed by Makino Shuzo at the foot of Mt. Fuji.",
       "A ginjo aroma of banana and melon comes first, then a smooth, lightly sweet body with a little acidity that keeps it fresh.",
-      "Serve well chilled, with sushi or sashimi.",
+      "Serve with sushi or sashimi.",
     ],
     storyJp: [
       "武士道シリーズでいちばん磨いた、精米歩合40%の純米大吟醸です。\n兵庫県産の山田錦を使い、富士山麓の牧野酒造が造っています。",
       "バナナやメロンのような吟醸香があります。\n口当たりはなめらかでほのかに甘く、\nほどよい酸で後味は軽やかです。",
-      "よく冷やして、寿司や刺身と合わせるのがおすすめです。",
+      "寿司や刺身と合わせるのがおすすめです。",
     ],
     specs: [
       { label: "ABV", value: "15%" },
@@ -85,13 +85,13 @@ export const fujisanProducts: FujisanProduct[] = [
     ],
     pairing: ["Sushi", "Sashimi", "Fresh seafood"],
     pairingJp: ["寿司", "刺身", "新鮮な魚介"],
-    serveTemp: "Chilled 8–12°C",
-    serveTempJp: "冷酒 8〜12℃",
+    serveTemp: "Room temperature 15–20°C",
+    serveTempJp: "常温 15〜20℃",
     grade: "Light, Slightly Sweet",
     gradeJp: "淡麗・やや甘口",
     volumes: [
-      { ml: 300, priceJpy: 2750, wholesalePriceJpy: 1651, caseSize: 12 },
-      { ml: 180, priceJpy: 1950, wholesalePriceJpy: 1155, caseSize: 24 },
+      { ml: 300, priceJpy: 2750, wholesalePriceJpy: 1651, caseSize: 15 },
+      { ml: 180, priceJpy: 1950, wholesalePriceJpy: 1155, caseSize: 15 },
     ],
   },
   {
@@ -110,12 +110,12 @@ export const fujisanProducts: FujisanProduct[] = [
     storyEn: [
       "A Junmai Daiginjo made from Hyogo Yamadanishiki polished to 50%.",
       "A ginjo aroma of banana and melon, and a smooth, lightly sweet taste that stays clean to the finish.",
-      "Serve chilled, with sashimi or fresh seafood.",
+      "Serve with sashimi or fresh seafood.",
     ],
     storyJp: [
       "兵庫県産の山田錦を精米歩合50%まで磨いた、純米大吟醸です。",
       "バナナやメロンのような吟醸香に、\nなめらかでほのかに甘い味わいです。\n後味まですっきりとしています。",
-      "冷やして、刺身や新鮮な魚介と合わせるのがおすすめです。",
+      "刺身や新鮮な魚介と合わせるのがおすすめです。",
     ],
     specs: [
       { label: "ABV", value: "15%" },
@@ -129,13 +129,13 @@ export const fujisanProducts: FujisanProduct[] = [
     ],
     pairing: ["Sushi", "Sashimi", "Fresh seafood"],
     pairingJp: ["寿司", "刺身", "新鮮な魚介"],
-    serveTemp: "Chilled 8–12°C",
-    serveTempJp: "冷酒 8〜12℃",
+    serveTemp: "Room temperature 15–20°C",
+    serveTempJp: "常温 15〜20℃",
     grade: "Light, Slightly Sweet",
     gradeJp: "淡麗・やや甘口",
     volumes: [
-      { ml: 300, priceJpy: 2750, wholesalePriceJpy: 1651, caseSize: 12 },
-      { ml: 180, priceJpy: 1950, wholesalePriceJpy: 1155, caseSize: 24 },
+      { ml: 300, priceJpy: 2750, wholesalePriceJpy: 1651, caseSize: 15 },
+      { ml: 180, priceJpy: 1950, wholesalePriceJpy: 1155, caseSize: 15 },
     ],
   },
   {
@@ -154,12 +154,12 @@ export const fujisanProducts: FujisanProduct[] = [
     storyEn: [
       "A Junmai Ginjo polished to 60%, made from Hyogo Yamadanishiki blended with Homarefuji, a sake rice bred in Shizuoka.",
       "A bright ginjo aroma of banana and melon, with a clean, smooth, refreshing body and a balanced sweetness.",
-      "Serve well chilled, with seafood, grilled fish, or tempura.",
+      "Serve with seafood, grilled fish, or tempura.",
     ],
     storyJp: [
       "兵庫県産の山田錦に、静岡県で生まれた酒米・誉富士を合わせ、\n精米歩合60%まで磨いた純米吟醸です。",
       "バナナやメロンのような明るい吟醸香があります。\nなめらかで爽やか、甘みとのバランスもとれた味わいです。",
-      "よく冷やして、魚介や焼き魚、天ぷらと合わせるのがおすすめです。",
+      "魚介や焼き魚、天ぷらと合わせるのがおすすめです。",
     ],
     specs: [
       { label: "ABV", value: "15%" },
@@ -173,12 +173,12 @@ export const fujisanProducts: FujisanProduct[] = [
     ],
     pairing: ["Seafood", "Grilled fish", "Tempura"],
     pairingJp: ["魚介", "焼き魚", "天ぷら"],
-    serveTemp: "Chilled 8–12°C",
-    serveTempJp: "冷酒 8〜12℃",
+    serveTemp: "Room temperature 15–20°C",
+    serveTempJp: "常温 15〜20℃",
     grade: "Light, Slightly Sweet",
     gradeJp: "淡麗・やや甘口",
     volumes: [
-      { ml: 300, priceJpy: 2100, wholesalePriceJpy: 1254, caseSize: 12 },
+      { ml: 300, priceJpy: 2100, wholesalePriceJpy: 1254, caseSize: 15 },
     ],
   },
   {
@@ -197,12 +197,12 @@ export const fujisanProducts: FujisanProduct[] = [
     storyEn: [
       "A Tokubetsu Junmai polished to 60%, made from Yamadanishiki grown in Hyogo and Shizuoka and kept light at 14% alcohol.",
       "A light, fruity aroma with a hint of banana, then a crisp, dry, refreshing taste with a short, clean finish.",
-      "Serve chilled or at room temperature with yakitori, grilled fish, or savory Japanese dishes.",
+      "Serve with yakitori, grilled fish, or savory Japanese dishes.",
     ],
     storyJp: [
       "兵庫県産と静岡県産の山田錦を精米歩合60%まで磨き、\nアルコール度数を14%に抑えた特別純米です。",
       "ほのかにバナナを感じる軽い果実香があります。\nきりっとした辛口で、後味はすっきりしています。",
-      "焼き鳥や焼き魚、味のしっかりした料理と合わせるのがおすすめです。\n冷やしても、常温でもおいしく飲めます。",
+      "焼き鳥や焼き魚、味のしっかりした料理と合わせるのがおすすめです。",
     ],
     specs: [
       { label: "ABV", value: "14%" },
@@ -216,12 +216,12 @@ export const fujisanProducts: FujisanProduct[] = [
     ],
     pairing: ["Yakitori", "Grilled fish", "Tempura"],
     pairingJp: ["焼き鳥", "焼き魚", "天ぷら"],
-    serveTemp: "Chilled or room temperature 10–15°C",
-    serveTempJp: "冷酒〜常温 10〜15℃",
+    serveTemp: "Room temperature 15–20°C",
+    serveTempJp: "常温 15〜20℃",
     grade: "Light, Dry",
     gradeJp: "淡麗・辛口",
     volumes: [
-      { ml: 300, priceJpy: 1850, wholesalePriceJpy: 1105, caseSize: 12 },
+      { ml: 300, priceJpy: 1850, wholesalePriceJpy: 1105, caseSize: 15 },
     ],
   },
   {
@@ -240,12 +240,12 @@ export const fujisanProducts: FujisanProduct[] = [
     storyEn: [
       "A Tokubetsu Honjozo polished to 60%, made from Hyogo Yamadanishiki and Shizuoka Homarefuji. It is easy to drink with everyday meals.",
       "Light, with a faint floral aroma, clean and crisp, and the driest of the series at SMV +8.",
-      "Serve chilled or at room temperature, with yakitori, grilled seafood, or an ordinary dinner.",
+      "Serve with yakitori, grilled seafood, or an ordinary dinner.",
     ],
     storyJp: [
       "兵庫県産の山田錦と静岡県産の誉富士を合わせ、\n精米歩合60%まで磨いた特別本醸造です。\n毎日の食事に合わせやすい一本です。",
       "軽やかで、ほのかに花のような香りがあります。\nキレがあり、日本酒度+8とシリーズでいちばんの辛口です。",
-      "焼き鳥や焼いた魚介、ふだんの食事と合わせるのがおすすめです。\n冷やしても、常温でもおいしく飲めます。",
+      "焼き鳥や焼いた魚介、ふだんの食事と合わせるのがおすすめです。",
     ],
     specs: [
       { label: "ABV", value: "15%" },
@@ -259,12 +259,12 @@ export const fujisanProducts: FujisanProduct[] = [
     ],
     pairing: ["Yakitori", "Grilled seafood", "Everyday dining"],
     pairingJp: ["焼き鳥", "焼いた魚介", "ふだんの食事"],
-    serveTemp: "Chilled or room temperature 10–15°C",
-    serveTempJp: "冷酒〜常温 10〜15℃",
+    serveTemp: "Room temperature 15–20°C",
+    serveTempJp: "常温 15〜20℃",
     grade: "Dry",
     gradeJp: "辛口",
     volumes: [
-      { ml: 300, priceJpy: 1600, wholesalePriceJpy: 956, caseSize: 12 },
+      { ml: 300, priceJpy: 1600, wholesalePriceJpy: 956, caseSize: 15 },
     ],
   },
 ];

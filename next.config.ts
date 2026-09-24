@@ -12,9 +12,10 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
   async redirects() {
-    // /craft 入口は /stories に統合（/craft/[slug] の詳細ページは /stories 各章「続きを読む」の遷移先として残す）
+    // /craft に一覧ページは無い（/stories は 2026-09-23 に削除）。入口は最初の章へ。
+    // 一覧を作る余地を残すため、恒久（308）ではなく一時（307）の転送にする。
     return [
-      { source: "/craft", destination: "/stories", permanent: true },
+      { source: "/craft", destination: "/craft/water", permanent: false },
       // 正規ドメインは sakefujisan.com。www はそのまま apex へ寄せる。
       {
         source: "/:path*",
@@ -23,8 +24,9 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       // workers.dev でも同じサイトが開けるが、BETTER_AUTH_URL と Origin が合わず
-      // ログインできないので apex へ寄せる。Stripe の Webhook だけは残す
-      // （Stripe はリダイレクトを追わず、失敗として再送し続ける）。
+      // ログインできないので apex へ寄せる。Stripe の Webhook だけは残す。
+      // 本番の Webhook は sakefujisan.com を向いているが、sandbox など旧 URL のままの
+      // エンドポイントが残っていても受けられるようにしておく（Stripe はリダイレクトを追わない）。
       {
         source: "/:path((?!api/stripe/webhook$).*)",
         has: [{ type: "host", value: "fujisan.bbbyk105.workers.dev" }],

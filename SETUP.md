@@ -1,10 +1,11 @@
-# FUJISAN 本番セットアップ TODO
+# FUJISAN 本番セットアップ
 
-本番公開までに残っている設定作業。上から順に進めれば詰まりません。
+本番公開までに残っている設定作業と、済んだ設定の控え。上から順に進めれば詰まりません。
 
 - 本番 URL: https://sakefujisan.com（2026-09-24 取得・Cloudflare Registrar）
 - 旧 URL: https://fujisan.bbbyk105.workers.dev（Stripe Webhook 以外は sakefujisan.com へ 308）
 - Worker 名: `fujisan` / D1: `fujisan-db`
+- デプロイ: main への push で Cloudflare Workers Builds が自動で本番へ出す
 
 コマンドはすべて `~/Desktop/Projects/fujisan` で実行します。
 
@@ -13,189 +14,61 @@
 
 ---
 
-## ⚠️ 先に読む — 本番と main のズレ
-
-本番 Worker には **`feat/admin-products-inventory`（main へ未マージ）** が
-デプロイされており、本番 D1 のマイグレーションは `0007_product_sku.sql` までです。
-一方 main はその後、別系統で在庫・お問い合わせ・取扱店審査・レート制限を実装しました。
-
-この二重化は `feat/integrate-admin-dashboard-catalog` で解消済みです（`0012` で
-`product_sku` を `inventory` + `product_price` へ移行し、表そのものを落とす）。
-**マージしてからデプロイしてください。** 先に main だけをデプロイすると、
-本番の商品管理画面と在庫上限が消えます。
-
-さらに **`ADMIN_EMAILS` が未設定だと、誰も `/admin` に入れません。**
-以前ソースにあったフォールバックの owner アドレスは撤去済みです（下のタスク2）。
-
----
-
-## 済んでいること
+## いまの状態（2026-09-24 時点）
 
 | | 内容 |
 |---|---|
-| ✅ | 商品・在庫管理（`/admin/products`）と売上ダッシュボード（`/admin`） |
-| ✅ | 決済まわりのバグ修正（年齢確認のサーバー検証・ステータス遷移制約・招待の失効 ほか） |
-| ✅ | 404 / error / global-error ページ |
-| ✅ | 本番デプロイ（Version `ffbf40e4`。**内容は未マージブランチのもの**） |
-| ✅ | Stripe 本番 Webhook 作成（`we_1UAthnHTT9ZXTgS1xYg2XRl4`・署名検証の動作確認済み） |
-| ✅ | `.dev.vars` から本番キー（`sk_live`）を削除 |
+| ✅ | 本番 D1 のマイグレーションは `0014` まで適用済み |
+| ✅ | 独自ドメイン `sakefujisan.com`（www・workers.dev は apex へ転送） |
+| ✅ | メール送信: Resend で `sakefujisan.com` を認証済み、送信元は `info@sakefujisan.com` |
+| ✅ | メール受信: Cloudflare Email Routing で `info@` → `mtfujipharmacy@gmail.com` |
+| ✅ | DMARC（`_dmarc` TXT `v=DMARC1; p=none;`） |
+| ✅ | Stripe 本番 Webhook（`we_1UAthnHTT9ZXTgS1xYg2XRl4`）: URL は sakefujisan.com、6 イベント |
+| ⚠️ | **決済は Stripe の sandbox（テスト）のまま**。本番キーへの切り替えはタスク4 |
+| ✅ | `ADMIN_EMAILS` = `mtfujipharmacy@gmail.com,bbbyk105@yahoo.co.jp` |
+| ⚠️ | 本番のユーザーは 0 人。管理者のアドレスで会員登録すると `/admin` に入れる（タスク2） |
+| ⚠️ | 在庫は全 SKU 一律 24 本の暫定値 |
 
 ### 本番 Worker の secret（`npx wrangler secret list` で確認済み）
 
 ```
+OK  ADMIN_EMAILS             = mtfujipharmacy@gmail.com,bbbyk105@yahoo.co.jp
 OK  BETTER_AUTH_SECRET
-OK  BETTER_AUTH_URL          ← ドメイン接続時に要更新（タスク7）
-OK  STRIPE_SECRET_KEY
-OK  STRIPE_WEBHOOK_SECRET
-OK  RESEND_API_KEY           ← 入れ直し推奨（タスク4）
---  RESEND_FROM              ← タスク5
---  ADMIN_EMAILS             ← **必須**（タスク2）
---  GOOGLE_CLIENT_ID         （未設定 = 本番の Google ログインは無効）
+OK  BETTER_AUTH_URL          = https://sakefujisan.com
+OK  RESEND_API_KEY
+OK  RESEND_FROM              = FUJISAN SAKE <info@sakefujisan.com>
+OK  STRIPE_SECRET_KEY        ← sandbox のキー。本番公開時に差し替え（タスク4）
+OK  STRIPE_WEBHOOK_SECRET    ← 同上
+--  GOOGLE_CLIENT_ID         （未設定 = Google ログインは無効）
 --  GOOGLE_CLIENT_SECRET
 ```
 
 ---
 
-## タスク1. 本番 D1 にマイグレーションを適用する【最優先】
-
-未適用は 7 本（`0007`〜`0013`）。
-
-```bash
-npx wrangler d1 migrations apply fujisan-db --remote
-```
-
-| | 内容 |
-|---|---|
-| `0007_contact_message` | お問い合わせの受領 |
-| `0008_order_cancel_request` | キャンセル依頼 |
-| `0009_inventory` | 在庫（引き当て付き） |
-| `0010_trade_account` | 取扱店の審査 |
-| `0011_rate_limit` | Better Auth 用のレート制限 |
-| `0012_product_price` | 価格の上書き表 ＋ **旧 `product_sku` からの移行** |
-| `0013_order_partial_refund` | 部分返金の記録 |
-
-`0012` は旧 `product_sku` の**在庫を `inventory` へ引き継いでから表を落とします**。
-価格は「管理画面で実際に変更された行」だけ移します（初期投入値のまま移すと、
-以後コードのカタログで価格を直しても D1 の同値に上書きされ続けるため）。
-
-ローカルで同じ経路を検証済み（7 SKU が `on_hand=24` で移り、`product_sku` は消え、
-`product_price` は空）。`--local` と `--remote` は別の DB です。
-
----
-
-## タスク2. ADMIN_EMAILS を設定する【必須・これが無いと管理画面に入れない】
+## タスク1. ADMIN_EMAILS を設定する（済: 2026-09-24）
 
 ```bash
 npx wrangler secret put ADMIN_EMAILS
-# 値: カンマ区切り。例) byakkokondo@gmail.com
+# 値: カンマ区切り。例) byakkokondo@gmail.com,mtfujipharmacy@gmail.com
 ```
 
-以前は `src/lib/admin.ts` に `FALLBACK_OWNER_EMAILS` があり、未設定でも
-特定のアドレスが owner になっていました。**個人のアドレスがソースに
-コミットされている状態だった**ため撤去済みです。いまは未設定＝env owner 0 人。
-
+未設定のあいだは誰も `/admin` に入れず、お問い合わせの管理者通知や障害通知の宛先も 0 件になる
+（お問い合わせ自体は D1 に保存されるので失われないが、届いたことに気づけない）。
 staff の追加は `/admin/team` からメール招待でできます（招待は **14 日で失効**）。
 
----
+## タスク2. 本番でアカウントを作り、管理画面に入る
 
-## タスク3. Stripe Webhook のイベントを追加する
+本番 D1 の `user` テーブルは空です（ローカルの `.wrangler/state/v3/d1` は別 DB）。
 
-現在 4 イベント。コードは 6 イベントに対応しているので、残り 2 つを追加します。
-
-Stripe ダッシュボード（本番）→ 開発者 → Webhook → `we_1UAthnHTT9ZXTgS1xYg2XRl4`
-
-| イベント | 現状 | 購読しないと起きること |
-|---|---|---|
-| `checkout.session.completed` | ✅ | 注文が確定しない |
-| `checkout.session.async_payment_succeeded` | ✅ | コンビニ払いが確定しない |
-| `checkout.session.async_payment_failed` | ✅ | 未払いの pending 注文が溜まる |
-| `checkout.session.expired` | ✅ | 同上（在庫も押さえたまま） |
-| `charge.refunded` | **要追加** | ダッシュボードから返金しても DB に残らない |
-| `charge.dispute.created` | **要追加** | チャージバックに気づけない（放置すると売上が引かれる） |
-
----
-
-## タスク4. 本番の RESEND_API_KEY を入れ直す
-
-本番に入れた時点のキーと、その後作り直した有効なキーが別物の可能性があります。
-
-```bash
-npx wrangler secret put RESEND_API_KEY
-```
-
-`.dev.vars` にある有効なキーと同じ値を貼り付けます。
-
----
-
-## タスク5. メール（送信 = Resend / 受信 = Cloudflare Email Routing）
-
-送受信とも `info@sakefujisan.com` を使う。サイト・特商法・メールに載る連絡先
-（`FUJISAN_LEGAL.email`）もこのアドレス。
-
-**やらないと**: お客様が誰も会員登録を完了できません。送信元が Resend 共有の
-`onboarding@resend.dev` のままだと、**Resend アカウント所有者本人にしか配信されません**。
-
-### 5-1. 送信: Resend にドメインを追加
-
-Resend ダッシュボード → Domains → Add Domain → `sakefujisan.com`
-（Region は Tokyo `ap-northeast-1`）。表示される DKIM（`resend._domainkey`）と
-`send` サブドメインの MX / TXT を Cloudflare の DNS に入れる（Resend 画面の
-Cloudflare 自動設定を使ってもよい）。プロキシ（オレンジ雲）は OFF。
-
-`verified` になったら：
-
-```bash
-npx wrangler secret put RESEND_FROM
-# 値: FUJISAN SAKE <info@sakefujisan.com>
-```
-
-> **`verified` になる前に RESEND_FROM を設定しない。** 未認証のまま設定すると
-> 全メールが 403 で失敗し、自分宛にも届かなくなります（管理画面に入れなくなります）。
-
-### 5-2. 受信: Email Routing で Gmail へ転送
-
-Cloudflare ダッシュボード → `sakefujisan.com` → Email → Email Routing
-
-1. 有効化（apex に MX と SPF が自動で入る。Resend は `send` サブドメインなので衝突しない）
-2. Destination addresses に `mtfujipharmacy@gmail.com` を追加 → Gmail に届く確認リンクを踏む
-3. Routing rules: `info@sakefujisan.com` → `mtfujipharmacy@gmail.com`
-
-これが無いと、お客様が `info@` に書いたメールや注文メールへの返信が届かない。
-
-## タスク6. 本番でアカウントを作り、管理画面に入る
-
-**現状**: 本番 D1 の `user` テーブルは空です。ローカルで作ったアカウントは
-`.wrangler/state/v3/d1`（別DB）にあるだけで、本番には存在しません。
-
-1. タスク2（`ADMIN_EMAILS`）を先に済ませる
+1. タスク1 を先に済ませる
 2. https://sakefujisan.com/register/personal で登録
 3. 確認メールのリンクを踏む（`requireEmailVerification: true` のため必須）
 4. https://sakefujisan.com/admin に入れることを確認
 
-> タスク5が終わる前でも、`onboarding@resend.dev` は**あなた宛には届く**ので、
-> この作業だけは先に済ませられます。
-
----
-
-## タスク7. 独自ドメイン（済: 2026-09-24）
-
-- `wrangler.jsonc` の `routes` に `sakefujisan.com` と `www.sakefujisan.com` を
-  custom domain として登録済み（DNS レコードと証明書は Cloudflare が自動で作る）。
-- www と workers.dev は `next.config.ts` の redirects で apex へ 308。
-- `BETTER_AUTH_URL` は `https://sakefujisan.com`。Better Auth のベース URL であると
-  同時に、**Stripe 決済後の戻り先（success_url / cancel_url）の基底**。
-- canonical / OGP / sitemap は `src/lib/seo.ts` の `SITE_URL`（既定が sakefujisan.com）。
-
-### 残り: Stripe Webhook の URL を差し替え
-
-`we_1UAthnHTT9ZXTgS1xYg2XRl4` の URL を
-`https://sakefujisan.com/api/stripe/webhook` に変更する。workers.dev の
-`/api/stripe/webhook` はリダイレクトから外してあるので、変えるまでも止まらない。
-差し替えたら `wrangler.jsonc` の `workers_dev` を `false` にしてよい。
-
-## タスク8. 酒類販売の免許番号を入れる【法令】
+## タスク3. 酒類販売の免許番号を入れる【法令】
 
 `src/data/fujisan-legal.ts` の `LIQUOR_LICENCE` が `null` のままです。
+通信販売での酒類販売では、免許番号の表示が必須です。
 
 ```ts
 export const LIQUOR_LICENCE = {
@@ -204,38 +77,51 @@ export const LIQUOR_LICENCE = {
 };
 ```
 
-埋まるまで `npm run deploy` は predeploy（`scripts/check-legal-disclosure.mjs`）で
-止まります。未設定のあいだ特商法ページには「免許番号は確認中です」と表示されます。
-
+未設定のあいだ特商法ページには「免許番号は確認中です」と表示されます。
 **それらしい伏せ字で埋めないこと。** 本物に見えたまま公開されます。
 
----
+埋めたら、Workers Builds の Build command の先頭に `npm run check:legal &&` を足す
+（タスク7）。`npm run check:legal` は `npm run deploy` の predeploy でしか走らず、
+**自動デプロイでは未記入のままでも本番に出せてしまう**ため。
 
-## タスク9. 実在庫を入力する
+## タスク4. Stripe を本番モードに切り替える
 
-**現状**: 本番の在庫は**全 SKU 一律 24 本の暫定値**です（`0007` の初期値を
-`0012` がそのまま引き継ぎます）。
+いまの `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` は sandbox のもの。
 
-https://sakefujisan.com/admin/products で実際の本数に差し替えます。
+1. Stripe の本番利用申請（事業者情報・振込先口座）を済ませる
+2. 本番の Webhook はもうある（`we_1UAthnHTT9ZXTgS1xYg2XRl4`、sakefujisan.com、6 イベント）。
+   ダッシュボード（本番）→ 開発者 → Webhook → このエンドポイント → 署名シークレットを表示
+3. 本番の鍵を入れる
+
+   ```bash
+   npx wrangler secret put STRIPE_SECRET_KEY      # sk_live_...
+   npx wrangler secret put STRIPE_WEBHOOK_SECRET  # 手順2の whsec_...
+   ```
+
+   **2 つは必ず同時に入れ替える。** 片方だけだと、決済は通るのに Webhook の署名検証が
+   失敗して注文が確定しない。
+
+sandbox 側の Webhook の URL が旧 URL（workers.dev）のままでも、`/api/stripe/webhook` だけは
+転送から外してあるので届く。sandbox を使い続けるなら、sandbox のダッシュボードでも URL を
+`https://sakefujisan.com/api/stripe/webhook` にしておく。
+
+## タスク5. 実在庫を入力する
+
+https://sakefujisan.com/admin/products で実際の本数に差し替えます（タスク2 の後）。
 
 - 販売可能数（実在庫 − 決済待ち）が 0 の SKU は自動的に購入不可になります
 - 決済開始で引き当て、入金確定で実減算されます
 - 「僅少の目安」を下回ると `/admin` にアラートが出ます
 - 在庫の変更は staff 以上、価格の変更は owner のみ
 
-**決済キーは既に本番に入っているため、技術的にはもう購入可能な状態です。**
-告知の前に必ず実在庫へ直してください。
+## タスク6. 本番で実決済テスト（タスク4 の後）
 
----
-
-## タスク10. 本番で実決済テスト
-
-ここまでで**唯一未検証**なのが、Stripe 実決済からの一連の流れです。
+Stripe 本番の決済からの一連の流れは、まだ本番で通していません。
 
 ```
 1. 一番安い「こころ 300ml（¥1,600）」を実際に購入
 2. 確認すること
-   · 注文確定メールが届く
+   · 注文確定メールが info@sakefujisan.com から届く
    · /admin/orders に注文が出る（pending のまま残っていない）
    · /admin/products の在庫が 1本 減っている
 3. /admin/orders の返金ボタンで全額返金 → 返金メールが届く・在庫が戻る
@@ -243,99 +129,110 @@ https://sakefujisan.com/admin/products で実際の本数に差し替えます�
    注文が進行中のまま残り、差引額が領収書に出ることを確認
 ```
 
-ここまで通れば、Webhook 確定・在庫減算・メール・返金の全系統が本番で動く証明になります。
-
 > **注意**: 本番キーなので実際にカードへ請求が走ります。返金しても Stripe の
 > 決済手数料（¥1,600 なら60円前後）は戻りません。
+
+## タスク7. Workers Builds の非本番ブランチを直す
+
+PR のブランチでもビルドが走り、非本番ブランチからは本番へ出せないため**必ず失敗する**
+（PR に常に赤いチェックが付く）。
+
+Cloudflare ダッシュボード → Workers & Pages → `fujisan` → Settings → Build →
+Branch control で、どちらかにする。
+
+- **プレビューを使う（推奨）**: 非本番ブランチの Deploy command を
+  `npx opennextjs-cloudflare upload` にする。本番を差し替えずにバージョンだけを上げ、
+  PR ごとのプレビュー URL が出る
+- **使わない**: 「非本番ブランチのビルド」を無効にする
+
+あわせて、タスク3 が済んだら Build command を次にする。
+
+```
+npm run check:legal && npm run lint && npm test && npx opennextjs-cloudflare build
+```
 
 ---
 
 ## 任意
 
-### Google ログインを本番で有効にする
-
-```bash
-npx wrangler secret put GOOGLE_CLIENT_ID
-npx wrangler secret put GOOGLE_CLIENT_SECRET
-```
-
-`src/lib/auth.ts` は両方揃ったときだけ Google を有効にします。片方だけでは無効のまま。
-Google Cloud 側のリダイレクト URI に本番ドメインの登録も必要です。
-
-### SNS アカウント
-
-`FujisanFooter.tsx` の `SOCIAL_LINKS` に URL を入れるとアイコンが出ます（空なら非表示）。
-
-### 適格請求書（インボイス）登録番号
-
-`INVOICE_REGISTRATION_NUMBER`。未登録なら `null` のままでよい（領収書に行が出ません）。
+- **Google ログイン**: `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` を両方入れる（片方だけでは無効）。
+  Google Cloud 側の承認済みリダイレクト URI に
+  `https://sakefujisan.com/api/auth/callback/google` を登録する
+- **SNS**: `FujisanFooter.tsx` の `SOCIAL_LINKS`（空なら非表示）
+- **インボイス登録番号**: `INVOICE_REGISTRATION_NUMBER`。未登録なら `null` のままでよい
+- **Google Search Console**: `sakefujisan.com` を登録し、`https://sakefujisan.com/sitemap.xml` を送信
 
 ---
 
+## 公開前の最終チェック
+
+- [x] `ADMIN_EMAILS` が設定済み
+- [ ] 管理者のアドレスで登録し、`/admin` に入れる
+- [ ] 自分以外のメールアドレスで会員登録が完了できる（確認メールが info@ から届く）
+- [ ] 免許番号が入っている（`npm run check:legal` が通る）
+- [ ] Workers Builds の Build command に `npm run check:legal &&` が入っている
+- [ ] Stripe が本番キー（`STRIPE_SECRET_KEY` と `STRIPE_WEBHOOK_SECRET` を同時に差し替え済み）
+- [ ] `/admin/products` の在庫が実在庫
+- [ ] 実決済テストで在庫が減り、返金もできた
+- [x] 本番 D1 に `0014` まで適用済み
+- [x] `BETTER_AUTH_URL` が `https://sakefujisan.com`
+- [x] Resend のドメインが `verified`、`RESEND_FROM` が `info@sakefujisan.com`
+- [x] `info@sakefujisan.com` 宛のメールが Gmail に届く
+- [x] Stripe 本番 Webhook の URL が sakefujisan.com・6 イベント
+
 ---
 
-## タスク11. GitHub を Cloudflare に接続して自動デプロイにする
+## 済んだ設定の控え
 
-`npm run deploy` を手で打つ代わりに、**main への push で自動デプロイ**にする。
-Cloudflare の Workers Builds を使う（GitHub Actions は不要）。
+### 独自ドメイン
 
-### 11-1. 接続
+- `wrangler.jsonc` の `routes` に `sakefujisan.com` と `www.sakefujisan.com` を custom domain で登録
+  （DNS レコードと証明書は Cloudflare が自動で作る）
+- www と workers.dev は `next.config.ts` の redirects で apex へ 308。workers.dev の
+  `/api/stripe/webhook` だけは転送しない（Stripe はリダイレクトを追わない）
+- `BETTER_AUTH_URL` は Better Auth のベース URL であると同時に、**Stripe 決済後の戻り先
+  （success_url / cancel_url）の基底**
+- canonical / OGP / sitemap は `src/lib/seo.ts` の `SITE_URL`（既定が sakefujisan.com。
+  プレビューで変えたいときだけビルド変数 `NEXT_PUBLIC_SITE_URL` を入れる）
 
-Cloudflare ダッシュボード → **Compute (Workers & Pages)** → `fujisan`
-→ **Settings** → **Build** → **Connect to Git**
+### メール
 
-1. GitHub を認可する（Cloudflare の GitHub App をインストール）。
-   対象リポジトリは `bbbyk105/fujisan` だけに絞ってよい
-2. **Production branch**: `main`
-3. **Root directory**: `/`（既定のまま）
+- 送信（Resend、Tokyo リージョン）: DKIM `resend._domainkey`（TXT）、`send` / `rsend`（CNAME、DNS only）。
+  `rsend` のターゲットは `rsend-apne1.forge.rmta.net`（`-apne1` が抜けると SPF が通らない）
+- **`RESEND_FROM` はドメインが `verified` になってから入れる。** 未認証のまま入れると全メールが
+  403 で失敗し、自分宛にも届かなくなる
+- 受信（Email Routing）: apex の MX 3 件と SPF は Email Routing が自動で入れたもの。
+  ルールは `info@` → `mtfujipharmacy@gmail.com` の 1 本、キャッチオールは無効（ドロップ）
+- DMARC: `_dmarc` TXT `v=DMARC1; p=none;`
 
-### 11-2. コマンド
+### Stripe Webhook のイベント
+
+| イベント | 購読しないと起きること |
+|---|---|
+| `checkout.session.completed` | 注文が確定しない |
+| `checkout.session.async_payment_succeeded` | コンビニ払いが確定しない |
+| `checkout.session.async_payment_failed` | 未払いの pending 注文が溜まる |
+| `checkout.session.expired` | 同上（在庫も押さえたまま） |
+| `charge.refunded` | ダッシュボードから返金しても DB に残らない |
+| `charge.dispute.created` | チャージバックに気づけない（放置すると売上が引かれる） |
+
+### Workers Builds（自動デプロイ）
 
 | 欄 | 値 |
 |---|---|
+| Production branch | `main` |
 | Build command | `npm run lint && npm test && npx opennextjs-cloudflare build` |
 | Deploy command | `npx opennextjs-cloudflare deploy` |
 
-- **Build command を `npm run build` にしない。** `next build` だけでは
-  `.open-next/worker.js` が作られず、`wrangler.jsonc` の `main` が指す先が無いまま
-  デプロイ段階へ進んで必ず落ちる。OpenNext への変換まで含めて 1 本のコマンドにすること。
-- **Deploy command は既定の `npx wrangler deploy` から必ず変えること。** 既定のままだと
-  OpenNext の変換前の状態を上げようとして失敗する。
-  `npx wrangler preview` も**不可**（Wrangler 1 系で廃止済みのコマンドで、4 系には無い。
-  デプロイ段階が数秒で終了コード非 0 になり、ログにも原因が出にくい）。
-- **PR のブランチでもビルドは走る。** Deploy command は production / non-production で
-  分かれていないため、このままだと PR を出すたびに本番が差し替わる。非本番ブランチの
-  ビルドを切るか、非本番側は `npx wrangler versions upload`（本番を差し替えずに
-  バージョンだけ上げる）にしておくこと。
-- lint と test をビルドコマンドに入れているのは、**落ちているコードが本番に出ないようにする門番**が
-  他に無くなるため。Workers Builds には「テストが通ったら」という条件設定が無いので、
-  ビルドコマンドの `&&` で繋ぐのがその代わりになる。
-- `npm ci` は Workers Builds が lockfile を見て自動で走らせるので、書かなくてよい。
-- `npm run cf-typegen` も不要（`cloudflare-env.d.ts` は gitignore 済みだが、
-  無くてもビルドは通ることを実機で確認済み）。
-
-### 11-3. 環境変数（ビルド時）
-
-プレビュー環境などで正規 URL を変えたいときだけ **Build variables** に追加する（本番は既定で sakefujisan.com）。
-
-```
-NEXT_PUBLIC_SITE_URL = https://sakefujisan.com
-```
-
-canonical / OGP / sitemap の基底はビルド時に確定するため、Worker の secret ではなく
-**ビルド変数**側に置く。未設定ならコード側の既定（本番ドメイン）にフォールバックする。
-
-> `wrangler secret put` で入れた値（`STRIPE_SECRET_KEY` など）は**デプロイで消えない**。
-> ビルド変数に入れ直す必要はない。
-
-### 11-4. 接続後に変わること
-
-- **`npm run deploy` の法令チェックが効かなくなる。** あれは `predeploy` フックなので、
-  Cloudflare 側のビルドコマンドからは呼ばれない。免許番号が届いたら、
-  Build command の先頭に `npm run check:legal &&` を足して門番を戻すこと。
-- **D1 のマイグレーションは自動では流れない**（これは意図どおり）。`0012` のように表を
-  落とすものがあり、コードのデプロイと同時に自動で流すと順番次第で本番が壊れる。
-  スキーマを変えたときは、**先に**手でマイグレーションを適用してから push する。
+- **Build command を `npm run build` にしない。** `next build` だけでは `.open-next/worker.js` が
+  作られず、デプロイ段階で必ず落ちる
+- **Deploy command を既定の `npx wrangler deploy` にしない。** OpenNext の変換前の状態を
+  上げようとして失敗する
+- lint と test をビルドコマンドに入れているのは、落ちているコードが本番に出ないようにする
+  門番が他に無いため
+- `wrangler secret put` で入れた値は**デプロイで消えない**。ビルド変数に入れ直す必要はない
+- **D1 のマイグレーションは自動では流れない**（意図どおり）。スキーマを変えたときは、
+  **先に**手でマイグレーションを適用してから push する
 
   ```bash
   npx wrangler@4.136.2 d1 migrations apply fujisan-db --remote
@@ -344,28 +241,6 @@ canonical / OGP / sitemap の基底はビルド時に確定するため、Worker
   > 同梱の wrangler 4.86.0 は `d1 migrations apply --remote` が Cloudflare API から
   > 7403 を返す（`list` と `execute` は同じ認証で通るので、権限の問題ではない）。
   > 依存の wrangler を上げたら、このバージョン指定は外してよい。
-
-- main 以外のブランチも既定ではビルドされ、プレビュー版が作られる。
-  ビルド時間を使いたくなければ Settings で止める。
-
----
-
-## 公開前の最終チェック
-
-- [ ] `feat/integrate-admin-dashboard-catalog` を main へマージ
-- [ ] 本番 D1 に `0013` まで適用済み（`product_sku` が消えている）
-- [ ] `ADMIN_EMAILS` が設定済みで、`/admin` に入れる
-- [ ] Stripe Webhook が 6 イベント
-- [ ] Resend のドメインが `verified`
-- [ ] `RESEND_FROM` が `FUJISAN SAKE <info@sakefujisan.com>`（`onboarding@resend.dev` のままでない）
-- [ ] 自分以外のメールアドレスで会員登録が完了できる
-- [ ] `/admin/products` の在庫が実在庫
-- [ ] `BETTER_AUTH_URL` が `https://sakefujisan.com`
-- [ ] `info@sakefujisan.com` 宛のメールが Gmail に届く
-- [ ] Stripe Webhook の URL が sakefujisan.com
-- [ ] 免許番号が入っている（`npm run check:legal` が通る）
-- [ ] 実決済テストで在庫が減り、返金もできた
-- [ ] （自動デプロイにしたなら）Build command に `npm run check:legal &&` を戻した
 
 ---
 
@@ -389,7 +264,4 @@ npx wrangler d1 execute fujisan-db --remote --command "SELECT * FROM product_pri
 curl -s -o /dev/null -w "%{http_code}\n" -X POST \
   https://sakefujisan.com/api/stripe/webhook \
   -H "stripe-signature: t=0,v1=invalid" -H "content-type: application/json" -d '{}'
-
-# デプロイ（lint / test / build を通してから）
-npm run lint && npm test && npm run build && npm run deploy
 ```

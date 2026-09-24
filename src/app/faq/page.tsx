@@ -33,8 +33,8 @@ const groups = [
         ),
         a: (
           <L
-            en="Each bottle carries a recommended temperature on its product page. As a starting point: aroma-driven daiginjo around 8°C, junmai chilled or lightly warmed to about 40°C. Several labels are good both ways."
-            ja="おすすめの温度は各商品ページに記しています。目安は、香りの高い大吟醸で8℃前後、純米は冷やすか、40℃前後のぬる燗がおすすめです。冷やでも燗でも楽しめる銘柄もあります。"
+            en="Each bottle carries a recommended temperature on its product page. All five Bushido bottles are best at 15–20°C."
+            ja="おすすめの温度は各商品ページに記しています。武士道シリーズは、どの銘柄も15〜20℃で飲むのがおすすめです。"
           />
         ),
       },

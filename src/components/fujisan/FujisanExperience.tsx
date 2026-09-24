@@ -11,16 +11,16 @@ const essences: {
   subJp: string;
 }[] = [
   {
-    label: "CHILLED",
-    labelJp: "冷やして",
-    sub: "8–12°C for the Junmai Daiginjo and Junmai Ginjo",
-    subJp: "純米大吟醸・純米吟醸は8〜12℃",
+    label: "LIGHTLY CHILLED",
+    labelJp: "少し冷やして",
+    sub: "Around 15°C",
+    subJp: "15℃前後",
   },
   {
     label: "OR AT ROOM TEMPERATURE",
     labelJp: "常温でも",
-    sub: "10–15°C for the Tokubetsu Junmai and Honjozo",
-    subJp: "特別純米・特別本醸造は10〜15℃",
+    sub: "Around 20°C",
+    subJp: "20℃前後",
   },
   {
     label: "ONCE OPENED",
@@ -67,13 +67,13 @@ export default function FujisanExperience() {
             <L
               en={
                 <>
-                  BEST CHILLED,
+                  AT 15–20°C,
                   <br className="hidden sm:block" />
                   <span className="sm:hidden"> </span>
                   WITH FOOD
                 </>
               }
-              ja={<>冷やして、食事と一緒にどうぞ。</>}
+              ja={<>15〜20℃で、食事と一緒にどうぞ。</>}
             />
           </Reveal>
 
@@ -83,8 +83,8 @@ export default function FujisanExperience() {
             delay={revealDelays.d2}
           >
             <L
-              en="All five are best served chilled. The Junmai Daiginjos suit sushi and sashimi; the drier Tokubetsu Junmai and Tokubetsu Honjozo go well with yakitori and grilled fish."
-              ja="どの銘柄も冷やして飲むのがおすすめです。純米大吟醸は寿司や刺身に、辛口の特別純米・特別本醸造は焼き鳥や焼き魚によく合います。"
+              en="The Junmai Daiginjos suit sushi and sashimi; the drier Tokubetsu Junmai and Tokubetsu Honjozo go well with yakitori and grilled fish."
+              ja="純米大吟醸は寿司や刺身に、辛口の特別純米・特別本醸造は焼き鳥や焼き魚によく合います。"
             />
           </Reveal>
         </div>
