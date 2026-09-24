@@ -216,8 +216,8 @@ export const fujisanProducts: FujisanProduct[] = [
     ],
     pairing: ["Yakitori", "Grilled fish", "Tempura"],
     pairingJp: ["焼き鳥", "焼き魚", "天ぷら"],
-    serveTemp: "Chilled or room temperature 10–15°C",
-    serveTempJp: "冷酒〜常温 10〜15℃",
+    serveTemp: "Chilled around 10°C\nRoom temperature 15–20°C",
+    serveTempJp: "冷酒 10℃前後\n常温 15〜20℃",
     grade: "Light, Dry",
     gradeJp: "淡麗・辛口",
     volumes: [
@@ -259,8 +259,8 @@ export const fujisanProducts: FujisanProduct[] = [
     ],
     pairing: ["Yakitori", "Grilled seafood", "Everyday dining"],
     pairingJp: ["焼き鳥", "焼いた魚介", "ふだんの食事"],
-    serveTemp: "Chilled or room temperature 10–15°C",
-    serveTempJp: "冷酒〜常温 10〜15℃",
+    serveTemp: "Chilled around 10°C\nRoom temperature 15–20°C",
+    serveTempJp: "冷酒 10℃前後\n常温 15〜20℃",
     grade: "Dry",
     gradeJp: "辛口",
     volumes: [

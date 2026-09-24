@@ -264,7 +264,7 @@ export default async function ProductDetailPage({
             <p className="mt-7 text-[10px] font-semibold tracking-[0.2em] text-indigo/56">
               <L en="SUGGESTED TEMPERATURE" ja="おすすめ温度" />
             </p>
-            <p className="mt-2 font-serif text-[18px] text-indigo">
+            <p className="mt-2 whitespace-pre-line font-serif text-[18px] text-indigo">
               <L en={product.serveTemp} ja={product.serveTempJp} />
             </p>
           </div>

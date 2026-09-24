@@ -19,8 +19,8 @@ const essences: {
   {
     label: "OR AT ROOM TEMPERATURE",
     labelJp: "常温でも",
-    sub: "10–15°C for the Tokubetsu Junmai and Honjozo",
-    subJp: "特別純米・特別本醸造は10〜15℃",
+    sub: "15–20°C for the Tokubetsu Junmai and Honjozo",
+    subJp: "特別純米・特別本醸造は15〜20℃",
   },
   {
     label: "ONCE OPENED",

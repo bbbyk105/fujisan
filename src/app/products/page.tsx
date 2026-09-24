@@ -139,7 +139,7 @@ function CollectionRow({
                 <dt className="text-[9.5px] font-semibold uppercase tracking-[0.28em] text-indigo/50">
                   <L en={f.en} ja={f.ja} />
                 </dt>
-                <dd className="mt-1.5 text-[12px] leading-[1.5] text-indigo/85">
+                <dd className="mt-1.5 whitespace-pre-line text-[12px] leading-[1.5] text-indigo/85">
                   {f.value}
                 </dd>
               </div>
