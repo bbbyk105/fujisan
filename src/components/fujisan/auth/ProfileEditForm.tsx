@@ -175,7 +175,7 @@ export function ProfileEditForm({
 
       <p className="mt-5 text-[11.5px] leading-[1.7] text-indigo/55">
         <L
-          en="Save your postal code and address here to skip the address form at checkout — we'll ship to the address on file."
+          en="Save your postal code and address here to skip the address form at checkout. We'll ship to the address on file."
           ja="郵便番号と住所を登録しておくと、ご注文時の住所入力を省略し、登録のお届け先へ発送します。メールアドレスの変更はお問い合わせください。"
         />
       </p>

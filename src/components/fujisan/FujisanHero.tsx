@@ -73,8 +73,8 @@ export default function FujisanHero() {
               style={{ animationDelay: "980ms" }}
             >
               <L
-                en="The Bushido series, brewed with Mt. Fuji spring water and sake rice from Hyogo and Shizuoka. Five bottles, from Junmai Daiginjo to Tokubetsu Honjozo."
-                ja="富士山の湧水と、兵庫・静岡の酒米で造る武士道シリーズ。純米大吟醸から特別本醸造まで、5つの銘柄をご用意しています。"
+                en="The Bushido series is brewed with Mt. Fuji spring water and sake rice from Hyogo and Shizuoka. There are five bottles, from Junmai Daiginjo to Tokubetsu Honjozo."
+                ja="武士道シリーズは、富士山の湧水と兵庫・静岡の酒米で造る日本酒です。純米大吟醸から特別本醸造まで、5つの銘柄をご用意しています。"
               />
             </p>
           </div>

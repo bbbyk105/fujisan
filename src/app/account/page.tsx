@@ -245,7 +245,7 @@ export default async function AccountPage() {
                   {tradeStatus === "rejected" ? (
                     <L
                       en="This account is not currently open for trade pricing. Please contact us if your situation has changed."
-                      ja="現在、このアカウントでは卸価格をご案内しておりません。ご状況が変わりましたら、お問い合わせよりご相談ください。"
+                      ja="現在、このアカウントでは卸価格をご案内しておりません。状況が変わりましたら、お問い合わせからご相談ください。"
                     />
                   ) : (
                     <L
@@ -266,7 +266,7 @@ export default async function AccountPage() {
                   </p>
                   <p className="ed-p mt-3">
                     <L
-                      en="Once you place your first order, you'll be able to track its progress here — from preparation to your door."
+                      en="Once you place your first order, you'll be able to track its progress here, from preparation to delivery."
                       ja="ご注文後は、発送準備からお届けまでの進行をこちらでご覧いただけます。"
                     />
                   </p>

@@ -189,8 +189,8 @@ function CollectionRow({
           {multiVolume ? (
             <p className="mt-3 text-[10.5px] tracking-[0.12em] text-indigo/60">
               <L
-                ja={`カート追加は ${base.ml}ml。ほかの容量は商品ページからお選びいただけます。`}
-                en={`Adds the ${base.ml} ml bottle — other sizes are available on the product page.`}
+                ja={`ここからカートに入るのは ${base.ml}ml です。ほかの容量は商品ページからお選びいただけます。`}
+                en={`Adds the ${base.ml} ml bottle. Other sizes are available on the product page.`}
               />
             </p>
           ) : null}

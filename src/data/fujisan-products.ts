@@ -61,7 +61,7 @@ export const fujisanProducts: FujisanProduct[] = [
     title: "Refined & Slightly Sweet",
     titleJp: "上品な香り、やや甘口",
     desc: "Banana and melon aromas\nwith a gentle, balanced sweetness.",
-    descJp: "バナナやメロンのような香り。\nやさしく、バランスのよい甘み。",
+    descJp: "バナナやメロンのような香りと、\nやさしく、バランスのよい甘みがあります。",
     img: "/images/bushido/shogun.webp",
     storyEn: [
       "The most polished bottle in the Bushido series: a Junmai Daiginjo with the rice milled to 40%, made from Hyogo Yamadanishiki and brewed by Makino Shuzo at the foot of Mt. Fuji.",
@@ -70,7 +70,7 @@ export const fujisanProducts: FujisanProduct[] = [
     ],
     storyJp: [
       "武士道シリーズでいちばん磨いた、精米歩合40%の純米大吟醸です。\n兵庫県産の山田錦を使い、富士山麓の牧野酒造が造っています。",
-      "バナナやメロンのような吟醸香。\n口当たりはなめらかでほのかに甘く、\nほどよい酸で後味は軽やかです。",
+      "バナナやメロンのような吟醸香があります。\n口当たりはなめらかでほのかに甘く、\nほどよい酸で後味は軽やかです。",
       "よく冷やして、寿司や刺身と合わせるのがおすすめです。",
     ],
     specs: [
@@ -105,7 +105,7 @@ export const fujisanProducts: FujisanProduct[] = [
     title: "Smooth & Slightly Sweet",
     titleJp: "なめらか、やや甘口",
     desc: "Banana and melon aromas\nover a smooth, gently sweet body.",
-    descJp: "バナナやメロンのような香り。\nなめらかで、ほのかに甘い味わい。",
+    descJp: "バナナやメロンのような香りがあり、\nなめらかで、ほのかに甘い味わいです。",
     img: "/images/bushido/tenka.webp",
     storyEn: [
       "A Junmai Daiginjo made from Hyogo Yamadanishiki polished to 50%.",
@@ -114,7 +114,7 @@ export const fujisanProducts: FujisanProduct[] = [
     ],
     storyJp: [
       "兵庫県産の山田錦を精米歩合50%まで磨いた、純米大吟醸です。",
-      "バナナやメロンのような吟醸香に、\nなめらかでほのかに甘い味わい。\n後味まですっきりとしています。",
+      "バナナやメロンのような吟醸香に、\nなめらかでほのかに甘い味わいです。\n後味まですっきりとしています。",
       "冷やして、刺身や新鮮な魚介と合わせるのがおすすめです。",
     ],
     specs: [
@@ -149,7 +149,7 @@ export const fujisanProducts: FujisanProduct[] = [
     title: "Bright & Balanced",
     titleJp: "明るい果実の香り、すっきり",
     desc: "A bright ginjo bouquet of banana and melon;\nclean, smooth, and refreshing.",
-    descJp: "バナナとメロンの明るい吟醸香。\n澄んで滑らか、爽やかな味わい。",
+    descJp: "バナナやメロンのような明るい吟醸香があり、\n澄んだ、なめらかで爽やかな味わいです。",
     img: "/images/bushido/samurai01.webp",
     storyEn: [
       "A Junmai Ginjo polished to 60%, made from Hyogo Yamadanishiki blended with Homarefuji, a sake rice bred in Shizuoka.",
@@ -158,8 +158,8 @@ export const fujisanProducts: FujisanProduct[] = [
     ],
     storyJp: [
       "兵庫県産の山田錦に、静岡県で生まれた酒米・誉富士を合わせ、\n精米歩合60%まで磨いた純米吟醸です。",
-      "バナナやメロンのような明るい吟醸香。\nなめらかで爽やか、甘みとのバランスもとれた味わいです。",
-      "よく冷やして、魚介や焼き魚、天ぷらと合わせて。",
+      "バナナやメロンのような明るい吟醸香があります。\nなめらかで爽やか、甘みとのバランスもとれた味わいです。",
+      "よく冷やして、魚介や焼き魚、天ぷらと合わせるのがおすすめです。",
     ],
     specs: [
       { label: "ABV", value: "15%" },
@@ -192,7 +192,7 @@ export const fujisanProducts: FujisanProduct[] = [
     title: "Crisp & Dry",
     titleJp: "軽やかな辛口",
     desc: "Light fruit with subtle banana notes;\ncrisp, dry, and clean to the finish.",
-    descJp: "ほのかなバナナを含む軽い果実香。\nきりっと辛口、澄んだ後味。",
+    descJp: "ほのかにバナナを感じる、軽い果実の香りです。\nきりっとした辛口で、後味は澄んでいます。",
     img: "/images/bushido/ninja.webp",
     storyEn: [
       "A Tokubetsu Junmai polished to 60%, made from Yamadanishiki grown in Hyogo and Shizuoka and kept light at 14% alcohol.",
@@ -201,8 +201,8 @@ export const fujisanProducts: FujisanProduct[] = [
     ],
     storyJp: [
       "兵庫県産と静岡県産の山田錦を精米歩合60%まで磨き、\nアルコール度数を14%に抑えた特別純米です。",
-      "ほのかにバナナを感じる軽い果実香。\nきりっとした辛口で、後味はすっきりしています。",
-      "焼き鳥や焼き魚、味のしっかりした料理と合わせて。\n冷やしても、常温でもおいしく飲めます。",
+      "ほのかにバナナを感じる軽い果実香があります。\nきりっとした辛口で、後味はすっきりしています。",
+      "焼き鳥や焼き魚、味のしっかりした料理と合わせるのがおすすめです。\n冷やしても、常温でもおいしく飲めます。",
     ],
     specs: [
       { label: "ABV", value: "14%" },
@@ -235,17 +235,17 @@ export const fujisanProducts: FujisanProduct[] = [
     title: "Clean & Dry",
     titleJp: "キレのある辛口",
     desc: "Delicate floral notes; clean and crisp\nwith a smooth, dry finish.",
-    descJp: "繊細な花の香り。澄んでキレがあり、\nなめらかな辛口の後味。",
+    descJp: "繊細な花の香りです。\nキレのよい辛口で、後味はなめらかです。",
     img: "/images/bushido/kokoro.webp",
     storyEn: [
-      "A Tokubetsu Honjozo polished to 60%, made from Hyogo Yamadanishiki and Shizuoka Homarefuji — easy to drink with everyday meals.",
+      "A Tokubetsu Honjozo polished to 60%, made from Hyogo Yamadanishiki and Shizuoka Homarefuji. It is easy to drink with everyday meals.",
       "Light, with a faint floral aroma, clean and crisp, and the driest of the series at SMV +8.",
       "Serve chilled or at room temperature, with yakitori, grilled seafood, or an ordinary dinner.",
     ],
     storyJp: [
       "兵庫県産の山田錦と静岡県産の誉富士を合わせ、\n精米歩合60%まで磨いた特別本醸造です。\n毎日の食事に合わせやすい一本です。",
-      "軽やかで、ほのかに花のような香り。\nキレがあり、日本酒度+8とシリーズでいちばんの辛口です。",
-      "焼き鳥や焼いた魚介、ふだんの食事と合わせて。\n冷やしても、常温でもおいしく飲めます。",
+      "軽やかで、ほのかに花のような香りがあります。\nキレがあり、日本酒度+8とシリーズでいちばんの辛口です。",
+      "焼き鳥や焼いた魚介、ふだんの食事と合わせるのがおすすめです。\n冷やしても、常温でもおいしく飲めます。",
     ],
     specs: [
       { label: "ABV", value: "15%" },
@@ -258,7 +258,7 @@ export const fujisanProducts: FujisanProduct[] = [
       { label: "Yeast", value: "NEW5" },
     ],
     pairing: ["Yakitori", "Grilled seafood", "Everyday dining"],
-    pairingJp: ["焼き鳥", "焼いた魚介", "日々の食卓"],
+    pairingJp: ["焼き鳥", "焼いた魚介", "ふだんの食事"],
     serveTemp: "Chilled or room temperature 10–15°C",
     serveTempJp: "冷酒〜常温 10〜15℃",
     grade: "Dry",

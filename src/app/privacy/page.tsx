@@ -32,22 +32,22 @@ const sections: DocumentSection[] = [
     bullets: [
       <L
         key="1"
-        en={`Business — ${FUJISAN_LEGAL.sellerName}`}
+        en={`Business: ${FUJISAN_LEGAL.sellerName}`}
         ja={`事業者名: ${FUJISAN_LEGAL.sellerName}`}
       />,
       <L
         key="2"
-        en={`Representative — ${FUJISAN_LEGAL.representative}`}
+        en={`Representative: ${FUJISAN_LEGAL.representative}`}
         ja={`代表者: ${FUJISAN_LEGAL.representative}`}
       />,
       <L
         key="3"
-        en={`Address — ${FUJISAN_LEGAL.addressEn}`}
+        en={`Address: ${FUJISAN_LEGAL.addressEn}`}
         ja={`所在地: ${FUJISAN_LEGAL.address}`}
       />,
       <L
         key="4"
-        en={`Contact — ${FUJISAN_LEGAL.email} / ${FUJISAN_LEGAL.phone}`}
+        en={`Contact: ${FUJISAN_LEGAL.email} / ${FUJISAN_LEGAL.phone}`}
         ja={`連絡先: ${FUJISAN_LEGAL.email} ／ ${FUJISAN_LEGAL.phone}`}
       />,
     ],
@@ -65,22 +65,22 @@ const sections: DocumentSection[] = [
     bullets: [
       <L
         key="1"
-        en="Account — name (or company name and contact person), email address, telephone number, postal code and address"
+        en="Account: name (or company name and contact person), email address, telephone number, postal code and address"
         ja="アカウント情報: お名前（法人の場合は会社名・ご担当者名）、メールアドレス、電話番号、郵便番号、住所"
       />,
       <L
         key="2"
-        en="Orders — items ordered, amounts, delivery address, telephone number, and delivery status"
+        en="Orders: items ordered, amounts, delivery address, telephone number, and delivery status"
         ja="ご注文情報: ご注文商品、金額、お届け先住所、電話番号、配送状況"
       />,
       <L
         key="3"
-        en="Enquiries — name, email address, subject and message you send us"
+        en="Enquiries: name, email address, subject and message you send us"
         ja="お問い合わせ情報: お名前、メールアドレス、ご用件、本文"
       />,
       <L
         key="3b"
-        en="Enquiries store a one-way hash of your IP address — never the address itself — used only to block repeated automated submissions."
+        en="For enquiries, we store a one-way hash of your IP address (never the address itself), used only to block repeated automated submissions."
         ja="お問い合わせの際、連投による自動送信を防ぐ目的でのみ、IP アドレスを復元できない形に変換した値を保存します（IP アドレスそのものは保存しません）。"
       />,
       <L
@@ -152,18 +152,18 @@ const sections: DocumentSection[] = [
     bullets: [
       <L
         key="1"
-        en="Stripe — payment processing (card details are handled by Stripe, not by us)"
+        en="Stripe: payment processing (card details are handled by Stripe, not by us)"
         ja="Stripe: 決済処理（カード情報は当社ではなく Stripe が取り扱います）"
       />,
       <L
         key="2"
-        en="Cloudflare — site hosting and database"
+        en="Cloudflare: site hosting and database"
         ja="Cloudflare: サイトのホスティング・データベース"
       />,
-      <L key="3" en="Resend — transactional email" ja="Resend: メールの配信" />,
+      <L key="3" en="Resend: transactional email" ja="Resend: メールの配信" />,
       <L
         key="4"
-        en="Delivery carriers — name, address and telephone number needed to deliver your order"
+        en="Delivery carriers: name, address and telephone number needed to deliver your order"
         ja="配送業者: お届けに必要なお名前・ご住所・電話番号"
       />,
     ],
@@ -181,12 +181,12 @@ const sections: DocumentSection[] = [
     bullets: [
       <L
         key="1"
-        en="Session cookie — keeps you signed in to your account"
+        en="Session cookie: keeps you signed in to your account"
         ja="セッションクッキー: ログイン状態の保持"
       />,
       <L
         key="2"
-        en="Local storage — cart contents, language preference, age confirmation"
+        en="Local storage: cart contents, language preference, age confirmation"
         ja="ローカルストレージ: カートの中身、表示言語、年齢確認の記録"
       />,
       <L
@@ -225,7 +225,7 @@ const sections: DocumentSection[] = [
       />,
       <L
         key="2"
-        en="Card details never reach our servers — they are handled entirely by Stripe"
+        en="Card details never reach our servers; they are handled entirely by Stripe"
         ja="クレジットカード情報は当社サーバーを経由せず、すべて Stripe が取り扱います"
       />,
       <L
@@ -258,17 +258,17 @@ const sections: DocumentSection[] = [
     bullets: [
       <L
         key="1"
-        en={`Personal information desk — ${FUJISAN_LEGAL.ecManager}`}
+        en={`Personal information desk: ${FUJISAN_LEGAL.ecManager}`}
         ja={`個人情報お問い合わせ窓口: ${FUJISAN_LEGAL.ecManager}`}
       />,
       <L
         key="2"
-        en={`Email — ${FUJISAN_LEGAL.email}`}
+        en={`Email: ${FUJISAN_LEGAL.email}`}
         ja={`メール: ${FUJISAN_LEGAL.email}`}
       />,
       <L
         key="3"
-        en={`Telephone — ${FUJISAN_LEGAL.phone}（${FUJISAN_LEGAL.phoneHours}）`}
+        en={`Telephone: ${FUJISAN_LEGAL.phone}（${FUJISAN_LEGAL.phoneHours}）`}
         ja={`電話: ${FUJISAN_LEGAL.phone}（${FUJISAN_LEGAL.phoneHours}）`}
       />,
     ],
@@ -293,8 +293,8 @@ export default function PrivacyPage() {
       title={<L en="Privacy Policy" ja="プライバシーポリシー" />}
       lead={
         <L
-          en="We collect only what we need, treat it with care, and keep it no longer than necessary. This page explains how."
-          ja="必要な情報だけをいただき、丁寧に取り扱い、必要な期間を超えて持ちません。その具体を記しています。"
+          en="What we collect, why we use it, who handles it, how long we keep it, and how to ask us to disclose or delete it."
+          ja="取得する情報、利用目的、委託先、保存期間、開示や削除のご請求の方法をまとめています。"
         />
       }
       updated="2026.09"

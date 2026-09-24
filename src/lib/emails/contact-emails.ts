@@ -131,7 +131,7 @@ export async function sendContactAcknowledgement(
     "Thank you for contacting us. We will reply within two business days,",
     "in Japanese or English.",
     "",
-    "This is an automated acknowledgement — no reply is needed.",
+    "This is an automated acknowledgement. No reply is needed.",
     "",
     `${FUJISAN_LEGAL.sellerName}`,
     `${FUJISAN_LEGAL.address}`,
@@ -149,7 +149,7 @@ export async function sendContactAcknowledgement(
     <p style="font-size:13px;line-height:1.9;color:#0B1A2E99;">
       Thank you for contacting us. We will reply within two business days,
       in Japanese or English.<br />
-      This is an automated acknowledgement — no reply is needed.
+      This is an automated acknowledgement. No reply is needed.
     </p>
     <hr style="border:none;border-top:1px solid #eee2c8;margin:24px 0;" />
     <p style="font-size:12px;line-height:1.8;color:#0B1A2E99;">

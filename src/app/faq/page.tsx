@@ -22,7 +22,6 @@ export const metadata = buildMetadata({
  */
 const groups = [
   {
-    label: <L en="Serving" ja="味わう" />,
     heading: <L en="Choosing and serving" ja="選び方と飲み方" />,
     items: [
       {
@@ -35,7 +34,7 @@ const groups = [
         a: (
           <L
             en="Each bottle carries a recommended temperature on its product page. As a starting point: aroma-driven daiginjo around 8°C, junmai chilled or lightly warmed to about 40°C. Several labels are good both ways."
-            ja="おすすめの温度は各商品ページに記しています。目安は、香りの高い大吟醸で8℃前後、純米は冷やすか40℃前後のぬる燗で。冷やでも燗でも楽しめる銘柄もあります。"
+            ja="おすすめの温度は各商品ページに記しています。目安は、香りの高い大吟醸で8℃前後、純米は冷やすか、40℃前後のぬる燗がおすすめです。冷やでも燗でも楽しめる銘柄もあります。"
           />
         ),
       },
@@ -57,7 +56,7 @@ const groups = [
         ),
         a: (
           <L
-            en="Upright, in the dark, between 5°C and 12°C — a wine fridge is ideal. Sake is sensitive to UV and heat, so keep it out of direct sunlight and away from sudden temperature swings."
+            en="Store it upright in the dark, between 5°C and 12°C. A wine fridge is ideal. Sake is sensitive to UV and heat, so keep it out of direct sunlight and away from sudden temperature swings."
             ja="直射日光を避け、5〜12℃の暗所で立てて保管してください。ワインセラーが理想です。紫外線と熱に弱いため、急な温度変化も避けてください。"
           />
         ),
@@ -74,14 +73,13 @@ const groups = [
     ],
   },
   {
-    label: <L en="Ordering" ja="注文する" />,
     heading: <L en="Before you order" ja="ご注文の前に" />,
     items: [
       {
         q: <L en="Can I send a bottle as a gift?" ja="ギフトとして贈れますか？" />,
         a: (
           <L
-            en="Every bottle ships in a presentation box wrapped in washi, so it arrives ready to give. Noshi wrapping and message cards are not yet available at checkout — write to us before ordering and we will do what we can."
+            en="Every bottle ships in a presentation box wrapped in washi, so it arrives ready to give. Noshi wrapping and message cards are not yet available at checkout. Write to us before ordering and we will do what we can."
             ja="各ボトルは和紙で包んだ化粧箱でお届けしますので、そのまま贈り物にお使いいただけます。のし紙やメッセージカードは、現在ご購入手続きの中では承っておりません。ご注文前にご連絡いただければ、できる限り対応いたします。"
           />
         ),
@@ -107,8 +105,8 @@ const groups = [
             }
             ja={
               <>
-                お届けは日本国内のみです。送料は{SHIPPING_FEE.flat}、
-                {SHIPPING_FEE.free}。詳しくは
+                お届けは日本国内のみです。送料は{SHIPPING_FEE.flat}です。
+                {SHIPPING_FEE.free}です。詳しくは
                 <a href="/shipping" className="ed-link">
                   お届けと返品
                 </a>
@@ -121,7 +119,6 @@ const groups = [
     ],
   },
   {
-    label: <L en="The kura" ja="蔵のこと" />,
     heading: <L en="Visits and trade" ja="蔵見学とお取引" />,
     items: [
       {
@@ -136,7 +133,7 @@ const groups = [
       {
         q: (
           <L
-            en="I work in the trade — can we talk wholesale?"
+            en="I work in the trade. Can we talk about wholesale?"
             ja="業務用・卸の相談はできますか？"
           />
         ),
@@ -176,8 +173,8 @@ export default function FaqPage() {
         title={<L en="Frequently asked" ja="よくあるご質問" />}
         lead={
           <L
-            en="A short field guide to storing, serving, and ordering Fujisan sake."
-            ja="富士山の酒の保管・楽しみ方・ご注文についての、短い手引きです。"
+            en="Common questions about storing, serving, and ordering our sake."
+            ja="保管や飲み方、ご注文について、よくいただくご質問をまとめています。"
           />
         }
         meta={<L en="Last updated 2026.09" ja="最終更新 2026.09" />}
@@ -187,7 +184,6 @@ export default function FaqPage() {
         <EditorialSection key={i} ruled={i > 0} className="py-14 md:py-20">
           <div className="grid grid-cols-1 gap-8 md:grid-cols-[minmax(0,230px)_minmax(0,1fr)] md:gap-16">
             <EditorialSectionHead
-              label={g.label}
               heading={g.heading}
               className="md:sticky md:top-[112px] md:self-start"
             />

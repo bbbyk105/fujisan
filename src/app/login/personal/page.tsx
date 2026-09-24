@@ -20,7 +20,7 @@ export default async function LoginPersonalPage() {
       role="personal"
       mode="login"
       brand={{
-        kanji: "會員",
+        kanji: "会員",
         kickerJp: "会員ログイン",
         titleEn: "What you can do with an account",
         titleJp: "ログインしてできること",
@@ -40,7 +40,7 @@ export default async function LoginPersonalPage() {
         titleEn="Sign in to your account"
         titleJp="アカウントにログイン"
         leadEn="For individual customers. Use your email and password, or continue with Google."
-        leadJp="個人のお客様向け。メールアドレスとパスワード、または Google でログインできます。"
+        leadJp="個人のお客様向けです。メールアドレスとパスワード、または Google でログインできます。"
       />
       <Suspense>
         <LoginForm role="personal" googleEnabled={googleEnabled} />

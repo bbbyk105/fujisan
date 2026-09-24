@@ -279,13 +279,13 @@ export async function sendOrderDeliveredEmail(d: OrderEmailData): Promise<void> 
 
 ${d.customerName} 様
 
-ご注文（${d.orderRef}）のお届けが完了しました。富士の恵みをどうぞお楽しみください。
+ご注文（${d.orderRef}）のお届けが完了しました。どうぞお楽しみください。
 Your order has been delivered. We hope you enjoy it.
 
 商品は直射日光を避け、できるだけ涼しい場所で保管してください。開封後はお早めにお召し上がりください。
 Please store away from direct sunlight in a cool place, and enjoy soon after opening.
 
-またのご来訪をお待ちしております / Visit the shop again:
+またのご利用をお待ちしております / Visit the shop again:
 ${ctaUrl}
 
 ${FUJISAN_LEGAL.sellerName} / ${FUJISAN_LEGAL.email}
@@ -295,7 +295,7 @@ ${FUJISAN_LEGAL.sellerName} / ${FUJISAN_LEGAL.email}
   const html = htmlShell({
     badge: "DELIVERED ／ お届け完了",
     heading: "お届けが完了しました。",
-    lead: `${escapeHtml(d.customerName)} 様、ご注文のお届けが完了しました。富士の恵みをどうぞお楽しみください。直射日光を避け、涼しい場所での保管をおすすめします。<br/><span style="color:#1D243299;">Delivered — we hope you enjoy it. Store cool and away from sunlight.</span>`,
+    lead: `${escapeHtml(d.customerName)} 様、ご注文のお届けが完了しました。どうぞお楽しみください。直射日光を避け、涼しい場所での保管をおすすめします。<br/><span style="color:#1D243299;">Your order has been delivered. We hope you enjoy it. Store it somewhere cool, away from sunlight.</span>`,
     d,
     ctaLabel: "ショップへ戻る",
     ctaUrl,

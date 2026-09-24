@@ -97,7 +97,7 @@ export function buildAuthOptions(env: AuthEnv) {
               to: user.email,
               subject:
                 "FUJISAN — メールアドレス変更の確認 / Confirm your email change",
-              text: `FUJISAN SAKE\n\nご登録のメールアドレスを次のアドレスへ変更する依頼を受け付けました。\n\n  変更前: ${user.email}\n  変更後: ${newEmail}\n\nお心当たりがある場合は、以下のリンクから承認してください。\n承認後、新しいアドレス宛にも確認メールをお送りします。そちらのリンクを踏んでいただくと変更が完了します。\n\n${url}\n\n**お心当たりが無い場合は、このリンクを開かないでください。**\nこのメールを破棄いただければ、アドレスは変更されません。パスワードの変更もあわせてご検討ください。\n\nWe received a request to change your email address to ${newEmail}.\nIf this was you, approve it with the link above. We'll then email the new address to finish the change.\nIf this wasn't you, do not open the link — your address stays as it is.\n`,
+              text: `FUJISAN SAKE\n\nご登録のメールアドレスを次のアドレスへ変更する依頼を受け付けました。\n\n  変更前: ${user.email}\n  変更後: ${newEmail}\n\nお心当たりがある場合は、以下のリンクから承認してください。\n承認後、新しいアドレス宛にも確認メールをお送りします。そちらのリンクを踏んでいただくと変更が完了します。\n\n${url}\n\n**お心当たりが無い場合は、このリンクを開かないでください。**\nこのメールを破棄いただければ、アドレスは変更されません。パスワードの変更もあわせてご検討ください。\n\nWe received a request to change your email address to ${newEmail}.\nIf this was you, approve it with the link above. We'll then email the new address to finish the change.\nIf this wasn't you, do not open the link. Your address will stay as it is.\n`,
             },
             { apiKey: env.RESEND_API_KEY, from: env.RESEND_FROM },
           );

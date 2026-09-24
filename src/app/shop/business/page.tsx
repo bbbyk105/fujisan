@@ -33,7 +33,7 @@ const terms = [
     value: (
       <L
         en="Case pricing in 6- and 12-bottle units, with tiered terms beyond ten cases per month."
-        ja="6本／12本のケース単位での卸価格。月10ケースを超える場合は、数量に応じた条件をご相談いただけます。"
+        ja="6本／12本のケース単位で卸価格をご用意しています。月10ケースを超える場合は、数量に応じた条件をご相談いただけます。"
       />
     ),
   },
@@ -41,7 +41,7 @@ const terms = [
     label: <L en="Brewer support" ja="醸造元との連携" />,
     value: (
       <L
-        en="Tasting notes, serving guides, and staff training at major rollouts, arranged with Makino Shuzo — the kura that brews the Bushido series."
+        en="Tasting notes, serving guides, and staff training at major rollouts, arranged with Makino Shuzo, the brewery that makes the Bushido series."
         ja="テイスティングノート、提供時の資料、本格導入時の店舗研修まで、醸造元の牧野酒造合資会社と連携してお手伝いします。"
       />
     ),
@@ -168,7 +168,6 @@ export default function ShopBusinessPage() {
       {/* ===== 取引条件 ===== */}
       <EditorialSection ruled={false}>
         <EditorialSectionHead
-          label={<L en="Trade account" ja="お取引口座" />}
           heading={
             <L
               en="Trade terms"
@@ -182,7 +181,6 @@ export default function ShopBusinessPage() {
       {/* ===== 卸価格表 ===== */}
       <EditorialSection>
         <EditorialSectionHead
-          label={<L en="Price list" ja="卸価格表" />}
           heading={
             <L
               en="Wholesale prices by bottle"
@@ -199,7 +197,6 @@ export default function ShopBusinessPage() {
       <EditorialSection>
         <div className="grid grid-cols-1 gap-10 md:grid-cols-[minmax(0,260px)_minmax(0,1fr)] md:gap-16">
           <EditorialSectionHead
-            label={<L en="How we work" ja="取引の流れ" />}
             heading={
               <L
                 en="Opening an account"
@@ -217,7 +214,6 @@ export default function ShopBusinessPage() {
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1.15fr_1fr] lg:gap-20">
           <div>
             <EditorialSectionHead
-              label={<L en="Contact" ja="ご相談" />}
               heading={
                 <L
                   en="Trade enquiries"
@@ -267,7 +263,6 @@ export default function ShopBusinessPage() {
       <EditorialSection>
         <div className="grid grid-cols-1 gap-10 md:grid-cols-[minmax(0,260px)_minmax(0,1fr)] md:gap-16">
           <EditorialSectionHead
-            label={<L en="Trade FAQ" ja="よくあるご質問" />}
             heading={
               <L en="Common trade questions" ja="よくいただくお取引のご質問" />
             }
