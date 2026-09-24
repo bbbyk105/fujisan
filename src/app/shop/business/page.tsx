@@ -41,7 +41,7 @@ const terms = [
     label: <L en="Brewer support" ja="醸造元との連携" />,
     value: (
       <L
-        en="Tasting notes, serving guides, and staff training at major rollouts, arranged with Makino Shuzo — the kura that brews the Bushido series."
+        en="Tasting notes, serving guides, and staff training at major rollouts, arranged with Makino Shuzo, the brewery that makes the Bushido series."
         ja="テイスティングノート、提供時の資料、本格導入時の店舗研修まで、醸造元の牧野酒造合資会社と連携してお手伝いします。"
       />
     ),

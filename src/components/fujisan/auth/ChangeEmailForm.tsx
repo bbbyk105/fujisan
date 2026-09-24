@@ -90,7 +90,7 @@ export function ChangeEmailForm({ currentEmail }: { currentEmail: string }) {
           </p>
           <p className="mt-1.5">
             <L
-              en={`We've sent a confirmation link to your current address. Open it to approve the change to ${sentTo} — we'll then email that address to finish.`}
+              en={`We've sent a confirmation link to your current address. Open it to approve the change to ${sentTo}. We'll then email that address to finish.`}
               ja={`現在のアドレス宛に確認リンクをお送りしました。リンクを開いて ${sentTo} への変更をご承認ください。その後、新しいアドレスにも確認メールをお送りします。`}
             />
           </p>

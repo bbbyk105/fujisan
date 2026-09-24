@@ -59,7 +59,7 @@ export const fujisanCraftPillars: CraftPillar[] = [
     storyTitle: "How the water reaches the brewery",
     storyTitleJp: "水が蔵に届くまで",
     storyEn: [
-      "The water starts as snow on Mt. Fuji. Over the years it filters down through porous volcanic rock — basalt, scoria, and andesite — and loses its impurities on the way.",
+      "The water starts as snow on Mt. Fuji. Over the years it filters down through porous volcanic rock (basalt, scoria, and andesite) and loses its impurities on the way.",
       "It surfaces in springs near the brewery after forty to sixty years inside the mountain, as soft water: low in iron, manganese, and calcium. Water like this does not get in the way of koji and yeast, which is why it suits sake brewing.",
       "The brewery uses it as it comes, without treatment.",
     ],
@@ -81,7 +81,7 @@ export const fujisanCraftPillars: CraftPillar[] = [
         captionJp: "鉄・マンガンが少ない",
       },
       {
-        label: "AGE OF SPRING",
+        label: "TIME UNDERGROUND",
         labelJp: "湧き出るまで",
         value: "40–60 yr",
         valueJp: "40〜60年",
@@ -110,7 +110,7 @@ export const fujisanCraftPillars: CraftPillar[] = [
         num: "Ⅰ",
         en: "Snowfall",
         jp: "降雪",
-        desc: "Fresh snow settles on the slopes between 1,500m and 3,776m through long Fuji winters.",
+        desc: "Through the winter, fresh snow settles on the slopes between 1,500 and 3,776 m.",
         descJp:
           "冬のあいだ、標高1,500〜3,776mの斜面に新雪が降り積もります。",
       },
@@ -118,7 +118,7 @@ export const fujisanCraftPillars: CraftPillar[] = [
         num: "Ⅱ",
         en: "Filtration",
         jp: "濾過",
-        desc: "Decades of slow descent through volcanic strata strip impurities from the meltwater.",
+        desc: "Over decades, the meltwater moves slowly down through volcanic rock, which filters out impurities.",
         descJp:
           "雪解け水は数十年かけて火山岩の層をゆっくり下り、そのあいだに不純物がこされます。",
       },
@@ -152,7 +152,7 @@ export const fujisanCraftPillars: CraftPillar[] = [
     storyTitle: "How sake rice differs from table rice",
     storyTitleJp: "酒米と、ふだん食べる米のちがい",
     storyEn: [
-      "Sake-rice is not the rice you eat at dinner. The grains are larger, the starch core (shinpaku) sits clearly at the heart of each kernel, and the outer layers — fats and proteins that would muddy the brew — are gently polished away.",
+      "Sake rice is not the rice you eat at dinner. The grains are larger, the starch core (shinpaku) sits clearly at the heart of each kernel, and the outer layers — fats and proteins that would muddy the brew — are gently polished away.",
       "The brewery buys its rice from contract farms in Hyogo and Shizuoka. Some of them have supplied it for three generations.",
       "Polishing to 40–60% leaves only the starchy centre of each grain. Koji turns that starch into sugar, and yeast turns the sugar into alcohol.",
     ],
@@ -178,7 +178,7 @@ export const fujisanCraftPillars: CraftPillar[] = [
         labelJp: "精米歩合",
         value: "40–60%",
         valueJp: "40〜60%",
-        caption: "By weight remaining",
+        caption: "Weight left after polishing",
         captionJp: "削ったあとに残る割合",
       },
       {
@@ -186,7 +186,7 @@ export const fujisanCraftPillars: CraftPillar[] = [
         labelJp: "契約農家",
         value: "12",
         valueJp: "12 軒",
-        caption: "Across 2 prefectures",
+        caption: "Hyogo · Shizuoka",
         captionJp: "兵庫・静岡",
       },
       {
@@ -203,7 +203,7 @@ export const fujisanCraftPillars: CraftPillar[] = [
         num: "Ⅰ",
         en: "Harvest",
         jp: "収穫",
-        desc: "Sakamai is gathered late September after the grain has fully matured on the panicle.",
+        desc: "The sake rice is harvested in late September, once the grain is fully ripe.",
         descJp: "よく実った酒米を、9月下旬に刈り取ります。",
       },
       {
@@ -225,7 +225,7 @@ export const fujisanCraftPillars: CraftPillar[] = [
         num: "Ⅳ",
         en: "Steam",
         jp: "蒸米",
-        desc: "Slow steaming firms the outside while keeping the core soft for the koji.",
+        desc: "The rice is steamed slowly so it is firm outside and soft inside, which makes it easier to grow koji on.",
         descJp:
           "じっくり蒸して、外は硬く、中はやわらかく仕上げます。麹を育てやすい蒸米にするためです。",
       },

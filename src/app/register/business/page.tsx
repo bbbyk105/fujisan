@@ -35,7 +35,7 @@ export default function RegisterBusinessPage() {
         eyebrowJp="取扱店 新規登録"
         titleEn="Open your trade account"
         titleJp="取扱店アカウントを作成"
-        leadEn="For restaurants, bars, retailers, and hospitality. Wholesale pricing appears once you're signed in."
+        leadEn="For restaurants, bars, shops, and hotels. Once your account is approved, wholesale pricing appears when you sign in."
         leadJp="飲食店・小売店・宿泊施設の方向けです。審査が済むと、ログイン後に卸価格が表示されます。"
       />
       <RegisterBusinessForm />

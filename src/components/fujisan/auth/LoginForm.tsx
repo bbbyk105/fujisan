@@ -90,7 +90,7 @@ export function LoginForm({
         <Notice tone="info">
           <div className="flex flex-col gap-2.5">
             <L
-              en="Please verify your email — check the link we sent to your inbox. Didn't get it?"
+              en="Please verify your email using the link we sent to your inbox. Didn't get it?"
               ja="メールアドレスの確認が必要です。お送りした確認メールのリンクをクリックしてください。届いていない場合は、こちらから再送できます。"
             />
             <ResendVerification email={email} role={role} />

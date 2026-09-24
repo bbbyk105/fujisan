@@ -36,7 +36,7 @@ export default function LoginBusinessPage() {
         eyebrowJp="取扱店ログイン"
         titleEn="Sign in to your trade account"
         titleJp="取扱店アカウントにログイン"
-        leadEn="For restaurants, bars, retailers, and hospitality. Wholesale pricing is shown only to signed-in trade accounts."
+        leadEn="For restaurants, bars, shops, and hotels. Wholesale pricing is shown only to approved trade accounts."
         leadJp="飲食店・小売店・宿泊施設の方向けです。卸価格は、審査の済んだ取扱店にだけ表示されます。"
       />
       <Suspense>

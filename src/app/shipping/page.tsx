@@ -19,19 +19,19 @@ const sections: DocumentSection[] = [
     body: [
       <L
         key="b"
-        en="Orders placed on this site ship within Japan only. Delivery outside Japan cannot be arranged through checkout — please contact us and we will discuss the options with you directly."
+        en="Orders placed on this site ship within Japan only. Delivery outside Japan cannot be arranged through checkout. Please contact us and we will discuss the options with you directly."
         ja="当サイトからのご注文は、日本国内にのみお届けします。海外へのお届けは購入手続きからはお受けできないため、お問い合わせフォームからご相談ください。"
       />,
     ],
     bullets: [
       <L
         key="1"
-        en={`Japan — nationwide (${SHIPPING_FEE.remoteEn})`}
+        en={`Japan: nationwide (${SHIPPING_FEE.remoteEn})`}
         ja={`国内: 全国（${SHIPPING_FEE.remote}）`}
       />,
       <L
         key="2"
-        en={`Shipping — ${SHIPPING_FEE.flatEn} / ${SHIPPING_FEE.freeEn}`}
+        en={`Shipping: ${SHIPPING_FEE.flatEn} / ${SHIPPING_FEE.freeEn}`}
         ja={`送料: ${SHIPPING_FEE.flat} ／ ${SHIPPING_FEE.free}`}
       />,
       <L
@@ -70,12 +70,12 @@ const sections: DocumentSection[] = [
     bullets: [
       <L
         key="1"
-        en="Japan — 1–3 business days after dispatch"
+        en="Japan: 1–3 business days after dispatch"
         ja="国内: 発送から1〜3営業日でお届け"
       />,
       <L
         key="2"
-        en="Hokkaido, Okinawa and remote islands — allow an extra day"
+        en="Hokkaido, Okinawa and remote islands: allow an extra day"
         ja="北海道・沖縄・離島: さらに1日ほど頂戴する場合があります"
       />,
     ],

@@ -95,7 +95,7 @@ export function RegisterBusinessForm() {
       <div className="flex flex-col gap-6">
         <Notice tone="success">
           <L
-            en={`We've sent a confirmation link to ${email}. Verify your address — then we review your application and reply within two business days. Wholesale pricing appears once the account is approved.`}
+            en={`We've sent a confirmation link to ${email}. Verify your address, then we'll review your application and reply within two business days. Wholesale pricing appears once the account is approved.`}
             ja={`${email} に確認メールを送信しました。メールアドレスをご認証ください。お申し込みの内容を蔵で確認のうえ、2 営業日以内に審査の結果をご連絡します。卸価格は承認後に表示されます。`}
           />
         </Notice>
@@ -295,7 +295,7 @@ export function RegisterBusinessForm() {
 
       <p className="text-[11px] leading-[1.65] text-indigo/55">
         <L
-          en="Registering opens an application, not an account. We check the details by hand — wholesale pricing is shown only after approval. By applying you confirm your business handles, or is licensed to handle, alcoholic beverages."
+          en="Registering opens an application, not an account. We check the details by hand, and wholesale pricing is shown only after approval. By applying you confirm your business handles, or is licensed to handle, alcoholic beverages."
           ja="ご登録は「お申し込み」です。内容を蔵で確認のうえ承認した後に、卸価格が表示されます。お申し込みをもって、貴社が酒類を取り扱う（または取り扱う免許を有する）ことを確認したものとみなします。"
         />
       </p>

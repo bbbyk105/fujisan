@@ -295,7 +295,7 @@ ${FUJISAN_LEGAL.sellerName} / ${FUJISAN_LEGAL.email}
   const html = htmlShell({
     badge: "DELIVERED ／ お届け完了",
     heading: "お届けが完了しました。",
-    lead: `${escapeHtml(d.customerName)} 様、ご注文のお届けが完了しました。どうぞお楽しみください。直射日光を避け、涼しい場所での保管をおすすめします。<br/><span style="color:#1D243299;">Delivered — we hope you enjoy it. Store cool and away from sunlight.</span>`,
+    lead: `${escapeHtml(d.customerName)} 様、ご注文のお届けが完了しました。どうぞお楽しみください。直射日光を避け、涼しい場所での保管をおすすめします。<br/><span style="color:#1D243299;">Your order has been delivered. We hope you enjoy it. Store it somewhere cool, away from sunlight.</span>`,
     d,
     ctaLabel: "ショップへ戻る",
     ctaUrl,

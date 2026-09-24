@@ -266,7 +266,7 @@ export default async function AccountPage() {
                   </p>
                   <p className="ed-p mt-3">
                     <L
-                      en="Once you place your first order, you'll be able to track its progress here — from preparation to your door."
+                      en="Once you place your first order, you'll be able to track its progress here, from preparation to delivery."
                       ja="ご注文後は、発送準備からお届けまでの進行をこちらでご覧いただけます。"
                     />
                   </p>

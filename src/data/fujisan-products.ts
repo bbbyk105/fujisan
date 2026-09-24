@@ -238,7 +238,7 @@ export const fujisanProducts: FujisanProduct[] = [
     descJp: "繊細な花の香りです。\nキレのよい辛口で、後味はなめらかです。",
     img: "/images/bushido/kokoro.webp",
     storyEn: [
-      "A Tokubetsu Honjozo polished to 60%, made from Hyogo Yamadanishiki and Shizuoka Homarefuji — easy to drink with everyday meals.",
+      "A Tokubetsu Honjozo polished to 60%, made from Hyogo Yamadanishiki and Shizuoka Homarefuji. It is easy to drink with everyday meals.",
       "Light, with a faint floral aroma, clean and crisp, and the driest of the series at SMV +8.",
       "Serve chilled or at room temperature, with yakitori, grilled seafood, or an ordinary dinner.",
     ],

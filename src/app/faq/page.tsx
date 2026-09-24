@@ -56,7 +56,7 @@ const groups = [
         ),
         a: (
           <L
-            en="Upright, in the dark, between 5°C and 12°C — a wine fridge is ideal. Sake is sensitive to UV and heat, so keep it out of direct sunlight and away from sudden temperature swings."
+            en="Store it upright in the dark, between 5°C and 12°C. A wine fridge is ideal. Sake is sensitive to UV and heat, so keep it out of direct sunlight and away from sudden temperature swings."
             ja="直射日光を避け、5〜12℃の暗所で立てて保管してください。ワインセラーが理想です。紫外線と熱に弱いため、急な温度変化も避けてください。"
           />
         ),
@@ -79,7 +79,7 @@ const groups = [
         q: <L en="Can I send a bottle as a gift?" ja="ギフトとして贈れますか？" />,
         a: (
           <L
-            en="Every bottle ships in a presentation box wrapped in washi, so it arrives ready to give. Noshi wrapping and message cards are not yet available at checkout — write to us before ordering and we will do what we can."
+            en="Every bottle ships in a presentation box wrapped in washi, so it arrives ready to give. Noshi wrapping and message cards are not yet available at checkout. Write to us before ordering and we will do what we can."
             ja="各ボトルは和紙で包んだ化粧箱でお届けしますので、そのまま贈り物にお使いいただけます。のし紙やメッセージカードは、現在ご購入手続きの中では承っておりません。ご注文前にご連絡いただければ、できる限り対応いたします。"
           />
         ),
@@ -133,7 +133,7 @@ const groups = [
       {
         q: (
           <L
-            en="I work in the trade — can we talk wholesale?"
+            en="I work in the trade. Can we talk about wholesale?"
             ja="業務用・卸の相談はできますか？"
           />
         ),

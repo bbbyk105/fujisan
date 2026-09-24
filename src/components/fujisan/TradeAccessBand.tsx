@@ -34,12 +34,12 @@ export async function TradeAccessBand() {
             </span>
             {approved ? (
               <L
-                en={`Signed in as ${who || "your account"} — wholesale pricing is shown below.`}
+                en={`${who ? `Signed in as ${who}. ` : ""}Wholesale pricing is shown below.`}
                 ja={`${who ? `${who}さま。` : ""}下に卸価格を表示しています。`}
               />
             ) : (
               <L
-                en={`Signed in as ${who || "your account"} — wholesale pricing appears once your account has been approved.`}
+                en={`${who ? `Signed in as ${who}. ` : ""}Wholesale pricing appears once your account has been approved.`}
                 ja={`${who ? `${who}さま。` : ""}卸価格は、審査が済むと表示されます。`}
               />
             )}

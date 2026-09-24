@@ -50,7 +50,7 @@ const sections: DocumentSection[] = [
     body: [
       <L
         key="b"
-        en="Sake is an agricultural product. Subtle variations between batches and vintages are part of its character. We make every reasonable effort to describe the product accurately, but minor differences in colour, aroma, or label may occur."
+        en="Because sake is made from rice, its colour and aroma can vary slightly between batches and years. Label details may also differ slightly from the photos."
         ja="日本酒は米から造るため、仕込みの時期や年度によって、色や香りがわずかに変わることがあります。ラベルの細部が写真と異なる場合もあります。"
       />,
     ],
