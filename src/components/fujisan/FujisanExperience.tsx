@@ -73,7 +73,7 @@ export default function FujisanExperience() {
                   WITH FOOD
                 </>
               }
-              ja={<>冷やして、食事とともに。</>}
+              ja={<>冷やして、食事と一緒にどうぞ。</>}
             />
           </Reveal>
 

@@ -25,7 +25,7 @@ const routes = [
     heading: { en: "Personal orders", ja: "個人のお客様" },
     lead: {
       en: "Any of the five Bushido bottles, one at a time — for your table or as a gift. From ¥1,600.",
-      ja: "武士道シリーズ5銘柄を、一本からご購入いただけます。ご自宅用にも、贈り物にも。1,600円より。",
+      ja: "武士道シリーズ5銘柄を、一本からご購入いただけます。ご自宅用にも、贈り物にもお使いいただけます。価格は1,600円からです。",
     },
     facts: [
       {
@@ -53,7 +53,7 @@ const routes = [
     heading: { en: "Trade accounts", ja: "法人・取扱店のお客様" },
     lead: {
       en: "For restaurants, bars, retailers, and hospitality programmes. Account pricing, case quantities, and one named contact.",
-      ja: "レストラン・バー・小売店・ホテルのみなさまへ。卸価格、ケース単位でのお届け、専任担当によるサポートをご用意します。",
+      ja: "レストラン・バー・小売店・ホテルなど、法人のお客様向けです。卸価格、ケース単位でのお届け、専任担当によるサポートをご用意します。",
     },
     facts: [
       {

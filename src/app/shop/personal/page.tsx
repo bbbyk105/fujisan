@@ -155,7 +155,7 @@ export default function ShopPersonalPage() {
                 priceMin,
               )} 〜 ¥${yen.format(
                 priceMax,
-              )}（税込）。そのままカートに入れるか、銘柄を開いて詳しい説明をご覧ください。`}
+              )}（税込）です。そのままカートに入れるか、銘柄を開いて詳しい説明をご覧ください。`}
             />
           }
         />

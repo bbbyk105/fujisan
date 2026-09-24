@@ -11,7 +11,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: `${SITE_NAME} — 富士山麓の日本酒`,
     short_name: "FUJISAN",
     description:
-      "富士山麓で醸す日本酒「武士道シリーズ」。将軍・天下・侍・忍・心の5銘柄をお届けします。",
+      "富士山麓で造る日本酒「武士道シリーズ」の通販サイトです。将軍・天下・侍・忍・心の5銘柄をお届けします。",
     start_url: "/",
     display: "standalone",
     background_color: "#F7F1E3",

@@ -33,7 +33,7 @@ const terms = [
     value: (
       <L
         en="Case pricing in 6- and 12-bottle units, with tiered terms beyond ten cases per month."
-        ja="6本／12本のケース単位での卸価格。月10ケースを超える場合は、数量に応じた条件をご相談いただけます。"
+        ja="6本／12本のケース単位で卸価格をご用意しています。月10ケースを超える場合は、数量に応じた条件をご相談いただけます。"
       />
     ),
   },

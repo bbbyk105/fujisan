@@ -36,7 +36,7 @@ export default function RegisterBusinessPage() {
         titleEn="Open your trade account"
         titleJp="取扱店アカウントを作成"
         leadEn="For restaurants, bars, retailers, and hospitality. Wholesale pricing appears once you're signed in."
-        leadJp="飲食店・小売店・宿泊施設の方向け。審査が済むと、ログイン後に卸価格が表示されます。"
+        leadJp="飲食店・小売店・宿泊施設の方向けです。審査が済むと、ログイン後に卸価格が表示されます。"
       />
       <RegisterBusinessForm />
     </AuthShell>

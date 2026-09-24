@@ -106,9 +106,9 @@ export const FUJISAN_LEGAL = {
   brewerEn: "Makino Shuzo Goshi Kaisha (Makino Sake Brewery)",
   // 価格・支払・引渡
   priceNote:
-    "各商品ページに表示の金額（消費税10%込）。表示価格以外に送料等が必要となる場合があります。",
+    "各商品ページに表示している金額（消費税10%込）です。表示価格以外に送料等が必要となる場合があります。",
   shipping: SHIPPING_FEE,
-  shippingFeeNote: `${SHIPPING_FEE.flat}。${SHIPPING_FEE.free}。${SHIPPING_FEE.remote}。`,
+  shippingFeeNote: `${SHIPPING_FEE.flat}です。${SHIPPING_FEE.free}です。${SHIPPING_FEE.remote}。`,
   // 英語ロケール表示用（特商法ページは日本語のまま。EC 説明部分のみ英語へ切替）
   shippingFeeNoteEn: `${SHIPPING_FEE.flatEn}. ${SHIPPING_FEE.freeEn}. ${SHIPPING_FEE.remoteEn}.`,
   // 個人（toC）のお支払いはクレジットカードのみ（Stripe Checkout）。銀行振込は法人（toB）専用。
@@ -116,7 +116,7 @@ export const FUJISAN_LEGAL = {
     "クレジットカード（VISA / Mastercard / JCB / AMEX / Diners）",
   paymentMethodsEn:
     "Credit card (VISA / Mastercard / JCB / AMEX / Diners).",
-  paymentTiming: "クレジットカード: ご注文時に確定。",
+  paymentTiming: "クレジットカード: ご注文時に確定します。",
   paymentTimingEn: "Credit card: charged at order.",
   deliveryTiming: "ご注文確認後、原則2営業日以内に発送いたします。",
   deliveryTimingEn:

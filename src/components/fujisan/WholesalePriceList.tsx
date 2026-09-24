@@ -130,7 +130,7 @@ export async function WholesalePriceList() {
       <p className="ed-small mt-7">
         <L
           en="Prices are per bottle (300 ml / 180 ml as listed), excluding tax, for reference (estimated CIF, Asia region). MOQ 3,000 bottles per shipment, mixed SKUs allowed — contact your trade desk for a formal quote."
-          ja="価格は1本あたり（300ml／180ml）・税抜の参考価格です（アジア向け CIF 概算）。最小ロットは1出荷あたり3,000本（銘柄混載可）。正式なお見積りは担当窓口までご相談ください。"
+          ja="価格は1本あたり（300ml／180ml）・税抜の参考価格です（アジア向け CIF 概算）。最小ロットは1出荷あたり3,000本（銘柄混載可）です。正式なお見積りは担当窓口までご相談ください。"
         />
       </p>
     </div>

@@ -148,7 +148,7 @@ export const fujisanCraftPillars: CraftPillar[] = [
     catchJp: "山田錦と誉富士",
     lead: "Two sake-rice varieties, Yamadanishiki and Homarefuji, grown by contract farms in Hyogo and Shizuoka.",
     leadJp:
-      "使う酒米は山田錦と誉富士の2種類。兵庫県と静岡県の契約農家が育てています。",
+      "使う酒米は山田錦と誉富士の2種類です。兵庫県と静岡県の契約農家が育てています。",
     storyTitle: "How sake rice differs from table rice",
     storyTitleJp: "酒米と、ふだん食べる米のちがい",
     storyEn: [
@@ -159,7 +159,7 @@ export const fujisanCraftPillars: CraftPillar[] = [
     storyJp: [
       "酒米は食用米とは別物です。粒は大きく、中心には心白という白い澱粉の塊があり、外側に多い脂質や蛋白質は、丁寧に磨いて削ぎ落とします。",
       "米は兵庫県と静岡県の契約農家から仕入れています。三代にわたって米を納めている農家もあります。",
-      "精米歩合は40〜60%。外側を削り、澱粉の多い中心部だけを使います。麹がこの澱粉を糖に変え、酵母が糖をアルコールに変えます。",
+      "精米歩合は40〜60%です。外側を削り、澱粉の多い中心部だけを使います。麹がこの澱粉を糖に変え、酵母が糖をアルコールに変えます。",
     ],
     heroImage: "/images/fujisan/features/ricebox.webp",
     heroPosition: "object-[50%_46%]",

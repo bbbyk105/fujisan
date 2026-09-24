@@ -39,7 +39,7 @@ export default async function RegisterPersonalPage() {
         titleEn="Create your account"
         titleJp="アカウントを作成"
         leadEn="For individual customers. You must be 20 or older to purchase alcohol in Japan."
-        leadJp="個人のお客様向け。酒類のご購入は20歳以上の方に限ります。"
+        leadJp="個人のお客様向けです。酒類のご購入は20歳以上の方に限ります。"
       />
       <RegisterPersonalForm googleEnabled={googleEnabled} />
     </AuthShell>

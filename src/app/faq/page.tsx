@@ -34,7 +34,7 @@ const groups = [
         a: (
           <L
             en="Each bottle carries a recommended temperature on its product page. As a starting point: aroma-driven daiginjo around 8°C, junmai chilled or lightly warmed to about 40°C. Several labels are good both ways."
-            ja="おすすめの温度は各商品ページに記しています。目安は、香りの高い大吟醸で8℃前後、純米は冷やすか40℃前後のぬる燗で。冷やでも燗でも楽しめる銘柄もあります。"
+            ja="おすすめの温度は各商品ページに記しています。目安は、香りの高い大吟醸で8℃前後、純米は冷やすか、40℃前後のぬる燗がおすすめです。冷やでも燗でも楽しめる銘柄もあります。"
           />
         ),
       },
@@ -105,8 +105,8 @@ const groups = [
             }
             ja={
               <>
-                お届けは日本国内のみです。送料は{SHIPPING_FEE.flat}、
-                {SHIPPING_FEE.free}。詳しくは
+                お届けは日本国内のみです。送料は{SHIPPING_FEE.flat}です。
+                {SHIPPING_FEE.free}です。詳しくは
                 <a href="/shipping" className="ed-link">
                   お届けと返品
                 </a>
