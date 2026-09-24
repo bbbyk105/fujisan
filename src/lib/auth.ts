@@ -233,8 +233,16 @@ export async function getAuth() {
   return instance;
 }
 
-/** Google ログインが設定済みか（ログイン画面のボタン表示判定用）。 */
+/**
+ * Google ログインが設定済みか（ログイン画面のボタン表示判定用）。
+ *
+ * **リクエスト時に判定する**（`connection()`）。GOOGLE_CLIENT_* は Worker の secret で、
+ * ビルド環境には無い。呼ぶページがビルド時に静的書き出しされると「未設定」のまま
+ * 焼き付き、secret を入れてもボタンが出ない（1 年キャッシュされる）。
+ */
 export async function isGoogleEnabled() {
+  const { connection } = await import("next/server");
+  await connection();
   const { getCloudflareContext } = await import("@opennextjs/cloudflare");
   const { env } = await getCloudflareContext({ async: true });
   const e = env as AuthEnv;
