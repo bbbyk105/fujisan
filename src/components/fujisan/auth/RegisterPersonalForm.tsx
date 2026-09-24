@@ -20,6 +20,7 @@ import {
   OrDivider,
   RateLimitMessage,
 } from "./ui";
+import { PasswordInput } from "./PasswordInput";
 import { GoogleButton } from "./GoogleButton";
 import { ResendVerification } from "./ResendVerification";
 
@@ -149,9 +150,8 @@ export function RegisterPersonalForm({
       </Field>
 
       <Field id="reg-password" label="PASSWORD" jp="パスワード（8文字以上）" required>
-        <input
+        <PasswordInput
           id="reg-password"
-          type="password"
           autoComplete="new-password"
           aria-invalid={Boolean(fieldErrors.password)}
           value={password}
@@ -159,7 +159,6 @@ export function RegisterPersonalForm({
             setPassword(e.target.value);
             clearError("password");
           }}
-          className={inputCls}
           placeholder="••••••••"
         />
         <FieldError error={fieldErrors.password} />
