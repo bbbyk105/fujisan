@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { Reveal } from "@/components/reveal/Reveal";
 import { revealDelays } from "@/components/reveal/constants";
-import FujisanFooter from "./FujisanFooter";
 import { L } from "@/i18n/Localized";
 
 const essences: {
@@ -137,8 +136,6 @@ export default function FujisanExperience() {
           </Link>
         </Reveal>
       </div>
-
-      <FujisanFooter />
     </section>
   );
 }

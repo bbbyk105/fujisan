@@ -208,8 +208,8 @@ export default async function CraftPage({
             label={<L en="The process" ja="醸しの工程" />}
             heading={
               <L
-                en="Four movements, one quiet hand."
-                ja="四つの所作、ひとつの静かな手。"
+                en="Four stages of the work"
+                ja="造りの四つの工程"
               />
             }
           />

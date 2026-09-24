@@ -198,19 +198,16 @@ export default function FaqPage() {
 
       {/* 問答で解けないときの行き先。FAQ の 1 項目にすると見落とされる */}
       <EditorialSection>
-        <p className="ed-label">
-          <L en="Still stuck" ja="解決しないとき" />
-        </p>
-        <p className="ed-h2 mt-4">
+        <p className="ed-h2">
           <L
-            en="Write to us — a person reads every message."
-            ja="お便りください。ひとつずつ、人が読んでいます。"
+            en="If your question isn't answered here, contact us."
+            ja="ここで解決しないときは、お問い合わせください。"
           />
         </p>
         <p className="ed-p mt-5">
           <L
-            en="Our small team is in Shizuoka and replies in Japanese or English, usually within two business days."
-            ja="静岡の小さなチームが、日本語・英語のどちらでも、通常2営業日以内にご返信します。"
+            en="We reply within two business days, in Japanese or English."
+            ja="日本語・英語のどちらでも、通常2営業日以内にご返信します。"
           />
         </p>
         <div className="mt-8 flex flex-wrap items-center gap-x-10 gap-y-4">

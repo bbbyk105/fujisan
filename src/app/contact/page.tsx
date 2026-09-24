@@ -12,7 +12,7 @@ import { buildMetadata } from "@/lib/seo";
 export const metadata = buildMetadata({
   title: "Contact",
   description:
-    "Reach our small team in Shizuoka for general enquiries, trade and wholesale, brewery visits, or press requests.",
+    "Contact FUJISAN SAKE about our sake, your order, trade and wholesale, or brewery visits.",
   path: "/contact",
 });
 
@@ -82,12 +82,11 @@ export default function ContactPage() {
     <EditorialPage>
       <EditorialPageHeader
         width="wide"
-        kicker={<L en="Contact" ja="お問い合わせ" />}
-        title={<L en="Write to us" ja="お便りをお預かりします" />}
+        title={<L en="Contact" ja="お問い合わせ" />}
         lead={
           <L
-            en="A question about a bottle, a listing for your restaurant, or a visit to the kura — our small team in Shizuoka reads every message by hand."
-            ja="一本についてのご質問も、お店での採用のご相談も、蔵見学のお問い合わせも。静岡の小さなチームが、いただいたお便りにひとつずつ目を通します。"
+            en="Questions about our sake or your order, trade listings, and brewery visits."
+            ja="商品やご注文について、お店でのお取り扱い、蔵見学のご相談を承ります。"
           />
         }
       />

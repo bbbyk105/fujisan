@@ -61,8 +61,8 @@ export async function TradeAccessBand() {
           </p>
           <p className="ed-p mt-2 text-[13.5px] md:text-[14px]">
             <L
-              en="Sign in to view wholesale pricing and order by the case."
-              ja="ログインすると、卸価格の確認とケース単位のご注文ができます。"
+              en="Sign in to view wholesale pricing."
+              ja="ログインすると、卸価格をご覧いただけます。"
             />
           </p>
         </div>

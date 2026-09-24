@@ -134,8 +134,8 @@ export default function ShopPersonalPage() {
         title={<L en="A bottle, by the bottle" ja="一本から、家へ" />}
         lead={
           <L
-            en="Single bottles in 300 ml and 180 ml, gift-ready, shipped with care from Shizuoka. Every order is checked by hand, and age is verified both at order and at delivery."
-            ja="300ml・180ml の単品を、贈り物にも。静岡から、ひとつずつ検品してお届けします。ご注文時とお届け時に、年齢を確認します。"
+            en="300 ml and 180 ml bottles, one at a time. Age is verified at order and again at delivery."
+            ja="300ml・180ml を一本からご購入いただけます。ご注文時とお届け時に、20歳以上であることを確認します。"
           />
         }
       />

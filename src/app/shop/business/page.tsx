@@ -157,8 +157,8 @@ export default function ShopBusinessPage() {
         title={<L en="For your programme" ja="お店に置いていただくために" />}
         lead={
           <L
-            en="Fujisan is poured in quiet izakayas, listed on tasting menus, and shelved in considered retailers from Shizuoka to Singapore. Open a trade account and we will meet you bottle in hand."
-            ja="富士山の酒は、静かな居酒屋で供され、テイスティングメニューに並び、静岡からシンガポールまで、選び抜かれた小売店の棚に置かれています。取扱口座の開設はこちらから。一本を携えて、ご相談に伺います。"
+            en="For restaurants, retailers, and hotels. Open a trade account to see wholesale pricing; orders are arranged after a quote."
+            ja="飲食店・小売店・宿泊施設など、法人のお客様向けのご案内です。取扱口座を開設すると卸価格をご覧いただけます。ご注文はお見積りのうえで承ります。"
           />
         }
       />

@@ -179,6 +179,7 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 - **env は `process.env` ではなく `getCloudflareContext({ async: true }).env`** から読む（Server Action / Route Handler 共通パターン）。
 - 注文明細は `items_json` にスナップショット保存（後からカタログ価格が変わっても注文は不変）。金額は全て円・税込の整数。
 - メール送信（`src/lib/email.ts`）は Resend。`RESEND_API_KEY` 未設定ならコンソール出力に落ちる（ローカルで認証リンクを踏める）。
+- **トップの末尾に購入・お問い合わせへの入口（`FujisanGuide`）を置いた**（2026-09-24）。トップ本体は凍結のままだが、ここだけは「こだわり」（`FujisanDiscover`）と同じ組み方で足してある。**フッターは `FujisanExperience` の中ではなく `src/app/page.tsx` 側に置く**（セクションの中にあると、その後ろに何も足せない）。
 - **`/stories` は削除済み**（2026-09-23）。物語の内容は `/craft/[slug]`（水・米・造り）に残る。トップの「造りを読む」導線と `FujisanDiscover` の一覧は `/craft/*` を指す。`/stories` へのリンクを新たに足さないこと。
 
 ## 落とし穴

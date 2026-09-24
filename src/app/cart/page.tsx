@@ -23,8 +23,8 @@ export default function CartPage() {
         title={<L en="Your cart" ja="カート" />}
         lead={
           <L
-            en="Review your bottles before checkout. Prices include tax, and every order is checked by hand before it ships."
-            ja="お手続きの前に、お選びいただいた一本一本をご確認ください。価格は税込、すべてのご注文をひとつずつ検品します。"
+            en="Check your order before you continue. All prices include tax."
+            ja="お手続きの前に、内容をご確認ください。価格はすべて税込です。"
           />
         }
       />

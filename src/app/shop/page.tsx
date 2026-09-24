@@ -24,8 +24,8 @@ const routes = [
     imagePos: "object-[55%_50%]",
     heading: { en: "For your table", ja: "ご家庭へ、贈り物へ" },
     lead: {
-      en: "A single bottle, gift-ready, delivered to your home. Five expressions of Fujisan, from ¥1,600.",
-      ja: "一本から、ご家庭へ、贈り物へ。富士山の五つの表情を、ひとつずつ丁寧にお届けします。1,600円より。",
+      en: "Any of the five Bushido bottles, one at a time — for your table or as a gift. From ¥1,600.",
+      ja: "武士道シリーズ5銘柄を、一本からご購入いただけます。ご自宅用にも、贈り物にも。1,600円より。",
     },
     facts: [
       {
@@ -112,8 +112,8 @@ export default function ShopHubPage() {
         title={<L en="How to order" ja="お求めについて" />}
         lead={
           <L
-            en="Whether the bottle ends on your dinner table or on the back bar of a quiet izakaya, we tend to each order by hand. Two routes, depending on where it is going."
-            ja="ご家庭の食卓へも、静かな居酒屋のカウンターへも。どのご注文も、ひとつずつ手で確かめてお届けします。行き先に合わせて、二つの窓口をご用意しました。"
+            en="Personal orders and trade orders go through separate routes. Choose the one that fits."
+            ja="個人のお客様と、飲食店・小売店などの法人のお客様とで、ご購入の窓口が分かれています。"
           />
         }
       />

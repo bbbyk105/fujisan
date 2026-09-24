@@ -103,8 +103,8 @@ export function FujisanContactForm() {
         </h3>
         <p className="ed-p mt-5">
           <L
-            en="Your message has reached our small team in Shizuoka. We read every enquiry by hand and will reply, in Japanese or English, usually within two business days."
-            ja="メッセージは静岡のチームに届きました。いただいたお問い合わせはひとつずつ拝読し、通常2営業日以内に日本語または英語でご返信します。"
+            en="We've received your message and will reply within two business days, in Japanese or English."
+            ja="お問い合わせを受け付けました。通常2営業日以内に、日本語または英語でご返信します。"
           />
         </p>
         <button
