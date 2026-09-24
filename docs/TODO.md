@@ -6,30 +6,22 @@
 
 ## 🚨 本番公開の前に（コードだけでは終わらない作業）
 
-環境を触る作業は [`../SETUP.md`](../SETUP.md) に手順と実際の値（DNS レコード、
-Webhook id、ドメイン）をまとめてある。要点だけ再掲する。
+環境を触る作業は [`../SETUP.md`](../SETUP.md) に手順と実際の値をまとめてある。要点だけ再掲する。
 
 1. **`ADMIN_EMAILS` を設定する** — ソースのフォールバック owner を撤去したので**必須**。
-   未設定だと誰も `/admin` に入れない。
-2. **Stripe Webhook に `charge.refunded` と `charge.dispute.created` を足す** — 現在 4 件。
-3. **Resend のドメイン認証と `RESEND_FROM`** — 未認証のあいだ、確認メールは
-   アカウント所有者にしか届かない＝誰も会員登録を完了できない。
-4. **通信販売酒類小売業免許の番号を入れる** — `src/data/fujisan-legal.ts` の
-   `LIQUOR_LICENCE`。未設定のあいだ `npm run deploy` は predeploy で止まる。
-   **それらしい伏せ字で埋めないこと**（本物に見えたまま公開される）。
-5. **実在庫を入れる** — 本番は全 SKU 一律 24 本の暫定値。`/admin/products` で差し替える。
-
-### 既存の法人アカウントを承認する
-
-取扱店の承認フローを入れたため、**`trade_account` に行が無い法人は未承認**として扱われ、
-卸価格が表示されない。この機能より前に登録したお客様がいる場合は
-`/admin/customers` で「未申請（旧アカウント）」と表示されるので、確認のうえ承認すること。
+   未設定だと誰も `/admin` に入れず、お問い合わせの管理者通知も届かない。
+2. **通信販売酒類小売業免許の番号を入れる** — `src/data/fujisan-legal.ts` の
+   `LIQUOR_LICENCE`。**それらしい伏せ字で埋めないこと**（本物に見えたまま公開される）。
+   自動デプロイでは `check:legal` が走らないので、埋めたら Workers Builds の
+   Build command に `npm run check:legal &&` を足す。
+3. **Stripe を本番キーに切り替える** — いまは sandbox。`STRIPE_SECRET_KEY` と
+   `STRIPE_WEBHOOK_SECRET` を**同時に**差し替える（本番 Webhook は用意済み）。
+4. **実在庫を入れる** — 本番は全 SKU 一律 24 本の暫定値。`/admin/products` で差し替える。
 
 ### 決めれば埋まるもの
 
 - **SNS アカウント** — `FujisanFooter.tsx` の `SOCIAL_LINKS`（空なら非表示）
 - **適格請求書（インボイス）登録番号** — `INVOICE_REGISTRATION_NUMBER`。未登録なら `null` のまま
-- **独自ドメイン** — `NEXT_PUBLIC_SITE_URL`（canonical / OGP / sitemap の基底。ビルド時に確定）
 
 ---
 
@@ -70,8 +62,9 @@ Webhook id、ドメイン）をまとめてある。要点だけ再掲する。
 ### Workers Builds の設定
 
 PR のブランチでもビルドが走り、非本番ブランチからは本番へ出せないため**必ず失敗する**
-（実害はないが、PR に常に赤いチェックが付く）。Cloudflare の設定で非本番ブランチの
-ビルドを切るか、非本番側のデプロイコマンドを `npx wrangler versions upload` にする。
+（実害はないが、PR に常に赤いチェックが付く）。ダッシュボードの設定で直す
+（手順は SETUP.md のタスク7。非本番側の Deploy command を `npx opennextjs-cloudflare upload`
+にすると、PR ごとのプレビュー URL が出る）。
 
 ---
 
