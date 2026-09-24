@@ -19,6 +19,7 @@ jest.mock("@/lib/email", () => ({
 }));
 
 import { buildAuthOptions } from "@/lib/auth";
+import { AUTH_LINK_TTL_SEC } from "@/lib/auth-shared";
 
 const ENV = {
   BETTER_AUTH_SECRET: "s3cret",
@@ -97,5 +98,35 @@ describe("Google ログイン", () => {
         GOOGLE_CLIENT_SECRET: "secret",
       }),
     ).toHaveProperty("socialProviders.google");
+  });
+});
+
+describe("メールアドレスの確認", () => {
+  it("リンクを踏んだだけではログインさせない（確認後に /email-verified からログインし直す）", () => {
+    // true に戻すと、転送されたメールを開いた人にもセッションが渡る。
+    expect(
+      buildAuthOptions(ENV).emailVerification.autoSignInAfterVerification,
+    ).toBe(false);
+  });
+
+  it("確認・再設定リンクの期限は、メールに書く値と同じ定数から取る", () => {
+    const options = buildAuthOptions(ENV);
+    expect(options.emailVerification.expiresIn).toBe(AUTH_LINK_TTL_SEC);
+    expect(options.emailAndPassword.resetPasswordTokenExpiresIn).toBe(
+      AUTH_LINK_TTL_SEC,
+    );
+  });
+
+  it("確認メールは HTML 版も付けて送る（テキストだけだと生の URL が並ぶ）", async () => {
+    await buildAuthOptions(ENV).emailVerification.sendVerificationEmail({
+      user: { email: "yuko@example.test", name: "佐藤 優子" },
+      url: "https://example.test/api/auth/verify-email?token=t",
+    });
+    const [payload] = sendEmail.mock.calls[0];
+    expect(payload.to).toBe("yuko@example.test");
+    expect(payload.html).toContain("メールアドレスを確認する");
+    expect(payload.text).toContain(
+      "https://example.test/api/auth/verify-email?token=t",
+    );
   });
 });

@@ -19,6 +19,8 @@ BtoC（個人）と BtoB（法人取扱店・卸価格表示）の二系統の�
 - **認証**: Better Auth + Drizzle アダプタ。メール認証必須・Google ログインは env 設定時のみ有効。`user.role` は `personal | business`（法人は companyName 等の追加フィールドあり。**`business` は「法人として登録した」だけで、卸価格の可否は `trade_account` の審査で決まる** — 下記「取扱店（BtoB）の承認」）。管理者は `owner | staff` の2階層（`src/lib/admin.ts`。**`ADMIN_EMAILS` env は必須**（未設定だと env owner は 0 人。ソースにフォールバックのアドレスは置かない）、メール招待 `teamInvite` → 登録時に `databaseHooks.user.create.after` でロール付与）。**招待は 14 日で失効**する — 期限が無いと、退職者向けや宛先を間違えた古い招待メールのアドレスが後から登録された際に、意図せず管理権限が付く。招待し直しでは `createdAt` も打ち直す。
 - **パスワード欄は `PasswordInput`（`src/components/fujisan/auth/PasswordInput.tsx`）を使う**。右端の目のボタンで表示／非表示を切り替える。素の `<input type="password">` を新たに書かないこと（ログイン・登録・再設定・変更の 7 か所はすべてこれ）。
 - **メールアドレスの変更は新旧どちらの承認も要る**（`user.changeEmail`）。まず**変更前**のアドレスへ承認リンクを送り、それを踏むと Better Auth が新アドレス宛にも確認メールを出し、そちらを踏んで初めて入れ替わる。宛先を `newEmail` にすると、セッションを奪った側が現アドレスの持ち主に知らせないままアカウントを移せる。設定の要点は `src/lib/__tests__/auth-options.test.ts` で固定している。
+- **認証メール（確認・パスワード再設定・メール変更の承認）は `src/lib/emails/auth-emails.ts` で組む**。HTML（ボタン）とテキストの 2 版で、サイト名の名乗り・宛名・有効期限・「心当たりが無い場合」・販売者表記を必ずそろえる。以前はトークン付きの長い URL をテキストに貼っただけで、フィッシングと見分けがつかなかった。確認メールは会員登録と**メール変更の最後（新アドレス宛）**の両方で呼ばれるので、トークンの `requestType` を読んで文面を分けている（新アドレス宛に「会員登録」と書くと詐欺に見える）。
+- **確認リンクの戻り先は `/email-verified`**（`emailVerifiedCallbackURL`、`src/lib/auth-shared.ts`）。`autoSignInAfterVerification: false` で、確認後は「確認しました」を見せてからログインし直してもらう（転送されたメールを開いた人にセッションを渡さない）。期限切れ・壊れたリンクは Better Auth が `?error=` を付けて同じページへ戻すので、そこで送り直しへ案内する。リンクの期限は `AUTH_LINK_TTL_SEC`（1 時間）で、Better Auth の設定とメール・画面の文言が同じ定数を読む。
 - **Server Actions 中心**: ミューテーションは `src/lib/actions/`（checkout / orders / account / contact / admin-*）。API Route は Better Auth の `/api/auth/[...all]` と Stripe Webhook のみ。middleware は無く、ガードは各ページ/アクション内で `getSession()` / `getEffectiveAdminRole()`。
 - **商品カタログはコード、価格と在庫は D1 の上書き**: 銘柄・容量・ストーリー・画像は `src/data/fujisan-products.ts`。そこへ D1 の `product_price`（価格の上書き）と `inventory`（在庫）を重ねたものが**実勢カタログ** `src/lib/catalog.ts` で、**決済・管理画面・卸価格表はこれを正とする**。どちらの表も**オプトイン**（行が無ければコードの値／数量無制限）で、D1 が読めなければコードの価格で売り続ける（fail-open）。カタログ定数を直接読むと、管理画面で変えた値が効かない経路が残る。
 
@@ -197,6 +199,7 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 
 ## 落とし穴
 
+- **Better Auth はメールの送信失敗を握りつぶし、画面には「送信しました」を出す**（`runInBackgroundOrAwait` がログに落とすだけで 200 を返す）。本番で届かないときは `npx wrangler tail fujisan --format json` を流しながら 1 通送らせ、`Resend send failed: <status>` を読む（401 はキー、403 はドメイン未認証）。`wrangler secret list` は secret の有無しか見ないので、キーが有効かは分からない（2026-09-24 に無効なキーで全メールが止まっていた）。
 - **`drizzle-kit generate` は使える**（以前は journal がずれていて禁止だった）。`meta/_journal.json` が `drizzle/` の SQL 15 本と 1 対 1 で対応し、最後の `0014_snapshot.json` が現在のスキーマ。`0006`〜`0013` は手書きで足された経緯から**中間スナップショットが無い**が、`generate` は最後のスナップショットしか読まないので支障はない（`drizzle-kit up` / `drop` は使わないこと）。このズレは `src/db/__tests__/migrations.test.ts` が見張っていて、SQL を足して journal に載せ忘れると落ちる。**SQL を手で足したときは journal にも追記する。**
 - **日付は必ず `src/lib/format-date.ts` のヘルパーで出す**。Workers は UTC で動くため `Intl.DateTimeFormat` に `timeZone: "Asia/Tokyo"` を指定しないと、JST 00:00〜09:00 の出来事が前日の日付になる（領収書の発行日がずれる）。ローカルの OS が JST だと気づけない。
 - **Next.js 16 の `error.js` は `reset` ではなく `unstable_retry`**。旧 API 名のままだと再試行ボタンが動かない。`global-error.js` も同じ。
