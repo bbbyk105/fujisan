@@ -2,6 +2,7 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { sendEmail } from "@/lib/email";
 import { getOwnerEmailsFromEnv } from "@/lib/admin";
 import { FUJISAN_LEGAL } from "@/data/fujisan-legal";
+import { SITE_URL } from "@/lib/seo";
 import {
   CONTACT_SUBJECT_LABELS,
   type ContactSubject,
@@ -48,7 +49,7 @@ async function resendOpts(): Promise<{
   const e = env as ResendEnv;
   return {
     opts: { apiKey: e.RESEND_API_KEY, from: e.RESEND_FROM },
-    baseUrl: (e.BETTER_AUTH_URL || "https://fujisan-sake.com").replace(
+    baseUrl: (e.BETTER_AUTH_URL || SITE_URL).replace(
       /\/$/,
       "",
     ),

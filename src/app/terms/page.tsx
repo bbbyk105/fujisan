@@ -7,7 +7,7 @@ import { buildMetadata } from "@/lib/seo";
 export const metadata = buildMetadata({
   title: "Terms of Use",
   description:
-    "The terms governing your use of fujisan-sake.com and the purchase of FUJISAN SAKE products.",
+    "The terms governing your use of sakefujisan.com and the purchase of FUJISAN SAKE products.",
   path: "/terms",
 });
 
@@ -18,8 +18,8 @@ const sections: DocumentSection[] = [
     body: [
       <L
         key="b"
-        en="By accessing fujisan-sake.com or placing an order, you agree to these Terms of Use. If you do not agree, please do not use the site."
-        ja="fujisan-sake.com のご利用、またはご注文をもって、本利用規約に同意いただいたものとみなします。ご同意いただけない場合は、本サイトのご利用をお控えください。"
+        en="By accessing sakefujisan.com or placing an order, you agree to these Terms of Use. If you do not agree, please do not use the site."
+        ja="sakefujisan.com のご利用、またはご注文をもって、本利用規約に同意いただいたものとみなします。ご同意いただけない場合は、本サイトのご利用をお控えください。"
       />,
     ],
   },

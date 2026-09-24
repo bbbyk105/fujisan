@@ -1,4 +1,5 @@
 import Stripe from "stripe";
+import { SITE_URL } from "@/lib/seo";
 
 /**
  * Cloudflare Workers 上で動く Stripe クライアント。
@@ -18,7 +19,7 @@ export function getStripe(secretKey: string): Stripe {
     httpClient: Stripe.createFetchHttpClient(),
     // 一時的なネットワーク不調はSDK側でリトライ（決済セッション生成の取りこぼし防止）
     maxNetworkRetries: 2,
-    appInfo: { name: "fujisan", url: "https://fujisan-sake.com" },
+    appInfo: { name: "fujisan", url: SITE_URL },
   });
   cached = { key: secretKey, client };
   return client;

@@ -12,7 +12,7 @@ import { primaryVolume, isProductSoldOut } from "@/data/fujisan-products";
  * フォールバックする。プレビュー環境で正規 URL を変えたい場合だけ env を設定する。
  */
 export const SITE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://fujisan-sake.com"
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://sakefujisan.com"
 ).replace(/\/$/, "");
 
 export const SITE_NAME = "FUJISAN SAKE";

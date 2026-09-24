@@ -4,6 +4,13 @@
 	"name": "fujisan",
 	"compatibility_date": "2026-04-30",
 	"compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+	// 本番ドメイン。www と workers.dev は next.config.ts で apex へ 308 で寄せる。
+	// workers.dev を切らないのは、Stripe の Webhook がまだそちらを向いているため。
+	"routes": [
+		{ "pattern": "sakefujisan.com", "custom_domain": true },
+		{ "pattern": "www.sakefujisan.com", "custom_domain": true }
+	],
+	"workers_dev": true,
 	"assets": {
 		"directory": ".open-next/assets",
 		"binding": "ASSETS"
