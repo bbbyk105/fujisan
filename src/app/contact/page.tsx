@@ -31,15 +31,6 @@ const desk = [
     ),
   },
   {
-    label: <L en="Phone" ja="電話" />,
-    value: (
-      <>
-        <span className="block">{FUJISAN_LEGAL.phone}</span>
-        <span className="ed-small mt-1 block">{FUJISAN_LEGAL.phoneHours}</span>
-      </>
-    ),
-  },
-  {
     label: <L en="Reply" ja="ご返信" />,
     value: (
       <L
