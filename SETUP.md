@@ -35,7 +35,7 @@
 OK  ADMIN_EMAILS             = mtfujipharmacy@gmail.com,bbbyk105@yahoo.co.jp
 OK  BETTER_AUTH_SECRET
 OK  BETTER_AUTH_URL          = https://sakefujisan.com
-OK  RESEND_API_KEY
+OK  RESEND_API_KEY           ← 2026-09-24 に差し替え（前のキーは 401 で全メールが止まっていた）
 OK  RESEND_FROM              = FUJISAN SAKE <info@sakefujisan.com>
 OK  STRIPE_SECRET_KEY        ← sandbox のキー。本番公開時に差し替え（タスク4）
 OK  STRIPE_WEBHOOK_SECRET    ← 同上

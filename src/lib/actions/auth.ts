@@ -19,6 +19,7 @@ import {
   consumeRateLimit,
   type RateLimitBucket,
 } from "@/lib/rate-limit";
+import { emailVerifiedCallbackURL } from "@/lib/auth-shared";
 import { createTradeApplication } from "@/lib/trade";
 import type { TradeBusinessType } from "@/data/fujisan-trade";
 import {
@@ -89,6 +90,7 @@ export async function registerPersonalAction(input: {
         email: input.email,
         password: input.password,
         role: "personal",
+        callbackURL: emailVerifiedCallbackURL("personal"),
       },
       headers: await headers(),
     });
@@ -132,6 +134,7 @@ export async function registerBusinessAction(input: {
         companyName: input.companyName,
         phone: input.phone ?? "",
         address: input.address ?? "",
+        callbackURL: emailVerifiedCallbackURL("business"),
       },
       headers: await headers(),
     });
@@ -246,7 +249,7 @@ export async function resendVerificationAction(input: {
   if (!isEmailLike(email)) return { ok: false, error: "invalid" };
   // 認証メールは「誰でも・何度でも」送れてしまうので、ここは必ず絞る。
   if (!(await limit("sendEmail"))) return { ok: false, error: "rate" };
-  const callbackURL = input.role === "business" ? "/shop/business" : "/account";
+  const callbackURL = emailVerifiedCallbackURL(input.role ?? "personal");
   const auth = await getAuth();
   try {
     await auth.api.sendVerificationEmail({
