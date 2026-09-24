@@ -10,6 +10,7 @@ import {
   type TradeStatus,
 } from "@/data/fujisan-trade";
 import { formatDateShortJp, formatDateTimeJp } from "@/lib/format-date";
+import { useUnsavedChanges } from "@/lib/unsaved-changes";
 
 const ERROR_MESSAGES: Record<string, string> = {
   unauth: "ログインが切れています。再度ログインしてください。",
@@ -66,6 +67,8 @@ export function AdminTradeRow({ account }: { account: TradeAccountRow }) {
   const [note, setNote] = useState(account.reviewNote ?? "");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  // 見送りの理由は「見送る」を押したときにだけ送られる。書きかけで離れると消える
+  useUnsavedChanges(note !== (account.reviewNote ?? ""));
 
   const review = (next: "approved" | "rejected") => {
     const previous = status;

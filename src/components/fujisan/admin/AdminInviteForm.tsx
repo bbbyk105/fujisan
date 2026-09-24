@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { adminInviteByEmailAction } from "@/lib/actions/admin-team";
 import { isEmailLike } from "@/lib/validation/forms";
+import { useUnsavedChanges } from "@/lib/unsaved-changes";
 
 type Notice =
   | { tone: "ok"; text: string }
@@ -18,6 +19,7 @@ export function AdminInviteForm() {
   const [role, setRole] = useState<"owner" | "staff">("staff");
   const [pending, setPending] = useState(false);
   const [notice, setNotice] = useState<Notice>(null);
+  useUnsavedChanges(email.trim() !== "");
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();

@@ -72,8 +72,8 @@ export default async function AdminTeamPage() {
         current="team"
         kpis={
           <>
-            <AdminKpi label="OWNER" value={`${ownerCount}`} suffix="人" />
-            <AdminKpi label="STAFF" value={`${staffCount}`} suffix="人" />
+            <AdminKpi label="オーナー" value={`${ownerCount}`} suffix="人" />
+            <AdminKpi label="スタッフ" value={`${staffCount}`} suffix="人" />
           </>
         }
       />

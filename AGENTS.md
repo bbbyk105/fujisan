@@ -76,6 +76,7 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 
 ## 注文の顧客向け機能
 
+- `/account` は **`?tab=orders|profile|security` のタブ**（既定は注文）。以前は 1 枚に縦に積んでいて、注文が増えると登録情報とセキュリティが埋もれた。表示は `AccountView`、取得・認可はページ側。
 - `/account/orders/[orderRef]` が注文詳細、`/account/orders/[orderRef]/receipt` が領収書。
 - **注文の取得は必ず userId でも絞る**（`getMyOrderByRefAction`）。orderRef は推測しにくいだけで秘密ではないので、番号だけで引くと他人の注文が見える。
 - 領収書は PDF を生成せず、印刷（ブラウザの「PDF として保存」）に最適化したページとして出す。電子発行のため収入印紙は不要。適格請求書の登録番号は `INVOICE_REGISTRATION_NUMBER` が null のあいだ行ごと出さない。**宛名は `orders.receipt_addressee` に保存**でき（未指定なら登録名）、金額には影響しない。
@@ -92,6 +93,8 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 - 納品書は `/admin/orders/[orderRef]/packing-slip`。領収書と役割が違い、**金額は出すが「領収いたしました」とは書かない**（未入金の注文にも同梱しうる）。送り状は配送業者のシステムが発行するものでないと受け付けられないので作らない。
 - `/admin/customers` は法人（取扱店）と個人でタブが分かれる。個人側の注文集計は SQL 側で行う。
 - 注文ステータスの日本語ラベルは `src/data/fujisan-orders.ts` が唯一の出どころ（管理画面と顧客向けで言葉が割れていた）。
+- **数字（KPI）は暗色のヘッダーに入れず、帯の下の和紙の面に大きく出す**（`AdminHeader` の `kpis`）。ヘッダーは見出し・権限・タブだけ。表の広いページ（注文・商品）は `AdminHeader wide` で本文の幅と揃える。
+- ダッシュボードの表示は `AdminDashboardView`（データを受け取るだけ）。取得・認可は `src/app/admin/page.tsx`。直近の注文は `/admin/orders#order-<番号>` へ飛ぶ（`AdminOrderRow` に id を振ってある）。
 - `/admin/team` は登録済みメンバーに加えて**招待中の一覧**を出す。招待は 14 日で失効し、期限切れも消さずに見せる（黙って消えると、届いていないのか失効したのか区別できない）。
 
 ## レート制限
@@ -138,6 +141,14 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
   2. 決済開始前のチェックボックス（`CartView`）。**クライアントの state だけに頼らず、`startCheckoutAction` が `ageConfirmed !== true` を `age` エラーで弾く**（Server Action は直接呼べるため）。以前ここにあった `checkoutSchema.ageConfirmed`（Zod）は自前の住所フォーム廃止と同時に消えている。
 - **法令情報の唯一の出どころ**: `src/data/fujisan-legal.ts`。未成年飲酒防止表示（`UNDERAGE_NOTICE_JP/EN`、フッター・商品ページ・特商法ページで参照）、送料 `SHIPPING_FEE`（一律1,100円 / 15,000円以上無料 — カート計算・全ページ表記がこの定数を参照）、特商法・通販酒類小売業免許・酒類販売管理者標識。**未確定の値はダミー文字列で埋めず `null` にする**（`LIQUOR_LICENCE` / `INVOICE_REGISTRATION_NUMBER`）。それらしい伏せ字は本物に見えたまま公開されうる。`npm run deploy` は predeploy で `scripts/check-legal-disclosure.mjs` を実行し、未確定が残っていればデプロイを止める（dev / build / CI は止めない）。
 - 発送は日本国内のみ（Stripe の `allowed_countries: ["JP"]` と checkout の郵便番号7桁バリデーションで担保）。
+
+## フォームの保存
+
+- **保存は必ず「保存」ボタンで行う。** 選んだ瞬間・入力を離れた瞬間に保存する作りにしない（以前お問い合わせの対応状況がそうなっていて、選び間違えただけで「対応済み」になり一覧から消えた）。
+- **保存していない変更があるときは、画面の移動に確認を挟む。** 各フォームは `useUnsavedChanges(dirty)`（`src/lib/unsaved-changes.ts`）で知らせるだけで、止めるのは layout に 1 つ置いた `UnsavedChangesGuard`。サイト内リンクは document の capture でクリックを受けて止め（`<Link onNavigate>` でも止められるが全リンクの差し替えになる）、タブを閉じる・再読み込みは `beforeunload`。
+- `dirty` は「利用者が書き換えたか」で判定する。「保存ボタンを押せるか」と混ぜないこと（未管理の在庫行は常に「管理を開始」が押せるが、それを未保存扱いにすると画面から出られなくなる）。
+- **ブラウザの「戻る」は止められない**（App Router では popstate を取り消せない）。
+- 新しいフォームを足したら `useUnsavedChanges` も付ける。テストは `src/components/fujisan/__tests__/UnsavedChangesGuard.test.tsx`。
 
 ## 編集レイヤー（.fjs-ed）
 

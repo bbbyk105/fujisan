@@ -58,7 +58,7 @@ export default async function OrderDetailPage({
     <EditorialPage className="flex flex-col">
       <header className="pt-[72px] md:pt-[86px]">
         <div className="ed-wrap pb-10 pt-12 md:pb-12 md:pt-20">
-          <Link href="/account#orders" className="ed-link text-[12.5px] no-underline hover:underline">
+          <Link href="/account" className="ed-link text-[12.5px] no-underline hover:underline">
             <span aria-hidden className="mr-2">
               ←
             </span>

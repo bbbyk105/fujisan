@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import type { AdminRole } from "@/lib/admin";
 import { adminSetMemberRoleAction } from "@/lib/actions/admin-team";
 import { formatDateShortJp } from "@/lib/format-date";
+import { useUnsavedChanges } from "@/lib/unsaved-changes";
 
 const ERROR_MESSAGES: Record<string, string> = {
   unauth: "ログインが切れています。再度ログインしてください。",
@@ -58,6 +59,7 @@ export function AdminTeamRow({ member }: Props) {
 
   const isEnvLocked = member.isEnvOwner;
   const dirty = role !== initial;
+  useUnsavedChanges(dirty);
 
   const handleSave = () => {
     setMessage(null);

@@ -4,6 +4,7 @@ import { useState, useTransition, type FormEvent } from "react";
 import { setReceiptAddresseeAction } from "@/lib/actions/orders";
 import { RECEIPT_ADDRESSEE_MAX } from "@/data/fujisan-orders";
 import { L } from "@/i18n/Localized";
+import { useUnsavedChanges } from "@/lib/unsaved-changes";
 
 const ERRORS: Record<string, { ja: string; en: string }> = {
   unauth: {
@@ -45,7 +46,9 @@ export function ReceiptAddresseeForm({
   fallbackName: string;
 }) {
   const [value, setValue] = useState(initial ?? "");
+  const [savedValue, setSavedValue] = useState(initial ?? "");
   const [saved, setSaved] = useState(false);
+  useUnsavedChanges(value.trim() !== savedValue.trim());
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -59,6 +62,7 @@ export function ReceiptAddresseeForm({
         addressee: value,
       });
       if (res.ok) {
+        setSavedValue(value);
         setSaved(true);
         window.setTimeout(() => setSaved(false), 2500);
       } else {
@@ -74,7 +78,7 @@ export function ReceiptAddresseeForm({
     >
       <label
         htmlFor="receipt-addressee"
-        className="text-[11px] font-semibold tracking-[0.12em] text-indigo/60"
+        className="text-[13px] text-indigo/70"
       >
         <L en="Addressee" ja="宛名" />
       </label>

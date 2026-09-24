@@ -9,6 +9,7 @@ import {
   type ContactSubject,
 } from "@/data/fujisan-contact";
 import { formatDateTimeJp } from "@/lib/format-date";
+import { useUnsavedChanges } from "@/lib/unsaved-changes";
 
 const ERROR_MESSAGES: Record<string, string> = {
   unauth: "ログインが切れています。再度ログインしてください。",
@@ -37,26 +38,31 @@ type Message = {
 };
 
 /**
- * お問い合わせ 1 件の行。
- * 本文は既定で折りたたみ、対応状況は select ですぐ切り替えられるようにする
- * （日々の運用では「未対応を拾って返信し、対応済みにする」の反復になるため）。
+ * お問い合わせ 1 件の行。本文は既定で折りたたむ。
+ *
+ * **対応状況は「保存」を押すまで保存しない。** 以前は select を切り替えた瞬間に
+ * 保存していたため、選び間違えただけで「対応済み」になり、未対応の一覧から
+ * 消えてしまうことがあった。管理画面の他のフォームとも作法を揃える。
  */
 export function AdminContactRow({ message }: { message: Message }) {
   const [status, setStatus] = useState<ContactStatus>(message.status);
   const [error, setError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
   const [pending, startTransition] = useTransition();
 
   const label = CONTACT_SUBJECT_LABELS[message.subject];
+  const dirty = status !== message.status;
+  useUnsavedChanges(dirty);
 
-  const change = (next: ContactStatus) => {
-    const previous = status;
-    setStatus(next);
+  const save = () => {
     setError(null);
+    setSaved(false);
     startTransition(async () => {
-      const res = await adminSetContactStatusAction({ id: message.id, status: next });
-      if (!res.ok) {
-        // 失敗したら表示を元に戻す（サーバーの状態と食い違わせない）。
-        setStatus(previous);
+      const res = await adminSetContactStatusAction({ id: message.id, status });
+      if (res.ok) {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2500);
+      } else {
         setError(ERROR_MESSAGES[res.error] ?? ERROR_MESSAGES.db);
       }
     });
@@ -67,9 +73,9 @@ export function AdminContactRow({ message }: { message: Message }) {
       <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
           <span
-            className={`border px-2.5 py-1 text-[10px] font-semibold tracking-[0.2em] ${STATUS_STYLE[status]}`}
+            className={`border px-2.5 py-1 text-[11px] font-semibold tracking-[0.08em] ${STATUS_STYLE[message.status]}`}
           >
-            {CONTACT_STATUS_LABELS[status]}
+            {CONTACT_STATUS_LABELS[message.status]}
           </span>
           <h2 className="font-serif text-[16px] font-semibold tracking-[0.04em] text-indigo">
             {message.name}
@@ -108,7 +114,7 @@ export function AdminContactRow({ message }: { message: Message }) {
       <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-indigo/10 pt-4">
         <label
           htmlFor={`status-${message.id}`}
-          className="text-[9.5px] font-semibold tracking-[0.28em] text-indigo/50"
+          className="text-[12.5px] text-indigo/60"
         >
           対応状況
         </label>
@@ -116,17 +122,28 @@ export function AdminContactRow({ message }: { message: Message }) {
           id={`status-${message.id}`}
           value={status}
           disabled={pending}
-          onChange={(e) => change(e.target.value as ContactStatus)}
+          onChange={(e) => setStatus(e.target.value as ContactStatus)}
           className="border border-indigo/25 bg-white px-3 py-2 text-[12.5px] text-indigo outline-none focus:border-gold disabled:opacity-60"
         >
           <option value="new">未対応</option>
           <option value="in_progress">対応中</option>
           <option value="done">対応済み</option>
         </select>
-        {pending && (
-          <span className="text-[11px] text-indigo/55">保存中…</span>
-        )}
-        {status === "done" && message.handledByEmail && (
+        <button
+          type="button"
+          onClick={save}
+          disabled={pending || !dirty}
+          className="border border-indigo bg-indigo px-5 py-2 text-[12.5px] font-semibold text-paper-card transition-colors hover:bg-indigo-lift disabled:cursor-not-allowed disabled:opacity-35"
+        >
+          {pending ? "保存中…" : "保存"}
+        </button>
+        {dirty && !pending ? (
+          <span className="text-[12px] text-gold-ink">未保存の変更があります</span>
+        ) : null}
+        {saved ? (
+          <span className="text-[12px] font-semibold text-moss">保存しました</span>
+        ) : null}
+        {message.status === "done" && message.handledByEmail && (
           <span className="text-[11px] text-indigo/55">
             {message.handledByEmail}
             {message.handledAt ? ` / ${formatDateTimeJp(message.handledAt)}` : ""}

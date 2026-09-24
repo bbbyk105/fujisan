@@ -7,6 +7,7 @@ import { FieldError } from "@/components/fujisan/FieldError";
 import type { FieldErrorKey } from "@/lib/validation/forms";
 import { L } from "@/i18n/Localized";
 import { RateLimitMessage } from "./ui";
+import { useUnsavedChanges } from "@/lib/unsaved-changes";
 
 const inputCls =
   "w-full border-b border-indigo/25 bg-transparent py-2.5 text-[15px] text-indigo outline-none transition-colors placeholder:text-indigo/35 focus:border-gold aria-[invalid=true]:border-crimson";
@@ -29,6 +30,7 @@ export function ChangePasswordForm() {
   const [mismatch, setMismatch] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  useUnsavedChanges(current !== "" || next !== "" || confirm !== "");
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -74,12 +76,12 @@ export function ChangePasswordForm() {
     <form
       onSubmit={handleSubmit}
       noValidate
-      className="border border-indigo/12 bg-paper/65 px-7 py-8 md:px-10 md:py-10"
+      className="border-t border-indigo/15 pt-8"
     >
-      <h3 className="font-serif text-[16px] font-semibold tracking-[0.04em] text-indigo">
+      <h3 className="font-serif text-[18px] font-medium text-indigo">
         <L en="Change password" ja="パスワードの変更" />
       </h3>
-      <p className="mt-3 max-w-[60ch] text-[12.5px] leading-[1.75] text-indigo/72">
+      <p className="mt-3 max-w-[62ch] text-[14px] leading-[1.9] text-indigo/75">
         <L
           en="Enter your current password to set a new one. For your safety, changing it signs you out on every other device."
           ja="現在のパスワードをご確認のうえ、新しいパスワードを設定してください。安全のため、変更すると他の端末のログインはすべて解除されます。"
@@ -89,7 +91,7 @@ export function ChangePasswordForm() {
       {done && (
         <p
           role="status"
-          className="mt-5 border border-moss/45 bg-moss/[0.08] px-4 py-3 text-[12.5px] leading-[1.7] text-moss"
+          className="mt-5 text-[13.5px] leading-[1.8] text-moss"
         >
           <L
             en="Your password has been changed. Other devices have been signed out."
@@ -101,7 +103,7 @@ export function ChangePasswordForm() {
       {mismatch && (
         <p
           role="alert"
-          className="mt-5 border border-crimson/40 bg-crimson/[0.06] px-4 py-3 text-[12.5px] leading-[1.7] text-crimson"
+          className="mt-5 text-[13.5px] font-medium leading-[1.8] text-crimson"
         >
           <L
             en="The two new password fields don't match."
@@ -113,7 +115,7 @@ export function ChangePasswordForm() {
       {errorKey && (
         <p
           role="alert"
-          className="mt-5 border border-crimson/40 bg-crimson/[0.06] px-4 py-3 text-[12.5px] leading-[1.7] text-crimson"
+          className="mt-5 text-[13.5px] font-medium leading-[1.8] text-crimson"
         >
           {errorKey === "rate" ? (
             <RateLimitMessage />
@@ -150,7 +152,7 @@ export function ChangePasswordForm() {
         <div className="flex flex-col gap-2">
           <label
             htmlFor="current-password"
-            className="text-[11px] font-semibold tracking-[0.12em] text-indigo/60"
+            className="text-[13px] text-indigo/70"
           >
             <L en="Current password" ja="現在のパスワード" />
           </label>
@@ -170,7 +172,7 @@ export function ChangePasswordForm() {
         <div className="flex flex-col gap-2">
           <label
             htmlFor="new-password"
-            className="text-[11px] font-semibold tracking-[0.12em] text-indigo/60"
+            className="text-[13px] text-indigo/70"
           >
             <L en="New password" ja="新しいパスワード" />
           </label>
@@ -190,7 +192,7 @@ export function ChangePasswordForm() {
         <div className="flex flex-col gap-2">
           <label
             htmlFor="confirm-password"
-            className="text-[11px] font-semibold tracking-[0.12em] text-indigo/60"
+            className="text-[13px] text-indigo/70"
           >
             <L en="Confirm new password" ja="新しいパスワード（確認）" />
           </label>

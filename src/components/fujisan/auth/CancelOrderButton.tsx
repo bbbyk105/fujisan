@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { requestOrderCancellationAction } from "@/lib/actions/orders";
 import { L } from "@/i18n/Localized";
 import { useLocale } from "@/i18n/useLocale";
+import { useUnsavedChanges } from "@/lib/unsaved-changes";
 
 const ERRORS: Record<string, { ja: string; en: string }> = {
   unauth: {
@@ -39,6 +40,8 @@ export function CancelOrderButton({ orderRef }: { orderRef: string }) {
   const [confirming, setConfirming] = useState(false);
   const [reason, setReason] = useState("");
   const [error, setError] = useState<string | null>(null);
+  // 理由を書きかけのまま離れると、依頼は送られていない
+  useUnsavedChanges(confirming && reason.trim() !== "");
   const [pending, startTransition] = useTransition();
   const router = useRouter();
   const locale = useLocale();
