@@ -22,7 +22,7 @@ import { buildMetadata } from "@/lib/seo";
 export const metadata = buildMetadata({
   title: "Wholesale & Trade",
   description:
-    "Wholesale and trade enquiries for restaurants, bars, retailers, and hospitality programmes. Account pricing, training, and brewer support from Shizuoka.",
+    "Wholesale and trade enquiries for restaurants, bars, shops, and hotels. Case pricing and a dedicated contact, in Japanese or English.",
   path: "/shop/business",
 });
 
@@ -34,15 +34,6 @@ const terms = [
       <L
         en="Case pricing in 15-bottle cases, with tiered terms beyond ten cases per month."
         ja="15本入りのケース単位で卸価格をご用意しています。月10ケースを超える場合は、数量に応じた条件をご相談いただけます。"
-      />
-    ),
-  },
-  {
-    label: <L en="Brewer support" ja="醸造元との連携" />,
-    value: (
-      <L
-        en="Tasting notes, serving guides, and staff training at major rollouts, arranged with Makino Shuzo, the brewery that makes the Bushido series."
-        ja="テイスティングノート、提供時の資料、本格導入時の店舗研修まで、醸造元の牧野酒造合資会社と連携してお手伝いします。"
       />
     ),
   },
@@ -91,15 +82,6 @@ const process = [
       <L
         en="Once licence verification and payment terms are agreed, we open your trade account and arrange the first delivery."
         ja="酒類販売免許とお支払い条件を確認のうえ、お取引口座を開設します。開設後は、初回のご注文からすみやかに出荷いたします。"
-      />
-    ),
-  },
-  {
-    heading: <L en="Listing and rollout" ja="メニューへの導入" />,
-    body: (
-      <L
-        en="We help with menu listings, staff training, and point-of-sale materials after you start."
-        ja="メニューへの掲載、スタッフ研修、販促物のご用意など、導入後もお手伝いします。"
       />
     ),
   },

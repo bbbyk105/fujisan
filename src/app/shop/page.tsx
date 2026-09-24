@@ -61,13 +61,6 @@ const routes = [
         value: { en: "Case pricing (15 bottles a case)", ja: "ケース単位（15本入り）" },
       },
       {
-        label: { en: "Support", ja: "支援" },
-        value: {
-          en: "Listing and staff training",
-          ja: "メニューづくり・スタッフ研修",
-        },
-      },
-      {
         label: { en: "Quote", ja: "お見積り" },
         value: {
           en: "Within two business days, JPY",
