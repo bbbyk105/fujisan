@@ -92,7 +92,7 @@ function LineStockNotice({ stock }: { stock: LineStock }) {
     return (
       <p className="mt-2 text-[11.5px] font-semibold leading-[1.6] text-crimson">
         <L
-          en="Sold out — please remove this item to continue."
+          en="Sold out. Please remove this item to continue."
           ja="完売しました。お手数ですが削除してお進みください。"
         />
       </p>
@@ -101,7 +101,7 @@ function LineStockNotice({ stock }: { stock: LineStock }) {
   return (
     <p className="mt-2 text-[11.5px] font-semibold leading-[1.6] text-gold-ink">
       <L
-        en={`Only ${stock.available} left — please reduce the quantity.`}
+        en={`Only ${stock.available} left. Please reduce the quantity.`}
         ja={`残り ${stock.available} 本です。数量を減らしてください。`}
       />
     </p>
@@ -517,7 +517,7 @@ export function CartView() {
               className="mt-6 border border-gold/45 bg-paper-tint/80 px-4 py-3 text-[11.5px] leading-[1.7] text-indigo/85"
             >
               <L
-                en="Payment was canceled — your cart is unchanged. You can try again anytime."
+                en="Payment was cancelled. Your cart is unchanged, and you can try again at any time."
                 ja="お支払いがキャンセルされました。カートはそのままです。いつでももう一度お試しいただけます。"
               />
             </p>
@@ -730,8 +730,8 @@ export function CartView() {
 
           <p className="mt-4 text-[11.5px] leading-[1.7] text-indigo/55">
             <L
-              en="Payment is completed securely on the next screen (Stripe). We ship to the address on your account — if none is saved, you'll enter it at checkout."
-              ja="お支払いは次の画面（Stripe の安全な決済ページ）で行います。お届け先はご登録の住所へ。未登録の場合は決済画面でご入力いただきます。"
+              en="Payment is completed securely on the next screen (Stripe). We ship to the address on your account. If none is saved, you'll enter it at checkout."
+              ja="お支払いは次の画面（Stripe の安全な決済ページ）で行います。お届け先はご登録の住所になります。未登録の場合は決済画面でご入力いただきます。"
             />
           </p>
         </aside>

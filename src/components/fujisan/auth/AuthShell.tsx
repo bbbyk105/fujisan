@@ -8,7 +8,7 @@ import { RoleSwitch } from "./RoleSwitch";
 type Role = "personal" | "business";
 
 type BrandPanel = {
-  /** 大きく薄く敷く漢字（例: 會員 / 卸） */
+  /** 大きく薄く敷く漢字（例: 会員 / 法人） */
   kanji: string;
   kickerJp: string;
   titleEn: string;

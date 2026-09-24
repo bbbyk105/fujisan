@@ -2,6 +2,7 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { sendEmail } from "@/lib/email";
 import { getOwnerEmailsFromEnv } from "@/lib/admin";
 import { FUJISAN_LEGAL } from "@/data/fujisan-legal";
+import { SITE_URL } from "@/lib/seo";
 import {
   TRADE_BUSINESS_TYPE_LABELS,
   type TradeBusinessType,
@@ -44,7 +45,7 @@ async function resendOpts(): Promise<{
   const e = env as ResendEnv;
   return {
     opts: { apiKey: e.RESEND_API_KEY, from: e.RESEND_FROM },
-    baseUrl: (e.BETTER_AUTH_URL || "https://fujisan-sake.com").replace(
+    baseUrl: (e.BETTER_AUTH_URL || SITE_URL).replace(
       /\/$/,
       "",
     ),
@@ -156,7 +157,7 @@ export async function sendTradeApprovedEmail(data: {
 
   const html = `
   <div style="font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#0B1A2E;">
-    <p style="font-size:12px;letter-spacing:.2em;color:#C9A84C;margin:0 0 16px;">― 取扱口座を開設しました ―</p>
+    <p style="font-size:12px;letter-spacing:.2em;color:#C9A84C;margin:0 0 16px;">取扱口座を開設しました</p>
     <p style="font-size:15px;line-height:1.9;">${escapeHtml(data.companyName)}<br />${escapeHtml(data.contactName)} 様</p>
     <p style="font-size:14px;line-height:1.9;">
       取扱店アカウントの審査が完了しました。ログインいただくと卸価格をご覧いただけます。

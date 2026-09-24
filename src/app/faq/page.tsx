@@ -22,8 +22,7 @@ export const metadata = buildMetadata({
  */
 const groups = [
   {
-    label: <L en="Serving" ja="味わう" />,
-    heading: <L en="Choosing and serving the bottle" ja="選ぶ、そして注ぐ" />,
+    heading: <L en="Choosing and serving" ja="選び方と飲み方" />,
     items: [
       {
         q: (
@@ -35,7 +34,7 @@ const groups = [
         a: (
           <L
             en="Each bottle carries a recommended temperature on its product page. As a starting point: aroma-driven daiginjo around 8°C, junmai chilled or lightly warmed to about 40°C. Several labels are good both ways."
-            ja="おすすめの温度は各商品ページに記しています。目安は、香りの高い大吟醸で8℃前後、純米は冷やすか40℃前後のぬる燗で。冷やでも燗でも楽しめる銘柄もあります。"
+            ja="おすすめの温度は各商品ページに記しています。目安は、香りの高い大吟醸で8℃前後、純米は冷やすか、40℃前後のぬる燗がおすすめです。冷やでも燗でも楽しめる銘柄もあります。"
           />
         ),
       },
@@ -43,8 +42,8 @@ const groups = [
         q: <L en="Which bottle should I start with?" ja="最初の一本は？" />,
         a: (
           <L
-            en="If sake is new to you, a junmai is generous and easy to meet. From there a junmai ginjo opens the floral side, and a junmai daiginjo brings the perfume of the orchard."
-            ja="日本酒がはじめての方には、ふくらみがあって親しみやすい純米から。そこから純米吟醸で華やかな香りへ、純米大吟醸で果実のような芳香へと広げてみてください。"
+            en="If sake is new to you, start with a junmai: full-bodied and approachable. A junmai ginjo is more floral, and a junmai daiginjo more fruity and aromatic."
+            ja="日本酒がはじめての方には、ふくらみがあって飲みやすい純米がおすすめです。純米吟醸は花のような香り、純米大吟醸は果実のような香りがより強くなります。"
           />
         ),
       },
@@ -57,7 +56,7 @@ const groups = [
         ),
         a: (
           <L
-            en="Upright, in the dark, between 5°C and 12°C — a wine fridge is ideal. Sake is sensitive to UV and heat, so keep it out of direct sunlight and away from sudden temperature swings."
+            en="Store it upright in the dark, between 5°C and 12°C. A wine fridge is ideal. Sake is sensitive to UV and heat, so keep it out of direct sunlight and away from sudden temperature swings."
             ja="直射日光を避け、5〜12℃の暗所で立てて保管してください。ワインセラーが理想です。紫外線と熱に弱いため、急な温度変化も避けてください。"
           />
         ),
@@ -66,22 +65,21 @@ const groups = [
         q: <L en="How long does it keep once opened?" ja="開栓後の日持ちは？" />,
         a: (
           <L
-            en="Refrigerate it, and finish daiginjo and ginjo within seven to ten days, richer junmai styles within two weeks. It will not spoil quickly — but the first week is when it is at its best."
-            ja="冷蔵庫で保管し、大吟醸・吟醸は7〜10日、コクのある純米は2週間ほどを目安に。すぐに悪くなるわけではありませんが、最初の一週間がいちばんです。"
+            en="Keep it in the fridge. Daiginjo and ginjo are best within seven to ten days, fuller junmai styles within about two weeks. It will not spoil quickly, but the flavour is freshest in the first week."
+            ja="冷蔵庫で保管し、大吟醸・吟醸は7〜10日、コクのある純米は2週間ほどを目安にお飲みください。すぐに悪くなるわけではありませんが、香りと味は最初の1週間がもっとも新鮮です。"
           />
         ),
       },
     ],
   },
   {
-    label: <L en="Ordering" ja="注文する" />,
     heading: <L en="Before you order" ja="ご注文の前に" />,
     items: [
       {
         q: <L en="Can I send a bottle as a gift?" ja="ギフトとして贈れますか？" />,
         a: (
           <L
-            en="Every bottle ships in a presentation box wrapped in washi, so it arrives ready to give. Noshi wrapping and message cards are not yet available at checkout — write to us before ordering and we will do what we can."
+            en="Every bottle ships in a presentation box wrapped in washi, so it arrives ready to give. Noshi wrapping and message cards are not yet available at checkout. Write to us before ordering and we will do what we can."
             ja="各ボトルは和紙で包んだ化粧箱でお届けしますので、そのまま贈り物にお使いいただけます。のし紙やメッセージカードは、現在ご購入手続きの中では承っておりません。ご注文前にご連絡いただければ、できる限り対応いたします。"
           />
         ),
@@ -107,8 +105,8 @@ const groups = [
             }
             ja={
               <>
-                お届けは日本国内のみです。送料は{SHIPPING_FEE.flat}、
-                {SHIPPING_FEE.free}。詳しくは
+                お届けは日本国内のみです。送料は{SHIPPING_FEE.flat}です。
+                {SHIPPING_FEE.free}です。詳しくは
                 <a href="/shipping" className="ed-link">
                   お届けと返品
                 </a>
@@ -121,8 +119,7 @@ const groups = [
     ],
   },
   {
-    label: <L en="The kura" ja="蔵のこと" />,
-    heading: <L en="Visiting, and working together" ja="訪ねる、取り扱う" />,
+    heading: <L en="Visits and trade" ja="蔵見学とお取引" />,
     items: [
       {
         q: <L en="Can I visit the brewery?" ja="蔵見学はできますか？" />,
@@ -136,7 +133,7 @@ const groups = [
       {
         q: (
           <L
-            en="I work in the trade — can we talk wholesale?"
+            en="I work in the trade. Can we talk about wholesale?"
             ja="業務用・卸の相談はできますか？"
           />
         ),
@@ -176,8 +173,8 @@ export default function FaqPage() {
         title={<L en="Frequently asked" ja="よくあるご質問" />}
         lead={
           <L
-            en="A short field guide to storing, serving, and ordering Fujisan sake."
-            ja="富士山の酒の保管・楽しみ方・ご注文についての、短い手引きです。"
+            en="Common questions about storing, serving, and ordering our sake."
+            ja="保管や飲み方、ご注文について、よくいただくご質問をまとめています。"
           />
         }
         meta={<L en="Last updated 2026.09" ja="最終更新 2026.09" />}
@@ -187,7 +184,6 @@ export default function FaqPage() {
         <EditorialSection key={i} ruled={i > 0} className="py-14 md:py-20">
           <div className="grid grid-cols-1 gap-8 md:grid-cols-[minmax(0,230px)_minmax(0,1fr)] md:gap-16">
             <EditorialSectionHead
-              label={g.label}
               heading={g.heading}
               className="md:sticky md:top-[112px] md:self-start"
             />
@@ -198,19 +194,16 @@ export default function FaqPage() {
 
       {/* 問答で解けないときの行き先。FAQ の 1 項目にすると見落とされる */}
       <EditorialSection>
-        <p className="ed-label">
-          <L en="Still stuck" ja="解決しないとき" />
-        </p>
-        <p className="ed-h2 mt-4">
+        <p className="ed-h2">
           <L
-            en="Write to us — a person reads every message."
-            ja="お便りください。ひとつずつ、人が読んでいます。"
+            en="If your question isn't answered here, contact us."
+            ja="ここで解決しないときは、お問い合わせください。"
           />
         </p>
         <p className="ed-p mt-5">
           <L
-            en="Our small team is in Shizuoka and replies in Japanese or English, usually within two business days."
-            ja="静岡の小さなチームが、日本語・英語のどちらでも、通常2営業日以内にご返信します。"
+            en="We reply within two business days, in Japanese or English."
+            ja="日本語・英語のどちらでも、通常2営業日以内にご返信します。"
           />
         </p>
         <div className="mt-8 flex flex-wrap items-center gap-x-10 gap-y-4">

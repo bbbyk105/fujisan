@@ -34,14 +34,14 @@ export default function Error({
 
         <h1 className="ed-title mt-4">
           <L
-            en="We couldn't pour this page."
+            en="We couldn't load this page."
             ja="ページを表示できませんでした。"
           />
         </h1>
 
         <p className="ed-lead mt-7">
           <L
-            en="An unexpected error occurred on our side. Please try again — if it keeps happening, let us know and we'll look into it."
+            en="An unexpected error occurred on our side. Please try again. If it keeps happening, let us know and we'll look into it."
             ja="予期しないエラーが発生しました。もう一度お試しください。繰り返し発生する場合は、お手数ですがご連絡ください。"
           />
         </p>

@@ -148,7 +148,7 @@ export function AccountView({
               {tradeStatus === "rejected" ? (
                 <L
                   en="This account is not currently open for trade pricing. Please contact us if your situation has changed."
-                  ja="現在、このアカウントでは卸価格をご案内しておりません。ご状況が変わりましたら、お問い合わせよりご相談ください。"
+                  ja="現在、このアカウントでは卸価格をご案内しておりません。状況が変わりましたら、お問い合わせからご相談ください。"
                 />
               ) : (
                 <L
@@ -201,7 +201,7 @@ function OrdersTab({
         </p>
         <p className="mt-3 max-w-[56ch] text-[14px] leading-[1.9] text-indigo/75">
           <L
-            en="Once you place your first order, you'll be able to track it here — from preparation to your door."
+            en="Once you place your first order, you'll be able to track it here, from preparation to delivery."
             ja="ご注文後は、発送の準備からお届けまでの進み具合をここでご覧いただけます。"
           />
         </p>

@@ -2,8 +2,8 @@
 
 本番公開までに残っている設定作業。上から順に進めれば詰まりません。
 
-- 本番 URL: https://fujisan.bbbyk105.workers.dev
-- 独自ドメイン（未接続）: `mtfuji-kikkou.com`
+- 本番 URL: https://sakefujisan.com（2026-09-24 取得・Cloudflare Registrar）
+- 旧 URL: https://fujisan.bbbyk105.workers.dev（Stripe Webhook 以外は sakefujisan.com へ 308）
 - Worker 名: `fujisan` / D1: `fujisan-db`
 
 コマンドはすべて `~/Desktop/Projects/fujisan` で実行します。
@@ -127,52 +127,40 @@ npx wrangler secret put RESEND_API_KEY
 
 ---
 
-## タスク5. Resend のドメイン認証 ＋ RESEND_FROM
+## タスク5. メール（送信 = Resend / 受信 = Cloudflare Email Routing）
 
-**やらないと**: お客様が誰も会員登録を完了できません。現在の送信元は Resend 共有の
-`onboarding@resend.dev` で、**Resend アカウント所有者本人にしか配信されません**。
+送受信とも `info@sakefujisan.com` を使う。サイト・特商法・メールに載る連絡先
+（`FUJISAN_LEGAL.email`）もこのアドレス。
 
-`mtfuji-kikkou.com` は Resend に登録済みですが status が `failed` です。
-DNS（Cloudflare で管理しているならそこ）に以下 3 件を追加します。
+**やらないと**: お客様が誰も会員登録を完了できません。送信元が Resend 共有の
+`onboarding@resend.dev` のままだと、**Resend アカウント所有者本人にしか配信されません**。
 
-### 5-1. DKIM
+### 5-1. 送信: Resend にドメインを追加
 
-```
-Type   TXT
-Name   resend._domainkey
-Value  p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCtgDLGW+JEMh1A/SznPEUdvEuaC0xgrLpsGPUcnxdgYC3it53wy5tAxbh90q02N+jNvVxknd+QL9X3zNIXMgf9N73B3c6WMaYZPnffwrbgkzNiCWHb/D7rgo+QszoOECLFBNmO25tXrQXw0C4PIrogELh9Ppdp7T7d+QXQ7UBy3wIDAQAB
-```
+Resend ダッシュボード → Domains → Add Domain → `sakefujisan.com`
+（Region は Tokyo `ap-northeast-1`）。表示される DKIM（`resend._domainkey`）と
+`send` サブドメインの MX / TXT を Cloudflare の DNS に入れる（Resend 画面の
+Cloudflare 自動設定を使ってもよい）。プロキシ（オレンジ雲）は OFF。
 
-### 5-2. SPF（MX）
-
-```
-Type      MX
-Name      send
-Value     feedback-smtp.ap-northeast-1.amazonses.com
-Priority  10
-```
-
-### 5-3. SPF（TXT）
-
-```
-Type   TXT
-Name   send
-Value  v=spf1 include:amazonses.com ~all
-```
-
-登録後、Resend ダッシュボードの Domains で **Verify**。`verified` になったら：
+`verified` になったら：
 
 ```bash
 npx wrangler secret put RESEND_FROM
-# 値: FUJISAN SAKE <noreply@mtfuji-kikkou.com>
+# 値: FUJISAN SAKE <info@sakefujisan.com>
 ```
 
 > **`verified` になる前に RESEND_FROM を設定しない。** 未認証のまま設定すると
 > 全メールが 403 で失敗し、自分宛にも届かなくなります（管理画面に入れなくなります）。
->
-> Cloudflare DNS の場合、プロキシ（オレンジ雲）は OFF。TXT / MX は元々対象外ですが念のため。
 
----
+### 5-2. 受信: Email Routing で Gmail へ転送
+
+Cloudflare ダッシュボード → `sakefujisan.com` → Email → Email Routing
+
+1. 有効化（apex に MX と SPF が自動で入る。Resend は `send` サブドメインなので衝突しない）
+2. Destination addresses に `mtfujipharmacy@gmail.com` を追加 → Gmail に届く確認リンクを踏む
+3. Routing rules: `info@sakefujisan.com` → `mtfujipharmacy@gmail.com`
+
+これが無いと、お客様が `info@` に書いたメールや注文メールへの返信が届かない。
 
 ## タスク6. 本番でアカウントを作り、管理画面に入る
 
@@ -180,46 +168,30 @@ npx wrangler secret put RESEND_FROM
 `.wrangler/state/v3/d1`（別DB）にあるだけで、本番には存在しません。
 
 1. タスク2（`ADMIN_EMAILS`）を先に済ませる
-2. https://fujisan.bbbyk105.workers.dev/register/personal で登録
+2. https://sakefujisan.com/register/personal で登録
 3. 確認メールのリンクを踏む（`requireEmailVerification: true` のため必須）
-4. https://fujisan.bbbyk105.workers.dev/admin に入れることを確認
+4. https://sakefujisan.com/admin に入れることを確認
 
 > タスク5が終わる前でも、`onboarding@resend.dev` は**あなた宛には届く**ので、
 > この作業だけは先に済ませられます。
 
 ---
 
-## タスク7. 独自ドメインを接続する
+## タスク7. 独自ドメイン（済: 2026-09-24）
 
-`mtfuji-kikkou.com` は現在サイトに繋がっていません。
+- `wrangler.jsonc` の `routes` に `sakefujisan.com` と `www.sakefujisan.com` を
+  custom domain として登録済み（DNS レコードと証明書は Cloudflare が自動で作る）。
+- www と workers.dev は `next.config.ts` の redirects で apex へ 308。
+- `BETTER_AUTH_URL` は `https://sakefujisan.com`。Better Auth のベース URL であると
+  同時に、**Stripe 決済後の戻り先（success_url / cancel_url）の基底**。
+- canonical / OGP / sitemap は `src/lib/seo.ts` の `SITE_URL`（既定が sakefujisan.com）。
 
-### 7-1. Cloudflare で Workers にカスタムドメインを割り当て
-
-Cloudflare ダッシュボード → Workers & Pages → `fujisan` → Settings → Domains & Routes
-→ カスタムドメインとして `mtfuji-kikkou.com` を追加。
-
-### 7-2. BETTER_AUTH_URL を更新【重要】
-
-```bash
-npx wrangler secret put BETTER_AUTH_URL
-# 値: https://mtfuji-kikkou.com
-```
-
-Better Auth のベース URL であると同時に、**Stripe 決済後の戻り先
-（success_url / cancel_url）の基底**です。古いままだと決済は成功するのに
-お客様がサイトへ戻れなくなります。
-
-### 7-3. Stripe Webhook の URL を差し替え
+### 残り: Stripe Webhook の URL を差し替え
 
 `we_1UAthnHTT9ZXTgS1xYg2XRl4` の URL を
-`https://mtfuji-kikkou.com/api/stripe/webhook` に変更。イベントはタスク3の 6 つ。
-
-### 7-4. NEXT_PUBLIC_SITE_URL
-
-canonical / OGP / sitemap の基底は**ビルド時**に決まるため、secret ではなく
-ビルド環境の `NEXT_PUBLIC_SITE_URL` に `https://mtfuji-kikkou.com` を設定します。
-
----
+`https://sakefujisan.com/api/stripe/webhook` に変更する。workers.dev の
+`/api/stripe/webhook` はリダイレクトから外してあるので、変えるまでも止まらない。
+差し替えたら `wrangler.jsonc` の `workers_dev` を `false` にしてよい。
 
 ## タスク8. 酒類販売の免許番号を入れる【法令】
 
@@ -244,7 +216,7 @@ export const LIQUOR_LICENCE = {
 **現状**: 本番の在庫は**全 SKU 一律 24 本の暫定値**です（`0007` の初期値を
 `0012` がそのまま引き継ぎます）。
 
-https://fujisan.bbbyk105.workers.dev/admin/products で実際の本数に差し替えます。
+https://sakefujisan.com/admin/products で実際の本数に差し替えます。
 
 - 販売可能数（実在庫 − 決済待ち）が 0 の SKU は自動的に購入不可になります
 - 決済開始で引き当て、入金確定で実減算されます
@@ -344,10 +316,10 @@ Cloudflare ダッシュボード → **Compute (Workers & Pages)** → `fujisan`
 
 ### 11-3. 環境変数（ビルド時）
 
-独自ドメインを繋いだら（タスク7）、**Build variables** に追加する。
+プレビュー環境などで正規 URL を変えたいときだけ **Build variables** に追加する（本番は既定で sakefujisan.com）。
 
 ```
-NEXT_PUBLIC_SITE_URL = https://mtfuji-kikkou.com
+NEXT_PUBLIC_SITE_URL = https://sakefujisan.com
 ```
 
 canonical / OGP / sitemap の基底はビルド時に確定するため、Worker の secret ではなく
@@ -385,10 +357,12 @@ canonical / OGP / sitemap の基底はビルド時に確定するため、Worker
 - [ ] `ADMIN_EMAILS` が設定済みで、`/admin` に入れる
 - [ ] Stripe Webhook が 6 イベント
 - [ ] Resend のドメインが `verified`
-- [ ] `RESEND_FROM` が自社ドメイン（`onboarding@resend.dev` のままでない）
+- [ ] `RESEND_FROM` が `FUJISAN SAKE <info@sakefujisan.com>`（`onboarding@resend.dev` のままでない）
 - [ ] 自分以外のメールアドレスで会員登録が完了できる
 - [ ] `/admin/products` の在庫が実在庫
-- [ ] `BETTER_AUTH_URL` が本番ドメイン
+- [ ] `BETTER_AUTH_URL` が `https://sakefujisan.com`
+- [ ] `info@sakefujisan.com` 宛のメールが Gmail に届く
+- [ ] Stripe Webhook の URL が sakefujisan.com
 - [ ] 免許番号が入っている（`npm run check:legal` が通る）
 - [ ] 実決済テストで在庫が減り、返金もできた
 - [ ] （自動デプロイにしたなら）Build command に `npm run check:legal &&` を戻した
@@ -413,7 +387,7 @@ npx wrangler d1 execute fujisan-db --remote --command "SELECT * FROM product_pri
 
 # Webhook が生きているか（400 が返れば正常。500 なら鍵が未設定）
 curl -s -o /dev/null -w "%{http_code}\n" -X POST \
-  https://fujisan.bbbyk105.workers.dev/api/stripe/webhook \
+  https://sakefujisan.com/api/stripe/webhook \
   -H "stripe-signature: t=0,v1=invalid" -H "content-type: application/json" -d '{}'
 
 # デプロイ（lint / test / build を通してから）

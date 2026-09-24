@@ -1,6 +1,8 @@
 import dynamic from "next/dynamic";
 import FujisanNav from "@/components/fujisan/FujisanNav";
 import FujisanHero from "@/components/fujisan/FujisanHero";
+import FujisanGuide from "@/components/fujisan/FujisanGuide";
+import FujisanFooter from "@/components/fujisan/FujisanFooter";
 import { jsonLdScript, organizationJsonLd } from "@/lib/seo";
 
 const FujisanDiscover = dynamic(
@@ -43,6 +45,8 @@ export default function Home() {
       <FujisanHero />
       <FujisanDiscover />
       <FujisanExperience />
+      <FujisanGuide />
+      <FujisanFooter />
     </main>
   );
 }

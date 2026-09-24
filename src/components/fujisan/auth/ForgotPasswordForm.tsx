@@ -89,7 +89,7 @@ export function ForgotPasswordForm({
       </PrimaryButton>
 
       <p className="mt-2 text-[12.5px] leading-[1.7] text-indigo/72">
-        <L en="Remembered your password?" ja="パスワードを思い出しましたか？" />{" "}
+        <L en="Remembered your password?" ja="パスワードがわかる場合は" />{" "}
         <Link
           href={loginHref}
           className="font-semibold text-indigo underline decoration-gold/60 underline-offset-4 transition-colors hover:decoration-gold"

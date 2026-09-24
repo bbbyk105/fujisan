@@ -7,7 +7,7 @@ import { buildMetadata } from "@/lib/seo";
 export const metadata = buildMetadata({
   title: "Terms of Use",
   description:
-    "The terms governing your use of fujisan-sake.com and the purchase of FUJISAN SAKE products.",
+    "The terms governing your use of sakefujisan.com and the purchase of FUJISAN SAKE products.",
   path: "/terms",
 });
 
@@ -18,8 +18,8 @@ const sections: DocumentSection[] = [
     body: [
       <L
         key="b"
-        en="By accessing fujisan-sake.com or placing an order, you agree to these Terms of Use. If you do not agree, please do not use the site."
-        ja="fujisan-sake.com のご利用、またはご注文をもって、本利用規約に同意いただいたものとみなします。ご同意いただけない場合は、本サイトのご利用をお控えください。"
+        en="By accessing sakefujisan.com or placing an order, you agree to these Terms of Use. If you do not agree, please do not use the site."
+        ja="sakefujisan.com のご利用、またはご注文をもって、本利用規約に同意いただいたものとみなします。ご同意いただけない場合は、本サイトのご利用をお控えください。"
       />,
     ],
   },
@@ -50,8 +50,8 @@ const sections: DocumentSection[] = [
     body: [
       <L
         key="b"
-        en="Sake is an agricultural product. Subtle variations between batches and vintages are part of its character. We make every reasonable effort to describe the product accurately, but minor differences in colour, aroma, or label may occur."
-        ja="日本酒は農産物です。仕込みや年度によるわずかな違いも、その個性のひとつです。商品の説明には最善を尽くしていますが、色・香り・ラベルに細かな差異が生じることがあります。"
+        en="Because sake is made from rice, its colour and aroma can vary slightly between batches and years. Label details may also differ slightly from the photos."
+        ja="日本酒は米から造るため、仕込みの時期や年度によって、色や香りがわずかに変わることがあります。ラベルの細部が写真と異なる場合もあります。"
       />,
     ],
   },
@@ -108,8 +108,8 @@ export default function TermsPage() {
       title={<L en="Terms of Use" ja="利用規約" />}
       lead={
         <L
-          en="What you can expect from us, and what we expect from you, when you visit this site or buy our sake."
-          ja="当サイトのご利用とご購入にあたって、私たちと皆さまの双方が守る約束をまとめています。"
+          en="The terms that apply when you use this site or buy our sake."
+          ja="当サイトのご利用とご購入についての取り決めです。"
         />
       }
       updated="2026.09"

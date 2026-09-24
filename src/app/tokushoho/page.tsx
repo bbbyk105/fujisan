@@ -14,7 +14,7 @@ import { buildMetadata } from "@/lib/seo";
 export const metadata = buildMetadata({
   title: "特定商取引法に基づく表示",
   description:
-    "FUJISAN SAKE オンラインショップ における特定商取引法に基づく表示、酒類販売管理者標識、通信販売酒類小売業免許情報。",
+    "FUJISAN SAKE オンラインショップの特定商取引法に基づく表示、酒類販売管理者標識、通信販売酒類小売業免許の情報を掲載しています。",
   path: "/tokushoho",
 });
 

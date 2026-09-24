@@ -123,7 +123,7 @@ function CollectionRow({
           </h2>
 
           <p className="mt-3 font-jp text-[12px] tracking-[0.26em] text-indigo/60">
-            <L en={product.title} ja={product.catchJp} />
+            <L en={product.title} ja={product.titleJp} />
           </p>
 
           <p className="mt-6 max-w-[520px] whitespace-pre-line text-[13.5px] font-light leading-[1.9] text-[#2B2419]/78">
@@ -189,8 +189,8 @@ function CollectionRow({
           {multiVolume ? (
             <p className="mt-3 text-[10.5px] tracking-[0.12em] text-indigo/60">
               <L
-                ja={`カート追加は ${base.ml}ml。ほかの容量は商品ページからお選びいただけます。`}
-                en={`Adds the ${base.ml} ml bottle — other sizes are available on the product page.`}
+                ja={`ここからカートに入るのは ${base.ml}ml です。ほかの容量は商品ページからお選びいただけます。`}
+                en={`Adds the ${base.ml} ml bottle. Other sizes are available on the product page.`}
               />
             </p>
           ) : null}
@@ -209,11 +209,11 @@ export default function ProductsIndexPage() {
         eyebrow="COLLECTION · 商品一覧"
         chapter="Ⅱ"
         title="THE BUSHIDO SERIES."
-        jp="― 武士道、五つの銘柄 ―"
+        jp="武士道シリーズ　全5銘柄"
         lead={
           <L
-            en="Five bottles brewed at the foot of Mt. Fuji — from a 40%-polished Junmai Daiginjo to a crisp, dry Honjozo for every evening. Grades, tasting notes, and prices, all in one place."
-            ja="富士の麓で醸す、五つの銘柄。精米歩合四十%の純米大吟醸から、日々の食卓に寄り添う辛口の本醸造まで。味わい・温度・価格を、この一覧でご覧いただけます。"
+            en="The five Bushido bottles, from a Junmai Daiginjo polished to 40% to a dry Tokubetsu Honjozo. Tasting notes, serving temperatures, and prices on one page."
+            ja="武士道シリーズの5銘柄です。精米歩合40%の純米大吟醸から辛口の特別本醸造まで、味わい・飲み頃の温度・価格をまとめています。"
           />
         }
         crumbs={[
@@ -257,8 +257,8 @@ export default function ProductsIndexPage() {
                 className="mt-5 max-w-[560px] font-serif text-[clamp(22px,2.4vw,30px)] font-semibold leading-[1.2] tracking-[0.06em] text-indigo"
               >
                 <L
-                  en="Found your bottle? Two paths to order."
-                  ja="気になる一本が見つかったら。"
+                  en="Ready to order?"
+                  ja="ご購入はこちらから"
                 />
               </Reveal>
             </div>

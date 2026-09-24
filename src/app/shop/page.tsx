@@ -22,10 +22,10 @@ const routes = [
     href: "/shop/personal",
     image: "/images/personal.webp",
     imagePos: "object-[55%_50%]",
-    heading: { en: "For your table", ja: "ご家庭へ、贈り物へ" },
+    heading: { en: "Personal orders", ja: "個人のお客様" },
     lead: {
-      en: "A single bottle, gift-ready, delivered to your home. Five expressions of Fujisan, from ¥1,600.",
-      ja: "一本から、ご家庭へ、贈り物へ。富士山の五つの表情を、ひとつずつ丁寧にお届けします。1,600円より。",
+      en: "All five Bushido bottles can be bought one at a time, for your own table or as a gift. Prices start at ¥1,600.",
+      ja: "武士道シリーズ5銘柄を、一本からご購入いただけます。ご自宅用にも、贈り物にもお使いいただけます。価格は1,600円からです。",
     },
     facts: [
       {
@@ -50,10 +50,10 @@ const routes = [
     href: "/shop/business",
     image: "/images/restaurant.webp",
     imagePos: "object-[50%_46%]",
-    heading: { en: "For your programme", ja: "飲食店・小売店さまへ" },
+    heading: { en: "Trade accounts", ja: "法人・取扱店のお客様" },
     lead: {
-      en: "For restaurants, bars, retailers, and hospitality programmes. Account pricing, case quantities, and one named contact.",
-      ja: "レストラン・バー・小売店・ホテルのみなさまへ。卸価格、ケース単位でのお届け、専任担当によるサポートをご用意します。",
+      en: "For restaurants, bars, shops, hotels, and other businesses. We offer wholesale pricing, case deliveries, and a dedicated contact.",
+      ja: "レストラン・バー・小売店・ホテルなど、法人のお客様向けです。卸価格、ケース単位でのお届け、専任担当によるサポートをご用意します。",
     },
     facts: [
       {
@@ -109,11 +109,11 @@ export default function ShopHubPage() {
       <EditorialPageHeader
         width="wide"
         kicker={<L en="Purchase" ja="ご購入" />}
-        title={<L en="How to order" ja="お求めについて" />}
+        title={<L en="How to order" ja="ご購入方法" />}
         lead={
           <L
-            en="Whether the bottle ends on your dinner table or on the back bar of a quiet izakaya, we tend to each order by hand. Two routes, depending on where it is going."
-            ja="ご家庭の食卓へも、静かな居酒屋のカウンターへも。どのご注文も、ひとつずつ手で確かめてお届けします。行き先に合わせて、二つの窓口をご用意しました。"
+            en="Personal orders and trade orders go through separate routes. Choose the one that fits."
+            ja="個人のお客様と、飲食店・小売店などの法人のお客様とで、ご購入の窓口が分かれています。"
           />
         }
       />
@@ -171,8 +171,8 @@ export default function ShopHubPage() {
       <EditorialSection>
         <h2 className="ed-h2">
           <L
-            en="The same care, whichever route you take."
-            ja="どちらの窓口でも、扱いは変わりません。"
+            en="For every order"
+            ja="すべてのご注文に共通すること"
           />
         </h2>
 

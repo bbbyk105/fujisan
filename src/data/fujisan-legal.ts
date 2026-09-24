@@ -99,16 +99,16 @@ export const FUJISAN_LEGAL = {
   addressEn: "2-8-21 Yoshiwara, Fuji-shi, Shizuoka 417-0051, Japan",
   phone: "070-9323-4144",
   phoneHours: "平日 10:00 – 17:00（土日祝・年末年始を除く）",
-  email: "mtfujipharmacy@gmail.com",
+  email: "info@sakefujisan.com",
   ecManager: "通販責任者 近藤 弘人",
   // 製造者（醸造元）。武士道シリーズは牧野酒造合資会社による醸造（販売者は近藤薬局の OEM 商品）。
   brewer: "牧野酒造合資会社",
   brewerEn: "Makino Shuzo Goshi Kaisha (Makino Sake Brewery)",
   // 価格・支払・引渡
   priceNote:
-    "各商品ページに表示の金額（消費税10%込）。表示価格以外に送料等が必要となる場合があります。",
+    "各商品ページに表示している金額（消費税10%込）です。表示価格以外に送料等が必要となる場合があります。",
   shipping: SHIPPING_FEE,
-  shippingFeeNote: `${SHIPPING_FEE.flat}。${SHIPPING_FEE.free}。${SHIPPING_FEE.remote}。`,
+  shippingFeeNote: `${SHIPPING_FEE.flat}です。${SHIPPING_FEE.free}です。${SHIPPING_FEE.remote}。`,
   // 英語ロケール表示用（特商法ページは日本語のまま。EC 説明部分のみ英語へ切替）
   shippingFeeNoteEn: `${SHIPPING_FEE.flatEn}. ${SHIPPING_FEE.freeEn}. ${SHIPPING_FEE.remoteEn}.`,
   // 個人（toC）のお支払いはクレジットカードのみ（Stripe Checkout）。銀行振込は法人（toB）専用。
@@ -116,7 +116,7 @@ export const FUJISAN_LEGAL = {
     "クレジットカード（VISA / Mastercard / JCB / AMEX / Diners）",
   paymentMethodsEn:
     "Credit card (VISA / Mastercard / JCB / AMEX / Diners).",
-  paymentTiming: "クレジットカード: ご注文時に確定。",
+  paymentTiming: "クレジットカード: ご注文時に確定します。",
   paymentTimingEn: "Credit card: charged at order.",
   deliveryTiming: "ご注文確認後、原則2営業日以内に発送いたします。",
   deliveryTimingEn:

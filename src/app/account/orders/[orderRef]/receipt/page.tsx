@@ -14,7 +14,7 @@ import { formatDateJp } from "@/lib/format-date";
 
 export const metadata = buildMetadata({
   title: "Receipt",
-  description: "ご注文の領収書。",
+  description: "ご注文の領収書です。",
   path: "/account/orders/receipt",
   noIndex: true,
 });

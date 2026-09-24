@@ -81,7 +81,7 @@ export function CancelOrderButton({ orderRef }: { orderRef: string }) {
       </p>
       <p className="mt-2 text-[11.5px] leading-[1.75] text-indigo/78">
         <L
-          en="We'll stop the dispatch and refund the full amount to your card. Our team confirms each request by hand, so the refund is not immediate — we'll email you once it's done."
+          en="We'll stop the dispatch and refund the full amount to your card. Our team confirms each request by hand, so the refund is not immediate. We'll email you once it's done."
           ja="発送を止め、カードへ全額をご返金いたします。ご依頼は担当が一件ずつ確認するため、返金は即時ではありません。完了しだいメールでお知らせします。"
         />
       </p>

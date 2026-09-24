@@ -16,15 +16,15 @@ export default function NotFound() {
 
         <h1 className="ed-title mt-4">
           <L
-            en="This page has gone quiet."
+            en="Page not found."
             ja="お探しのページは見つかりませんでした。"
           />
         </h1>
 
         <p className="ed-lead mt-7">
           <L
-            en="The page you were looking for may have moved, or the link may be out of date. The collection is still here."
-            ja="ページが移動したか、リンクが古くなっている可能性があります。コレクションは、こちらからご覧いただけます。"
+            en="The page may have moved, or the link may be out of date."
+            ja="ページが移動したか、リンクが古くなっている可能性があります。"
           />
         </p>
 

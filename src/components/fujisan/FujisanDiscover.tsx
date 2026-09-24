@@ -7,35 +7,33 @@ import { L } from "@/i18n/Localized";
 const features = [
   {
     num: "01",
-    title: "FROM MT. FUJI",
-    titleJp: "富士の水脈より",
-    jp: "富士の水",
-    desc: "Our sake begins with crystal-clear snowmelt, naturally filtered through ancient volcanic rock.",
-    descJp:
-      "太古の溶岩層をくぐり、自然にろ過された澄み切った雪解け水。私たちの酒造りは、ここから始まります。",
+    title: "WATER FROM MT. FUJI",
+    titleJp: "富士山の湧水",
+    jp: "水",
+    desc: "Soft spring water, filtered through Mt. Fuji's volcanic rock for 40 to 60 years.",
+    descJp: "富士山の溶岩層で40〜60年かけてこされた、軟水を使っています。",
     image: "/images/fujisan/features/water.webp",
-    alt: "Pure water from Mt. Fuji",
+    alt: "Spring water from Mt. Fuji",
     href: "/craft/water",
   },
   {
     num: "02",
-    title: "JAPANESE RICE",
-    titleJp: "酒造好適米",
-    jp: "厳選米",
-    desc: "We select only the finest rice, polished to perfection for a clean and refined taste.",
-    descJp: "澄んだ味わいを引き出すため、厳選した酒造好適米を丹念に磨き上げます。",
+    title: "SAKE RICE",
+    titleJp: "山田錦と誉富士",
+    jp: "米",
+    desc: "Yamadanishiki and Homarefuji rice, polished to 40–60%.",
+    descJp: "兵庫県産の山田錦と静岡県産の誉富士を、精米歩合40〜60%まで磨いて使います。",
     image: "/images/fujisan/features/ricebox.webp",
-    alt: "Premium Japanese rice",
+    alt: "Sake rice",
     href: "/craft/rice",
   },
   {
     num: "03",
     title: "BREWING",
-    titleJp: "伝統醸造",
-    jp: "伝統醸造",
-    desc: "Craftsmanship and time-honored techniques create sake of exceptional quality and character.",
-    descJp:
-      "蔵人の手仕事と、長く受け継がれた技が、唯一無二の品格を宿す一献を醸し出します。",
+    titleJp: "冬の仕込み",
+    jp: "造り",
+    desc: "Brewed through the winter, late October to March, by the toji and kurabito of Makino Shuzo.",
+    descJp: "10月下旬から3月の冬のあいだに、牧野酒造の杜氏と蔵人が仕込みます。",
     image: "/images/fujisan/art-of-sake/ochoko.webp",
     alt: "Traditional sake brewing",
     href: "/craft/brewing",
@@ -64,7 +62,7 @@ export default function FujisanDiscover() {
               className="mt-6 font-serif text-[clamp(26px,2.9vw,42px)] font-semibold leading-[1.18] tracking-[0.1em] text-indigo"
               delay={revealDelays.d1}
             >
-              <L en="THE ELEMENTS OF FUJISAN" ja="富士の恵みを、五感で。" />
+              <L en="WATER, RICE, BREWING" ja="水・米・造り" />
             </Reveal>
           </div>
 
@@ -74,8 +72,8 @@ export default function FujisanDiscover() {
             delay={revealDelays.d2}
           >
             <L
-              en="Water, rice, and craft. Three elements that define every bottle we brew at the foot of the mountain."
-              ja="水、米、技。麓の蔵で醸される一本一本を形づくる、3つの要素を紐解きます。"
+              en="How the water, the rice, and the brewing shape the Bushido series."
+              ja="武士道シリーズの味を決める、水・米・造りについて説明しています。"
             />
           </Reveal>
         </div>
@@ -110,7 +108,7 @@ export default function FujisanDiscover() {
                     <span className="font-serif text-[17px] font-semibold tracking-[0.14em] text-indigo transition-colors duration-500 group-hover:text-gold md:text-[21px]">
                       <L en={f.title} ja={f.titleJp} />
                     </span>
-                    <span className="font-jp text-[11px] tracking-[0.3em] text-gold md:text-[11.5px]">
+                    <span className="i18n-en font-jp text-[11px] tracking-[0.3em] text-gold md:text-[11.5px]">
                       {f.jp}
                     </span>
                   </span>

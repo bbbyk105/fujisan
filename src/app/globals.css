@@ -69,10 +69,26 @@ em {
   letter-spacing: 0.01em;
 }
 
-/* キーボードフォーカスの可視化 — outline: none で消さない（WCAG 2.4.7） */
-:where(button, [role="button"], input, select, textarea, summary, a):focus-visible {
+/* キーボードフォーカスの可視化 — outline: none で消さない（WCAG 2.4.7）。
+   ボタン・リンク・チェックボックスは金の枠で示す。 */
+:where(button, [role="button"], summary, a, input[type="checkbox"], input[type="radio"]):focus-visible {
   outline: 2px solid rgba(201, 168, 76, 0.75);
   outline-offset: 2px;
+}
+
+/* 文字を打つ欄は枠で囲まず、下線を 2px の藍にして示す。
+   このサイトの入力欄は下線だけで組んでいるので、枠で囲むと下線と四角が
+   二重になる（お問い合わせで「ボックスがダサい」と指摘された）。
+   レイヤー外に置くのは、上の指定と同じく各ページの utility より優先させるため。 */
+:where(input:not([type="checkbox"]):not([type="radio"]), select, textarea):focus-visible {
+  outline: none;
+  border-color: var(--color-indigo);
+  box-shadow: 0 1px 0 0 var(--color-indigo);
+}
+/* 入力に誤りがある欄は、フォーカス中も赤のまま */
+:where(input, select, textarea)[aria-invalid="true"]:focus-visible {
+  border-color: var(--color-crimson);
+  box-shadow: 0 1px 0 0 var(--color-crimson);
 }
 
 /* ========================================

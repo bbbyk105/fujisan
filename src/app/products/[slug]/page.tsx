@@ -149,7 +149,7 @@ export default async function ProductDetailPage({
             </h1>
 
             <p className="mt-6 font-jp text-[clamp(16px,1.4vw,20px)] font-medium tracking-[0.16em] text-[#1D2432]">
-              ー {product.catchJp} ー
+              <L en={product.title} ja={product.titleJp} />
             </p>
 
             <div className="mt-7 flex flex-wrap items-center gap-3">
@@ -161,11 +161,7 @@ export default async function ProductDetailPage({
               </span>
             </div>
 
-            <p className="mt-7 max-w-[460px] whitespace-pre-line font-serif text-[clamp(18px,1.8vw,24px)] italic leading-[1.55] text-indigo/88">
-              <L en={product.hero} ja={product.heroJp} />
-            </p>
-
-            <p className="mt-5 max-w-[460px] whitespace-pre-line text-[15px] leading-[1.65] text-[#2B2419]/78 md:text-[16px]">
+            <p className="mt-7 max-w-[460px] whitespace-pre-line text-[15px] leading-[1.65] text-[#2B2419]/78 md:text-[16px]">
               <L en={product.desc} ja={product.descJp} />
             </p>
           </div>
@@ -281,10 +277,10 @@ export default async function ProductDetailPage({
           <div className="flex items-end justify-between gap-6">
             <div>
               <p className="font-serif text-[11px] font-semibold tracking-[0.3em] text-indigo/66">
-                <L en="THE COLLECTION" ja="ザ・コレクション" />
+                <L en="THE COLLECTION" ja="銘柄一覧" />
               </p>
               <h2 className="mt-3 font-serif text-[clamp(22px,2.4vw,30px)] font-semibold tracking-[0.06em] text-indigo">
-                <L en="Explore other Fujisan" ja="他の富士山シリーズを見る" />
+                <L en="Explore other bottles" ja="ほかの銘柄を見る" />
               </h2>
             </div>
             <Link

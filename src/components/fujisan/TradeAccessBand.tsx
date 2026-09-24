@@ -34,13 +34,13 @@ export async function TradeAccessBand() {
             </span>
             {approved ? (
               <L
-                en={`Signed in as ${who || "your account"} — wholesale pricing is shown below.`}
-                ja={`${who || "アカウント"}さま — 下記に卸価格を表示しています。`}
+                en={`${who ? `Signed in as ${who}. ` : ""}Wholesale pricing is shown below.`}
+                ja={`${who ? `${who}さま。` : ""}下に卸価格を表示しています。`}
               />
             ) : (
               <L
-                en={`Signed in as ${who || "your account"} — wholesale pricing appears once your account has been approved.`}
-                ja={`${who || "アカウント"}さま — 卸価格は審査の完了後に表示されます。`}
+                en={`${who ? `Signed in as ${who}. ` : ""}Wholesale pricing appears once your account has been approved.`}
+                ja={`${who ? `${who}さま。` : ""}卸価格は、審査が済むと表示されます。`}
               />
             )}
           </p>
@@ -61,8 +61,8 @@ export async function TradeAccessBand() {
           </p>
           <p className="ed-p mt-2 text-[13.5px] md:text-[14px]">
             <L
-              en="Sign in to view wholesale pricing and order by the case."
-              ja="ログインすると、卸価格の確認とケース単位のご注文ができます。"
+              en="Sign in to view wholesale pricing."
+              ja="ログインすると、卸価格をご覧いただけます。"
             />
           </p>
         </div>

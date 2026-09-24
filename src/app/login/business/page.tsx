@@ -19,12 +19,12 @@ export default function LoginBusinessPage() {
       brand={{
         kanji: "取引",
         kickerJp: "取扱店ログイン",
-        titleEn: "Trade access to Bushido.",
-        titleJp: "武士道シリーズの、お取引へ。",
+        titleEn: "For trade accounts",
+        titleJp: "取扱店の方へ",
         textEn:
-          "Sign in to view wholesale pricing, place case orders, and reach your dedicated trade desk — in Japanese or English.",
+          "Sign in to view wholesale pricing. Orders are arranged after a quote, in Japanese or English.",
         textJp:
-          "ログインすると、卸価格の確認・ケース単位のご注文・専任窓口へのご連絡が行えます。日本語・英語に対応します。",
+          "ログインすると、卸価格をご覧いただけます。ご注文はお見積りのうえで承ります。日本語・英語でご相談いただけます。",
         crumbHref: "/shop/business",
         crumbEn: "Back to trade",
         crumbJp: "取扱店ページへ戻る",
@@ -34,10 +34,10 @@ export default function LoginBusinessPage() {
         role="business"
         eyebrowEn="TRADE SIGN IN"
         eyebrowJp="取扱店ログイン"
-        titleEn="Sign in to your trade account."
-        titleJp="取扱店アカウントにログイン。"
-        leadEn="For restaurants, bars, retailers, and hospitality. Wholesale pricing is shown only to signed-in trade accounts."
-        leadJp="飲食店・小売・ホスピタリティ向け。卸価格はログインした取扱店のみに表示されます。"
+        titleEn="Sign in to your trade account"
+        titleJp="取扱店アカウントにログイン"
+        leadEn="For restaurants, bars, shops, and hotels. Wholesale pricing is shown only to approved trade accounts."
+        leadJp="飲食店・小売店・宿泊施設の方向けです。卸価格は、審査の済んだ取扱店にだけ表示されます。"
       />
       <Suspense>
         <LoginForm role="business" />
