@@ -25,26 +25,27 @@
 | ✅ | DMARC（`_dmarc` TXT `v=DMARC1; p=none;`） |
 | ✅ | Stripe 本番 Webhook（`we_1UAthnHTT9ZXTgS1xYg2XRl4`）: URL は sakefujisan.com、6 イベント |
 | ⚠️ | **決済は Stripe の sandbox（テスト）のまま**。本番キーへの切り替えはタスク4 |
-| ⚠️ | 本番のユーザーは 0 人。`ADMIN_EMAILS` 未設定のため、誰も `/admin` に入れない |
+| ✅ | `ADMIN_EMAILS` = `mtfujipharmacy@gmail.com,bbbyk105@yahoo.co.jp` |
+| ⚠️ | 本番のユーザーは 0 人。管理者のアドレスで会員登録すると `/admin` に入れる（タスク2） |
 | ⚠️ | 在庫は全 SKU 一律 24 本の暫定値 |
 
 ### 本番 Worker の secret（`npx wrangler secret list` で確認済み）
 
 ```
+OK  ADMIN_EMAILS             = mtfujipharmacy@gmail.com,bbbyk105@yahoo.co.jp
 OK  BETTER_AUTH_SECRET
 OK  BETTER_AUTH_URL          = https://sakefujisan.com
 OK  RESEND_API_KEY
 OK  RESEND_FROM              = FUJISAN SAKE <info@sakefujisan.com>
 OK  STRIPE_SECRET_KEY        ← sandbox のキー。本番公開時に差し替え（タスク4）
 OK  STRIPE_WEBHOOK_SECRET    ← 同上
---  ADMIN_EMAILS             ← **必須**（タスク1）
 --  GOOGLE_CLIENT_ID         （未設定 = Google ログインは無効）
 --  GOOGLE_CLIENT_SECRET
 ```
 
 ---
 
-## タスク1. ADMIN_EMAILS を設定する【必須】
+## タスク1. ADMIN_EMAILS を設定する（済: 2026-09-24）
 
 ```bash
 npx wrangler secret put ADMIN_EMAILS
@@ -165,7 +166,8 @@ npm run check:legal && npm run lint && npm test && npx opennextjs-cloudflare bui
 
 ## 公開前の最終チェック
 
-- [ ] `ADMIN_EMAILS` が設定済みで、`/admin` に入れる
+- [x] `ADMIN_EMAILS` が設定済み
+- [ ] 管理者のアドレスで登録し、`/admin` に入れる
 - [ ] 自分以外のメールアドレスで会員登録が完了できる（確認メールが info@ から届く）
 - [ ] 免許番号が入っている（`npm run check:legal` が通る）
 - [ ] Workers Builds の Build command に `npm run check:legal &&` が入っている

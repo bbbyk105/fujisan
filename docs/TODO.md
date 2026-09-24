@@ -8,8 +8,8 @@
 
 環境を触る作業は [`../SETUP.md`](../SETUP.md) に手順と実際の値をまとめてある。要点だけ再掲する。
 
-1. **`ADMIN_EMAILS` を設定する** — ソースのフォールバック owner を撤去したので**必須**。
-   未設定だと誰も `/admin` に入れず、お問い合わせの管理者通知も届かない。
+1. **本番で管理者のアカウントを作る** — `ADMIN_EMAILS`（mtfujipharmacy@gmail.com・
+   bbbyk105@yahoo.co.jp）は設定済み。どちらかのアドレスで会員登録すると `/admin` に入れる。
 2. **通信販売酒類小売業免許の番号を入れる** — `src/data/fujisan-legal.ts` の
    `LIQUOR_LICENCE`。**それらしい伏せ字で埋めないこと**（本物に見えたまま公開される）。
    自動デプロイでは `check:legal` が走らないので、埋めたら Workers Builds の
