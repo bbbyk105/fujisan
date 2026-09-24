@@ -22,12 +22,12 @@ export default async function LoginPersonalPage() {
       brand={{
         kanji: "會員",
         kickerJp: "会員ログイン",
-        titleEn: "Welcome back to the foot of the mountain.",
-        titleJp: "ふもとへ、おかえりなさい。",
+        titleEn: "What you can do with an account",
+        titleJp: "ログインしてできること",
         textEn:
-          "Sign in to revisit saved addresses, follow your orders, and reorder the bottles you love — fewer steps, every time.",
+          "Order to your saved address, check your order history, and reorder the same bottle in a few steps.",
         textJp:
-          "ログインすると、登録した住所やご注文の履歴を引き継ぎ、お気に入りの一本をかんたんに再注文いただけます。",
+          "登録した住所でのご注文、注文履歴の確認、同じ銘柄の再注文ができます。",
         crumbHref: "/shop/personal",
         crumbEn: "Back to shop",
         crumbJp: "ショップへ戻る",
@@ -37,8 +37,8 @@ export default async function LoginPersonalPage() {
         role="personal"
         eyebrowEn="MEMBER SIGN IN"
         eyebrowJp="会員ログイン"
-        titleEn="Sign in to your account."
-        titleJp="アカウントにログイン。"
+        titleEn="Sign in to your account"
+        titleJp="アカウントにログイン"
         leadEn="For individual customers. Use your email and password, or continue with Google."
         leadJp="個人のお客様向け。メールアドレスとパスワード、または Google でログインできます。"
       />

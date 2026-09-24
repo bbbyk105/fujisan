@@ -2,6 +2,7 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { sendEmail } from "@/lib/email";
 import { getOwnerEmailsFromEnv } from "@/lib/admin";
 import { FUJISAN_LEGAL } from "@/data/fujisan-legal";
+import { SITE_URL } from "@/lib/seo";
 import {
   CONTACT_SUBJECT_LABELS,
   type ContactSubject,
@@ -48,7 +49,7 @@ async function resendOpts(): Promise<{
   const e = env as ResendEnv;
   return {
     opts: { apiKey: e.RESEND_API_KEY, from: e.RESEND_FROM },
-    baseUrl: (e.BETTER_AUTH_URL || "https://fujisan-sake.com").replace(
+    baseUrl: (e.BETTER_AUTH_URL || SITE_URL).replace(
       /\/$/,
       "",
     ),
@@ -91,7 +92,7 @@ export async function sendContactAdminNotification(
       <tr><td style="padding:8px 0;color:#0B1A2E99;">メール</td><td style="padding:8px 0;"><a href="mailto:${escapeHtml(data.email)}" style="color:#0B1A2E;">${escapeHtml(data.email)}</a></td></tr>
       <tr><td style="padding:8px 0;color:#0B1A2E99;">言語</td><td style="padding:8px 0;">${data.locale === "en" ? "English" : "日本語"}</td></tr>
     </table>
-    <div style="margin:20px 0;padding:16px;background:#F7F1E3;border-left:2px solid #C9A84C;font-size:14px;line-height:1.8;white-space:pre-wrap;">${escapeHtml(data.message)}</div>
+    <div style="margin:20px 0;padding:14px 0;border-top:1px solid #d9cfb8;border-bottom:1px solid #d9cfb8;font-size:14px;line-height:1.8;white-space:pre-wrap;">${escapeHtml(data.message)}</div>
     <p style="font-size:13px;"><a href="${baseUrl}/admin/contacts" style="color:#0B1A2E;">管理画面で開く →</a></p>
     <p style="font-size:12px;color:#0B1A2E99;">このメールにそのまま返信すると、お客様宛に届きます。</p>
   </div>`;
@@ -127,8 +128,8 @@ export async function sendContactAcknowledgement(
     "",
     `Dear ${data.name},`,
     "",
-    "Thank you for contacting us. We read every enquiry by hand and will reply",
-    "within two business days, in Japanese or English.",
+    "Thank you for contacting us. We will reply within two business days,",
+    "in Japanese or English.",
     "",
     "This is an automated acknowledgement — no reply is needed.",
     "",
@@ -139,16 +140,15 @@ export async function sendContactAcknowledgement(
 
   const html = `
   <div style="font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#0B1A2E;">
-    <p style="font-size:12px;letter-spacing:.2em;color:#C9A84C;margin:0 0 16px;">― 受領いたしました ―</p>
     <p style="font-size:15px;line-height:1.9;">${escapeHtml(data.name)} 様</p>
     <p style="font-size:14px;line-height:1.9;">
       お問い合わせをいただきありがとうございます。<br />
       内容を確認のうえ、通常 2 営業日以内に担当よりご返信いたします。
     </p>
-    <div style="margin:20px 0;padding:16px;background:#F7F1E3;border-left:2px solid #C9A84C;font-size:14px;line-height:1.8;white-space:pre-wrap;">${escapeHtml(data.message)}</div>
+    <div style="margin:20px 0;padding:14px 0;border-top:1px solid #d9cfb8;border-bottom:1px solid #d9cfb8;font-size:14px;line-height:1.8;white-space:pre-wrap;">${escapeHtml(data.message)}</div>
     <p style="font-size:13px;line-height:1.9;color:#0B1A2E99;">
-      Thank you for contacting us. We read every enquiry by hand and will reply
-      within two business days, in Japanese or English.<br />
+      Thank you for contacting us. We will reply within two business days,
+      in Japanese or English.<br />
       This is an automated acknowledgement — no reply is needed.
     </p>
     <hr style="border:none;border-top:1px solid #eee2c8;margin:24px 0;" />

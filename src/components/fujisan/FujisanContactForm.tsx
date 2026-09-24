@@ -103,8 +103,8 @@ export function FujisanContactForm() {
         </h3>
         <p className="ed-p mt-5">
           <L
-            en="Your message has reached our small team in Shizuoka. We read every enquiry by hand and will reply, in Japanese or English, usually within two business days."
-            ja="メッセージは静岡のチームに届きました。いただいたお問い合わせはひとつずつ拝読し、通常2営業日以内に日本語または英語でご返信します。"
+            en="We've received your message and will reply within two business days, in Japanese or English."
+            ja="お問い合わせを受け付けました。通常2営業日以内に、日本語または英語でご返信します。"
           />
         </p>
         <button
@@ -162,7 +162,6 @@ export function FujisanContactForm() {
               className="peer w-full border-b border-indigo/22 bg-transparent py-3 text-[15px] text-indigo outline-none transition-colors placeholder:text-indigo/35 aria-[invalid=true]:border-crimson"
               placeholder={locale === "ja" ? "佐々木 優子" : "Sasaki Yuko"}
             />
-            <FocusLine />
           </div>
           <FieldError error={fieldErrors.name} />
         </Field>
@@ -182,7 +181,6 @@ export function FujisanContactForm() {
               className="peer w-full border-b border-indigo/22 bg-transparent py-3 text-[15px] text-indigo outline-none transition-colors placeholder:text-indigo/35 aria-[invalid=true]:border-crimson"
               placeholder="you@example.com"
             />
-            <FocusLine />
           </div>
           <FieldError error={fieldErrors.email} />
         </Field>
@@ -217,7 +215,6 @@ export function FujisanContactForm() {
               strokeLinecap="round"
             />
           </svg>
-          <FocusLine />
         </div>
       </Field>
 
@@ -240,7 +237,6 @@ export function FujisanContactForm() {
                 : "Tell us a little about your enquiry…"
             }
           />
-          <FocusLine />
         </div>
         <div className="flex items-start justify-between gap-4">
           <FieldError error={fieldErrors.message} />
@@ -324,16 +320,6 @@ export function FujisanContactForm() {
         </button>
       </div>
     </form>
-  );
-}
-
-/** フォーカス時に左から伸びる金のヘアライン（input/textarea の下線に重ねる） */
-function FocusLine() {
-  return (
-    <span
-      aria-hidden
-      className="pointer-events-none absolute inset-x-0 bottom-0 h-px origin-left scale-x-0 bg-gold transition-transform duration-500 peer-focus:scale-x-100"
-    />
   );
 }
 

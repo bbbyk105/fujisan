@@ -14,6 +14,7 @@ BtoC（個人）と BtoB（法人取扱店・卸価格表示）の二系統の�
 ## アーキテクチャ
 
 - **デプロイ**: `@opennextjs/cloudflare` で Cloudflare Workers へ。`wrangler.jsonc` が正（worker 名 `fujisan`、D1 バインディング `DB` = `fujisan-db`）。Vercel ではない。
+- **本番ドメインは `sakefujisan.com`**（`wrangler.jsonc` の `routes` に custom domain で登録）。www と workers.dev は `next.config.ts` の redirects で apex へ 308 — ただし workers.dev の `/api/stripe/webhook` だけは残す（Stripe はリダイレクトを追わない）。ドメインの出どころはコードでは `SITE_URL`（`src/lib/seo.ts`）、実行時は `BETTER_AUTH_URL`。連絡先とメールの送信元は `info@sakefujisan.com`（受信は Cloudflare Email Routing で Gmail へ転送）。
 - **DB**: Cloudflare D1 (SQLite) + Drizzle ORM。スキーマは `src/db/`（auth / orders / invite / contact / inventory / price / trade / rate-limit に分割、`schema.ts` が re-export）。マイグレーション SQL は `drizzle/`（`wrangler d1 migrations apply fujisan-db [--local|--remote]` で適用）。D1 バインディングはリクエスト時にしか取れないため、必ず `getDb()`（`src/db/index.ts`）経由で毎回取得する。
 - **認証**: Better Auth + Drizzle アダプタ。メール認証必須・Google ログインは env 設定時のみ有効。`user.role` は `personal | business`（法人は companyName 等の追加フィールドあり。**`business` は「法人として登録した」だけで、卸価格の可否は `trade_account` の審査で決まる** — 下記「取扱店（BtoB）の承認」）。管理者は `owner | staff` の2階層（`src/lib/admin.ts`。**`ADMIN_EMAILS` env は必須**（未設定だと env owner は 0 人。ソースにフォールバックのアドレスは置かない）、メール招待 `teamInvite` → 登録時に `databaseHooks.user.create.after` でロール付与）。**招待は 14 日で失効**する — 期限が無いと、退職者向けや宛先を間違えた古い招待メールのアドレスが後から登録された際に、意図せず管理権限が付く。招待し直しでは `createdAt` も打ち直す。
 - **メールアドレスの変更は新旧どちらの承認も要る**（`user.changeEmail`）。まず**変更前**のアドレスへ承認リンクを送り、それを踏むと Better Auth が新アドレス宛にも確認メールを出し、そちらを踏んで初めて入れ替わる。宛先を `newEmail` にすると、セッションを奪った側が現アドレスの持ち主に知らせないままアカウントを移せる。設定の要点は `src/lib/__tests__/auth-options.test.ts` で固定している。
@@ -179,6 +180,7 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 - **env は `process.env` ではなく `getCloudflareContext({ async: true }).env`** から読む（Server Action / Route Handler 共通パターン）。
 - 注文明細は `items_json` にスナップショット保存（後からカタログ価格が変わっても注文は不変）。金額は全て円・税込の整数。
 - メール送信（`src/lib/email.ts`）は Resend。`RESEND_API_KEY` 未設定ならコンソール出力に落ちる（ローカルで認証リンクを踏める）。
+- **トップの末尾に購入・お問い合わせへの入口（`FujisanGuide`）を置いた**（2026-09-24）。トップ本体は凍結のままだが、ここだけは「こだわり」（`FujisanDiscover`）と同じ組み方で足してある。**フッターは `FujisanExperience` の中ではなく `src/app/page.tsx` 側に置く**（セクションの中にあると、その後ろに何も足せない）。
 - **`/stories` は削除済み**（2026-09-23）。物語の内容は `/craft/[slug]`（水・米・造り）に残る。トップの「造りを読む」導線と `FujisanDiscover` の一覧は `/craft/*` を指す。`/stories` へのリンクを新たに足さないこと。
 
 ## 落とし穴

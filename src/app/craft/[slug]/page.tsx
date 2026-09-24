@@ -85,7 +85,6 @@ export default async function CraftPage({
       <EditorialSection width="narrow" ruled={false}>
         <div>
           <EditorialSectionHead
-            label={<L en="The story" ja="ものがたり" />}
             heading={<L en={pillar.storyTitle} ja={pillar.storyTitleJp} />}
           />
 
@@ -125,14 +124,6 @@ export default async function CraftPage({
             ))}
           </div>
 
-          {/* プルクオート — 中央寄せ・上下ヘアラインの誌面スタイル */}
-          <Reveal className="mt-20 flex flex-col items-center text-center" delay={revealDelays.d2}>
-            <span aria-hidden className="h-px w-14 bg-gold/60" />
-            <p className="mt-8 max-w-[540px] font-serif text-[clamp(19px,2vw,25px)] leading-[1.75] tracking-[0.04em] text-indigo/88">
-              <L en={pillar.pullQuote} ja={pillar.pullQuoteJp} />
-            </p>
-            <span aria-hidden className="mt-8 h-px w-14 bg-gold/60" />
-          </Reveal>
         </div>
       </EditorialSection>
 
@@ -165,13 +156,7 @@ export default async function CraftPage({
 
           <div className="self-center">
             <EditorialSectionHead
-              label={<L en="In numbers" ja="数値で見る" />}
-              heading={
-                <L
-                  en="The mountain, in measurements"
-                  ja="数値で辿る、山のかたち"
-                />
-              }
+              heading={<L en="By the numbers" ja="数字で見る" />}
             />
 
             <dl className="mt-10 border-t border-indigo/12">
@@ -205,13 +190,7 @@ export default async function CraftPage({
       <section className="relative bg-paper">
         <div className="mx-auto max-w-[1280px] px-7 py-20 md:px-12 md:py-28">
           <EditorialSectionHead
-            label={<L en="The process" ja="醸しの工程" />}
-            heading={
-              <L
-                en="Four movements, one quiet hand."
-                ja="四つの所作、ひとつの静かな手。"
-              />
-            }
+            heading={<L en="Step by step" ja="順を追って" />}
           />
 
           <ol className="m-0 mt-12 list-none border-t border-indigo/12 p-0 md:mt-16">

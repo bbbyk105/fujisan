@@ -98,8 +98,8 @@ const process = [
     heading: <L en="Listing and rollout" ja="メニューへの導入" />,
     body: (
       <L
-        en="Menus, training, and shelf-talkers — we equip your team so the bottle is poured with the kura behind it."
-        ja="メニューへの掲載からスタッフ研修、販促物のご用意まで、導入後もお手伝いします。銘柄の背景まで伝えられるお店づくりを、ともに進めます。"
+        en="We help with menu listings, staff training, and point-of-sale materials after you start."
+        ja="メニューへの掲載、スタッフ研修、販促物のご用意など、導入後もお手伝いします。"
       />
     ),
   },
@@ -110,7 +110,7 @@ const faqs = [
     q: <L en="What is your minimum order quantity?" ja="最低発注ロットは？" />,
     a: (
       <L
-        en="Domestic orders begin at one case (300 ml × 12 or 180 ml × 24 bottles). Export shipments start at an MOQ of 3,000 bottles, mixed SKUs allowed — we tune to your programme."
+        en="Domestic orders begin at one case (300 ml × 12 or 180 ml × 24 bottles). Export shipments start at 3,000 bottles, mixed SKUs allowed. Details can be discussed."
         ja="国内は1ケース（300ml × 12本／180ml × 24本）より承ります。輸出は1出荷3,000本（銘柄混載可）が最小ロットです。内容に応じてご相談ください。"
       />
     ),
@@ -133,7 +133,7 @@ const faqs = [
     ),
     a: (
       <L
-        en="Selectively, yes. Our kura is small, so private-label programmes are accepted by capacity rather than by request. Write to us with your concept and target volume."
+        en="In some cases. The brewery is small, so it depends on capacity. Tell us your concept and target volume."
         ja="ご相談のうえで承ります。蔵の生産量には限りがあるため、ご要望の内容と取扱量を伺ったうえで、可否をお伝えします。"
       />
     ),
@@ -153,12 +153,12 @@ export default function ShopBusinessPage() {
   return (
     <EditorialPage>
       <EditorialPageHeader
-        kicker={<L en="Purchase / Trade" ja="ご購入 ／ 法人・取扱店" />}
-        title={<L en="For your programme" ja="お店に置いていただくために" />}
+        kicker={<L en="Purchase" ja="ご購入" />}
+        title={<L en="Trade accounts" ja="法人・取扱店のお客様" />}
         lead={
           <L
-            en="Fujisan is poured in quiet izakayas, listed on tasting menus, and shelved in considered retailers from Shizuoka to Singapore. Open a trade account and we will meet you bottle in hand."
-            ja="富士山の酒は、静かな居酒屋で供され、テイスティングメニューに並び、静岡からシンガポールまで、選び抜かれた小売店の棚に置かれています。取扱口座の開設はこちらから。一本を携えて、ご相談に伺います。"
+            en="For restaurants, retailers, and hotels. Open a trade account to see wholesale pricing; orders are arranged after a quote."
+            ja="飲食店・小売店・宿泊施設など、法人のお客様向けのご案内です。取扱口座を開設すると卸価格をご覧いただけます。ご注文はお見積りのうえで承ります。"
           />
         }
       />
@@ -171,8 +171,8 @@ export default function ShopBusinessPage() {
           label={<L en="Trade account" ja="お取引口座" />}
           heading={
             <L
-              en="One kura's sake, one trade desk."
-              ja="ひとつの蔵で醸した酒を、ひとつの窓口から。"
+              en="Trade terms"
+              ja="お取引の条件"
             />
           }
         />
@@ -185,8 +185,8 @@ export default function ShopBusinessPage() {
           label={<L en="Price list" ja="卸価格表" />}
           heading={
             <L
-              en="Wholesale pricing, for our partners."
-              ja="取扱店さまへの、卸価格。"
+              en="Wholesale prices by bottle"
+              ja="銘柄ごとの卸価格"
             />
           }
         />
@@ -202,8 +202,8 @@ export default function ShopBusinessPage() {
             label={<L en="How we work" ja="取引の流れ" />}
             heading={
               <L
-                en="From the first enquiry to the first pour"
-                ja="最初のご相談から、最初の一杯まで"
+                en="Opening an account"
+                ja="お取引開始までの流れ"
               />
             }
             className="md:sticky md:top-[112px] md:self-start"
@@ -220,8 +220,8 @@ export default function ShopBusinessPage() {
               label={<L en="Contact" ja="ご相談" />}
               heading={
                 <L
-                  en="Tell us about your programme."
-                  ja="貴店の構想を、お聞かせください。"
+                  en="Trade enquiries"
+                  ja="お取引のご相談"
                 />
               }
               lead={

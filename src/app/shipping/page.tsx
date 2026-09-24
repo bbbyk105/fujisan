@@ -1,7 +1,7 @@
 import DocumentPage, {
   type DocumentSection,
 } from "@/components/fujisan/editorial/DocumentPage";
-import { SHIPPING_FEE } from "@/data/fujisan-legal";
+import { FUJISAN_LEGAL, SHIPPING_FEE } from "@/data/fujisan-legal";
 import { L } from "@/i18n/Localized";
 import { buildMetadata } from "@/lib/seo";
 
@@ -102,8 +102,8 @@ const sections: DocumentSection[] = [
     body: [
       <L
         key="b"
-        en="Photograph the outer box and the bottle as soon as you notice damage, and contact us within seven days at mtfujipharmacy@gmail.com. We will replace damaged bottles or refund the order."
-        ja="破損に気づかれたら、すぐに外箱とボトルを撮影し、7日以内に mtfujipharmacy@gmail.com までご連絡ください。破損品の交換、またはご返金で対応いたします。"
+        en={`Photograph the outer box and the bottle as soon as you notice damage, and contact us within seven days at ${FUJISAN_LEGAL.email}. We will replace damaged bottles or refund the order.`}
+        ja={`破損に気づかれたら、すぐに外箱とボトルを撮影し、7日以内に ${FUJISAN_LEGAL.email} までご連絡ください。破損品の交換、またはご返金で対応いたします。`}
       />,
     ],
   },
