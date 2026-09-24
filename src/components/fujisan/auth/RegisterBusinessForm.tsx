@@ -26,6 +26,7 @@ import {
   Notice,
   RateLimitMessage,
 } from "./ui";
+import { PasswordInput } from "./PasswordInput";
 import { ResendVerification } from "./ResendVerification";
 
 export function RegisterBusinessForm() {
@@ -277,9 +278,8 @@ export function RegisterBusinessForm() {
       )}
 
       <Field id="biz-password" label="PASSWORD" jp="パスワード（8文字以上）" required>
-        <input
+        <PasswordInput
           id="biz-password"
-          type="password"
           autoComplete="new-password"
           aria-invalid={Boolean(fieldErrors.password)}
           value={password}
@@ -287,7 +287,6 @@ export function RegisterBusinessForm() {
             setPassword(e.target.value);
             clearError("password");
           }}
-          className={inputCls}
           placeholder="••••••••"
         />
         <FieldError error={fieldErrors.password} />

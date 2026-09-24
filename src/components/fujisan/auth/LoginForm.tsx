@@ -21,6 +21,7 @@ import {
   OrDivider,
   RateLimitMessage,
 } from "./ui";
+import { PasswordInput } from "./PasswordInput";
 import { GoogleButton } from "./GoogleButton";
 import { ResendVerification } from "./ResendVerification";
 
@@ -134,9 +135,8 @@ export function LoginForm({
       </Field>
 
       <Field id="login-password" label="PASSWORD" jp="パスワード" required>
-        <input
+        <PasswordInput
           id="login-password"
-          type="password"
           autoComplete="current-password"
           aria-invalid={Boolean(fieldErrors.password)}
           value={password}
@@ -144,7 +144,6 @@ export function LoginForm({
             setPassword(e.target.value);
             clearError("password");
           }}
-          className={inputCls}
           placeholder="••••••••"
         />
         <FieldError error={fieldErrors.password} />

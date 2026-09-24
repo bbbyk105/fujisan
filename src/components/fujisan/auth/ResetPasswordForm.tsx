@@ -15,11 +15,11 @@ import { scrollToFirstError } from "@/lib/scrollToFirstError";
 import { L } from "@/i18n/Localized";
 import {
   Field,
-  inputCls,
   PrimaryButton,
   Notice,
   RateLimitMessage,
 } from "./ui";
+import { PasswordInput } from "./PasswordInput";
 
 export function ResetPasswordForm({
   role,
@@ -134,9 +134,8 @@ export function ResetPasswordForm({
         jp="新しいパスワード"
         required
       >
-        <input
+        <PasswordInput
           id="reset-password"
-          type="password"
           autoComplete="new-password"
           aria-invalid={Boolean(fieldErrors.password)}
           value={password}
@@ -144,7 +143,6 @@ export function ResetPasswordForm({
             setPassword(e.target.value);
             setFieldErrors({});
           }}
-          className={inputCls}
           placeholder="••••••••"
         />
         <FieldError error={fieldErrors.password} />

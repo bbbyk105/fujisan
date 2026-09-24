@@ -7,6 +7,7 @@ import { FieldError } from "@/components/fujisan/FieldError";
 import type { FieldErrorKey } from "@/lib/validation/forms";
 import { L } from "@/i18n/Localized";
 import { RateLimitMessage } from "./ui";
+import { PasswordInput } from "./PasswordInput";
 import { useUnsavedChanges } from "@/lib/unsaved-changes";
 
 const inputCls =
@@ -156,14 +157,13 @@ export function ChangePasswordForm() {
           >
             <L en="Current password" ja="現在のパスワード" />
           </label>
-          <input
+          <PasswordInput
+            inputClassName={inputCls}
             id="current-password"
-            type="password"
             autoComplete="current-password"
             aria-invalid={Boolean(fieldErrors.current)}
             value={current}
             onChange={(e) => setCurrent(e.target.value)}
-            className={inputCls}
             placeholder="••••••••"
           />
           <FieldError error={fieldErrors.current} />
@@ -176,14 +176,13 @@ export function ChangePasswordForm() {
           >
             <L en="New password" ja="新しいパスワード" />
           </label>
-          <input
+          <PasswordInput
+            inputClassName={inputCls}
             id="new-password"
-            type="password"
             autoComplete="new-password"
             aria-invalid={Boolean(fieldErrors.next)}
             value={next}
             onChange={(e) => setNext(e.target.value)}
-            className={inputCls}
             placeholder="8文字以上"
           />
           <FieldError error={fieldErrors.next} />
@@ -196,14 +195,13 @@ export function ChangePasswordForm() {
           >
             <L en="Confirm new password" ja="新しいパスワード（確認）" />
           </label>
-          <input
+          <PasswordInput
+            inputClassName={inputCls}
             id="confirm-password"
-            type="password"
             autoComplete="new-password"
             aria-invalid={Boolean(fieldErrors.confirm)}
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
-            className={inputCls}
             placeholder="••••••••"
           />
         </div>
