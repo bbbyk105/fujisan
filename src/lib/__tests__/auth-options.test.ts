@@ -66,6 +66,52 @@ describe("メールアドレスの変更", () => {
   });
 });
 
+describe("登録済みのアドレスでの新規登録", () => {
+  // Better Auth は登録の有無を漏らさないよう、成功と同じ返事を返して
+  // 何も送らない。このフックが無いと、本人には何も届かないまま終わる。
+  const existing = (user: Record<string, unknown>) =>
+    buildAuthOptions(ENV).emailAndPassword.onExistingUserSignUp({
+      user: { email: "taro@example.test", emailVerified: true, ...user },
+    });
+
+  it("アドレスの持ち主に、登録済みであることとログインの入口を送る", async () => {
+    await existing({ role: "personal" });
+
+    expect(sendEmail).toHaveBeenCalledTimes(1);
+    const [payload] = sendEmail.mock.calls[0];
+    expect(payload.to).toBe("taro@example.test");
+    expect(payload.subject).toContain("登録済み");
+    expect(payload.text).toContain("https://example.test/login/personal");
+    expect(payload.text).toContain("https://example.test/forgot-password/personal");
+  });
+
+  it("法人のアカウントには法人用のログイン画面を案内する", async () => {
+    await existing({ role: "business" });
+
+    const [payload] = sendEmail.mock.calls[0];
+    expect(payload.text).toContain("https://example.test/login/business");
+    expect(payload.text).not.toContain("/login/personal");
+  });
+
+  it("未認証のアカウントにだけ、確認メールの再送の仕方を書く", async () => {
+    await existing({ emailVerified: false });
+    expect(sendEmail.mock.calls[0][0].text).toContain("確認メールを再送");
+
+    sendEmail.mockClear();
+    await existing({ emailVerified: true });
+    expect(sendEmail.mock.calls[0][0].text).not.toContain("確認メールを再送");
+  });
+
+  it("送信に失敗しても投げない（投げると登録済みのときだけ登録がエラーになる）", async () => {
+    sendEmail.mockRejectedValueOnce(new Error("Resend send failed: 500"));
+    const error = jest.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(existing({})).resolves.toBeUndefined();
+    expect(error).toHaveBeenCalled();
+    error.mockRestore();
+  });
+});
+
 describe("レート制限", () => {
   it("D1 に置く（既定の memory は Workers で機能しない）", () => {
     const options = buildAuthOptions(ENV);

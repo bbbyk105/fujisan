@@ -43,6 +43,64 @@ export function buildAuthOptions(env: AuthEnv) {
           { apiKey: env.RESEND_API_KEY, from: env.RESEND_FROM },
         );
       },
+      /**
+       * 登録済みのアドレスで、もう一度新規登録されたとき。
+       *
+       * `requireEmailVerification` が有効だと、Better Auth は登録の有無を
+       * 漏らさないよう、成功と同じ形の返事だけを返して**何も送らない**。
+       * 画面には「確認メールを送信しました」と出るのに何も届かず、認証済みの
+       * アカウントでは「再送」も黙って成功するだけなので、やはり届かない。
+       * 返事はそのままに、アドレスの持ち主にだけ登録済みであることを知らせる。
+       *
+       * 送信に失敗しても投げない。ここで例外になると、登録済みのアドレスの
+       * ときだけ登録がエラーになり、登録の有無が外から分かってしまう。
+       */
+      onExistingUserSignUp: async ({
+        user,
+      }: {
+        user: { email: string; emailVerified?: boolean; role?: unknown };
+      }) => {
+        const kind = user.role === "business" ? "business" : "personal";
+        const base = (env.BETTER_AUTH_URL ?? "").replace(/\/+$/, "");
+        const login = `${base}/login/${kind}`;
+        const reset = `${base}/forgot-password/${kind}`;
+        const ja = [
+          `このメールアドレス（${user.email}）は、すでに会員登録がお済みです。`,
+          "登録し直す必要はありません。以下からログインしてください。",
+          "",
+          `  ログイン: ${login}`,
+          `  パスワードをお忘れの場合: ${reset}`,
+          ...(googleEnabled
+            ? ["", "Google アカウントで登録された場合は、ログイン画面の「Google で続ける」からログインしてください。"]
+            : []),
+          ...(user.emailVerified
+            ? []
+            : ["", "メールアドレスの確認がまだお済みでない場合は、ログイン画面でログインすると確認メールを再送できます。"]),
+          "",
+          "登録のお手続きに心当たりがない場合は、このメールを破棄してください。アカウントには何も変更を加えていません。",
+        ];
+        const en = [
+          "This email address is already registered, so there is no need to sign up again. Please log in instead:",
+          "",
+          `  Log in: ${login}`,
+          `  Forgot your password: ${reset}`,
+          "",
+          "If you did not try to sign up, you can ignore this email. Nothing about your account has changed.",
+        ];
+        try {
+          await sendEmail(
+            {
+              to: user.email,
+              subject:
+                "FUJISAN — ご登録済みのメールアドレスです / This email is already registered",
+              text: `FUJISAN SAKE\n\n${ja.join("\n")}\n\n${en.join("\n")}\n`,
+            },
+            { apiKey: env.RESEND_API_KEY, from: env.RESEND_FROM },
+          );
+        } catch (error) {
+          console.error("[auth] 登録済みアドレスへの案内メールを送れませんでした", error);
+        }
+      },
     },
     emailVerification: {
       sendOnSignUp: true,
