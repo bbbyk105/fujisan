@@ -22,7 +22,7 @@ const routes = [
     href: "/shop/personal",
     image: "/images/personal.webp",
     imagePos: "object-[55%_50%]",
-    heading: { en: "For your table", ja: "ご家庭へ、贈り物へ" },
+    heading: { en: "Personal orders", ja: "個人のお客様" },
     lead: {
       en: "Any of the five Bushido bottles, one at a time — for your table or as a gift. From ¥1,600.",
       ja: "武士道シリーズ5銘柄を、一本からご購入いただけます。ご自宅用にも、贈り物にも。1,600円より。",
@@ -50,7 +50,7 @@ const routes = [
     href: "/shop/business",
     image: "/images/restaurant.webp",
     imagePos: "object-[50%_46%]",
-    heading: { en: "For your programme", ja: "飲食店・小売店さまへ" },
+    heading: { en: "Trade accounts", ja: "法人・取扱店のお客様" },
     lead: {
       en: "For restaurants, bars, retailers, and hospitality programmes. Account pricing, case quantities, and one named contact.",
       ja: "レストラン・バー・小売店・ホテルのみなさまへ。卸価格、ケース単位でのお届け、専任担当によるサポートをご用意します。",
@@ -109,7 +109,7 @@ export default function ShopHubPage() {
       <EditorialPageHeader
         width="wide"
         kicker={<L en="Purchase" ja="ご購入" />}
-        title={<L en="How to order" ja="お求めについて" />}
+        title={<L en="How to order" ja="ご購入方法" />}
         lead={
           <L
             en="Personal orders and trade orders go through separate routes. Choose the one that fits."
@@ -171,8 +171,8 @@ export default function ShopHubPage() {
       <EditorialSection>
         <h2 className="ed-h2">
           <L
-            en="The same care, whichever route you take."
-            ja="どちらの窓口でも、扱いは変わりません。"
+            en="For every order"
+            ja="すべてのご注文に共通すること"
           />
         </h2>
 

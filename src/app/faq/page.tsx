@@ -23,7 +23,7 @@ export const metadata = buildMetadata({
 const groups = [
   {
     label: <L en="Serving" ja="味わう" />,
-    heading: <L en="Choosing and serving the bottle" ja="選ぶ、そして注ぐ" />,
+    heading: <L en="Choosing and serving" ja="選び方と飲み方" />,
     items: [
       {
         q: (
@@ -43,8 +43,8 @@ const groups = [
         q: <L en="Which bottle should I start with?" ja="最初の一本は？" />,
         a: (
           <L
-            en="If sake is new to you, a junmai is generous and easy to meet. From there a junmai ginjo opens the floral side, and a junmai daiginjo brings the perfume of the orchard."
-            ja="日本酒がはじめての方には、ふくらみがあって親しみやすい純米から。そこから純米吟醸で華やかな香りへ、純米大吟醸で果実のような芳香へと広げてみてください。"
+            en="If sake is new to you, start with a junmai: full-bodied and approachable. A junmai ginjo is more floral, and a junmai daiginjo more fruity and aromatic."
+            ja="日本酒がはじめての方には、ふくらみがあって飲みやすい純米がおすすめです。純米吟醸は花のような香り、純米大吟醸は果実のような香りがより強くなります。"
           />
         ),
       },
@@ -66,8 +66,8 @@ const groups = [
         q: <L en="How long does it keep once opened?" ja="開栓後の日持ちは？" />,
         a: (
           <L
-            en="Refrigerate it, and finish daiginjo and ginjo within seven to ten days, richer junmai styles within two weeks. It will not spoil quickly — but the first week is when it is at its best."
-            ja="冷蔵庫で保管し、大吟醸・吟醸は7〜10日、コクのある純米は2週間ほどを目安に。すぐに悪くなるわけではありませんが、最初の一週間がいちばんです。"
+            en="Keep it in the fridge. Daiginjo and ginjo are best within seven to ten days, fuller junmai styles within about two weeks. It will not spoil quickly, but the flavour is freshest in the first week."
+            ja="冷蔵庫で保管し、大吟醸・吟醸は7〜10日、コクのある純米は2週間ほどを目安にお飲みください。すぐに悪くなるわけではありませんが、香りと味は最初の1週間がもっとも新鮮です。"
           />
         ),
       },
@@ -122,7 +122,7 @@ const groups = [
   },
   {
     label: <L en="The kura" ja="蔵のこと" />,
-    heading: <L en="Visiting, and working together" ja="訪ねる、取り扱う" />,
+    heading: <L en="Visits and trade" ja="蔵見学とお取引" />,
     items: [
       {
         q: <L en="Can I visit the brewery?" ja="蔵見学はできますか？" />,

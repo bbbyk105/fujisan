@@ -11,22 +11,22 @@ const essences: {
   subJp: string;
 }[] = [
   {
-    label: "BLESSINGS OF FUJI",
-    labelJp: "富士の恵み",
-    sub: "Pure water and the clean air it hides",
-    subJp: "清らかな水と潜んだ空気",
+    label: "CHILLED",
+    labelJp: "冷やして",
+    sub: "8–12°C for the Junmai Daiginjo and Junmai Ginjo",
+    subJp: "純米大吟醸・純米吟醸は8〜12℃",
   },
   {
-    label: "THE CRAFT",
-    labelJp: "匠の技",
-    sub: "Artisan techniques, passed down",
-    subJp: "受け継がれる職人の技",
+    label: "OR AT ROOM TEMPERATURE",
+    labelJp: "常温でも",
+    sub: "10–15°C for the Tokubetsu Junmai and Honjozo",
+    subJp: "特別純米・特別本醸造は10〜15℃",
   },
   {
-    label: "JAPANESE AESTHETIC",
-    labelJp: "日本の美意識",
-    sub: "Heart and culture in every drop",
-    subJp: "一滴に宿る心と文化",
+    label: "ONCE OPENED",
+    labelJp: "開けたあとは",
+    sub: "Keep it in the fridge; best within 1–2 weeks",
+    subJp: "冷蔵庫で保管し、1〜2週間を目安に",
   },
 ];
 
@@ -54,7 +54,7 @@ export default function FujisanExperience() {
           <Reveal className="flex items-center gap-3">
             <span className="h-px w-10 bg-[#E2C97E]/70" />
             <span className="font-jp text-[11.5px] tracking-[0.38em] text-[#E2C97E] md:text-[12px]">
-              富士の酒
+              飲み方
             </span>
             <span className="h-px w-10 bg-[#E2C97E]/70" />
           </Reveal>
@@ -67,13 +67,13 @@ export default function FujisanExperience() {
             <L
               en={
                 <>
-                  EXPERIENCE JAPAN
+                  BEST CHILLED,
                   <br className="hidden sm:block" />
                   <span className="sm:hidden"> </span>
-                  IN EVERY SIP
+                  WITH FOOD
                 </>
               }
-              ja={<>一献に、日本を味わう。</>}
+              ja={<>冷やして、食事とともに。</>}
             />
           </Reveal>
 
@@ -83,8 +83,8 @@ export default function FujisanExperience() {
             delay={revealDelays.d2}
           >
             <L
-              en="Each bottle tells a story of the land, the people, and the timeless art of sake brewing. Enjoy it chilled, and savor the true essence of Japan."
-              ja="一本一本に、土地と人、そして時を超えて受け継がれる酒造りの物語が息づいています。よく冷やして、日本の真髄をお楽しみください。"
+              en="All five are best served chilled. The Junmai Daiginjos suit sushi and sashimi; the drier Tokubetsu Junmai and Tokubetsu Honjozo go well with yakitori and grilled fish."
+              ja="どの銘柄も冷やして飲むのがおすすめです。純米大吟醸は寿司や刺身に、辛口の特別純米・特別本醸造は焼き鳥や焼き魚によく合います。"
             />
           </Reveal>
         </div>

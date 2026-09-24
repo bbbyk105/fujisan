@@ -34,8 +34,8 @@ const steps = [
     heading: <L en="Choose your bottle" ja="一本を選ぶ" />,
     body: (
       <L
-        en="Five expressions of Fujisan. Each detail page carries its serving temperature and the brewer's notes."
-        ja="五種の銘柄から、気になる一本を。各商品ページに、おすすめの温度と造り手の言葉を記しています。"
+        en="Pick from the five bottles. Each product page lists the serving temperature and tasting notes."
+        ja="5銘柄からお選びください。各商品ページに、おすすめの温度と味わいを載せています。"
       />
     ),
   },
@@ -130,8 +130,8 @@ export default function ShopPersonalPage() {
     <EditorialPage>
       <EditorialPageHeader
         width="wide"
-        kicker={<L en="Purchase / Personal" ja="ご購入 ／ 個人のお客様" />}
-        title={<L en="A bottle, by the bottle" ja="一本から、家へ" />}
+        kicker={<L en="Purchase" ja="ご購入" />}
+        title={<L en="Personal orders" ja="個人のお客様" />}
         lead={
           <L
             en="300 ml and 180 ml bottles, one at a time. Age is verified at order and again at delivery."
@@ -144,19 +144,19 @@ export default function ShopPersonalPage() {
       <EditorialSection width="wide" ruled={false}>
         <EditorialSectionHead
           label={<L en="The collection" ja="銘柄" />}
-          heading={<L en="Five expressions of Fujisan" ja="富士山、五つの表情" />}
+          heading={<L en="The five Bushido bottles" ja="武士道シリーズ 5銘柄" />}
           lead={
             <L
               en={`Available in 300 ml and 180 ml, from ¥${yen.format(
                 priceMin,
               )} to ¥${yen.format(
                 priceMax,
-              )} including tax. Add a bottle to your cart, or open one to read the brewer's notes first.`}
+              )} including tax. Add a bottle to your cart, or open one for details.`}
               ja={`300ml・180ml をご用意しています。価格は ¥${yen.format(
                 priceMin,
               )} 〜 ¥${yen.format(
                 priceMax,
-              )}（税込）。そのままカートへ、あるいは一本を開いて造り手の言葉から。`}
+              )}（税込）。そのままカートに入れるか、銘柄を開いて詳しい説明をご覧ください。`}
             />
           }
         />
@@ -171,8 +171,8 @@ export default function ShopPersonalPage() {
             label={<L en="How it works" ja="ご購入の流れ" />}
             heading={
               <L
-                en="From Shizuoka to your door"
-                ja="静岡から、玄関先まで"
+                en="From order to delivery"
+                ja="ご注文からお届けまで"
               />
             }
             className="md:sticky md:top-[112px] md:self-start"

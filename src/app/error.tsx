@@ -34,7 +34,7 @@ export default function Error({
 
         <h1 className="ed-title mt-4">
           <L
-            en="We couldn't pour this page."
+            en="We couldn't load this page."
             ja="ページを表示できませんでした。"
           />
         </h1>

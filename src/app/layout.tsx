@@ -37,7 +37,7 @@ const shipporiMincho = Shippori_Mincho({
 export const metadata = buildMetadata({
   title: "Japan Premium Sake",
   description:
-    "The spirit of Japan, crafted at the foot of Fujisan. A premium sake collection born from Mt. Fuji's pristine snowmelt and traditional brewing methods.",
+    "The Bushido series: five sakes brewed at the foot of Mt. Fuji with spring water and Yamadanishiki and Homarefuji rice. Online shop, shipping within Japan.",
   path: "/",
 });
 

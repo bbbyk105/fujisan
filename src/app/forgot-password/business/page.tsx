@@ -18,13 +18,13 @@ export default function ForgotPasswordBusinessPage() {
       showRoleSwitch={false}
       brand={{
         kanji: "再設",
-        kickerJp: "パスワード再設定",
-        titleEn: "Back to your trade account.",
-        titleJp: "お取引アカウントへ。",
+        kickerJp: "法人・取扱店",
+        titleEn: "Resetting your password",
+        titleJp: "パスワードの再設定",
         textEn:
           "Enter your account email and we'll send a secure link to set a new password.",
         textJp:
-          "ご登録のメールアドレスをご入力ください。パスワードを再設定するための安全なリンクをお送りします。",
+          "ご登録のメールアドレスをご入力ください。パスワードを再設定するためのリンクをお送りします。",
         crumbHref: "/login/business",
         crumbEn: "Back to trade sign in",
         crumbJp: "取扱店ログインへ戻る",

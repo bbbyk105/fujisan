@@ -21,12 +21,12 @@ export default async function RegisterPersonalPage() {
       brand={{
         kanji: "登録",
         kickerJp: "新規会員登録",
-        titleEn: "A quiet place at the table.",
-        titleJp: "食卓に、ひとつの居場所を。",
+        titleEn: "What an account gives you",
+        titleJp: "会員登録でできること",
         textEn:
-          "Create an account to save your details, keep your order history, and have Fujisan delivered with care to your door.",
+          "Save your delivery address so you can skip it next time, and see your order history any time.",
         textJp:
-          "アカウントを作成すると、お届け先の保存・注文履歴の管理ができ、富士山の一本をご自宅まで丁寧にお届けします。",
+          "お届け先を登録しておくと、次回から住所の入力を省けます。注文履歴もいつでも確認できます。",
         crumbHref: "/shop/personal",
         crumbEn: "Back to shop",
         crumbJp: "ショップへ戻る",
@@ -36,8 +36,8 @@ export default async function RegisterPersonalPage() {
         role="personal"
         eyebrowEn="CREATE ACCOUNT"
         eyebrowJp="新規会員登録"
-        titleEn="Create your account."
-        titleJp="アカウントを作成。"
+        titleEn="Create your account"
+        titleJp="アカウントを作成"
         leadEn="For individual customers. You must be 20 or older to purchase alcohol in Japan."
         leadJp="個人のお客様向け。酒類のご購入は20歳以上の方に限ります。"
       />

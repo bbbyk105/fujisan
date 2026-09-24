@@ -38,13 +38,13 @@ export default function FujisanHero() {
                       className="fujisan-rise block text-[clamp(24px,3vw,42px)] font-medium tracking-[0.07em] xl:whitespace-nowrap"
                       style={{ animationDelay: "120ms" }}
                     >
-                      THE SPIRIT OF JAPAN,
+                      SAKE BREWED
                     </span>
                     <span
                       className="fujisan-rise mt-2 block text-[clamp(24px,3vw,42px)] font-medium tracking-[0.07em] xl:whitespace-nowrap"
                       style={{ animationDelay: "260ms" }}
                     >
-                      CRAFTED AT THE FOOT OF
+                      AT THE FOOT OF
                     </span>
                   </>
                 }
@@ -54,13 +54,13 @@ export default function FujisanHero() {
                       className="fujisan-rise block font-jp text-[clamp(22px,2.6vw,36px)] font-medium tracking-[0.18em] xl:whitespace-nowrap"
                       style={{ animationDelay: "120ms" }}
                     >
-                      日本のこころを、
+                      富士山の麓で造られた
                     </span>
                     <span
                       className="fujisan-rise mt-2 block font-jp text-[clamp(22px,2.6vw,36px)] font-medium tracking-[0.18em] xl:whitespace-nowrap"
                       style={{ animationDelay: "260ms" }}
                     >
-                      富士の麓で醸す。
+                      日本酒
                     </span>
                   </>
                 }
@@ -69,19 +69,12 @@ export default function FujisanHero() {
             </h1>
 
             <p
-              className="fujisan-rise mt-5 font-jp text-[clamp(17px,1.75vw,25px)] font-medium tracking-[0.16em] text-[#1D2432]"
-              style={{ animationDelay: "820ms" }}
-            >
-              ー 富士の恵み、伝統の一滴 ー
-            </p>
-
-            <p
-              className="fujisan-rise mt-5 max-w-[420px] text-[15px] leading-[1.62] text-[#2B2419]/86 md:text-[16px] md:leading-[1.58]"
+              className="fujisan-rise mt-8 max-w-[440px] text-[15px] leading-[1.62] text-[#2B2419]/86 [word-break:auto-phrase] md:text-[16px] md:leading-[1.58]"
               style={{ animationDelay: "980ms" }}
             >
               <L
-                en="From the pure snowmelt of Mt. Fuji to masterful brewing — a sake collection that embodies Japan's heritage and natural beauty."
-                ja="富士山の雪解け水と蔵人の手技が織りなす一献。日本の伝統と自然の美しさを宿す、珠玉の日本酒コレクション。"
+                en="The Bushido series, brewed with Mt. Fuji spring water and sake rice from Hyogo and Shizuoka. Five bottles, from Junmai Daiginjo to Tokubetsu Honjozo."
+                ja="富士山の湧水と、兵庫・静岡の酒米で造る武士道シリーズ。純米大吟醸から特別本醸造まで、5つの銘柄をご用意しています。"
               />
             </p>
           </div>
