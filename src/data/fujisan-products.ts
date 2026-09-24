@@ -149,7 +149,7 @@ export const fujisanProducts: FujisanProduct[] = [
     title: "Bright & Balanced",
     titleJp: "明るい果実の香り、すっきり",
     desc: "A bright ginjo bouquet of banana and melon;\nclean, smooth, and refreshing.",
-    descJp: "バナナやメロンのような明るい吟醸香。\nなめらかで、爽やかな味わい。",
+    descJp: "バナナやメロンのような明るい吟醸香。\n澄んだ、なめらかで爽やかな味わい。",
     img: "/images/bushido/samurai01.webp",
     storyEn: [
       "A Junmai Ginjo polished to 60%, made from Hyogo Yamadanishiki blended with Homarefuji, a sake rice bred in Shizuoka.",
@@ -192,7 +192,7 @@ export const fujisanProducts: FujisanProduct[] = [
     title: "Crisp & Dry",
     titleJp: "軽やかな辛口",
     desc: "Light fruit with subtle banana notes;\ncrisp, dry, and clean to the finish.",
-    descJp: "ほのかにバナナを感じる軽い香り。\nきりっとした辛口で、後味はすっきり。",
+    descJp: "ほのかにバナナを感じる、軽い果実の香り。\nきりっとした辛口で、後味は澄んでいます。",
     img: "/images/bushido/ninja.webp",
     storyEn: [
       "A Tokubetsu Junmai polished to 60%, made from Yamadanishiki grown in Hyogo and Shizuoka and kept light at 14% alcohol.",
@@ -235,7 +235,7 @@ export const fujisanProducts: FujisanProduct[] = [
     title: "Clean & Dry",
     titleJp: "キレのある辛口",
     desc: "Delicate floral notes; clean and crisp\nwith a smooth, dry finish.",
-    descJp: "ほのかに花のような香り。\nキレのよい辛口で、後味はなめらか。",
+    descJp: "繊細な花の香り。\nキレのよい辛口で、後味はなめらか。",
     img: "/images/bushido/kokoro.webp",
     storyEn: [
       "A Tokubetsu Honjozo polished to 60%, made from Hyogo Yamadanishiki and Shizuoka Homarefuji — easy to drink with everyday meals.",

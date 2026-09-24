@@ -112,7 +112,7 @@ export const fujisanCraftPillars: CraftPillar[] = [
         jp: "降雪",
         desc: "Fresh snow settles on the slopes between 1,500m and 3,776m through long Fuji winters.",
         descJp:
-          "冬のあいだ、標高1,500〜3,776mの斜面に雪が降り積もります。",
+          "冬のあいだ、標高1,500〜3,776mの斜面に新雪が降り積もります。",
       },
       {
         num: "Ⅱ",
@@ -120,7 +120,7 @@ export const fujisanCraftPillars: CraftPillar[] = [
         jp: "濾過",
         desc: "Decades of slow descent through volcanic strata strip impurities from the meltwater.",
         descJp:
-          "雪解け水は数十年かけて火山岩の層を下り、そのあいだに不純物がこされます。",
+          "雪解け水は数十年かけて火山岩の層をゆっくり下り、そのあいだに不純物がこされます。",
       },
       {
         num: "Ⅲ",
@@ -227,7 +227,7 @@ export const fujisanCraftPillars: CraftPillar[] = [
         jp: "蒸米",
         desc: "Slow steaming firms the outside while keeping the core soft for the koji.",
         descJp:
-          "外は硬く、中はやわらかく蒸し上げます。麹を育てやすい蒸米にするためです。",
+          "じっくり蒸して、外は硬く、中はやわらかく仕上げます。麹を育てやすい蒸米にするためです。",
       },
     ],
   },
