@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
 import type { FujisanNavLinkItem } from "./fujisan-nav-links";
 import { ensureGsap, gsap, useGSAP } from "./gsap-setup";
 import { LocaleSwitch } from "@/i18n/LocaleSwitch";
@@ -202,6 +202,26 @@ export function FujisanNavClient({ links }: Props) {
     setOpenMenu(null);
   };
 
+  // ロゴと HOME はトップの先頭へ戻す。トップにいるときに Link へ任せると、URL が
+  // 同じ（/ や /#top）なので遷移が起きずスクロールもしない。そこだけ自前で戻す。
+  // 他のページからは "/" への遷移で、App Router が先頭から表示する。
+  const onHomeClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (!isHome) return;
+    // 新しいタブで開く操作は邪魔しない
+    if (
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    ) {
+      return;
+    }
+    event.preventDefault();
+    if (window.location.hash) window.history.replaceState(null, "", "/");
+    window.scrollTo({ top: 0, left: 0 });
+  };
+
   return (
     <header
       ref={headerRef}
@@ -221,7 +241,8 @@ export function FujisanNavClient({ links }: Props) {
       />
       <div className="mx-auto flex h-[72px] max-w-[1760px] items-center justify-between px-5 sm:px-7 md:h-[86px] md:px-9 lg:px-[4.5vw] 2xl:px-16">
         <Link
-          href="/#top"
+          href="/"
+          onClick={onHomeClick}
           aria-label="FUJISAN SAKE home"
           className="relative block h-[44px] w-[178px] overflow-hidden no-underline sm:w-[210px] md:h-[52px] md:w-[250px]"
         >
@@ -247,6 +268,7 @@ export function FujisanNavClient({ links }: Props) {
                 <Link
                   key={link.href}
                   href={link.href}
+                  onClick={link.href === "/" ? onHomeClick : undefined}
                   className={`relative text-[12px] font-semibold tracking-[0.06em] no-underline transition-colors duration-300 ${
                     active
                       ? "text-indigo"
@@ -430,7 +452,10 @@ export function FujisanNavClient({ links }: Props) {
                 >
                   <Link
                     href={link.href}
-                    onClick={() => setOpen(false)}
+                    onClick={(event) => {
+                      setOpen(false);
+                      if (link.href === "/") onHomeClick(event);
+                    }}
                     className="group flex items-baseline gap-4 py-[18px] no-underline outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
                   >
                     <span className="font-serif text-[11.5px] font-medium tracking-[0.12em] text-gold">

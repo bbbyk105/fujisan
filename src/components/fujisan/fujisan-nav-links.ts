@@ -18,7 +18,7 @@ export type FujisanNavLinkItem = {
 };
 
 export const FUJISAN_NAV_LINKS: FujisanNavLinkItem[] = [
-  { href: "/#top", label: "HOME", match: "#top" },
+  { href: "/", label: "HOME", match: "#top" },
   { href: "/products", label: "COLLECTION", match: "/products" },
   {
     href: "/shop",
