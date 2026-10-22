@@ -132,19 +132,23 @@ Stripe 本番の決済からの一連の流れは、まだ本番で通してい�
 > **注意**: 本番キーなので実際にカードへ請求が走ります。返金しても Stripe の
 > 決済手数料（¥1,600 なら60円前後）は戻りません。
 
-## タスク7. Workers Builds の非本番ブランチを直す（済: 2026-09-24）
+## タスク7. Workers Builds の非本番ブランチを直す（済: 2026-10-22）
 
-PR のブランチでもビルドが走り、非本番ブランチからは本番へ出せないため**必ず失敗していた**
-（PR に常に赤いチェックが付いていた）。ビルド自体は通っていて、落ちていたのはその後の
-デプロイの段階。
+PR のブランチのビルドが**必ず失敗していた**（PR に常に赤いチェックが付いていた）。
+非本番ブランチは本番のビルド設定ではなく、Cloudflare の Previews の設定で動く。
+その既定が Build command `npm run build`・Deploy command `npx wrangler preview` で、
+`next build` だけでは `.open-next/` が作られず、デプロイの段階で
+`.open-next/assets` が無いと落ちていた（2026-09-24 に直したつもりで、この既定のままだった）。
 
-Cloudflare ダッシュボード → Workers & Pages → `fujisan` → Settings → Build →
-Branch control で、どちらかにする（2026-09-24 に設定済み）。
+2026-10-22 に Previews の設定を次にした（既存のプレビューにも反映）。値は下の
+「Workers Builds（自動デプロイ）」の表。
 
-- **プレビューを使う（推奨）**: 非本番ブランチの Deploy command を
-  `npx opennextjs-cloudflare upload` にする。本番を差し替えずにバージョンだけを上げ、
-  PR ごとのプレビュー URL が出る
-- **使わない**: 「非本番ブランチのビルド」を無効にする
+- `upload` は本番を差し替えずにバージョンだけを上げ、PR ごとにバージョンの URL が出る
+- **そのバージョンは本番と同じ D1 と secret で動く**。プレビューの URL で書き込むと本番のデータに入る
+- Deploy command を既定の `npx wrangler preview` に戻さない。Cloudflare の新しい Previews は
+  wrangler 4.135 以上が要り、本番の secret を引き継がないので、プレビュー用のバインディングと
+  secret を別に用意しないと動かない
+- プレビューを止めるなら、Settings → Build → Branch control の「Enable Preview Builds」を外す
 
 あわせて、タスク3 が済んだら Build command を次にする。
 
@@ -224,6 +228,8 @@ npm run check:legal && npm run lint && npm test && npx opennextjs-cloudflare bui
 | Production branch | `main` |
 | Build command | `npm run lint && npm test && npx opennextjs-cloudflare build` |
 | Deploy command | `npx opennextjs-cloudflare deploy` |
+| Previews（非本番ブランチ）の Build command | `npx opennextjs-cloudflare build` |
+| Previews（非本番ブランチ）の Deploy command | `npx opennextjs-cloudflare upload` |
 
 - **Build command を `npm run build` にしない。** `next build` だけでは `.open-next/worker.js` が
   作られず、デプロイ段階で必ず落ちる
