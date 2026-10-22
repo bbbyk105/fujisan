@@ -140,15 +140,16 @@ PR のブランチのビルドが**必ず失敗していた**（PR に常に赤�
 `next build` だけでは `.open-next/` が作られず、デプロイの段階で
 `.open-next/assets` が無いと落ちていた（2026-09-24 に直したつもりで、この既定のままだった）。
 
-2026-10-22 に Previews の設定を次にした（既存のプレビューにも反映）。値は下の
-「Workers Builds（自動デプロイ）」の表。
+2026-10-22 に Previews を止めた（ダッシュボードでは Settings → Build → Branch control の
+「Enable Preview Builds」）。PR の確認は GitHub Actions の lint / test / build で行う。
 
-- `upload` は本番を差し替えずにバージョンだけを上げ、PR ごとにバージョンの URL が出る
-- **そのバージョンは本番と同じ D1 と secret で動く**。プレビューの URL で書き込むと本番のデータに入る
-- Deploy command を既定の `npx wrangler preview` に戻さない。Cloudflare の新しい Previews は
-  wrangler 4.135 以上が要り、本番の secret を引き継がないので、プレビュー用のバインディングと
-  secret を別に用意しないと動かない
-- プレビューを止めるなら、Settings → Build → Branch control の「Enable Preview Builds」を外す
+- Deploy command を `npx opennextjs-cloudflare upload` にする方法は使えない。Previews のビルドは
+  プレビューを宛先にするので、本番の Worker へ版を上げようとして
+  「wrangler.jsonc の name が Worker の名前と一致しない」で落ちる（2026-10-22 に試した）
+- プレビューを使うなら `npx opennextjs-cloudflare build` のあと `npx wrangler preview`。
+  wrangler 4.135 以上が要る。プレビューは本番の secret を引き継がないので、wrangler.jsonc の
+  `previews` にバインディングを書き、secret は `wrangler preview base-config secret put` で入れる。
+  D1 を本番と同じ `database_id` にすると、本番と行を共有する
 
 あわせて、タスク3 が済んだら Build command を次にする。
 
@@ -228,8 +229,7 @@ npm run check:legal && npm run lint && npm test && npx opennextjs-cloudflare bui
 | Production branch | `main` |
 | Build command | `npm run lint && npm test && npx opennextjs-cloudflare build` |
 | Deploy command | `npx opennextjs-cloudflare deploy` |
-| Previews（非本番ブランチ）の Build command | `npx opennextjs-cloudflare build` |
-| Previews（非本番ブランチ）の Deploy command | `npx opennextjs-cloudflare upload` |
+| Previews（非本番ブランチのビルド） | 無効（タスク7） |
 
 - **Build command を `npm run build` にしない。** `next build` だけでは `.open-next/worker.js` が
   作られず、デプロイ段階で必ず落ちる
