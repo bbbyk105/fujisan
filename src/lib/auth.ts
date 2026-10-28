@@ -1,7 +1,14 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { additionalUserFields } from "./auth-shared";
+import { additionalUserFields, AUTH_LINK_TTL_SEC } from "./auth-shared";
 import { sendEmail } from "./email";
+import { SITE_URL } from "./seo";
+import {
+  buildAlreadyRegisteredEmail,
+  buildChangeEmailConfirmation,
+  buildResetPasswordEmail,
+  buildVerifyEmail,
+} from "./emails/auth-emails";
 
 type AuthEnv = {
   BETTER_AUTH_SECRET?: string;
@@ -27,19 +34,16 @@ export function buildAuthOptions(env: AuthEnv) {
     emailAndPassword: {
       enabled: true,
       requireEmailVerification: true,
+      resetPasswordTokenExpiresIn: AUTH_LINK_TTL_SEC,
       sendResetPassword: async ({
         user,
         url,
       }: {
-        user: { email: string };
+        user: { email: string; name?: string | null };
         url: string;
       }) => {
         await sendEmail(
-          {
-            to: user.email,
-            subject: "FUJISAN — パスワードの再設定 / Reset your password",
-            text: `FUJISAN SAKE\n\n以下のリンクからパスワードを再設定してください。\nReset your password using the link below:\n\n${url}\n\nこのリクエストに心当たりがない場合は、このメールを破棄してください。\nIf you did not request this, you can safely ignore this email.\n`,
-          },
+          { to: user.email, ...buildResetPasswordEmail({ user, url }) },
           { apiKey: env.RESEND_API_KEY, from: env.RESEND_FROM },
         );
       },
@@ -58,42 +62,26 @@ export function buildAuthOptions(env: AuthEnv) {
       onExistingUserSignUp: async ({
         user,
       }: {
-        user: { email: string; emailVerified?: boolean; role?: unknown };
+        user: {
+          email: string;
+          name?: string | null;
+          emailVerified?: boolean;
+          role?: unknown;
+        };
       }) => {
         const kind = user.role === "business" ? "business" : "personal";
-        const base = (env.BETTER_AUTH_URL ?? "").replace(/\/+$/, "");
-        const login = `${base}/login/${kind}`;
-        const reset = `${base}/forgot-password/${kind}`;
-        const ja = [
-          `このメールアドレス（${user.email}）は、すでに会員登録がお済みです。`,
-          "登録し直す必要はありません。以下からログインしてください。",
-          "",
-          `  ログイン: ${login}`,
-          `  パスワードをお忘れの場合: ${reset}`,
-          ...(googleEnabled
-            ? ["", "Google アカウントで登録された場合は、ログイン画面の「Google で続ける」からログインしてください。"]
-            : []),
-          ...(user.emailVerified
-            ? []
-            : ["", "メールアドレスの確認がまだお済みでない場合は、ログイン画面でログインすると確認メールを再送できます。"]),
-          "",
-          "登録のお手続きに心当たりがない場合は、このメールを破棄してください。アカウントには何も変更を加えていません。",
-        ];
-        const en = [
-          "This email address is already registered, so there is no need to sign up again. Please log in instead:",
-          "",
-          `  Log in: ${login}`,
-          `  Forgot your password: ${reset}`,
-          "",
-          "If you did not try to sign up, you can ignore this email. Nothing about your account has changed.",
-        ];
+        // 未設定で "" にすると相対パスになり、メールソフトでは開けない（order-emails と同じ既定値）。
+        const base = (env.BETTER_AUTH_URL || SITE_URL).replace(/\/+$/, "");
         try {
           await sendEmail(
             {
               to: user.email,
-              subject:
-                "FUJISAN — ご登録済みのメールアドレスです / This email is already registered",
-              text: `FUJISAN SAKE\n\n${ja.join("\n")}\n\n${en.join("\n")}\n`,
+              ...buildAlreadyRegisteredEmail({
+                user,
+                loginUrl: `${base}/login/${kind}`,
+                resetUrl: `${base}/forgot-password/${kind}`,
+                googleEnabled,
+              }),
             },
             { apiKey: env.RESEND_API_KEY, from: env.RESEND_FROM },
           );
@@ -104,20 +92,23 @@ export function buildAuthOptions(env: AuthEnv) {
     },
     emailVerification: {
       sendOnSignUp: true,
-      autoSignInAfterVerification: true,
+      expiresIn: AUTH_LINK_TTL_SEC,
+      /**
+       * 確認リンクを踏んだだけではログインさせない。確認後は `/email-verified`
+       * （`callbackURL`）で「確認できました」を見せ、ログインし直してもらう。
+       * 転送されたメールや共有端末でリンクを開いた人に、そのままセッションが渡らない。
+       * ※ メールアドレス変更の確認は Better Auth がこの設定と関係なくセッションを作る。
+       */
+      autoSignInAfterVerification: false,
       sendVerificationEmail: async ({
         user,
         url,
       }: {
-        user: { email: string };
+        user: { email: string; name?: string | null };
         url: string;
       }) => {
         await sendEmail(
-          {
-            to: user.email,
-            subject: "FUJISAN — メールアドレスの確認 / Verify your email",
-            text: `FUJISAN SAKE\n\n以下のリンクからメールアドレスを確認してください。\nPlease verify your email address:\n\n${url}\n`,
-          },
+          { to: user.email, ...buildVerifyEmail({ user, url }) },
           { apiKey: env.RESEND_API_KEY, from: env.RESEND_FROM },
         );
       },
@@ -153,9 +144,7 @@ export function buildAuthOptions(env: AuthEnv) {
           await sendEmail(
             {
               to: user.email,
-              subject:
-                "FUJISAN — メールアドレス変更の確認 / Confirm your email change",
-              text: `FUJISAN SAKE\n\nご登録のメールアドレスを次のアドレスへ変更する依頼を受け付けました。\n\n  変更前: ${user.email}\n  変更後: ${newEmail}\n\nお心当たりがある場合は、以下のリンクから承認してください。\n承認後、新しいアドレス宛にも確認メールをお送りします。そちらのリンクを踏んでいただくと変更が完了します。\n\n${url}\n\n**お心当たりが無い場合は、このリンクを開かないでください。**\nこのメールを破棄いただければ、アドレスは変更されません。パスワードの変更もあわせてご検討ください。\n\nWe received a request to change your email address to ${newEmail}.\nIf this was you, approve it with the link above. We'll then email the new address to finish the change.\nIf this wasn't you, do not open the link. Your address will stay as it is.\n`,
+              ...buildChangeEmailConfirmation({ user, newEmail, url }),
             },
             { apiKey: env.RESEND_API_KEY, from: env.RESEND_FROM },
           );

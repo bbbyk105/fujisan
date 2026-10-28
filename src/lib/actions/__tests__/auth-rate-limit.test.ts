@@ -164,3 +164,26 @@ describe("認証系 Server Action のレート制限", () => {
     });
   });
 });
+
+describe("確認リンクの戻り先", () => {
+  // 以前は callbackURL を渡しておらず、確認リンクを踏んでもトップへ戻るだけで、
+  // 何も起きていないように見えた。確認できたことは /email-verified で見せる。
+  it("個人の会員登録は /email-verified へ戻す", async () => {
+    await registerPersonalAction(PERSONAL);
+    expect(signUpEmail.mock.calls[0][0].body.callbackURL).toBe("/email-verified");
+  });
+
+  it("法人の会員登録は /email-verified?role=business へ戻す", async () => {
+    await registerBusinessAction(BUSINESS);
+    expect(signUpEmail.mock.calls[0][0].body.callbackURL).toBe(
+      "/email-verified?role=business",
+    );
+  });
+
+  it("確認メールの再送も同じ戻り先を渡す", async () => {
+    await resendVerificationAction({ email: PERSONAL.email, role: "business" });
+    expect(sendVerificationEmail.mock.calls[0][0].body.callbackURL).toBe(
+      "/email-verified?role=business",
+    );
+  });
+});

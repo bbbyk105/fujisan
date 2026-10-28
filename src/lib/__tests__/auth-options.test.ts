@@ -19,6 +19,7 @@ jest.mock("@/lib/email", () => ({
 }));
 
 import { buildAuthOptions } from "@/lib/auth";
+import { AUTH_LINK_TTL_SEC } from "@/lib/auth-shared";
 
 const ENV = {
   BETTER_AUTH_SECRET: "s3cret",
@@ -85,6 +86,27 @@ describe("登録済みのアドレスでの新規登録", () => {
     expect(payload.text).toContain("https://example.test/forgot-password/personal");
   });
 
+  it("ほかの認証メールと同じく HTML 版も付けて送る（テキストだけだと生の URL が並ぶ）", async () => {
+    await existing({ role: "personal" });
+
+    const [payload] = sendEmail.mock.calls[0];
+    expect(payload.html).toContain("ログインする");
+    expect(payload.html).toContain('href="https://example.test/login/personal"');
+  });
+
+  it("BETTER_AUTH_URL が無くても、リンクは本番ドメインの絶対 URL にする（相対パスはメールソフトで開けない）", async () => {
+    await buildAuthOptions({
+      ...ENV,
+      BETTER_AUTH_URL: undefined,
+    }).emailAndPassword.onExistingUserSignUp({
+      user: { email: "taro@example.test", emailVerified: true },
+    });
+
+    const [payload] = sendEmail.mock.calls[0];
+    expect(payload.text).toContain("https://sakefujisan.com/login/personal");
+    expect(payload.html).toContain('href="https://sakefujisan.com/login/personal"');
+  });
+
   it("法人のアカウントには法人用のログイン画面を案内する", async () => {
     await existing({ role: "business" });
 
@@ -143,5 +165,35 @@ describe("Google ログイン", () => {
         GOOGLE_CLIENT_SECRET: "secret",
       }),
     ).toHaveProperty("socialProviders.google");
+  });
+});
+
+describe("メールアドレスの確認", () => {
+  it("リンクを踏んだだけではログインさせない（確認後に /email-verified からログインし直す）", () => {
+    // true に戻すと、転送されたメールを開いた人にもセッションが渡る。
+    expect(
+      buildAuthOptions(ENV).emailVerification.autoSignInAfterVerification,
+    ).toBe(false);
+  });
+
+  it("確認・再設定リンクの期限は、メールに書く値と同じ定数から取る", () => {
+    const options = buildAuthOptions(ENV);
+    expect(options.emailVerification.expiresIn).toBe(AUTH_LINK_TTL_SEC);
+    expect(options.emailAndPassword.resetPasswordTokenExpiresIn).toBe(
+      AUTH_LINK_TTL_SEC,
+    );
+  });
+
+  it("確認メールは HTML 版も付けて送る（テキストだけだと生の URL が並ぶ）", async () => {
+    await buildAuthOptions(ENV).emailVerification.sendVerificationEmail({
+      user: { email: "yuko@example.test", name: "佐藤 優子" },
+      url: "https://example.test/api/auth/verify-email?token=t",
+    });
+    const [payload] = sendEmail.mock.calls[0];
+    expect(payload.to).toBe("yuko@example.test");
+    expect(payload.html).toContain("メールアドレスを確認する");
+    expect(payload.text).toContain(
+      "https://example.test/api/auth/verify-email?token=t",
+    );
   });
 });
