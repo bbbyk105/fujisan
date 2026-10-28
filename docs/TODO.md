@@ -1,6 +1,6 @@
 # やるべきこと
 
-最終更新: 2026-09-24
+最終更新: 2026-10-29
 
 ---
 
@@ -10,18 +10,18 @@
 
 1. **本番で管理者のアカウントを作る** — `ADMIN_EMAILS`（mtfujipharmacy@gmail.com・
    bbbyk105@yahoo.co.jp）は設定済み。どちらかのアドレスで会員登録すると `/admin` に入れる。
-2. **通信販売酒類小売業免許の番号を入れる** — `src/data/fujisan-legal.ts` の
-   `LIQUOR_LICENCE`。**それらしい伏せ字で埋めないこと**（本物に見えたまま公開される）。
-   自動デプロイでは `check:legal` が走らないので、埋めたら Workers Builds の
-   Build command に `npm run check:legal &&` を足す。
-3. **Stripe を本番キーに切り替える** — いまは sandbox。`STRIPE_SECRET_KEY` と
+2. **Stripe を本番キーに切り替える** — いまは sandbox。`STRIPE_SECRET_KEY` と
    `STRIPE_WEBHOOK_SECRET` を**同時に**差し替える（本番 Webhook は用意済み）。
-4. **実在庫を入れる** — 本番は全 SKU 一律 24 本の暫定値。`/admin/products` で差し替える。
+3. **実在庫を入れる** — 本番は全 SKU 一律 24 本の暫定値。`/admin/products` で差し替える。
 
-### 決めれば埋まるもの
+### 届いたら・決めたら埋まるもの
 
+- **通信販売酒類小売業免許の番号** — 番号が届く前に公開すると 2026-10-29 に本人が決めた
+  （特商法ページには「確認中」と出る）。届いたら `src/data/fujisan-legal.ts` の
+  `LIQUOR_LICENCE` を埋め、Workers Builds の Build command に `npm run check:legal &&` を足す。
+  **それらしい伏せ字で埋めないこと**（本物に見えたまま公開される）
 - **SNS アカウント** — `FujisanFooter.tsx` の `SOCIAL_LINKS`（空なら非表示）
-- **適格請求書（インボイス）登録番号** — `INVOICE_REGISTRATION_NUMBER`。未登録なら `null` のまま
+- ~~**適格請求書（インボイス）登録番号**~~ — 済（2026-10-29、`T4080103000596`）。領収書に出る
 
 ---
 
