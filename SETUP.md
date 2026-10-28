@@ -14,7 +14,7 @@
 
 ---
 
-## いまの状態（2026-09-24 時点）
+## いまの状態（2026-09-24 時点。日付のある行はその日に確認）
 
 | | 内容 |
 |---|---|
@@ -27,7 +27,7 @@
 | ⚠️ | **決済は Stripe の sandbox（テスト）のまま**。本番キーへの切り替えはタスク4 |
 | ✅ | `ADMIN_EMAILS` = `mtfujipharmacy@gmail.com,bbbyk105@yahoo.co.jp` |
 | ⚠️ | 本番のユーザーは 0 人。管理者のアドレスで会員登録すると `/admin` に入れる（タスク2） |
-| ⚠️ | 在庫は全 SKU 一律 24 本の暫定値 |
+| ✅ | 本番 D1 の在庫は全 7 SKU とも 20 本（2026-10-29 の棚卸し。管理画面ではまだ見ていない） |
 
 ### 本番 Worker の secret（`npx wrangler secret list` で確認済み）
 
@@ -107,9 +107,18 @@ sandbox 側の Webhook の URL が旧 URL（workers.dev）のままでも、`/ap
 転送から外してあるので届く。sandbox を使い続けるなら、sandbox のダッシュボードでも URL を
 `https://sakefujisan.com/api/stripe/webhook` にしておく。
 
-## タスク5. 実在庫を入力する
+## タスク5. 実在庫を入力する（済: 2026-10-29）
 
-https://sakefujisan.com/admin/products で実際の本数に差し替えます（タスク2 の後）。
+管理者のアカウントがまだ無いため、wrangler から直接 SQL で全 7 SKU を 20 本にした。
+更新前の `reserved` は全 SKU 0。`reserved` と `low_stock_threshold` には触っていない。
+
+```sql
+UPDATE inventory SET on_hand = 20, updated_by_email = 'wrangler:2026-10-29 棚卸し',
+  updated_at = cast(unixepoch('subsecond') * 1000 as integer);
+```
+
+以後の棚卸しは、タスク2 で管理者のアカウントを作ったあと
+https://sakefujisan.com/admin/products で実際の本数に差し替えます。
 
 - 販売可能数（実在庫 − 決済待ち）が 0 の SKU は自動的に購入不可になります
 - 決済開始で引き当て、入金確定で実減算されます
@@ -183,7 +192,8 @@ npm run lint && npm test && npx opennextjs-cloudflare build
 - [ ] 免許番号が入っている（`npm run check:legal` が通る）— 番号が届く前に公開する（2026-10-29 本人）
 - [ ] Workers Builds の Build command に `npm run check:legal &&` が入っている — 番号が入ってから
 - [ ] Stripe が本番キー（`STRIPE_SECRET_KEY` と `STRIPE_WEBHOOK_SECRET` を同時に差し替え済み）
-- [ ] `/admin/products` の在庫が実在庫
+- [x] 本番 D1 の在庫が実在庫（2026-10-29、全 SKU 20 本）
+- [ ] `/admin/products` で在庫が 20 本と出る（タスク2 の後）
 - [ ] 実決済テストで在庫が減り、返金もできた
 - [x] 本番 D1 に `0014` まで適用済み
 - [x] `BETTER_AUTH_URL` が `https://sakefujisan.com`
