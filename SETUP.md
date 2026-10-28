@@ -153,11 +153,14 @@ PR のブランチのビルドが**必ず失敗していた**（PR に常に赤�
   `previews` にバインディングを書き、secret は `wrangler preview base-config secret put` で入れる。
   D1 を本番と同じ `database_id` にすると、本番と行を共有する
 
-あわせて、タスク3 が済んだら Build command を次にする。
+あわせて、Build command に lint とテストを入れる。免許番号とは関係なく、テストが
+落ちたまま本番へ出るのを止めるため、**いますぐ**入れてよい。
 
 ```
-npm run check:legal && npm run lint && npm test && npx opennextjs-cloudflare build
+npm run lint && npm test && npx opennextjs-cloudflare build
 ```
+
+タスク3（免許番号）が済んだら、先頭に `npm run check:legal &&` を足す。
 
 ---
 
