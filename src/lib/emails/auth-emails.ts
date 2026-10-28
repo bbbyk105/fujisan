@@ -2,7 +2,8 @@ import { FUJISAN_LEGAL } from "@/data/fujisan-legal";
 import { AUTH_LINK_TTL_SEC } from "@/lib/auth-shared";
 
 /**
- * 認証まわりのメール（アドレスの確認・パスワードの再設定・アドレス変更の承認）の本文。
+ * 認証まわりのメール（アドレスの確認・パスワードの再設定・アドレス変更の承認・
+ * 登録済みのアドレスへの案内）の本文。
  *
  * Better Auth から届く確認リンクは JWT をそのまま含む長い URL で、以前はそれを
  * プレーンテキストに直に貼っていた。誰から・なぜ届いたのかも書いておらず、
@@ -86,6 +87,8 @@ type Layout = {
   paragraphs: string[];
   ctaLabel: string;
   url: string;
+  /** ボタンの下に添える 2 つ目の入口（ログインに対するパスワード再設定など）。 */
+  secondary?: { label: string; url: string };
   /** 有効期限と「心当たりが無い場合」の注意。 */
   notes: string[];
   /** 英語の要約（同じ内容を短く）。 */
@@ -130,6 +133,11 @@ function renderHtml(l: Layout): string {
         </td></tr>
         <tr><td style="padding:8px 32px 24px;">
           <a href="${href}" style="display:inline-block;background:#0B1A2E;color:#fbf9f3;text-decoration:none;font-size:14px;font-weight:600;padding:14px 32px;">${escapeHtml(l.ctaLabel)}</a>
+          ${
+            l.secondary
+              ? `<p style="margin:14px 0 0;font-size:13px;line-height:1.8;"><a href="${escapeHtml(l.secondary.url)}" style="color:#0B1A2E;">${escapeHtml(l.secondary.label)}</a></p>`
+              : ""
+          }
         </td></tr>
         <tr><td style="padding:0 32px 24px;">
           ${l.notes.map(note).join("\n          ")}
@@ -183,6 +191,7 @@ function renderText(l: Layout): string {
     `${l.ctaLabel}:`,
     l.url,
     "",
+    ...(l.secondary ? [`${l.secondary.label}:`, l.secondary.url, ""] : []),
     ...l.notes,
     "",
     "----",
@@ -337,6 +346,52 @@ export function buildChangeEmailConfirmation(args: {
   };
   return {
     subject: "FUJISAN — メールアドレス変更の確認 / Confirm your email change",
+    text: renderText(layout),
+    html: renderHtml(layout),
+  };
+}
+
+/**
+ * 登録済みのアドレスで、もう一度新規登録されたときの案内（アドレスの持ち主宛）。
+ * 送る理由と「送信に失敗しても投げない」理由は `src/lib/auth.ts` の
+ * `onExistingUserSignUp` を参照。ログインの URL はトークンを含まないので期限は書かない。
+ */
+export function buildAlreadyRegisteredEmail(args: {
+  user: Recipient & { email: string; emailVerified?: boolean };
+  loginUrl: string;
+  resetUrl: string;
+  googleEnabled: boolean;
+}): AuthEmail {
+  const { user, loginUrl, resetUrl, googleEnabled } = args;
+  const host = siteHost(loginUrl);
+  const layout: Layout = {
+    preheader: "このメールアドレスはすでにご登録済みです。ログインのご案内です。",
+    heading: "ご登録済みのメールアドレスです",
+    greeting: greetingOf(user),
+    paragraphs: [
+      `FUJISAN SAKE（${host}）で、このメールアドレス（${user.email}）での会員登録のお申し込みがありました。このアドレスはすでにご登録済みです。`,
+      "登録し直す必要はありません。下のボタンからログインしてください。",
+      ...(googleEnabled
+        ? ["Google アカウントで登録された場合は、ログイン画面の「Google で続ける」からログインしてください。"]
+        : []),
+      ...(user.emailVerified
+        ? []
+        : ["メールアドレスの確認がまだの場合は、ログイン画面からログインをお試しください。確認メールを再送できます。"]),
+    ],
+    ctaLabel: "ログインする",
+    url: loginUrl,
+    secondary: { label: "パスワードをお忘れの場合", url: resetUrl },
+    notes: [
+      "お心当たりが無い場合は、このメールを破棄してください。アカウントには何も変更を加えていません。",
+    ],
+    english: [
+      `Someone tried to sign up at FUJISAN SAKE (${host}) with this email address, which is already registered.`,
+      "There is no need to sign up again. Please log in with the button above, or reset your password if you have forgotten it.",
+      "If this wasn't you, ignore this email. Nothing about your account has changed.",
+    ],
+  };
+  return {
+    subject: "FUJISAN — ご登録済みのメールアドレスです / This email is already registered",
     text: renderText(layout),
     html: renderHtml(layout),
   };

@@ -86,6 +86,14 @@ describe("登録済みのアドレスでの新規登録", () => {
     expect(payload.text).toContain("https://example.test/forgot-password/personal");
   });
 
+  it("ほかの認証メールと同じく HTML 版も付けて送る（テキストだけだと生の URL が並ぶ）", async () => {
+    await existing({ role: "personal" });
+
+    const [payload] = sendEmail.mock.calls[0];
+    expect(payload.html).toContain("ログインする");
+    expect(payload.html).toContain('href="https://example.test/login/personal"');
+  });
+
   it("法人のアカウントには法人用のログイン画面を案内する", async () => {
     await existing({ role: "business" });
 

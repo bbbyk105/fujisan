@@ -3,6 +3,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { additionalUserFields, AUTH_LINK_TTL_SEC } from "./auth-shared";
 import { sendEmail } from "./email";
 import {
+  buildAlreadyRegisteredEmail,
   buildChangeEmailConfirmation,
   buildResetPasswordEmail,
   buildVerifyEmail,
@@ -60,42 +61,25 @@ export function buildAuthOptions(env: AuthEnv) {
       onExistingUserSignUp: async ({
         user,
       }: {
-        user: { email: string; emailVerified?: boolean; role?: unknown };
+        user: {
+          email: string;
+          name?: string | null;
+          emailVerified?: boolean;
+          role?: unknown;
+        };
       }) => {
         const kind = user.role === "business" ? "business" : "personal";
         const base = (env.BETTER_AUTH_URL ?? "").replace(/\/+$/, "");
-        const login = `${base}/login/${kind}`;
-        const reset = `${base}/forgot-password/${kind}`;
-        const ja = [
-          `このメールアドレス（${user.email}）は、すでに会員登録がお済みです。`,
-          "登録し直す必要はありません。以下からログインしてください。",
-          "",
-          `  ログイン: ${login}`,
-          `  パスワードをお忘れの場合: ${reset}`,
-          ...(googleEnabled
-            ? ["", "Google アカウントで登録された場合は、ログイン画面の「Google で続ける」からログインしてください。"]
-            : []),
-          ...(user.emailVerified
-            ? []
-            : ["", "メールアドレスの確認がまだお済みでない場合は、ログイン画面でログインすると確認メールを再送できます。"]),
-          "",
-          "登録のお手続きに心当たりがない場合は、このメールを破棄してください。アカウントには何も変更を加えていません。",
-        ];
-        const en = [
-          "This email address is already registered, so there is no need to sign up again. Please log in instead:",
-          "",
-          `  Log in: ${login}`,
-          `  Forgot your password: ${reset}`,
-          "",
-          "If you did not try to sign up, you can ignore this email. Nothing about your account has changed.",
-        ];
         try {
           await sendEmail(
             {
               to: user.email,
-              subject:
-                "FUJISAN — ご登録済みのメールアドレスです / This email is already registered",
-              text: `FUJISAN SAKE\n\n${ja.join("\n")}\n\n${en.join("\n")}\n`,
+              ...buildAlreadyRegisteredEmail({
+                user,
+                loginUrl: `${base}/login/${kind}`,
+                resetUrl: `${base}/forgot-password/${kind}`,
+                googleEnabled,
+              }),
             },
             { apiKey: env.RESEND_API_KEY, from: env.RESEND_FROM },
           );

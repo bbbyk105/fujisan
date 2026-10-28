@@ -8,6 +8,7 @@
 // 名乗り・宛名・ボタン・期限・心当たりが無い場合・販売者表記の 6 点を固定する。
 
 import {
+  buildAlreadyRegisteredEmail,
   buildChangeEmailConfirmation,
   buildResetPasswordEmail,
   buildVerifyEmail,
@@ -130,5 +131,52 @@ describe("メールアドレス変更の承認メール（変更前のアドレ�
     expect(mail.text).toContain("変更前: old@example.test");
     expect(mail.text).toContain("変更後: new@example.test");
     expect(mail.html).toContain("変更前: old@example.test<br />変更後: new@example.test");
+  });
+});
+
+describe("登録済みのアドレスへの案内メール", () => {
+  const base = {
+    user: { email: "taro@example.test", name: "山田 太郎", emailVerified: true },
+    loginUrl: "https://sakefujisan.com/login/personal",
+    resetUrl: "https://sakefujisan.com/forgot-password/personal",
+    googleEnabled: false,
+  };
+
+  it("ほかの認証メールと同じ組みで、ログインの入口をボタンにする", () => {
+    const { html } = buildAlreadyRegisteredEmail(base);
+    expect(html).toContain('href="https://sakefujisan.com/login/personal"');
+    expect(html).toContain("ログインする");
+    expect(html).toContain("FUJISAN SAKE");
+    expect(html).toContain("山田 太郎 様");
+    expect(html).toContain(FUJISAN_LEGAL.sellerName);
+  });
+
+  it("パスワード再設定の入口も両方の版に載せる", () => {
+    const mail = buildAlreadyRegisteredEmail(base);
+    expect(mail.html).toContain(
+      'href="https://sakefujisan.com/forgot-password/personal"',
+    );
+    expect(mail.text).toContain("https://sakefujisan.com/login/personal");
+    expect(mail.text).toContain("https://sakefujisan.com/forgot-password/personal");
+    expect(mail.text).not.toContain("ボタン");
+  });
+
+  it("心当たりが無い場合と、アカウントは変わっていないことを書く", () => {
+    const { text } = buildAlreadyRegisteredEmail(base);
+    expect(text).toContain("お心当たりが無い場合");
+    expect(text).toContain("何も変更を加えていません");
+  });
+
+  it("確認メールの再送は未認証のときだけ、Google の入口は有効なときだけ書く", () => {
+    expect(buildAlreadyRegisteredEmail(base).text).not.toContain("確認メールを再送");
+    expect(buildAlreadyRegisteredEmail(base).text).not.toContain("Google");
+
+    const other = buildAlreadyRegisteredEmail({
+      ...base,
+      user: { ...base.user, emailVerified: false },
+      googleEnabled: true,
+    });
+    expect(other.text).toContain("確認メールを再送");
+    expect(other.text).toContain("Google で続ける");
   });
 });
