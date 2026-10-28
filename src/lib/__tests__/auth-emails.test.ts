@@ -55,10 +55,9 @@ describe("会員登録の確認メール", () => {
     expect(mail.html).toContain("ボタンが押せない場合");
   });
 
-  it("サイト名と手続きの内容を名乗り、宛名を入れる", () => {
+  it("サイト名と手続きの内容を名乗る", () => {
     for (const body of [mail.text, mail.html]) {
       expect(body).toContain("FUJISAN SAKE（sakefujisan.com）の会員登録");
-      expect(body).toContain("佐藤 優子 様");
     }
   });
 
@@ -82,20 +81,6 @@ describe("会員登録の確認メール", () => {
     expect(mail.text).toContain("下のリンクを開いて");
   });
 
-  it("名前が無いときは宛名の行ごと出さない（「様」だけ残さない）", () => {
-    const noName = buildVerifyEmail({ user: { name: "" }, url: SIGNUP_URL });
-    expect(noName.text).not.toMatch(/^\s*様$/m);
-    expect(noName.html).not.toContain(">様<");
-  });
-
-  it("名前は HTML に埋める前にエスケープする", () => {
-    const evil = buildVerifyEmail({
-      user: { name: '<img src=x onerror="alert(1)">' },
-      url: SIGNUP_URL,
-    });
-    expect(evil.html).not.toContain("<img src=x");
-    expect(evil.html).toContain("&lt;img src=x");
-  });
 });
 
 describe("メールアドレス変更の確認メール（新しいアドレス宛）", () => {
@@ -147,7 +132,6 @@ describe("登録済みのアドレスへの案内メール", () => {
     expect(html).toContain('href="https://sakefujisan.com/login/personal"');
     expect(html).toContain("ログインする");
     expect(html).toContain("FUJISAN SAKE");
-    expect(html).toContain("山田 太郎 様");
     expect(html).toContain(FUJISAN_LEGAL.sellerName);
   });
 
@@ -178,5 +162,54 @@ describe("登録済みのアドレスへの案内メール", () => {
     });
     expect(other.text).toContain("確認メールを再送");
     expect(other.text).toContain("Google で続ける");
+  });
+});
+
+describe("すべての認証メール", () => {
+  // 名前は登録画面で誰でも自由に入れられ、確認メールは本人確認の前に届く。
+  // 他人のアドレスで登録すれば、正規の送信元のメールの冒頭に好きな文面
+  // （偽の URL など）を載せられてしまう。メール変更の承認でも、セッションを
+  // 奪った側が名前を書き換えておけば、持ち主への警告に指示文を書き込める。
+  const EVIL = "【重要】https://evil.example/login から本人確認してください";
+  const user = { email: "old@example.test", name: EVIL, emailVerified: false };
+  const mails = {
+    確認: buildVerifyEmail({ user, url: SIGNUP_URL }),
+    変更の確認: buildVerifyEmail({ user, url: CHANGE_URL }),
+    再設定: buildResetPasswordEmail({ user, url: "https://sakefujisan.com/reset-password/t" }),
+    変更の承認: buildChangeEmailConfirmation({
+      user,
+      newEmail: "new@example.test",
+      url: "https://sakefujisan.com/api/auth/verify-email?token=t",
+    }),
+    登録済み: buildAlreadyRegisteredEmail({
+      user,
+      loginUrl: "https://sakefujisan.com/login/personal",
+      resetUrl: "https://sakefujisan.com/forgot-password/personal",
+      googleEnabled: false,
+    }),
+  };
+
+  it.each(Object.entries(mails))("%s: 利用者が入れた名前を本文に出さない", (_, mail) => {
+    for (const body of [mail.text, mail.html]) {
+      expect(body).not.toContain("evil.example");
+      expect(body).not.toContain("本人確認してください");
+    }
+  });
+
+  it.each(Object.entries(mails))(
+    "%s: 色は 6 桁で書く（#RRGGBBAA は Outlook などで捨てられ、濃紺の上の文字が黒になって読めない）",
+    (_, mail) => {
+      expect(mail.html).not.toMatch(/#[0-9a-fA-F]{8}\b/);
+    },
+  );
+
+  it("利用者が入れた値（変更後のアドレス）は HTML に埋める前にエスケープする", () => {
+    const evil = buildChangeEmailConfirmation({
+      user,
+      newEmail: '<img src=x onerror="alert(1)">@example.test',
+      url: "https://sakefujisan.com/api/auth/verify-email?token=t",
+    });
+    expect(evil.html).not.toContain("<img src=x");
+    expect(evil.html).toContain("&lt;img src=x");
   });
 });

@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { additionalUserFields, AUTH_LINK_TTL_SEC } from "./auth-shared";
 import { sendEmail } from "./email";
+import { SITE_URL } from "./seo";
 import {
   buildAlreadyRegisteredEmail,
   buildChangeEmailConfirmation,
@@ -69,7 +70,8 @@ export function buildAuthOptions(env: AuthEnv) {
         };
       }) => {
         const kind = user.role === "business" ? "business" : "personal";
-        const base = (env.BETTER_AUTH_URL ?? "").replace(/\/+$/, "");
+        // 未設定で "" にすると相対パスになり、メールソフトでは開けない（order-emails と同じ既定値）。
+        const base = (env.BETTER_AUTH_URL || SITE_URL).replace(/\/+$/, "");
         try {
           await sendEmail(
             {

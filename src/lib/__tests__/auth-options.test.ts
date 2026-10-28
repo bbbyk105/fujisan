@@ -94,6 +94,19 @@ describe("登録済みのアドレスでの新規登録", () => {
     expect(payload.html).toContain('href="https://example.test/login/personal"');
   });
 
+  it("BETTER_AUTH_URL が無くても、リンクは本番ドメインの絶対 URL にする（相対パスはメールソフトで開けない）", async () => {
+    await buildAuthOptions({
+      ...ENV,
+      BETTER_AUTH_URL: undefined,
+    }).emailAndPassword.onExistingUserSignUp({
+      user: { email: "taro@example.test", emailVerified: true },
+    });
+
+    const [payload] = sendEmail.mock.calls[0];
+    expect(payload.text).toContain("https://sakefujisan.com/login/personal");
+    expect(payload.html).toContain('href="https://sakefujisan.com/login/personal"');
+  });
+
   it("法人のアカウントには法人用のログイン画面を案内する", async () => {
     await existing({ role: "business" });
 

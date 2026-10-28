@@ -9,7 +9,7 @@ import { AUTH_LINK_TTL_SEC } from "@/lib/auth-shared";
  * プレーンテキストに直に貼っていた。誰から・なぜ届いたのかも書いておらず、
  * 受け取った側からはフィッシングと見分けがつかなかった。そのため、
  *
- *   - 冒頭で「どのサイトの、どの手続きか」を名乗り、宛名を入れる
+ *   - 冒頭で「どのサイトの、どの手続きか」を名乗る（宛名は入れない。下の `Recipient` を参照）
  *   - リンクはボタンにし、生の URL は「押せない場合」の予備として小さく添える
  *   - 有効期限と「心当たりが無い場合」を必ず書く
  *   - 末尾に販売者（特商法の表記と同じ）と問い合わせ先を置く
@@ -22,6 +22,13 @@ import { AUTH_LINK_TTL_SEC } from "@/lib/auth-shared";
 
 export type AuthEmail = { subject: string; text: string; html: string };
 
+/**
+ * 宛先の利用者。Better Auth から渡されるので型には残すが、**`name` は本文に使わない。**
+ * 名前は登録画面で誰でも自由に入れられ、確認メールは本人確認の前に届く。宛名に出すと、
+ * 他人のアドレスで登録するだけで、正規の送信元のメールの冒頭に好きな文面（偽の URL など）を
+ * 載せられる。メール変更の承認でも、セッションを奪った側が名前を書き換えておけば、
+ * 持ち主への警告に指示文を書き込める。
+ */
 type Recipient = { name?: string | null };
 
 function escapeHtml(s: string): string {
@@ -82,7 +89,6 @@ type Layout = {
   /** 受信一覧で件名の横に出る 1 行（本文の先頭が出るのを防ぐ）。 */
   preheader: string;
   heading: string;
-  greeting: string | null;
   /** 本文の段落。素の文字列で渡す（改行は HTML では <br /> になる）。 */
   paragraphs: string[];
   ctaLabel: string;
@@ -112,7 +118,7 @@ function renderHtml(l: Layout): string {
   const p = (s: string) =>
     `<p style="margin:0 0 16px;font-size:14px;line-height:1.9;color:#0B1A2E;">${html(s)}</p>`;
   const note = (s: string) =>
-    `<p style="margin:0 0 8px;font-size:12.5px;line-height:1.8;color:#0B1A2Ebb;">${html(s)}</p>`;
+    `<p style="margin:0 0 8px;font-size:12.5px;line-height:1.8;color:#4b5563;">${html(s)}</p>`;
 
   return `<!doctype html>
 <html lang="ja">
@@ -124,11 +130,10 @@ function renderHtml(l: Layout): string {
       <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fbf9f3;border:1px solid #e6dcc4;">
         <tr><td style="background:#0B1A2E;padding:22px 32px;">
           <div style="font-family:Georgia,'Times New Roman',serif;color:#fbf9f3;font-size:19px;letter-spacing:0.16em;font-weight:600;">FUJISAN SAKE</div>
-          <div style="color:#fbf9f3aa;font-size:12px;margin-top:4px;">${host}</div>
+          <div style="color:#abafb1;font-size:12px;margin-top:4px;">${host}</div>
         </td></tr>
         <tr><td style="padding:32px 32px 8px;">
           <h1 style="margin:0 0 20px;font-size:20px;line-height:1.5;font-weight:600;color:#0B1A2E;">${escapeHtml(l.heading)}</h1>
-          ${l.greeting ? p(l.greeting) : ""}
           ${l.paragraphs.map(p).join("\n          ")}
         </td></tr>
         <tr><td style="padding:8px 32px 24px;">
@@ -143,22 +148,22 @@ function renderHtml(l: Layout): string {
           ${l.notes.map(note).join("\n          ")}
         </td></tr>
         <tr><td style="padding:0 32px 28px;">
-          <div style="border-top:1px solid #e6dcc4;padding-top:16px;font-size:11.5px;line-height:1.7;color:#0B1A2E99;">
+          <div style="border-top:1px solid #e6dcc4;padding-top:16px;font-size:11.5px;line-height:1.7;color:#6b737d;">
             ボタンが押せない場合は、次の URL をブラウザで開いてください。<br />
-            <a href="${href}" style="color:#0B1A2E99;word-break:break-all;">${href}</a>
+            <a href="${href}" style="color:#6b737d;word-break:break-all;">${href}</a>
           </div>
         </td></tr>
         <tr><td style="padding:0 32px 28px;">
-          <div style="border-top:1px solid #e6dcc4;padding-top:16px;font-size:12px;line-height:1.8;color:#0B1A2E99;">
+          <div style="border-top:1px solid #e6dcc4;padding-top:16px;font-size:12px;line-height:1.8;color:#6b737d;">
             ${l.english.map(escapeHtml).join("<br />")}
           </div>
         </td></tr>
-        <tr><td style="background:#0B1A2E;padding:22px 32px;color:#fbf9f3aa;font-size:11px;line-height:1.9;">
+        <tr><td style="background:#0B1A2E;padding:22px 32px;color:#abafb1;font-size:11px;line-height:1.9;">
           このメールは ${host} でのお手続きにともない、自動で送信しています。<br />
           ${escapeHtml(FUJISAN_LEGAL.sellerName)}<br />
           ${escapeHtml(FUJISAN_LEGAL.address)}<br />
           TEL ${escapeHtml(FUJISAN_LEGAL.phone)}　${escapeHtml(FUJISAN_LEGAL.phoneHours)}<br />
-          お問い合わせ: <a href="mailto:${escapeHtml(FUJISAN_LEGAL.email)}" style="color:#fbf9f3cc;">${escapeHtml(FUJISAN_LEGAL.email)}</a>
+          お問い合わせ: <a href="mailto:${escapeHtml(FUJISAN_LEGAL.email)}" style="color:#cbcccc;">${escapeHtml(FUJISAN_LEGAL.email)}</a>
         </td></tr>
       </table>
     </td></tr>
@@ -186,7 +191,6 @@ function renderText(l: Layout): string {
     "",
     l.heading,
     "",
-    ...(l.greeting ? [l.greeting, ""] : []),
     ...l.paragraphs.flatMap((s) => [forText(s), ""]),
     `${l.ctaLabel}:`,
     l.url,
@@ -204,12 +208,6 @@ function renderText(l: Layout): string {
   ].join("\n");
 }
 
-function greetingOf(user: Recipient): string | null {
-  const name = user.name?.trim();
-  // 名前が無いときに「様」だけ残すと崩れるので、行ごと出さない。
-  return name ? `${name} 様` : null;
-}
-
 // ── 各メール ────────────────────────────────────────────────
 
 /** 会員登録の確認、またはメールアドレス変更の最後の確認（新しいアドレス宛）。 */
@@ -217,7 +215,7 @@ export function buildVerifyEmail(args: {
   user: Recipient;
   url: string;
 }): AuthEmail {
-  const { user, url } = args;
+  const { url } = args;
   const host = siteHost(url);
 
   if (verificationPurpose(url) === "change-email") {
@@ -228,7 +226,6 @@ export function buildVerifyEmail(args: {
     const layout: Layout = {
       preheader: `メールアドレスの変更を完了するための確認です。リンクの有効期限は ${ttlJa()}です。`,
       heading: "メールアドレス変更の確認",
-      greeting: greetingOf(user),
       paragraphs,
       ctaLabel: "変更を完了する",
       url,
@@ -256,7 +253,6 @@ export function buildVerifyEmail(args: {
   const layout: Layout = {
     preheader: `会員登録を完了するための確認です。リンクの有効期限は ${ttlJa()}です。`,
     heading: "メールアドレスの確認",
-    greeting: greetingOf(user),
     paragraphs,
     ctaLabel: "メールアドレスを確認する",
     url,
@@ -282,7 +278,7 @@ export function buildResetPasswordEmail(args: {
   user: Recipient;
   url: string;
 }): AuthEmail {
-  const { user, url } = args;
+  const { url } = args;
   const host = siteHost(url);
   const paragraphs = [
     `FUJISAN SAKE（${host}）で、パスワードの再設定のお申し込みがありました。`,
@@ -291,7 +287,6 @@ export function buildResetPasswordEmail(args: {
   const layout: Layout = {
     preheader: `パスワードを再設定するためのリンクです。有効期限は ${ttlJa()}です。`,
     heading: "パスワードの再設定",
-    greeting: greetingOf(user),
     paragraphs,
     ctaLabel: "パスワードを再設定する",
     url,
@@ -326,7 +321,6 @@ export function buildChangeEmailConfirmation(args: {
   const layout: Layout = {
     preheader: `ご登録のメールアドレスを ${newEmail} へ変更するお申し込みがありました。`,
     heading: "メールアドレス変更の承認",
-    greeting: greetingOf(user),
     paragraphs: [
       `FUJISAN SAKE（${host}）で、ご登録のメールアドレスを次のアドレスへ変更するお申し込みがありました。`,
       `変更前: ${user.email}\n変更後: ${newEmail}`,
@@ -367,7 +361,6 @@ export function buildAlreadyRegisteredEmail(args: {
   const layout: Layout = {
     preheader: "このメールアドレスはすでにご登録済みです。ログインのご案内です。",
     heading: "ご登録済みのメールアドレスです",
-    greeting: greetingOf(user),
     paragraphs: [
       `FUJISAN SAKE（${host}）で、このメールアドレス（${user.email}）での会員登録のお申し込みがありました。このアドレスはすでにご登録済みです。`,
       "登録し直す必要はありません。下のボタンからログインしてください。",
