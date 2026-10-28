@@ -1,6 +1,6 @@
 # やるべきこと
 
-最終更新: 2026-09-24
+最終更新: 2026-10-29
 
 ---
 
@@ -10,24 +10,39 @@
 
 1. **本番で管理者のアカウントを作る** — `ADMIN_EMAILS`（mtfujipharmacy@gmail.com・
    bbbyk105@yahoo.co.jp）は設定済み。どちらかのアドレスで会員登録すると `/admin` に入れる。
-2. **通信販売酒類小売業免許の番号を入れる** — `src/data/fujisan-legal.ts` の
-   `LIQUOR_LICENCE`。**それらしい伏せ字で埋めないこと**（本物に見えたまま公開される）。
-   自動デプロイでは `check:legal` が走らないので、埋めたら Workers Builds の
-   Build command に `npm run check:legal &&` を足す。
-3. **Stripe を本番キーに切り替える** — いまは sandbox。`STRIPE_SECRET_KEY` と
+2. **Stripe を本番キーに切り替える** — いまは sandbox。`STRIPE_SECRET_KEY` と
    `STRIPE_WEBHOOK_SECRET` を**同時に**差し替える（本番 Webhook は用意済み）。
-4. **実在庫を入れる** — 本番は全 SKU 一律 24 本の暫定値。`/admin/products` で差し替える。
+3. **実在庫を入れる** — 本番は全 SKU 一律 24 本の暫定値。`/admin/products` で差し替える。
 
-### 決めれば埋まるもの
+### 届いたら・決めたら埋まるもの
 
+- **通信販売酒類小売業免許の番号** — 番号が届く前に公開すると 2026-10-29 に本人が決めた
+  （特商法ページには「確認中」と出る）。届いたら `src/data/fujisan-legal.ts` の
+  `LIQUOR_LICENCE` を埋め、Workers Builds の Build command に `npm run check:legal &&` を足す。
+  **それらしい伏せ字で埋めないこと**（本物に見えたまま公開される）
 - **SNS アカウント** — `FujisanFooter.tsx` の `SOCIAL_LINKS`（空なら非表示）
-- **適格請求書（インボイス）登録番号** — `INVOICE_REGISTRATION_NUMBER`。未登録なら `null` のまま
+- ~~**適格請求書（インボイス）登録番号**~~ — 済（2026-10-29、`T4080103000596`）。領収書に出る。
+  国税庁の公表サイトで、株式会社近藤薬局・2023-10-01 登録・取消なしを照合済み
 
 ---
 
 ## 積み残し
 
 優先度順。着手時はこのファイルを更新すること。
+
+### 退会すると注文の記録も消える（要マイグレーション）
+
+`deleteAccountAction` は user を物理削除し、`orders.user_id` が `ON DELETE cascade`
+（`drizzle/0001_orders.sql`）なので、お届け済みの注文も一緒に消える。領収書は適格簡易請求書
+なので写しの保存が要り、プライバシーポリシーの「ご注文の記録は、退会後も税法・商法上必要な
+期間保存します」とも食い違う。`user_id` を nullable にして `ON DELETE SET NULL` にする
+（SQLite は表の作り直しになる）か、user を論理削除にする。2026-10-29 のレビューで判明。
+
+### 領収書の続き（適格請求書まわり）
+
+- 一部返金した注文の領収書に、返金日・返金分の税率が無い。返金が 1 万円以上なら
+  適格返還請求書の記載事項を満たさない（`refunded_at` は DB にある）
+- 「発行日」に出しているのは支払い確定日（`paidAt`）。取引年月日として出すなら見出しを合わせる
 
 ### BtoB の発注機能
 

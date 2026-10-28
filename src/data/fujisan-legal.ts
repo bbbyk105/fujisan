@@ -49,8 +49,9 @@ export const SHIPPING_FEE = {
  * （例: taxOffice に所轄税務署名、number に酒類指令の番号）。
  *
  * 埋まるまで `npm run deploy` は predeploy の検査
- * （`scripts/check-legal-disclosure.mjs`）で止まる。酒類の通信販売は
- * 免許番号の表示が必須なので、この状態で本番公開してはならない。
+ * （`scripts/check-legal-disclosure.mjs`）で止まる。ただし本番は Workers Builds の
+ * 自動デプロイで出しており、こちらは検査を通らない。番号が届く前に公開することは
+ * 2026-10-29 に本人が決めた（特商法ページには「確認中」と出る）。届いたら埋めること。
  */
 export const LIQUOR_LICENCE: {
   /** 免許を付与した税務署名。未確定なら null。 */
@@ -69,7 +70,7 @@ export const LIQUOR_LICENCE: {
  * 未登録なのに欄だけあると登録済みに見える）。登録したらここを埋めるだけで
  * 領収書に反映される。
  */
-export const INVOICE_REGISTRATION_NUMBER: string | null = null;
+export const INVOICE_REGISTRATION_NUMBER: string | null = "T4080103000596";
 
 /** 免許番号を掲示できる状態か（税務署名と番号が両方そろっているか）。 */
 export function isLiquorLicenceDisclosed(): boolean {

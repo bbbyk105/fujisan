@@ -70,6 +70,8 @@ staff の追加は `/admin/team` からメール招待でできます（招待�
 `src/data/fujisan-legal.ts` の `LIQUOR_LICENCE` が `null` のままです。
 通信販売での酒類販売では、免許番号の表示が必須です。
 
+**2026-10-29: 番号が届く前に公開すると本人が決めた。** 届いたら以下を行う。
+
 ```ts
 export const LIQUOR_LICENCE = {
   taxOffice: "◯◯税務署",      // 所轄の税務署名
@@ -151,11 +153,14 @@ PR のブランチのビルドが**必ず失敗していた**（PR に常に赤�
   `previews` にバインディングを書き、secret は `wrangler preview base-config secret put` で入れる。
   D1 を本番と同じ `database_id` にすると、本番と行を共有する
 
-あわせて、タスク3 が済んだら Build command を次にする。
+あわせて、Build command に lint とテストを入れる。免許番号とは関係なく、テストが
+落ちたまま本番へ出るのを止めるため、**いますぐ**入れてよい。
 
 ```
-npm run check:legal && npm run lint && npm test && npx opennextjs-cloudflare build
+npm run lint && npm test && npx opennextjs-cloudflare build
 ```
+
+タスク3（免許番号）が済んだら、先頭に `npm run check:legal &&` を足す。
 
 ---
 
@@ -165,7 +170,7 @@ npm run check:legal && npm run lint && npm test && npx opennextjs-cloudflare bui
   Google Cloud 側の承認済みリダイレクト URI に
   `https://sakefujisan.com/api/auth/callback/google` を登録する
 - **SNS**: `FujisanFooter.tsx` の `SOCIAL_LINKS`（空なら非表示）
-- **インボイス登録番号**: `INVOICE_REGISTRATION_NUMBER`。未登録なら `null` のままでよい
+- **インボイス登録番号**: 済（2026-10-29）。`INVOICE_REGISTRATION_NUMBER` = `T4080103000596`。領収書に出る
 - **Google Search Console**: `sakefujisan.com` を登録し、`https://sakefujisan.com/sitemap.xml` を送信
 
 ---
@@ -175,8 +180,8 @@ npm run check:legal && npm run lint && npm test && npx opennextjs-cloudflare bui
 - [x] `ADMIN_EMAILS` が設定済み
 - [ ] 管理者のアドレスで登録し、`/admin` に入れる
 - [ ] 自分以外のメールアドレスで会員登録が完了できる（確認メールが info@ から届く）
-- [ ] 免許番号が入っている（`npm run check:legal` が通る）
-- [ ] Workers Builds の Build command に `npm run check:legal &&` が入っている
+- [ ] 免許番号が入っている（`npm run check:legal` が通る）— 番号が届く前に公開する（2026-10-29 本人）
+- [ ] Workers Builds の Build command に `npm run check:legal &&` が入っている — 番号が入ってから
 - [ ] Stripe が本番キー（`STRIPE_SECRET_KEY` と `STRIPE_WEBHOOK_SECRET` を同時に差し替え済み）
 - [ ] `/admin/products` の在庫が実在庫
 - [ ] 実決済テストで在庫が減り、返金もできた
