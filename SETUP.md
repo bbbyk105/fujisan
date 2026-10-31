@@ -7,14 +7,15 @@
 - Worker 名: `fujisan` / D1: `fujisan-db`
 - デプロイ: main への push で Cloudflare Workers Builds が自動で本番へ出す
 
-コマンドはすべて `~/Desktop/Projects/fujisan` で実行します。
+コマンドはすべて `~/Projects/fujisan` で実行します（wrangler は `wrangler.jsonc` のある
+フォルダで動かさないと、`account_id` と D1 の設定を読まない）。
 
 > **コードの積み残し**は [`docs/TODO.md`](./docs/TODO.md) にあります。
 > こちらは「環境を触らないと終わらない作業」だけを扱います。
 
 ---
 
-## いまの状態（2026-09-24 時点）
+## いまの状態（2026-09-24 時点。日付のある行はその日に確認）
 
 | | 内容 |
 |---|---|
@@ -27,7 +28,7 @@
 | ⚠️ | **決済は Stripe の sandbox（テスト）のまま**。本番キーへの切り替えはタスク4 |
 | ✅ | `ADMIN_EMAILS` = `mtfujipharmacy@gmail.com,bbbyk105@yahoo.co.jp` |
 | ⚠️ | 本番のユーザーは 0 人。管理者のアドレスで会員登録すると `/admin` に入れる（タスク2） |
-| ⚠️ | 在庫は全 SKU 一律 24 本の暫定値 |
+| ⚠️ | 本番 D1 に実在庫を入れた（2026-10-29、タスク5）。**sandbox の決済でも減る**ので、本番キーに切り替えたら数え直す（タスク4） |
 
 ### 本番 Worker の secret（`npx wrangler secret list` で確認済み）
 
@@ -102,18 +103,35 @@ export const LIQUOR_LICENCE = {
 
    **2 つは必ず同時に入れ替える。** 片方だけだと、決済は通るのに Webhook の署名検証が
    失敗して注文が確定しない。
+4. **在庫を数え直す。** sandbox のあいだも、会員登録すれば誰でもテスト用のカードで買え、
+   その注文は Webhook で確定して本番 D1 の在庫を減らす。切り替えた直後に蔵の本数と
+   「よく使うコマンド」の在庫の SELECT を突き合わせ、ずれていれば `/admin/products` で直す
 
 sandbox 側の Webhook の URL が旧 URL（workers.dev）のままでも、`/api/stripe/webhook` だけは
 転送から外してあるので届く。sandbox を使い続けるなら、sandbox のダッシュボードでも URL を
 `https://sakefujisan.com/api/stripe/webhook` にしておく。
 
-## タスク5. 実在庫を入力する
+## タスク5. 実在庫を入力する（済: 2026-10-29）
 
-https://sakefujisan.com/admin/products で実際の本数に差し替えます（タスク2 の後）。
+管理者のアカウントがまだ無いため、wrangler から直接 SQL で全 7 SKU を 20 本にした。
+更新前の `reserved` は全 SKU 0。`reserved` と `low_stock_threshold` には触っていない。
+いまの本数は「よく使うコマンド」の在庫の SELECT で見る（ここの 20 本は当日の記録）。
+
+下の SQL は**そのときに流したものの記録で、棚卸しの手順ではない。** WHERE が無いので
+全 SKU が同じ本数になり、行の無い SKU は作らず、管理画面の検証（SKU の確認・上限）も
+通らない。棚卸しは管理画面で行う。
+
+```sql
+UPDATE inventory SET on_hand = 20, updated_by_email = 'wrangler:2026-10-29 棚卸し',
+  updated_at = cast(unixepoch('subsecond') * 1000 as integer);
+```
+
+以後の棚卸しは、タスク2 で管理者のアカウントを作ったあと
+https://sakefujisan.com/admin/products で実際の本数に差し替えます。
 
 - 販売可能数（実在庫 − 決済待ち）が 0 の SKU は自動的に購入不可になります
 - 決済開始で引き当て、入金確定で実減算されます
-- 「僅少の目安」を下回ると `/admin` にアラートが出ます
+- 販売可能数が「僅少の目安」以下（0 本を除く）になると `/admin` にアラートが出ます
 - 在庫の変更は staff 以上、価格の変更は owner のみ
 
 ## タスク6. 本番で実決済テスト（タスク4 の後）
@@ -183,7 +201,9 @@ npm run lint && npm test && npx opennextjs-cloudflare build
 - [ ] 免許番号が入っている（`npm run check:legal` が通る）— 番号が届く前に公開する（2026-10-29 本人）
 - [ ] Workers Builds の Build command に `npm run check:legal &&` が入っている — 番号が入ってから
 - [ ] Stripe が本番キー（`STRIPE_SECRET_KEY` と `STRIPE_WEBHOOK_SECRET` を同時に差し替え済み）
-- [ ] `/admin/products` の在庫が実在庫
+- [x] 本番 D1 に実在庫を入れた（2026-10-29）
+- [ ] 本番キーに切り替えたあと、蔵の本数と在庫の SELECT が一致する（タスク4 の手順4）
+- [ ] `/admin/products` の在庫が、在庫の SELECT と同じ本数で出る（タスク2 の後）
 - [ ] 実決済テストで在庫が減り、返金もできた
 - [x] 本番 D1 に `0014` まで適用済み
 - [x] `BETTER_AUTH_URL` が `https://sakefujisan.com`
