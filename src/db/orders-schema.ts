@@ -28,6 +28,22 @@ export function hasLeftTheKura(status: OrderStatus): boolean {
   return status === "shipped" || status === "delivered";
 }
 
+/**
+ * これから発送する注文か。一部返金のあとの案内に使う。
+ *
+ * `hasLeftTheKura` の否定では足りない。品物が蔵にあっても、取り消した注文や
+ * キャンセルを依頼された注文は発送しないので、「このまま発送します」とは言えない。
+ */
+export function willStillShip(order: {
+  status: OrderStatus | string;
+  cancelRequestedAt: Date | null;
+}): boolean {
+  return (
+    (order.status === "confirmed" || order.status === "preparing") &&
+    !order.cancelRequestedAt
+  );
+}
+
 /** 返金の状態。金額とステータスの組み合わせを 1 か所で判定する。 */
 export type RefundState = "none" | "partial" | "full";
 
@@ -36,7 +52,7 @@ export type RefundState = "none" | "partial" | "full";
  *
  * `status === "refunded"` は全額返金。それ以外でも `refundedAmount` が
  * 入っていれば一部返金であり、**金額だけを見て「返金済み」と表示しない**こと
- * （一部返金の注文はまだ届く予定のものなので、全額返金と同じ顔をさせない）。
+ * （一部返金の注文は取引が続いているので、全額返金と同じ顔をさせない）。
  */
 export function refundStateOf(order: {
   status: OrderStatus | string;
@@ -77,7 +93,7 @@ export const order = sqliteTable(
      * 注文したアカウント。**退会すると null になる**（注文そのものは残す）。
      *
      * 領収書は適格簡易請求書で写しの保存が要り、プライバシーポリシーにも
-     * 「退会後も税法・商法上必要な期間保存します」と書いている。ここを cascade に
+     * 退会後も保存すると書いている（期限は `ORDER_PII_RETENTION_YEARS`）。ここを cascade に
      * すると、退会と同時に売上の記録まで消える。お客様の名前や宛先は下の列に
      * 注文時点の値が残るので、管理画面はこの列が null でも表示できる。
      */
@@ -121,9 +137,9 @@ export const order = sqliteTable(
      * これまでに返金した累計額（円）。null は返金なし。
      *
      * **`status === "refunded"` は「全額返金済み」だけを意味する。**
-     * 一部だけ返した注文は進行中のまま（発送は続く）なので、ステータスは
-     * 動かさずこの金額だけが増える。金額を持たずにステータスだけで
-     * 表そうとすると、「一部返金して発送準備中」が表現できない。
+     * 一部返金は発送の前にも後にも起きるので、ステータスは動かさず
+     * この金額だけが増える。金額を持たずにステータスだけで表そうとすると、
+     * 「一部返金して発送準備中」が表現できない。
      */
     refundedAmount: integer("refunded_amount"),
 

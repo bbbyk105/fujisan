@@ -29,3 +29,9 @@ export const CONTACT_STATUS_LABELS: Record<ContactStatus, string> = {
   in_progress: "対応中",
   done: "対応済み",
 };
+
+/**
+ * お問い合わせの記録を持ち続ける年数（受付日から）。
+ * プライバシーポリシーの文面もこの値を読むので、変えると公開の約束も変わる。
+ */
+export const CONTACT_RETENTION_YEARS = 3;

@@ -8,7 +8,7 @@ import { CancelOrderButton } from "@/components/fujisan/auth/CancelOrderButton";
 import { ReorderButton } from "@/components/fujisan/auth/ReorderButton";
 import { getSession } from "@/lib/session";
 import { getMyOrderByRefAction } from "@/lib/actions/orders";
-import { isReceiptIssuable } from "@/db/orders-schema";
+import { isReceiptIssuable, willStillShip } from "@/db/orders-schema";
 import { getFujisanProductBySlug } from "@/data/fujisan-products";
 import { L } from "@/i18n/Localized";
 import { buildMetadata } from "@/lib/seo";
@@ -244,12 +244,14 @@ export default async function OrderDetailPage({
                     ¥{yen.format(order.total - partialRefund)}
                   </span>
                 </div>
-                <p className="mt-2 text-[11px] leading-[1.7] text-indigo/65">
-                  <L
-                    en="The remainder of your order will still be shipped."
-                    ja="ご注文はこのまま発送いたします。"
-                  />
-                </p>
+                {willStillShip(order) && (
+                  <p className="mt-2 text-[11px] leading-[1.7] text-indigo/65">
+                    <L
+                      en="The remainder of your order will still be shipped."
+                      ja="ご注文はこのまま発送いたします。"
+                    />
+                  </p>
+                )}
               </div>
             )}
 

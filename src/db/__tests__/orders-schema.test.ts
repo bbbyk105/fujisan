@@ -1,4 +1,8 @@
-import { ORDER_STATUSES, isReceiptIssuable } from "@/db/orders-schema";
+import {
+  ORDER_STATUSES,
+  isReceiptIssuable,
+  willStillShip,
+} from "@/db/orders-schema";
 
 describe("isReceiptIssuable", () => {
   it("代金を受け取って保持している間は発行できる", () => {
@@ -18,5 +22,30 @@ describe("isReceiptIssuable", () => {
     for (const status of ORDER_STATUSES) {
       expect(typeof isReceiptIssuable(status)).toBe("boolean");
     }
+  });
+});
+
+// 一部返金のあとの案内に使う。「蔵を出ていない」と「これから発送する」は別で、
+// 取り消した注文や、キャンセルを依頼された注文は蔵にあっても発送しない。
+describe("willStillShip", () => {
+  it.each(["confirmed", "preparing"] as const)("%s はこのまま発送する", (status) => {
+    expect(willStillShip({ status, cancelRequestedAt: null })).toBe(true);
+  });
+
+  it.each(["shipped", "delivered"] as const)("%s はもう発送しない", (status) => {
+    expect(willStillShip({ status, cancelRequestedAt: null })).toBe(false);
+  });
+
+  it.each(["pending", "cancelled", "refunded"] as const)(
+    "%s は発送しない",
+    (status) => {
+      expect(willStillShip({ status, cancelRequestedAt: null })).toBe(false);
+    },
+  );
+
+  it("キャンセルを依頼された注文は、発送前でも発送すると言わない", () => {
+    expect(
+      willStillShip({ status: "confirmed", cancelRequestedAt: new Date() }),
+    ).toBe(false);
   });
 });

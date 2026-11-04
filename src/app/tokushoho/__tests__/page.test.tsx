@@ -33,6 +33,14 @@ describe("特定商取引法に基づく表示", () => {
     expect(text()).toContain("最終更新 2026.11");
   });
 
+  it("酒類販売管理者標識の根拠法を正しく書く（酒税法ではない）", () => {
+    const t = text();
+    expect(t).toContain("酒税の保全及び酒類業組合等に関する法律第86条の9");
+    expect(t).toContain("Act on Securing of Liquor Tax");
+    expect(t).not.toContain("酒税法第86条の9");
+    expect(t).not.toContain("Article 86-9 of the Liquor Tax Act");
+  });
+
   it("販売業者と酒類販売管理者標識は出し続ける", () => {
     const t = text();
     expect(t).toContain("株式会社 近藤薬局");
