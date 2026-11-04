@@ -15,7 +15,8 @@ import {
   reserveStock,
   type ShortageLine,
 } from "@/lib/inventory";
-import { getStripe } from "@/lib/stripe";
+import { alertOps } from "@/lib/ops-alert";
+import { getConsumptionTaxRateId, getStripe } from "@/lib/stripe";
 
 /** カートから送られてくる最小限の行（価格はサーバーで引き直す）。 */
 type CartInput = { slug: string; ml: number; qty: number };
@@ -217,6 +218,22 @@ export async function startCheckoutAction(input: {
 
   // Stripe Checkout Session を生成
   const stripe = getStripe(e.STRIPE_SECRET_KEY);
+  // 領収書は Stripe が出すので、税率と宛先はここで渡した内容がそのまま載る。
+  const taxRateId = await getConsumptionTaxRateId(stripe);
+  if (!taxRateId) {
+    // 決済は止めないが、この注文の領収書には税率が載らない（後から足せない）。
+    await alertOps(
+      "Stripe の消費税率を用意できませんでした",
+      [
+        `注文番号: ${orderRef}`,
+        "",
+        "決済は続行しています。この注文の Stripe の領収書には税率が載りません。",
+        "Stripe の障害が無いか、秘密鍵に Tax Rate の権限があるかを確認してください。",
+      ].join("\n"),
+    );
+  }
+  const taxRates = taxRateId ? { tax_rates: [taxRateId] } : {};
+  const customerEmail = (user.email ?? "").trim() || undefined;
   const lineItems = items.map((it) => ({
     quantity: it.qty,
     price_data: {
@@ -224,6 +241,7 @@ export async function startCheckoutAction(input: {
       unit_amount: it.unitPrice, // JPY は最小単位＝円。整数をそのまま渡す。
       product_data: { name: `${it.name} ${it.variant}（${it.ml}ml）` },
     },
+    ...taxRates,
   }));
   if (shipping > 0) {
     lineItems.push({
@@ -233,6 +251,7 @@ export async function startCheckoutAction(input: {
         unit_amount: shipping,
         product_data: { name: "配送料 / Shipping" },
       },
+      ...taxRates,
     });
   }
 
@@ -240,7 +259,7 @@ export async function startCheckoutAction(input: {
     const checkout = await stripe.checkout.sessions.create({
       mode: "payment",
       line_items: lineItems,
-      customer_email: (user.email ?? "").trim() || undefined,
+      customer_email: customerEmail,
       // サイトの言語切替（data-locale）に合わせる。auto はブラウザ依存でズレるため使わない。
       locale: input.locale === "en" ? "en" : "ja",
       // 登録済みのお届け先があれば Stripe での住所収集を省略（登録住所へ発送）。
@@ -264,7 +283,13 @@ export async function startCheckoutAction(input: {
       expires_at: Math.floor(Date.now() / 1000) + CHECKOUT_EXPIRY_SECONDS,
       // 注文の逆引きキー。Webhook はこれを使って確定する。
       metadata: { orderId: id, orderRef },
-      payment_intent_data: { metadata: { orderId: id, orderRef } },
+      payment_intent_data: {
+        metadata: { orderId: id, orderRef },
+        // Stripe の管理画面で注文番号から支払いを探すため。領収書には載らない。
+        description: `ご注文 ${orderRef}`,
+        // 指定すると、本番の決済が成功したときに Stripe が領収書を送る。
+        ...(customerEmail ? { receipt_email: customerEmail } : {}),
+      },
       success_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       // 「戻る」で帰ってきたときは、期限切れを待たずにその場で在庫を解放する
       // （orderId を持たせて、その注文だけを対象にする）。

@@ -2,12 +2,14 @@
 
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { and, desc, eq, isNull, ne } from "drizzle-orm";
 import { getAuth } from "@/lib/auth";
 import { getDb } from "@/db";
 import { alertOps } from "@/lib/ops-alert";
-import { RECEIPT_ADDRESSEE_MAX } from "@/data/fujisan-orders";
+import { getReceiptUrl, getStripe } from "@/lib/stripe";
 import {
+  isReceiptIssuable,
   order as orderTable,
   type OrderLine,
   type OrderStatus,
@@ -32,7 +34,7 @@ export type OrderRecord = {
   trackingNumber: string | null;
   shippedAt: Date | null;
   deliveredAt: Date | null;
-  /** 支払いが確定した日時（Webhook が記録）。領収書の発行日に使う。 */
+  /** 支払いが確定した日時（Webhook が記録）。 */
   paidAt: Date | null;
   /** お客様がキャンセルを依頼した日時。未依頼なら null。 */
   cancelRequestedAt: Date | null;
@@ -44,8 +46,6 @@ export type OrderRecord = {
   refundedAmount: number | null;
   /** 直近の返金日時。 */
   refundedAt: Date | null;
-  /** 領収書の宛名。null なら登録名（customerName）を使う。 */
-  receiptAddressee: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -96,7 +96,6 @@ export async function listMyOrdersAction(limit = 20): Promise<OrderRecord[]> {
       cancelRequestedAt: row.cancelRequestedAt ?? null,
       refundedAmount: row.refundedAmount ?? null,
       refundedAt: row.refundedAt ?? null,
-      receiptAddressee: row.receiptAddressee ?? null,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     }));
@@ -159,7 +158,6 @@ export async function getMyOrderByRefAction(
       cancelRequestedAt: row.cancelRequestedAt ?? null,
       refundedAmount: row.refundedAmount ?? null,
       refundedAt: row.refundedAt ?? null,
-      receiptAddressee: row.receiptAddressee ?? null,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };
@@ -269,51 +267,39 @@ function safeParseItems(json: string): OrderLine[] {
 }
 
 /**
- * 領収書の宛名を設定する（お客様ご自身）。
+ * 自分の注文の領収書（Stripe）のリンクを返す。出せないときは `null`。
  *
- * 空文字を渡すと未指定に戻り、登録名が使われる。
+ * **必ず userId でも絞る。** orderRef は推測しにくいだけで秘密ではなく、
+ * 領収書のリンクからは氏名や金額が読める。
  *
- * **必ず userId でも絞る。** orderRef は推測しにくいだけで秘密ではないので、
- * 番号だけで更新できると他人の領収書を書き換えられる。
- *
- * 金額・ステータスには一切触れない。宛名は「誰に宛てた書面か」を示すだけで、
- * 受け取った金額の事実は変わらない。
+ * Stripe の障害と設定漏れは投げる。`null` にすると「領収書が無い」と 404 に見えてしまう。
  */
-export async function setReceiptAddresseeAction(input: {
-  orderRef: string;
-  addressee: string;
-}): Promise<
-  { ok: true; addressee: string | null } | { ok: false; error: "unauth" | "not_found" | "invalid" | "db" }
-> {
+export async function getMyOrderReceiptUrlAction(
+  orderRef: string,
+): Promise<string | null> {
   const auth = await getAuth();
   const session = await auth.api.getSession({ headers: await headers() });
   const userId = session?.user?.id;
-  if (!userId) return { ok: false, error: "unauth" };
+  if (!userId) return null;
 
-  const ref = input.orderRef.trim();
-  if (!ref) return { ok: false, error: "not_found" };
+  const ref = orderRef.trim();
+  if (!ref) return null;
 
-  const raw = input.addressee.trim();
-  if (raw.length > RECEIPT_ADDRESSEE_MAX) return { ok: false, error: "invalid" };
-  // 改行は書面の体裁を壊すので受け付けない。
-  if (/[\r\n]/.test(raw)) return { ok: false, error: "invalid" };
-  const value = raw === "" ? null : raw;
+  const db = await getDb();
+  const [row] = await db
+    .select({
+      status: orderTable.status,
+      paymentIntentId: orderTable.stripePaymentIntentId,
+      sessionId: orderTable.stripeSessionId,
+    })
+    .from(orderTable)
+    .where(and(eq(orderTable.orderRef, ref), eq(orderTable.userId, userId)))
+    .limit(1);
+  if (!row || !isReceiptIssuable(row.status as OrderStatus)) return null;
+  if (!row.paymentIntentId && !row.sessionId) return null;
 
-  try {
-    const db = await getDb();
-    const updated = await db
-      .update(orderTable)
-      .set({ receiptAddressee: value })
-      .where(
-        and(eq(orderTable.orderRef, ref), eq(orderTable.userId, userId)),
-      )
-      .returning({ id: orderTable.id });
-
-    if (updated.length === 0) return { ok: false, error: "not_found" };
-
-    revalidatePath(`/account/orders/${ref}/receipt`);
-    return { ok: true, addressee: value };
-  } catch {
-    return { ok: false, error: "db" };
-  }
+  const { env } = await getCloudflareContext({ async: true });
+  const secretKey = (env as { STRIPE_SECRET_KEY?: string }).STRIPE_SECRET_KEY;
+  if (!secretKey) throw new Error("STRIPE_SECRET_KEY が設定されていません");
+  return getReceiptUrl(getStripe(secretKey), row);
 }

@@ -25,12 +25,3 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, { ja: string; en: string }
 export function orderStatusJp(status: OrderStatus | string): string {
   return ORDER_STATUS_LABELS[status as OrderStatus]?.ja ?? status;
 }
-
-/**
- * 領収書の宛名の上限（文字数）。
- *
- * 長すぎると印刷時に行が折り返して書面の体裁が崩れる。
- * `"use server"` のファイルは async 関数以外を export できないため、
- * Server Action と UI の両方から読めるようにここへ置く。
- */
-export const RECEIPT_ADDRESSEE_MAX = 60;

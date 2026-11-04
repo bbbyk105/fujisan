@@ -14,6 +14,10 @@ jest.mock("@/lib/auth", () => ({
 
 jest.mock("next/headers", () => ({ headers: async () => new Headers() }));
 jest.mock("next/cache", () => ({ revalidatePath: jest.fn() }));
+// 領収書のリンクの取得で読むだけ。ESM のままでは jest が読めない。
+jest.mock("@opennextjs/cloudflare", () => ({
+  getCloudflareContext: async () => ({ env: {} }),
+}));
 
 const alertOps = jest.fn();
 jest.mock("@/lib/ops-alert", () => ({

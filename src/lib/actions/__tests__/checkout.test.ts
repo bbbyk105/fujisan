@@ -55,8 +55,15 @@ jest.mock("@/db", () => ({
 }));
 
 const sessionsCreate = jest.fn();
+const getConsumptionTaxRateId = jest.fn();
 jest.mock("@/lib/stripe", () => ({
   getStripe: () => ({ checkout: { sessions: { create: sessionsCreate } } }),
+  getConsumptionTaxRateId: (...a: unknown[]) => getConsumptionTaxRateId(...a),
+}));
+
+const alertOps = jest.fn();
+jest.mock("@/lib/ops-alert", () => ({
+  alertOps: (...a: unknown[]) => alertOps(...a),
 }));
 
 // 在庫の中身は inventory.test.ts が実 SQL で見る。ここでは
@@ -104,6 +111,7 @@ beforeEach(() => {
     id: "cs_test_1",
     url: "https://checkout.stripe.com/c/pay/cs_test_1",
   });
+  getConsumptionTaxRateId.mockResolvedValue("txr_test_10");
   reserveStock.mockResolvedValue({ ok: true });
   releaseStock.mockResolvedValue(undefined);
 });
@@ -357,6 +365,81 @@ describe("startCheckoutAction — Stripe セッション", () => {
       url: "https://checkout.stripe.com/c/pay/cs_test_1",
     });
     expect(deleted).toHaveLength(0);
+  });
+});
+
+// 領収書は Stripe が出す。宛先と税率は Stripe に渡した内容からしか作られないので、
+// ここで渡し忘れると、領収書が届かない・税率が載らないまま本番に出る。
+describe("startCheckoutAction — Stripe の領収書", () => {
+  const CART = [{ slug: "shogun", ml: 300, qty: 1 }];
+
+  it("注文者のメールアドレスを領収書の宛先に渡す", async () => {
+    await start({ items: CART });
+    expect(lastSessionArgs().payment_intent_data.receipt_email).toBe(
+      "a@example.com",
+    );
+  });
+
+  it("注文の逆引きキーは領収書の宛先を足しても残す", async () => {
+    await start({ items: CART });
+    expect(lastSessionArgs().payment_intent_data.metadata).toEqual(
+      lastSessionArgs().metadata,
+    );
+  });
+
+  it("メールアドレスが無ければ宛先を渡さない（空文字は Stripe が受け付けない）", async () => {
+    getSession.mockResolvedValue({ user: { id: "user_1", email: "  " } });
+    await start({ items: CART });
+    expect(lastSessionArgs().payment_intent_data).not.toHaveProperty(
+      "receipt_email",
+    );
+  });
+
+  it("商品の行と送料の行の両方に消費税 10% を付ける", async () => {
+    await start({ items: CART });
+    const lines = lastSessionArgs().line_items;
+    expect(lines.length).toBe(2);
+    for (const line of lines) {
+      expect(line.tax_rates).toEqual(["txr_test_10"]);
+    }
+  });
+
+  it("税率を付けても、Stripe へ渡す金額は税込のカタログ価格のまま", async () => {
+    await start({ items: CART });
+    const [item, shipping] = lastSessionArgs().line_items;
+    expect(item.price_data.unit_amount).toBe(SHOGUN_300.priceJpy);
+    expect(shipping.price_data.unit_amount).toBe(SHIPPING_FEE.flatJpy);
+  });
+
+  it("税率を用意できなくても決済は止めない", async () => {
+    getConsumptionTaxRateId.mockResolvedValue(null);
+    const res = await start({ items: CART });
+
+    expect(res.ok).toBe(true);
+    for (const line of lastSessionArgs().line_items) {
+      expect(line).not.toHaveProperty("tax_rates");
+    }
+  });
+
+  it("税率を用意できなかったら、税率の無い領収書が出ることを人に知らせる", async () => {
+    getConsumptionTaxRateId.mockResolvedValue(null);
+    await start({ items: CART });
+
+    expect(alertOps).toHaveBeenCalledTimes(1);
+    expect(String(alertOps.mock.calls[0][0])).toContain("税率");
+  });
+
+  it("税率があるときは通知しない", async () => {
+    await start({ items: CART });
+    expect(alertOps).not.toHaveBeenCalled();
+  });
+
+  it("Stripe の管理画面で探せるよう、注文番号を支払いの説明に入れる", async () => {
+    await start({ items: CART });
+    const args = lastSessionArgs();
+    expect(args.payment_intent_data.description).toBe(
+      `ご注文 ${args.metadata.orderRef}`,
+    );
   });
 });
 
