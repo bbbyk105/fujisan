@@ -2,6 +2,8 @@ import DocumentPage, {
   type DocumentSection,
 } from "@/components/fujisan/editorial/DocumentPage";
 import { FUJISAN_LEGAL } from "@/data/fujisan-legal";
+import { CONTACT_RETENTION_YEARS } from "@/data/fujisan-contact";
+import { ORDER_PII_RETENTION_YEARS } from "@/data/fujisan-orders";
 import { L } from "@/i18n/Localized";
 import { buildMetadata } from "@/lib/seo";
 
@@ -202,8 +204,8 @@ const sections: DocumentSection[] = [
     body: [
       <L
         key="b"
-        en="Account information is kept while your account is open. You can close your account yourself from the account page once any order in progress has been delivered. Order records are kept for the period required by tax and commercial law even after an account is closed, and enquiry records are kept for up to three years."
-        ja="アカウント情報は、アカウントをご利用の間、保有します。進行中のご注文がお届け済みになれば、アカウントページからご自身で退会いただけます。ご注文の記録は、退会後も税法・商法上必要な期間保存します。お問い合わせの記録は最長3年間保存します。"
+        en={`Account information is kept while your account is open. You can close your account yourself from the account page once any order in progress has been delivered. Order records are kept after an account is closed, as tax and accounting records. For closed accounts, once ${ORDER_PII_RETENTION_YEARS} years have passed since the order date, we delete your name, address, email address, phone number and other details that identify you, and keep only the record of amounts and items. Enquiry records are kept for up to ${CONTACT_RETENTION_YEARS} years.`}
+        ja={`アカウント情報は、アカウントをご利用の間、保有します。進行中のご注文がお届け済みになれば、アカウントページからご自身で退会いただけます。ご注文の記録は、税務・会計の記録として退会後も保存します。退会されたお客様のご注文は、注文日から${ORDER_PII_RETENTION_YEARS}年を過ぎると、お名前・ご住所・メールアドレス・電話番号など個人を特定できる情報を削除し、金額と品目の記録のみを残します。お問い合わせの記録は最長${CONTACT_RETENTION_YEARS}年間保存します。`}
       />,
     ],
   },
@@ -297,7 +299,7 @@ export default function PrivacyPage() {
           ja="取得する情報、利用目的、委託先、保存期間、開示や削除のご請求の方法をまとめています。"
         />
       }
-      updated="2026.09"
+      updated="2026.11"
       sections={sections}
     />
   );

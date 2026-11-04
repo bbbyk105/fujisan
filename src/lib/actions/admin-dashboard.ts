@@ -8,6 +8,7 @@ import { tradeAccount } from "@/db/trade-schema";
 import { requireAdmin } from "@/lib/admin";
 import { getLiveSkus } from "@/lib/catalog";
 import { jstDayStart, jstMonthStart } from "@/lib/format-date";
+import { sweepExpiredPersonalData } from "@/lib/order-retention";
 
 /**
  * 売上に計上するステータス。キャンセルと返金は除外する
@@ -63,6 +64,9 @@ export async function adminDashboardAction(): Promise<
 > {
   const gate = await requireAdmin("staff");
   if (!gate.ok) return { ok: false, error: gate.reason };
+
+  // プライバシーポリシーの保有期間を守るための掃除。失敗しても集計は止めない。
+  await sweepExpiredPersonalData();
 
   try {
     const db = await getDb();

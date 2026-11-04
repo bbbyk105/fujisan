@@ -15,11 +15,14 @@ jest.mock("next/navigation", () => ({
 }));
 
 import { DeleteAccountButton } from "@/components/fujisan/auth/DeleteAccountButton";
+import { ORDER_PII_RETENTION_YEARS } from "@/data/fujisan-orders";
 
 describe("退会の案内", () => {
   it("最初の説明で、注文の記録が残ることと領収書はメールで確認できることを伝える", () => {
     const text = render(<DeleteAccountButton />).container.textContent ?? "";
-    expect(text).toContain("ご注文の記録は、税法・商法上必要な期間保存します");
+    expect(text).toContain(
+      `ご注文の記録は注文日から${ORDER_PII_RETENTION_YEARS}年間保存し、その後は個人情報を削除します`,
+    );
     expect(text).toContain("領収書は、決済時にお送りしたメールからご確認いただけます");
   });
 
