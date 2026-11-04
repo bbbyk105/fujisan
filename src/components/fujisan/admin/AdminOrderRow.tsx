@@ -153,7 +153,7 @@ export function AdminOrderRow({ order, canRefund }: Props) {
     const ok = window.confirm(
       isFull
         ? `注文 ${order.orderRef} の残額すべて（¥${yen.format(shown)}）を返金します。\n注文は「返金済み」になります。この操作は取り消せません。よろしいですか？`
-        : `注文 ${order.orderRef} のうち ¥${yen.format(shown)} を返金します。\n注文は進行中のまま（発送は続きます）です。この操作は取り消せません。よろしいですか？`,
+        : `注文 ${order.orderRef} のうち ¥${yen.format(shown)} を返金します。\n注文のステータスは変わりません。この操作は取り消せません。よろしいですか？`,
     );
     if (!ok) return;
     setRefundMsg(null);
@@ -397,7 +397,7 @@ export function AdminOrderRow({ order, canRefund }: Props) {
                   )}
                   <p className="mt-2 text-[11px] leading-[1.6] text-indigo/60">
                     Stripe 経由で返金し、お客様へ返金メールを送ります。取り消せません。
-                    一部だけ返した場合、注文は進行中のまま（発送は続きます）で、
+                    一部だけ返した場合、注文のステータスは変わらず、
                     <strong className="font-semibold">在庫は自動では戻りません</strong>。
                   </p>
 

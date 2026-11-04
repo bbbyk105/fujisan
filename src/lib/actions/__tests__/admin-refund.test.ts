@@ -96,6 +96,26 @@ describe("adminRefundOrderAction", () => {
     );
   });
 
+  it("発送済みの注文の一部返金は、メールに発送済みであることを渡す", async () => {
+    row = { ...ORDER, userId: "u_1", status: "delivered" };
+
+    await adminRefundOrderAction({ orderId: "o_1", amountJpy: 1100 });
+
+    expect(sendOrderRefundedEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ partial: true, stillShipping: false }),
+    );
+  });
+
+  it("発送前の注文の一部返金は、発送済みとして扱わない", async () => {
+    row = { ...ORDER, userId: "u_1", status: "preparing" };
+
+    await adminRefundOrderAction({ orderId: "o_1", amountJpy: 1100 });
+
+    expect(sendOrderRefundedEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ partial: true, stillShipping: true }),
+    );
+  });
+
   it("会員の注文では退会済みとして扱わない", async () => {
     row = { ...ORDER, userId: "u_1" };
 

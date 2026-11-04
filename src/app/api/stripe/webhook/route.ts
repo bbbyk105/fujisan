@@ -8,6 +8,7 @@ import {
   type OrderLine,
   type OrderStatus,
   hasLeftTheKura,
+  willStillShip,
 } from "@/db/orders-schema";
 import {
   sendOrderConfirmedEmail,
@@ -227,6 +228,7 @@ async function syncRefundFromStripe(charge: Stripe.Charge): Promise<void> {
   // 送料込みの total と charge.amount は一致する作りだが、判定の拠り所を
   // 注文側に置いておかないと、将来ずれたときに状態が食い違う。
   const isFullRefund = refundedTotal >= row.total;
+  const stillShipping = willStillShip(row);
   const refundId = charge.refunds?.data?.[0]?.id ?? null;
 
   const updated = await db
@@ -274,7 +276,9 @@ async function syncRefundFromStripe(charge: Stripe.Charge): Promise<void> {
         `charge: ${charge.id}`,
         `返金累計: ¥${refundedTotal.toLocaleString("ja-JP")} / ¥${row.total.toLocaleString("ja-JP")}`,
         "",
-        "注文は進行中のままです（発送は続きます）。",
+        stillShipping
+          ? "注文は進行中のままです（発送は続きます）。"
+          : "ステータスは変わりません（これから発送する注文ではありません）。",
         "品物を引き取った場合は /admin/products で在庫を足してください。",
       ].join("\n"),
     );
@@ -284,6 +288,7 @@ async function syncRefundFromStripe(charge: Stripe.Charge): Promise<void> {
   try {
     await sendOrderRefundedEmail({
       accountDeleted: row.userId === null,
+      stillShipping,
       orderRef: row.orderRef,
       customerName: row.customerName,
       customerEmail: row.customerEmail,

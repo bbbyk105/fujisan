@@ -23,6 +23,7 @@ import {
   type OrderLine,
   type OrderStatus,
   hasLeftTheKura,
+  willStillShip,
 } from "@/db/orders-schema";
 import {
   sendOrderShippedEmail,
@@ -321,7 +322,7 @@ type RefundEnv = { STRIPE_SECRET_KEY?: string };
  *
  * - `amountJpy` を省くと**残額を全額**返金する。指定するとその額だけ返す。
  * - 全額まで返し切ったときだけ status を `refunded` にする。一部返金では
- *   ステータスを動かさない — 一部返金した注文はまだ発送する予定のもので、
+ *   ステータスを動かさない — 一部返金は発送の前にも後にも起き、取引は続くので、
  *   「返金済み」の顔をさせると蔵側の作業一覧から消えてしまう。
  * - 冪等: Stripe には「注文 + 返金前の累計 + 今回の額」から作った
  *   idempotencyKey を渡す。ボタン連打では同じ鍵になるので二重に返らず、
@@ -487,6 +488,7 @@ export async function adminRefundOrderAction(input: {
   try {
     await sendOrderRefundedEmail({
       accountDeleted: current.userId === null,
+      stillShipping: willStillShip(current),
       orderRef: current.orderRef,
       customerName: current.customerName,
       customerEmail: current.customerEmail,

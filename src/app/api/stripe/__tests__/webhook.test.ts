@@ -611,6 +611,58 @@ describe("Stripe Webhook — Stripe 側で行われた返金の同期", () => {
     );
   });
 
+  it("お届け済みの注文の一部返金では、発送が続くと書かない", async () => {
+    orderRow = baseOrderRow({
+      status: "delivered",
+      stripePaymentIntentId: "pi_test_1",
+    });
+    givenCharge({ amount_refunded: 1000, refunded: false });
+    await postWebhook();
+
+    expect(sendOrderRefundedEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ partial: true, stillShipping: false }),
+    );
+    expect(String(alertOps.mock.calls[0][1])).not.toContain("発送は続きます");
+  });
+
+  it("取り消した注文の一部返金では、発送が続くと書かない", async () => {
+    orderRow = baseOrderRow({
+      status: "cancelled",
+      stripePaymentIntentId: "pi_test_1",
+    });
+    givenCharge({ amount_refunded: 1000, refunded: false });
+    await postWebhook();
+
+    expect(sendOrderRefundedEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ partial: true, stillShipping: false }),
+    );
+    expect(String(alertOps.mock.calls[0][1])).not.toContain("発送は続きます");
+  });
+
+  it("キャンセルを依頼された注文の一部返金では、発送が続くと書かない", async () => {
+    orderRow = baseOrderRow({
+      status: "confirmed",
+      stripePaymentIntentId: "pi_test_1",
+      cancelRequestedAt: new Date("2026-10-01T00:00:00Z"),
+    });
+    givenCharge({ amount_refunded: 1000, refunded: false });
+    await postWebhook();
+
+    expect(sendOrderRefundedEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ partial: true, stillShipping: false }),
+    );
+  });
+
+  it("発送前の注文の一部返金では、発送が続くことを運用へ伝える", async () => {
+    givenCharge({ amount_refunded: 1000, refunded: false });
+    await postWebhook();
+
+    expect(sendOrderRefundedEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ partial: true, stillShipping: true }),
+    );
+    expect(String(alertOps.mock.calls[0][1])).toContain("発送は続きます");
+  });
+
   it("返金が 0 円なら何もしない", async () => {
     givenCharge({ amount_refunded: 0, refunded: false });
     const res = await postWebhook();

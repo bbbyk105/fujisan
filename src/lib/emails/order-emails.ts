@@ -31,8 +31,13 @@ export type OrderEmailData = {
   /** 返金メール用: 退会済みのお客様か。ログインできないのでアカウントのページへ案内しない。 */
   accountDeleted?: boolean;
   /**
+   * 返金メール用: これから発送する注文か（`willStillShip`）。
+   * 渡さなければ発送の案内を書かない。発送しない注文に書くほうが害が大きい。
+   */
+  stillShipping?: boolean;
+  /**
    * 返金メール用: 一部返金か。
-   * 一部返金の注文は**まだお届けする**ので、全額返金と同じ文面にしない
+   * 一部返金は取引が続いているので、全額返金と同じ文面にしない
    * （「返金しました」だけ届くと、お客様は注文が取り消されたと受け取る）。
    */
   partial?: boolean;
@@ -324,12 +329,20 @@ export async function sendOrderRefundedEmail(d: OrderEmailData): Promise<void> {
   const refund = d.refundAmount ?? d.total;
 
   const partial = d.partial === true;
-  // 一部返金では「このご注文はそのままお届けします」を必ず添える。
+  // これから発送する注文には「このまま発送します」を添える（注文が止まったと思わせない）。
+  // 発送しない注文に書くと、もう一度届く、取り消しが通らなかった、と読めてしまう。
+  const stillShipping = partial && d.stillShipping === true;
   const partialNoteJp = partial
-    ? "このご返金は一部のみです。ご注文はこのまま発送いたしますので、そのままお待ちください。\n"
+    ? `このご返金は一部のみです。${
+        stillShipping
+          ? "ご注文はこのまま発送いたしますので、そのままお待ちください。"
+          : ""
+      }\n`
     : "";
   const partialNoteEn = partial
-    ? "This is a partial refund. The rest of your order will still be shipped.\n"
+    ? `This is a partial refund.${
+        stillShipping ? " The rest of your order will still be shipped." : ""
+      }\n`
     : "";
 
   const refundBlock = `<div style="margin:16px 0 0;border:1px solid #C9A84C55;background:#fbf6e8;padding:14px 18px;font-size:13px;line-height:1.8;color:#0B1A2E;">
@@ -339,7 +352,7 @@ export async function sendOrderRefundedEmail(d: OrderEmailData): Promise<void> {
            }</span>
            <strong style="font-weight:700;font-size:15px;">¥${yen.format(refund)}</strong>
          </div>${
-           partial
+           stillShipping
              ? `<div style="margin-top:8px;font-size:12px;color:#0B1A2E99;">ご注文はこのまま発送いたします。 / The rest of your order will still be shipped.</div>`
              : ""
          }
@@ -380,9 +393,9 @@ TEL ${FUJISAN_LEGAL.phone} / ${FUJISAN_LEGAL.email}
       ? "一部のご返金手続きを行いました。"
       : "ご返金の手続きを行いました。",
     lead: `${escapeHtml(d.customerName)} 様、ご注文について ¥${yen.format(refund)} のご返金手続きを行いました。${
-      partial ? "ご注文はこのまま発送いたします。" : ""
+      stillShipping ? "ご注文はこのまま発送いたします。" : ""
     }ご利用のカード会社により、明細への反映まで数日〜2週間程度かかる場合があります。<br/><span style="color:#1D243299;">We've refunded ¥${yen.format(refund)}. ${
-      partial ? "The rest of your order will still be shipped. " : ""
+      stillShipping ? "The rest of your order will still be shipped. " : ""
     }It may take several days to appear on your statement.</span>`,
     d,
     extraBlock: refundBlock,

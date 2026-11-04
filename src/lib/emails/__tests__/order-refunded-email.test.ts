@@ -53,3 +53,41 @@ describe("返金のお知らせ", () => {
     expect(sent().html).toContain("3,850");
   });
 });
+
+// 一部返金は発送の前にも後にも起きる。品物が蔵を出たあとの注文に
+// 「このまま発送いたします」と書くと、もう一度届くと読めてしまう。
+describe("一部返金のお知らせ", () => {
+  const PARTIAL = { ...ORDER, partial: true, refundAmount: 1100 };
+
+  it("発送前なら、このまま発送することを伝える", async () => {
+    await sendOrderRefundedEmail({ ...PARTIAL, stillShipping: true });
+    expect(sent().text).toContain("このまま発送いたします");
+    expect(sent().html).toContain("このまま発送いたします");
+    expect(sent().html).toContain("will still be shipped");
+  });
+
+  it("発送後なら、発送の案内を出さない", async () => {
+    await sendOrderRefundedEmail({ ...PARTIAL, stillShipping: false });
+    for (const body of [sent().text, sent().html]) {
+      expect(body).not.toContain("発送いたします");
+      expect(body).not.toContain("will still be shipped");
+    }
+  });
+
+  it("発送後でも、一部の返金であることは伝える", async () => {
+    await sendOrderRefundedEmail({ ...PARTIAL, stillShipping: false });
+    expect(sent().text).toContain("このご返金は一部のみです");
+    expect(sent().html).toContain("1,100");
+  });
+
+  // 渡し忘れたときに「発送します」と書くと、同じ不具合が戻る。
+  it("指定が無ければ、発送の案内を出さない", async () => {
+    await sendOrderRefundedEmail(PARTIAL);
+    expect(sent().text).not.toContain("発送いたします");
+  });
+
+  it("全額返金には発送の案内を出さない", async () => {
+    await sendOrderRefundedEmail({ ...ORDER, stillShipping: true });
+    expect(sent().text).not.toContain("発送いたします");
+  });
+});
