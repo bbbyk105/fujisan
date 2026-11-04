@@ -197,8 +197,10 @@ const UNDELIVERED_STATUSES = [
 /**
  * 退会（アカウント削除）。ログイン中のユーザーを D1 から物理削除する。
  * お届けが完了していない注文（受付済〜発送済み）が残っている間は退会できない
- * （配送先・連絡先が消えて発送・返金対応ができなくなるため）。
+ * （お客様がログインできなくなり、配送状況の確認もキャンセルの依頼もできなくなるため）。
  * session / account は user.id への onDelete: cascade で自動的に消える。
+ * **注文は消えない。** orders.user_id は onDelete: set null で、紐づけだけが外れる
+ * （領収書の写しの保存が要り、プライバシーポリシーでも保存すると約束している）。
  * その後 signOut でセッション cookie もクリアする。
  */
 export async function deleteAccountAction(): Promise<DeleteAccountResult> {

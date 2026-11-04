@@ -26,6 +26,97 @@ function migrationFiles(): string[] {
     .sort();
 }
 
+function applyFile(db: DatabaseSync, file: string): void {
+  for (const stmt of readFileSync(join(DIR, file), "utf8").split(
+    "--> statement-breakpoint",
+  )) {
+    if (stmt.trim()) db.exec(stmt);
+  }
+}
+
+/** 名前順で `until` より前のマイグレーションだけを流す。 */
+function applyBefore(db: DatabaseSync, until: string): void {
+  for (const file of migrationFiles().filter((f) => f < until)) {
+    applyFile(db, file);
+  }
+}
+
+describe("0015 注文を退会後も残す", () => {
+  const FILE = "0015_order_keep_after_account_delete.sql";
+
+  /** 適用前の表に、お届け済みの注文を 1 件入れた DB を作る。 */
+  function dbWithOrder(): DatabaseSync {
+    const db = new DatabaseSync(":memory:");
+    applyBefore(db, "0015");
+    db.exec(`
+      INSERT INTO user (id, name, email, email_verified, created_at, updated_at)
+        VALUES ('u_1', '山田 太郎', 'taro@example.com', 1, 0, 0);
+      INSERT INTO orders (id, user_id, order_ref, status, items_json, items_count,
+        subtotal, shipping, total, customer_name, customer_email, postal_code, address, phone,
+        stripe_session_id, stripe_payment_intent_id, paid_at,
+        stripe_refund_id, refunded_at, refunded_amount, receipt_addressee,
+        cancel_requested_at, cancel_reason, tracking_carrier, tracking_number,
+        shipped_at, delivered_at, created_at, updated_at)
+      VALUES ('o_1', 'u_1', 'FJ-0001', 'delivered', '[{"slug":"shogun"}]', 1,
+        2750, 1100, 3850, '山田 太郎', 'taro@example.com', '4170051', '静岡県富士市', '0545000000',
+        'cs_1', 'pi_1', 1000,
+        're_1', 2000, 1100, '上様',
+        5000, '理由', 'ヤマト', 'TN1',
+        6000, 7000, 3000, 4000);
+    `);
+    return db;
+  }
+
+  it("既存の注文を 1 列も変えずに移す", () => {
+    const db = dbWithOrder();
+    const before = db.prepare("SELECT * FROM orders").all() as Array<
+      Record<string, unknown>
+    >;
+    // NULL の列があると、列の取り違えを見逃す
+    expect(Object.values(before[0])).not.toContain(null);
+
+    applyFile(db, FILE);
+    expect(db.prepare("SELECT * FROM orders").all()).toEqual(before);
+    db.close();
+  });
+
+  it("適用後は user を消しても注文が残り、user_id が NULL になる", () => {
+    const db = dbWithOrder();
+    applyFile(db, FILE);
+    db.exec("DELETE FROM user WHERE id = 'u_1'");
+    expect(db.prepare("SELECT user_id, total FROM orders").all()).toEqual([
+      { user_id: null, total: 3850 },
+    ]);
+    db.close();
+  });
+
+  it("索引と一意制約が作り直されている", () => {
+    const db = dbWithOrder();
+    applyFile(db, FILE);
+    const names = (
+      db
+        .prepare("SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='orders'")
+        .all() as Array<{ name: string }>
+    ).map((r) => r.name);
+    expect(names).toEqual(
+      expect.arrayContaining([
+        "orders_order_ref_unique",
+        "orders_user_id_idx",
+        "orders_status_idx",
+        "orders_created_at_idx",
+      ]),
+    );
+    expect(() =>
+      db.exec(`
+        INSERT INTO orders (id, order_ref, items_json, items_count, subtotal, shipping, total,
+          customer_name, customer_email, postal_code, address, phone)
+        VALUES ('o_2', 'FJ-0001', '[]', 1, 0, 0, 0, '', '', '', '', '');
+      `),
+    ).toThrow(/UNIQUE/);
+    db.close();
+  });
+});
+
 describe("マイグレーション", () => {
   it("頭から流して新しい DB を作れる", () => {
     const db = new DatabaseSync(":memory:");

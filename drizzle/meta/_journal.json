@@ -106,6 +106,13 @@
       "when": 1790136640000,
       "tag": "0014_receipt_addressee",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "6",
+      "when": 1793774277413,
+      "tag": "0015_order_keep_after_account_delete",
+      "breakpoints": true
     }
   ]
 }
