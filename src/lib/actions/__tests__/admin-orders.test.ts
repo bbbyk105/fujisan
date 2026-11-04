@@ -19,6 +19,9 @@ jest.mock("@/lib/admin", () => ({
 }));
 
 let orderRow: Record<string, unknown> | undefined;
+/** update().returning() が返す行。空にすると「別の操作に先を越された」状態になる。 */
+let updatedRows: Array<{ id: string }> = [{ id: "order_1" }];
+let updateShouldThrow = false;
 jest.mock("@/db", () => ({
   getDb: async () => ({
     select: () => ({
@@ -27,18 +30,33 @@ jest.mock("@/db", () => ({
       }),
     }),
     update: () => ({
-      set: () => ({ where: async () => undefined }),
+      set: () => ({
+        where: () => ({
+          returning: async () => {
+            if (updateShouldThrow) throw new Error("d1 unavailable");
+            return updatedRows;
+          },
+        }),
+      }),
     }),
   }),
+}));
+
+const alertOps = jest.fn();
+jest.mock("@/lib/ops-alert", () => ({
+  alertOps: (...a: unknown[]) => alertOps(...a),
 }));
 
 const commitStock = jest.fn();
 const releaseStock = jest.fn();
 const restockCommitted = jest.fn();
+const reserveStock = jest.fn();
 jest.mock("@/lib/inventory", () => ({
   commitStock: (...a: unknown[]) => commitStock(...a),
   releaseStock: (...a: unknown[]) => releaseStock(...a),
   restockCommitted: (...a: unknown[]) => restockCommitted(...a),
+  reserveStock: (...a: unknown[]) => reserveStock(...a),
+  formatStockWarnings: () => null,
 }));
 
 jest.mock("@/lib/emails/order-emails", () => ({
@@ -66,11 +84,23 @@ const ITEMS = JSON.stringify([
   },
 ]);
 
+/** 手で動かしていない注文の、ステータスごとの在庫の状態。 */
+const STOCK_STATE_OF: Record<string, string> = {
+  pending: "reserved",
+  confirmed: "committed",
+  preparing: "committed",
+  shipped: "shipped",
+  delivered: "shipped",
+  cancelled: "none",
+  refunded: "none",
+};
+
 function row(status: string) {
   return {
     id: "order_1",
     orderRef: "FJ-ABC123",
     status,
+    stockState: STOCK_STATE_OF[status],
     itemsJson: ITEMS,
     itemsCount: 2,
     subtotal: 5500,
@@ -87,6 +117,12 @@ function row(status: string) {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  updatedRows = [{ id: "order_1" }];
+  updateShouldThrow = false;
+  // clearAllMocks は実装を消さないので、失敗させた実装が後のテストへ漏れないよう戻す。
+  restockCommitted.mockReset();
+  reserveStock.mockResolvedValue({ ok: true });
+  commitStock.mockResolvedValue([]);
   getSession.mockResolvedValue({
     user: { id: "admin_1", email: "owner@example.com" },
   });
@@ -153,6 +189,16 @@ describe("adminUpdateOrderAction — 手動ステータス変更と在庫", () =
     },
   );
 
+  // 返金の操作を通さずに返金済みにすると、お金を返していないのに在庫だけが戻る。
+  it("返金の操作を通さずに返金済みへは変えられない", async () => {
+    orderRow = row("confirmed");
+
+    expect(
+      await adminUpdateOrderAction({ orderId: "order_1", status: "refunded" }),
+    ).toEqual({ ok: false, error: "refunded" });
+    expect(restockCommitted).not.toHaveBeenCalled();
+  });
+
   it("返金済みのまま追跡番号だけを保存することはできる", async () => {
     orderRow = row("refunded");
 
@@ -182,7 +228,7 @@ describe("adminUpdateOrderAction — 手動ステータス変更と在庫", () =
     expect(restockCommitted).not.toHaveBeenCalled();
   });
 
-  it("在庫の調整に失敗しても管理操作自体は成功させる", async () => {
+  it("在庫の調整に失敗しても管理操作自体は成功させ、人に知らせる", async () => {
     const errSpy = jest.spyOn(console, "error").mockImplementation(() => {});
     restockCommitted.mockRejectedValue(new Error("d1 unavailable"));
     orderRow = row("confirmed");
@@ -194,5 +240,42 @@ describe("adminUpdateOrderAction — 手動ステータス変更と在庫", () =
     errSpy.mockRestore();
 
     expect(res).toEqual({ ok: true });
+    expect(alertOps).toHaveBeenCalledTimes(1);
+    expect(alertOps.mock.calls[0][1]).toContain("FJ-ABC123");
+  });
+});
+
+describe("adminUpdateOrderAction — ほかの操作との重なり", () => {
+  it("読んだあとにステータスが動いていたら保存せず、在庫も動かさない", async () => {
+    orderRow = row("confirmed");
+    updatedRows = [];
+
+    expect(
+      await adminUpdateOrderAction({ orderId: "order_1", status: "cancelled" }),
+    ).toEqual({ ok: false, error: "conflict" });
+    expect(restockCommitted).not.toHaveBeenCalled();
+  });
+
+  it("取り消した注文を戻す更新が失敗したら、押さえた在庫を放す", async () => {
+    orderRow = row("cancelled");
+    updateShouldThrow = true;
+
+    expect(
+      await adminUpdateOrderAction({ orderId: "order_1", status: "confirmed" }),
+    ).toEqual({ ok: false, error: "db" });
+    expect(releaseStock).toHaveBeenCalledTimes(1);
+  });
+
+  it("開いた画面より新しい状態なら、古い画面の内容で上書きしない", async () => {
+    orderRow = row("cancelled");
+
+    expect(
+      await adminUpdateOrderAction({
+        orderId: "order_1",
+        status: "confirmed",
+        expectedStatus: "confirmed",
+      }),
+    ).toEqual({ ok: false, error: "conflict" });
+    expect(reserveStock).not.toHaveBeenCalled();
   });
 });

@@ -2,7 +2,7 @@
 
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { and, desc, eq, gte, isNull, lt, ne } from "drizzle-orm";
+import { and, desc, eq, gte, isNull, lt, ne, or } from "drizzle-orm";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getAuth } from "@/lib/auth";
 import { getEffectiveAdminRole, isOwner, isStaffOrAbove } from "@/lib/admin";
@@ -11,18 +11,17 @@ import { toCsv } from "@/lib/csv";
 import { orderStatusJp } from "@/data/fujisan-orders";
 import { formatDateTimeJp } from "@/lib/format-date";
 import { getDb } from "@/db";
-import {
-  commitStock,
-  formatStockWarnings,
-  releaseStock,
-  restockCommitted,
-} from "@/lib/inventory";
+import { reserveStock } from "@/lib/inventory";
+import { alertOps } from "@/lib/ops-alert";
+import { applyStockMove } from "@/lib/order-stock";
 import {
   order as orderTable,
   ORDER_STATUSES,
   type OrderLine,
   type OrderStatus,
-  canRestock,
+  isRefundable,
+  parseOrderItems,
+  stockStateFor,
   willStillShip,
 } from "@/db/orders-schema";
 import {
@@ -50,6 +49,8 @@ type AdminOrderListItem = {
   phone: string;
   trackingCarrier: string | null;
   trackingNumber: string | null;
+  /** 入金を確認した日時。手で確定した注文は null のことがある。 */
+  paidAt: Date | null;
   shippedAt: Date | null;
   deliveredAt: Date | null;
   refundedAt: Date | null;
@@ -89,14 +90,6 @@ async function requireOwner(): Promise<
   return { ok: true, userId: u.id, email: u.email };
 }
 
-/** 返金可能なステータス（支払い済み・未返金）。 */
-const REFUNDABLE_STATUSES: OrderStatus[] = [
-  "confirmed",
-  "preparing",
-  "shipped",
-  "delivered",
-];
-
 /** 注文一覧・CSV で共通に使う絞り込み。 */
 export type AdminOrderFilter = {
   /** 期間の開始（この日の 0:00 JST から）。YYYY-MM-DD。 */
@@ -105,6 +98,9 @@ export type AdminOrderFilter = {
   to?: string;
 };
 
+/** 品物が蔵にあるはずのステータス。 */
+const BEFORE_SHIPMENT: OrderStatus[] = ["pending", "confirmed", "preparing"];
+
 /**
  * 絞り込みを SQL の条件にする。
  *
@@ -112,7 +108,14 @@ export type AdminOrderFilter = {
  * をそのまま使うと JST の 9:00 起点になり、午前の注文が前日に落ちる。
  */
 function orderFilterWhere(filter: AdminOrderFilter | undefined) {
-  const conditions = [ne(orderTable.status, "pending")];
+  // 未払いで放棄された注文は出さない。手で pending へ戻した注文は引き当て中ではないので
+  // 残す（在庫を引き落としてあり、消えると確定へ戻すことも返金もできなくなる）。
+  const conditions = [
+    or(
+      ne(orderTable.status, "pending"),
+      ne(orderTable.stockState, "reserved"),
+    ),
+  ];
 
   const from = parseJstDate(filter?.from);
   if (from) conditions.push(gte(orderTable.createdAt, from));
@@ -151,7 +154,6 @@ export async function adminListOrdersAction(
 
   try {
     const db = await getDb();
-    // 未払いで放棄された pending（住所未取得・空）は一覧に出さない。
     const rows = await db
       .select()
       .from(orderTable)
@@ -164,7 +166,7 @@ export async function adminListOrdersAction(
       userId: row.userId,
       orderRef: row.orderRef,
       status: row.status as OrderStatus,
-      items: safeParseItems(row.itemsJson),
+      items: parseOrderItems(row.itemsJson),
       itemsCount: row.itemsCount,
       subtotal: row.subtotal,
       shipping: row.shipping,
@@ -176,6 +178,7 @@ export async function adminListOrdersAction(
       phone: row.phone,
       trackingCarrier: row.trackingCarrier,
       trackingNumber: row.trackingNumber,
+      paidAt: row.paidAt ?? null,
       shippedAt: row.shippedAt ?? null,
       deliveredAt: row.deliveredAt ?? null,
       refundedAt: row.refundedAt ?? null,
@@ -203,11 +206,23 @@ export async function adminListOrdersAction(
 export async function adminUpdateOrderAction(input: {
   orderId: string;
   status: OrderStatus;
+  /** 画面を開いたときのステータス。今の値と違えば、古い画面の内容で上書きしない。 */
+  expectedStatus?: OrderStatus;
   trackingCarrier?: string;
   trackingNumber?: string;
 }): Promise<
   | { ok: true }
-  | { ok: false; error: "unauth" | "forbidden" | "invalid" | "refunded" | "db" }
+  | {
+      ok: false;
+      error:
+        | "unauth"
+        | "forbidden"
+        | "invalid"
+        | "refunded"
+        | "conflict"
+        | "stock"
+        | "db";
+    }
 > {
   const gate = await requireStaff();
   if (!gate.ok) return { ok: false, error: gate.reason };
@@ -228,62 +243,98 @@ export async function adminUpdateOrderAction(input: {
     if (!current) return { ok: false, error: "invalid" };
 
     const prevStatus = current.status as OrderStatus;
-    // 全額返金は終端。動かすと発送の一覧へ戻ったり、在庫がもう一度戻ったりする。
-    if (prevStatus === "refunded" && input.status !== "refunded") {
+    // 全額返金は終端で、返金の操作からしか到達しない。動かすと発送の一覧へ戻ったり、
+    // お金を返していないのに返金済みになったりする。
+    if ((prevStatus === "refunded") !== (input.status === "refunded")) {
       return { ok: false, error: "refunded" };
     }
+    if (input.expectedStatus && input.expectedStatus !== prevStatus) {
+      return { ok: false, error: "conflict" };
+    }
+
+    const stockFrom = current.stockState;
+    const stockTo =
+      input.status === prevStatus
+        ? stockFrom
+        : stockStateFor(input.status, stockFrom);
+
+    // 取り消した注文を戻すと引き落とし直しになる。売れて足りなければ何も変えずに止める。
+    const reopening = stockFrom === "none" && stockTo !== "none";
+    if (reopening) {
+      const reservation = await reserveStock(parseOrderItems(current.itemsJson));
+      if (!reservation.ok) {
+        return {
+          ok: false,
+          error: reservation.reason === "shortage" ? "stock" : "db",
+        };
+      }
+    }
+
     const now = new Date();
     const carrier = (input.trackingCarrier ?? "").trim();
     const number = (input.trackingNumber ?? "").trim();
 
-    await db
-      .update(orderTable)
-      .set({
-        status: input.status,
-        trackingCarrier: carrier ? carrier : null,
-        trackingNumber: number ? number : null,
-        shippedAt:
-          input.status === "shipped" && !current.shippedAt
-            ? now
-            : current.shippedAt,
-        deliveredAt:
-          input.status === "delivered" && !current.deliveredAt
-            ? now
-            : current.deliveredAt,
-      })
-      .where(eq(orderTable.id, input.orderId));
+    // 読んだときの状態のままなら更新する。あいだに Webhook や別の操作が入っていたら、
+    // 古い値で上書きしない（返金済みを確定へ戻してしまう）。ステータスと在庫の状態を
+    // 1 文で動かすので、本数を動かすのは更新できた処理だけになる。
+    let updated: Array<{ id: string }> = [];
+    try {
+      updated = await db
+        .update(orderTable)
+        .set({
+          status: input.status,
+          stockState: stockTo,
+          trackingCarrier: carrier ? carrier : null,
+          trackingNumber: number ? number : null,
+          shippedAt:
+            input.status === "shipped" && !current.shippedAt
+              ? now
+              : current.shippedAt,
+          deliveredAt:
+            input.status === "delivered" && !current.deliveredAt
+              ? now
+              : current.deliveredAt,
+        })
+        .where(
+          and(
+            eq(orderTable.id, input.orderId),
+            eq(orderTable.status, prevStatus),
+            eq(orderTable.stockState, stockFrom),
+          ),
+        )
+        .returning({ id: orderTable.id });
+    } finally {
+      // 押さえたまま終わると、売れる本数が減ったままになる。
+      if (reopening && updated.length === 0) {
+        await applyStockMove(current, "reserved", "none");
+      }
+    }
+
+    if (updated.length === 0) return { ok: false, error: "conflict" };
 
     revalidatePath("/admin/orders");
     revalidatePath("/account");
 
     // 手でステータスを動かしたときの在庫の辻褄合わせ。
     // Webhook の自動経路だけを見ていると、管理画面から直接動かした分がずれる。
-    if (prevStatus !== input.status) {
-      const items = safeParseItems(current.itemsJson);
-      try {
-        if (prevStatus === "pending" && input.status === "confirmed") {
-          // 入金を手で確定した。押さえていた分を実在庫から落とす。
-          const warnings = await commitStock(items);
-          // Webhook 経由と同じく、しきい値をまたいだときだけ知らせる。
-          const message = formatStockWarnings(warnings);
-          if (message) {
-            const { alertOps } = await import("@/lib/ops-alert");
-            await alertOps(message.subject, message.body);
-          }
-        } else if (input.status === "cancelled") {
-          if (prevStatus === "pending") {
-            // 未入金のまま取消。引き当てを戻すだけ（実在庫は減っていない）。
-            await releaseStock(items);
-          } else if (canRestock(prevStatus)) {
-            // 入金済みだが未発送のまま取消。品物は蔵にあるので実在庫へ戻す。
-            await restockCommitted(items);
-          }
-          // 発送後の取消は戻さない（品物が手元に無い）。返品を受け取ったら
-          // /admin/products で足す。
-        }
-      } catch (err) {
-        console.error("[admin:orders] 在庫の調整に失敗:", err);
-      }
+    await applyStockMove(current, reopening ? "reserved" : stockFrom, stockTo);
+
+    // 発送済みから戻しても、蔵を出た扱いは解かない（`stockStateFor`）。品物が蔵にあるなら
+    // 人が足す必要があるので、気づけるように知らせる。
+    if (
+      stockTo === "shipped" &&
+      BEFORE_SHIPMENT.includes(input.status) &&
+      !BEFORE_SHIPMENT.includes(prevStatus)
+    ) {
+      await alertOps(
+        "発送済みから戻した注文があります",
+        [
+          `注文番号: ${current.orderRef}`,
+          "",
+          "在庫は引き落としたままです。このあと取り消しや全額返金をしても自動では戻りません。",
+          "品物が蔵にある場合は /admin/products で在庫を足してください。",
+        ].join("\n"),
+      );
     }
 
     // ステータスが新たに shipped / delivered へ「変わった瞬間」だけ顧客へ通知する。
@@ -293,7 +344,7 @@ export async function adminUpdateOrderAction(input: {
         orderRef: current.orderRef,
         customerName: current.customerName,
         customerEmail: current.customerEmail,
-        items: safeParseItems(current.itemsJson),
+        items: parseOrderItems(current.itemsJson),
         itemsCount: current.itemsCount,
         subtotal: current.subtotal,
         shipping: current.shipping,
@@ -333,7 +384,7 @@ type RefundEnv = { STRIPE_SECRET_KEY?: string };
  *   idempotencyKey を渡す。ボタン連打では同じ鍵になるので二重に返らず、
  *   意図した 2 回目の返金（累計が進んでいる）では別の鍵になる。
  * - DB 更新は「返金前の累計」を WHERE に入れた原子的な UPDATE で行う。
- * - 返金対象は「支払い済み・未返金」の注文のみ（pending / cancelled は不可）。
+ * - 返金できるのは入金済みの注文だけ（`isRefundable`）。入金後に取り消した注文も含む。
  *
  * **在庫を戻すのは全額返金のときだけ。** 一部返金では、どの品を何本
  * 引き取ったのかが金額からは分からない。数えた分を `/admin/products` で足す。
@@ -374,11 +425,7 @@ export async function adminRefundOrderAction(input: {
   }
   if (!current) return { ok: false, error: "invalid" };
 
-  // 支払い済みのみ返金可能（pending / cancelled / refunded は不可）。
-  if (
-    !REFUNDABLE_STATUSES.includes(current.status as OrderStatus) ||
-    !current.stripeSessionId
-  ) {
+  if (!isRefundable(current) || !current.stripeSessionId) {
     return { ok: false, error: "not_refundable" };
   }
 
@@ -437,9 +484,13 @@ export async function adminRefundOrderAction(input: {
 
   // DB へ原子的に反映する。WHERE に「返金前の累計」を入れているので、
   // 同時に別経路（Webhook など）が先に反映していたら更新行ゼロになり、
-  // 累計を二重に足すこともメールを重複送信することも無い。
+  // 累計を二重に足すこともメールを重複送信することも無い。返金は成立しているので、
+  // 在庫の状態が動いて更新できなかったときも Webhook が読み直して記録する。
   const totalRefunded = alreadyRefunded + amount;
   const remaining = current.total - totalRefunded;
+  const stockTo = isFullRefund
+    ? stockStateFor("refunded", current.stockState)
+    : current.stockState;
   let updated;
   try {
     const db = await getDb();
@@ -448,6 +499,7 @@ export async function adminRefundOrderAction(input: {
       .set({
         // 全額返し切ったときだけ終端ステータスへ移す。
         ...(isFullRefund ? { status: "refunded" as const } : {}),
+        stockState: stockTo,
         stripeRefundId: refundId,
         stripePaymentIntentId: paymentIntentId,
         refundedAt: new Date(),
@@ -457,6 +509,7 @@ export async function adminRefundOrderAction(input: {
         and(
           eq(orderTable.id, current.id),
           ne(orderTable.status, "refunded"),
+          eq(orderTable.stockState, current.stockState),
           alreadyRefunded === 0
             ? isNull(orderTable.refundedAmount)
             : eq(orderTable.refundedAmount, alreadyRefunded),
@@ -482,13 +535,7 @@ export async function adminRefundOrderAction(input: {
   // 未発送のまま**全額**返金したなら品物は蔵にあるので在庫に戻す。
   // 発送後は手元に無いので戻さない（返品を受け取ったら /admin/products で足す）。
   // 一部返金では戻さない — 金額からは、どの品を何本引き取ったか分からない。
-  if (isFullRefund && canRestock(current.status)) {
-    try {
-      await restockCommitted(safeParseItems(current.itemsJson));
-    } catch (err) {
-      console.error("[admin:refund] 返金に伴う在庫の戻しに失敗:", err);
-    }
-  }
+  await applyStockMove(current, current.stockState, stockTo);
 
   // 返金メール（ベストエフォート。失敗しても返金自体は成立している）。
   try {
@@ -498,7 +545,7 @@ export async function adminRefundOrderAction(input: {
       orderRef: current.orderRef,
       customerName: current.customerName,
       customerEmail: current.customerEmail,
-      items: safeParseItems(current.itemsJson),
+      items: parseOrderItems(current.itemsJson),
       itemsCount: current.itemsCount,
       subtotal: current.subtotal,
       shipping: current.shipping,
@@ -517,16 +564,6 @@ export async function adminRefundOrderAction(input: {
     refunded: totalRefunded,
     remaining: current.total - totalRefunded,
   };
-}
-
-function safeParseItems(json: string): OrderLine[] {
-  try {
-    const parsed = JSON.parse(json);
-    if (!Array.isArray(parsed)) return [];
-    return parsed as OrderLine[];
-  } catch {
-    return [];
-  }
 }
 
 /**
@@ -589,7 +626,7 @@ export async function adminExportOrdersCsvAction(
       row.postalCode,
       row.address,
       row.phone,
-      safeParseItems(row.itemsJson)
+      parseOrderItems(row.itemsJson)
         .map((it) => `${it.name} ${it.variant} ${it.ml}ml×${it.qty}`)
         .join(" / "),
       row.itemsCount,
@@ -655,7 +692,7 @@ export async function adminGetOrderByRefAction(
         userId: row.userId,
         orderRef: row.orderRef,
         status: row.status as OrderStatus,
-        items: safeParseItems(row.itemsJson),
+        items: parseOrderItems(row.itemsJson),
         itemsCount: row.itemsCount,
         subtotal: row.subtotal,
         shipping: row.shipping,
@@ -667,6 +704,7 @@ export async function adminGetOrderByRefAction(
         phone: row.phone,
         trackingCarrier: row.trackingCarrier,
         trackingNumber: row.trackingNumber,
+        paidAt: row.paidAt ?? null,
         shippedAt: row.shippedAt ?? null,
         deliveredAt: row.deliveredAt ?? null,
         refundedAt: row.refundedAt ?? null,

@@ -1,12 +1,12 @@
 import type Stripe from "stripe";
-import { and, eq, isNull, lt, ne, or } from "drizzle-orm";
+import { and, eq, isNull, ne } from "drizzle-orm";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getStripe, verifyStripeSignature } from "@/lib/stripe";
 import { getDb } from "@/db";
 import {
   order as orderTable,
-  type OrderLine,
-  canRestock,
+  parseOrderItems,
+  stockStateFor,
   willStillShip,
 } from "@/db/orders-schema";
 import {
@@ -15,13 +15,9 @@ import {
   type OrderEmailData,
 } from "@/lib/emails/order-emails";
 import { alertOps } from "@/lib/ops-alert";
-import {
-  commitStock,
-  formatStockWarnings,
-  releaseStock,
-  restockCommitted,
-} from "@/lib/inventory";
+import { applyStockMove } from "@/lib/order-stock";
 import { formatDateTimeJp } from "@/lib/format-date";
+import { orderStatusJp } from "@/data/fujisan-orders";
 
 // 署名検証のため生ボディを読む。プリレンダ・キャッシュは一切しない。
 export const dynamic = "force-dynamic";
@@ -114,7 +110,7 @@ export async function POST(request: Request): Promise<Response> {
     case "charge.refunded": {
       const charge = event.data.object as Stripe.Charge;
       try {
-        await syncRefundFromStripe(charge);
+        await syncRefundFromStripe(stripe, charge);
       } catch (err) {
         const msg = err instanceof Error ? err.message : "unknown";
         // 返金済みなのに DB が confirmed のままだと二重返金の危険がある。再送させる。
@@ -187,13 +183,116 @@ async function discardPendingOrder(
   // 削除できた行だけ在庫を解放する。確定済み（pending でない）の注文は
   // WHERE に弾かれて 0 行となり、解放もされない — 期限切れイベントが
   // 確定イベントより後に届いても在庫が二重に戻ることはない。
+  // 確定後に手で pending へ戻した注文は入金済みなので、引き当て中の条件で除く。
   const deleted = await db
     .delete(orderTable)
-    .where(and(eq(orderTable.id, orderId), eq(orderTable.status, "pending")))
-    .returning({ itemsJson: orderTable.itemsJson });
+    .where(
+      and(
+        eq(orderTable.id, orderId),
+        eq(orderTable.status, "pending"),
+        eq(orderTable.stockState, "reserved"),
+      ),
+    )
+    .returning({
+      orderRef: orderTable.orderRef,
+      itemsJson: orderTable.itemsJson,
+    });
 
   if (deleted.length === 0) return;
-  await releaseStock(safeParseItems(deleted[0].itemsJson));
+  await applyStockMove(deleted[0], "reserved", "none");
+}
+
+/** 返金の累計の更新を試す回数。同時に届いた配信に先を越されたら読み直す。 */
+const REFUND_SYNC_ATTEMPTS = 3;
+
+/**
+ * Charge の最新の返金 id。Webhook の `charge.refunds` は expand されないので引き直す。
+ * 控えの id が無くても返金の反映は止めない。
+ */
+async function latestRefundIdOf(
+  stripe: Stripe,
+  chargeId: string,
+): Promise<string | null> {
+  try {
+    const refunds = await stripe.refunds.list(
+      { charge: chargeId, limit: 1 },
+      { timeout: 3000, maxNetworkRetries: 0 },
+    );
+    return refunds.data[0]?.id ?? null;
+  } catch (err) {
+    console.error("[stripe:webhook] 返金 id の取得に失敗:", err);
+    return null;
+  }
+}
+
+/**
+ * 返金の累計を注文に記録する。この配信で累計を進められたら、記録する直前の行を返す。
+ * 反映済み、または当方の注文でなければ null。
+ *
+ * 冪等性の要は「読んだときの累計」を WHERE に入れた UPDATE。管理画面から返金した直後に
+ * 同じ額の Webhook が来ても更新しないので、累計の二重計上も返金メールの重複も起きない。
+ * 別の配信に先を越されたら読み直す — そうしないと、今回の額を読み違えたままメールを送る。
+ */
+async function recordRefund(
+  stripe: Stripe,
+  charge: Stripe.Charge,
+  paymentIntentId: string,
+) {
+  const db = await getDb();
+  const refundedTotal = charge.amount_refunded;
+  let latestRefundId: string | null | undefined;
+
+  for (let attempt = 0; attempt < REFUND_SYNC_ATTEMPTS; attempt += 1) {
+    const [row] = await db
+      .select()
+      .from(orderTable)
+      .where(eq(orderTable.stripePaymentIntentId, paymentIntentId))
+      .limit(1);
+    if (!row) return null; // 当方の注文に紐づかない charge は無視
+    if (row.status === "refunded" || (row.refundedAmount ?? 0) >= refundedTotal) {
+      return null; // 既に反映済み（管理画面から返金した等）
+    }
+
+    // 既に控えがある場合は上書きしない（管理画面経由の返金 id を残す）。
+    // やり直しのたびに問い合わせると、競合しているあいだ待ち時間が延びるので 1 回で済ませる。
+    if (!row.stripeRefundId && latestRefundId === undefined) {
+      latestRefundId = await latestRefundIdOf(stripe, charge.id);
+    }
+    const refundId = row.stripeRefundId ? null : latestRefundId;
+
+    const updated = await db
+      .update(orderTable)
+      .set({
+        // 全額かは**注文の総額**で判定する（charge の金額ではなく）。送料込みの total と
+        // charge.amount は一致する作りだが、判定の拠り所を注文側に置いておかないと、
+        // 将来ずれたときに状態が食い違う。
+        ...(refundedTotal >= row.total
+          ? {
+              status: "refunded" as const,
+              stockState: stockStateFor("refunded", row.stockState),
+            }
+          : {}),
+        refundedAt: new Date(),
+        refundedAmount: refundedTotal,
+        ...(refundId ? { stripeRefundId: refundId } : {}),
+      })
+      .where(
+        and(
+          eq(orderTable.id, row.id),
+          ne(orderTable.status, "refunded"),
+          eq(orderTable.stockState, row.stockState),
+          row.refundedAmount == null
+            ? isNull(orderTable.refundedAmount)
+            : eq(orderTable.refundedAmount, row.refundedAmount),
+        ),
+      )
+      .returning({ id: orderTable.id });
+
+    if (updated.length > 0) return row;
+  }
+
+  // 反映できていないので 500 にして Stripe に再送させる（累計は Stripe 側が正）。
+  throw new Error("返金の累計を更新できませんでした");
 }
 
 /**
@@ -205,72 +304,39 @@ async function discardPendingOrder(
  * - 対象は PaymentIntent で引き当てる（管理画面経由なら保存済み）。
  * - `status` を `refunded` にするのは**全額返し切ったときだけ**。一部返金では
  *   ステータスを動かさない（一部返金は発送の前にも後にも起き、取引は続く）。
- * - 冪等: 「これまでの累計より増えているときだけ」更新する。管理画面から
- *   返金した直後に同じ額の Webhook が来ても更新行ゼロとなり、
- *   累計の二重計上も返金メールの重複送信も起きない。
  */
-async function syncRefundFromStripe(charge: Stripe.Charge): Promise<void> {
+async function syncRefundFromStripe(
+  stripe: Stripe,
+  charge: Stripe.Charge,
+): Promise<void> {
   const paymentIntentId = paymentIntentIdOf(charge.payment_intent);
   if (!paymentIntentId) return;
 
-  const db = await getDb();
-  const [row] = await db
-    .select()
-    .from(orderTable)
-    .where(eq(orderTable.stripePaymentIntentId, paymentIntentId))
-    .limit(1);
-  if (!row) return; // 当方の注文に紐づかない charge は無視
-
   const refundedTotal = charge.amount_refunded;
   if (refundedTotal <= 0) return;
-  // 全額返金かは**注文の総額**で判定する（charge の金額ではなく）。
-  // 送料込みの total と charge.amount は一致する作りだが、判定の拠り所を
-  // 注文側に置いておかないと、将来ずれたときに状態が食い違う。
+
+  const row = await recordRefund(stripe, charge, paymentIntentId);
+  if (!row) return;
+
   const isFullRefund = refundedTotal >= row.total;
   const stillShipping = willStillShip(row);
-  const refundId = charge.refunds?.data?.[0]?.id ?? null;
-
-  const updated = await db
-    .update(orderTable)
-    .set({
-      ...(isFullRefund ? { status: "refunded" as const } : {}),
-      refundedAt: new Date(),
-      refundedAmount: refundedTotal,
-      // 既に控えがある場合は上書きしない（管理画面経由の返金 id を残す）。
-      ...(refundId && !row.stripeRefundId ? { stripeRefundId: refundId } : {}),
-    })
-    .where(
-      and(
-        eq(orderTable.id, row.id),
-        ne(orderTable.status, "refunded"),
-        // 累計が増えるときだけ反映する。これが冪等性の要。
-        or(
-          isNull(orderTable.refundedAmount),
-          lt(orderTable.refundedAmount, refundedTotal),
-        ),
-      ),
-    )
-    .returning({ id: orderTable.id });
-
-  if (updated.length === 0) return; // 既に反映済み（管理画面から返金した等）
 
   if (isFullRefund) {
-    // 発送後は手元に戻っていないので戻さない（返品を受け取ったら /admin/products で
-    // 手で足す）。取り消した注文は取り消しのときに戻してあるので、足すと二重になる。
-    if (canRestock(row.status)) {
-      try {
-        await restockCommitted(safeParseItems(row.itemsJson));
-      } catch (err) {
-        console.error("[stripe:webhook] 返金に伴う在庫の戻しに失敗:", err);
-      }
-    }
+    // 蔵にある分だけ戻る。発送後は手元に無いので戻らない（返品を受け取ったら
+    // /admin/products で手で足す）。戻し終えた注文は状態が none なので動かない。
+    await applyStockMove(
+      row,
+      row.stockState,
+      stockStateFor("refunded", row.stockState),
+    );
   } else {
     // 一部返金では在庫を自動では戻さない — 金額からは、どの品を何本
     // 引き取ったのかが分からない。人が数えて入れる必要があるので知らせる。
-    // 取り消した注文は在庫を戻してあるので、足す案内を出すと二重になる。
-    const cancelled = row.status === "cancelled";
+    // 在庫を戻してある注文に足す案内を出すと二重になる。発送後に取り消した注文は
+    // 戻していないので、status ではなく在庫の状態で見る。
+    const restocked = row.stockState === "none";
     await alertOps(
-      cancelled
+      row.status === "cancelled"
         ? "取り消した注文に一部返金が行われました"
         : "一部返金が行われました（在庫の確認をお願いします）",
       [
@@ -281,7 +347,7 @@ async function syncRefundFromStripe(charge: Stripe.Charge): Promise<void> {
         stillShipping
           ? "注文は進行中のままです（発送は続きます）。"
           : "ステータスは変わりません（これから発送する注文ではありません）。",
-        cancelled
+        restocked
           ? "取り消しのときに在庫は戻してあります。"
           : "品物を引き取った場合は /admin/products で在庫を足してください。",
       ].join("\n"),
@@ -296,7 +362,7 @@ async function syncRefundFromStripe(charge: Stripe.Charge): Promise<void> {
       orderRef: row.orderRef,
       customerName: row.customerName,
       customerEmail: row.customerEmail,
-      items: safeParseItems(row.itemsJson),
+      items: parseOrderItems(row.itemsJson),
       itemsCount: row.itemsCount,
       subtotal: row.subtotal,
       shipping: row.shipping,
@@ -335,7 +401,10 @@ async function fulfillOrder(
     .from(orderTable)
     .where(eq(orderTable.id, orderId))
     .limit(1);
-  if (!row) return; // 注文が見つからない → 受領のみ
+  if (!row) {
+    await alertPaymentWithoutOrder(session);
+    return;
+  }
 
   // Stripe が収集したお届け先を取得（最新の完全な状態を取りに行く）。
   // 登録住所を使った注文では Stripe は住所を収集しない（ship = null）ため、
@@ -358,10 +427,12 @@ async function fulfillOrder(
 
   // pending → confirmed を原子的に。住所等もこの時点で書き戻す。
   // 更新行が無ければ既に他の配信が確定済み。
+  const stockTarget = stockStateFor("confirmed", row.stockState);
   const updated = await db
     .update(orderTable)
     .set({
       status: "confirmed",
+      stockState: stockTarget,
       stripeSessionId: session.id,
       stripePaymentIntentId: paymentIntentId,
       paidAt: new Date(),
@@ -371,38 +442,36 @@ async function fulfillOrder(
       address,
       phone,
     })
-    .where(and(eq(orderTable.id, orderId), eq(orderTable.status, "pending")))
+    .where(
+      and(
+        eq(orderTable.id, orderId),
+        eq(orderTable.status, "pending"),
+        eq(orderTable.stockState, row.stockState),
+      ),
+    )
     .returning({ id: orderTable.id });
 
-  if (updated.length === 0) return; // 二重配信 → 確定もメールもしない
-
-  // 押さえていた在庫を確定する（reserved → onHand から差し引き）。
-  // commitStock は冪等ではないので、**実際に pending → confirmed へ
-  // 更新できた初回だけ**呼ぶこと（この位置より上で return していると二重に減る）。
-  // 在庫の反映に失敗しても入金は成立しているので、例外で 500 にせず記録に留める。
-  try {
-    const warnings = await commitStock(safeParseItems(row.itemsJson));
-    // 在庫がしきい値をまたいだら知らせる。commitStock はこの配信が初回のときしか
-    // 呼ばれないので、同じ注文で二重に通知されることはない。
-    await notifyStockWarnings(warnings);
-  } catch (err) {
-    console.error("[stripe:webhook] 在庫の確定に失敗:", err);
-    await alertOps(
-      "入金は確定したが在庫を減らせませんでした",
-      [
-        `注文番号: ${row.orderRef}`,
-        `error: ${err instanceof Error ? err.message : "unknown"}`,
-        "",
-        "/admin/products で実在庫を突き合わせてください。",
-      ].join("\n"),
-    );
+  if (updated.length === 0) {
+    // 二重配信なら何もしない。確定を通らなかった入金だけは記録して人へ知らせる。
+    await recordLatePayment(session, row, paymentIntentId, {
+      customerName,
+      customerEmail,
+      postalCode,
+      address,
+      phone,
+    });
+    return;
   }
+
+  // 押さえていた在庫を確定する。失敗しても入金は成立しているので、500 にせず
+  // 運用へ知らせる（applyStockMove が行う）。
+  await applyStockMove(row, row.stockState, stockTarget);
 
   const data: OrderEmailData = {
     orderRef: row.orderRef,
     customerName,
     customerEmail,
-    items: safeParseItems(row.itemsJson),
+    items: parseOrderItems(row.itemsJson),
     itemsCount: row.itemsCount,
     subtotal: row.subtotal,
     shipping: row.shipping,
@@ -420,35 +489,84 @@ async function fulfillOrder(
   }
 }
 
+/**
+ * 注文が無いのに入金があったことを知らせる。決済ページから戻って注文を消したあとに、
+ * 開いたままのページで支払われると起こる（Session は期限まで有効）。
+ * お金だけ受け取っているので、人が返金する。
+ */
+async function alertPaymentWithoutOrder(
+  session: Stripe.Checkout.Session,
+): Promise<void> {
+  await alertOps(
+    "注文が見つからない入金がありました",
+    [
+      `session: ${session.id}`,
+      `orderId: ${session.metadata?.orderId ?? "(なし)"}`,
+      `orderRef: ${session.metadata?.orderRef ?? "(なし)"}`,
+      "",
+      "注文は残っていません。Stripe の管理画面で支払いを確認し、返金してください。",
+    ].join("\n"),
+  );
+}
+
+/**
+ * 確定（pending → confirmed）を通らなかった入金を記録する。コンビニ払いの支払い待ちの
+ * 注文や、決済ページが開いたままの注文を手で動かすと起こる。
+ *
+ * ステータスは変えない（取り消しは人の判断なので、発送するかも人が決める）。入金日と
+ * PaymentIntent を残せば、管理画面から返金でき、Webhook の返金の同期も注文を引ける。
+ * WHERE に `paid_at IS NULL` を入れてあるので、二重配信では何も起きず、重ねて知らせない。
+ */
+async function recordLatePayment(
+  session: Stripe.Checkout.Session,
+  row: { id: string; orderRef: string },
+  paymentIntentId: string | null,
+  shipping: {
+    customerName: string;
+    customerEmail: string;
+    postalCode: string;
+    address: string;
+    phone: string;
+  },
+): Promise<void> {
+  const db = await getDb();
+  const [recorded] = await db
+    .update(orderTable)
+    .set({
+      ...shipping,
+      stripeSessionId: session.id,
+      stripePaymentIntentId: paymentIntentId,
+      paidAt: new Date(),
+    })
+    .where(and(eq(orderTable.id, row.id), isNull(orderTable.paidAt)))
+    .returning({ status: orderTable.status });
+
+  if (recorded) {
+    await alertOps(
+      "確定していない注文に入金がありました",
+      [
+        `注文番号: ${row.orderRef}`,
+        `ステータス: ${orderStatusJp(recorded.status)}`,
+        `paymentIntent: ${paymentIntentId ?? "(不明)"}`,
+        "",
+        "ステータスは変えていません。/admin/orders で確認し、返金するか発送するかを決めてください。",
+      ].join("\n"),
+    );
+    return;
+  }
+
+  // 読んだあとに注文が消えていたら、ここで知らせないと入金に誰も気づけない。
+  const [stillThere] = await db
+    .select({ id: orderTable.id })
+    .from(orderTable)
+    .where(eq(orderTable.id, row.id))
+    .limit(1);
+  if (!stillThere) await alertPaymentWithoutOrder(session);
+}
+
 /** Stripe の Address を日本語の1行住所に整形する（都道府県＋市区町村＋番地＋建物）。 */
 function formatJpAddress(addr: Stripe.Address | null | undefined): string {
   if (!addr) return "";
   const base = `${addr.state ?? ""}${addr.city ?? ""}${addr.line1 ?? ""}`;
   return (addr.line2 ? `${base} ${addr.line2}` : base).trim();
-}
-
-function safeParseItems(json: string): OrderLine[] {
-  try {
-    const parsed = JSON.parse(json);
-    return Array.isArray(parsed) ? (parsed as OrderLine[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-/**
- * 在庫の警告を運用へ流す。**送信の失敗で決済処理を止めない。**
- * 入金は既に成立しており、通知が届かないことより 500 を返して
- * Stripe に再送させるほうが害が大きい。
- */
-async function notifyStockWarnings(
-  warnings: Awaited<ReturnType<typeof commitStock>>,
-): Promise<void> {
-  const message = formatStockWarnings(warnings);
-  if (!message) return;
-  try {
-    await alertOps(message.subject, message.body);
-  } catch (err) {
-    console.error("[stripe:webhook] 在庫警告の通知に失敗:", err);
-  }
 }

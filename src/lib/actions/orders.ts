@@ -11,6 +11,7 @@ import { getReceiptUrl, getStripe } from "@/lib/stripe";
 import {
   isReceiptIssuable,
   order as orderTable,
+  parseOrderItems,
   type OrderLine,
   type OrderStatus,
 } from "@/db/orders-schema";
@@ -78,7 +79,7 @@ export async function listMyOrdersAction(limit = 20): Promise<OrderRecord[]> {
       id: row.id,
       orderRef: row.orderRef,
       status: row.status as OrderStatus,
-      items: safeParseItems(row.itemsJson),
+      items: parseOrderItems(row.itemsJson),
       itemsCount: row.itemsCount,
       subtotal: row.subtotal,
       shipping: row.shipping,
@@ -140,7 +141,7 @@ export async function getMyOrderByRefAction(
       id: row.id,
       orderRef: row.orderRef,
       status: row.status as OrderStatus,
-      items: safeParseItems(row.itemsJson),
+      items: parseOrderItems(row.itemsJson),
       itemsCount: row.itemsCount,
       subtotal: row.subtotal,
       shipping: row.shipping,
@@ -254,16 +255,6 @@ export async function requestOrderCancellationAction(input: {
   }
 
   return { ok: true };
-}
-
-function safeParseItems(json: string): OrderLine[] {
-  try {
-    const parsed = JSON.parse(json);
-    if (!Array.isArray(parsed)) return [];
-    return parsed as OrderLine[];
-  } catch {
-    return [];
-  }
 }
 
 /**

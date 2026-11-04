@@ -24,7 +24,10 @@ jest.mock("@/lib/admin", () => ({
   isOwner: () => true,
   isStaffOrAbove: () => true,
 }));
-jest.mock("@/lib/ops-alert", () => ({ alertOps: jest.fn() }));
+const alertOps = jest.fn();
+jest.mock("@/lib/ops-alert", () => ({
+  alertOps: (...a: unknown[]) => alertOps(...a),
+}));
 const restockCommitted = jest.fn();
 jest.mock("@/lib/inventory", () => ({
   commitStock: jest.fn(),
@@ -72,6 +75,8 @@ const ORDER = {
   id: "o_1",
   orderRef: "FJ-0001",
   status: "delivered",
+  stockState: "shipped",
+  paidAt: new Date(1000),
   stripeSessionId: "cs_1",
   stripePaymentIntentId: "pi_1",
   itemsJson: "[]",
@@ -88,6 +93,8 @@ const ORDER = {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  // clearAllMocks は実装を消さないので、失敗させた実装が後のテストへ漏れないよう戻す。
+  restockCommitted.mockReset();
   updatedRows = null;
 });
 
@@ -163,6 +170,19 @@ describe("adminRefundOrderAction", () => {
 
       expect(restockCommitted).not.toHaveBeenCalled();
     });
+  });
+
+  it("全額返金の在庫の戻しに失敗しても返金は成功させ、人に知らせる", async () => {
+    const errSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    restockCommitted.mockRejectedValue(new Error("d1 unavailable"));
+    row = { ...ORDER, userId: "u_1", status: "preparing", stockState: "committed" };
+
+    const res = await adminRefundOrderAction({ orderId: "o_1" });
+    errSpy.mockRestore();
+
+    expect(res).toEqual({ ok: true, refunded: 3850, remaining: 0 });
+    expect(alertOps).toHaveBeenCalledTimes(1);
+    expect(alertOps.mock.calls[0][1]).toContain("FJ-0001");
   });
 
   it("会員の注文では退会済みとして扱わない", async () => {

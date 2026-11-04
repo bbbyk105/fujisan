@@ -77,17 +77,20 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 
 - SKU（銘柄 × 容量）ごとに D1 で持つ。**在庫は `inventory`、価格は `product_price` と表を分ける**（`src/db/price-schema.ts` のコメント参照）。「蔵に何本あるか」は staff が棚卸しのたびに動かし、「いくらで売るか」は owner しか動かさない — 1 表にまとめると、価格だけ直したいのに行ができて在庫 0 の管理対象になり、その場で完売する事故が起きる。在庫のロジックは `src/lib/inventory.ts`、重ね合わせは `src/lib/catalog.ts`。
 - 管理画面は `/admin/products`（旧 `/admin/inventory` はリダイレクト）。**価格の編集は owner のみ**、在庫は staff 以上。
-- **在庫がしきい値をまたいだ瞬間だけ運用へ通知する**（`commitStock` の戻り値 → `formatStockWarnings` → `alertOps`）。毎回の在庫を送ると読まれなくなり、本当に仕込みが要るときに気づけない。通知の失敗で決済は止めない。
+- **在庫がしきい値をまたいだ瞬間だけ運用へ通知する**（`commitStock` の戻り値 → `formatStockWarnings` → `alertOps`）。毎回の在庫を送ると読まれなくなり、本当に仕込みが要るときに気づけない。通知の失敗で決済は止めない。判定は実在庫（`on_hand`）の動きで見る — `available` は引き当ての時点で減り、確定では変わらないので、確定の前後で比べても何も検出できない。
 - **オプトイン方式**: 行がある SKU だけが管理対象。行が無い SKU は数量無制限で売れる。全 SKU に 0 を入れるとデプロイした瞬間に販売が止まるため、初期データは入れない。蔵で数え終わった SKU から `/admin/products` で管理を開始する。
 - `low_stock_threshold` は**売り止めではなく報せるための値**。販売可能数が 0 は「完売」で「僅少」ではない（両方に出すと、仕込むべきものがアラートに埋もれる）。
 - 静的書き出しのページ（一覧・商品ページ・カート）は `/api/catalog` から価格と完売をハイドレーション後に取り直す。**卸価格はこのエンドポイントに載せない**（誰でも叩ける）。実在庫もそのままは返さず、カート 1 行の上限（`MAX_QTY_PER_LINE`）で頭打ちにする。カートの合計は実勢価格で計算する — しないと表示額と請求額がずれる。
 - カタログの `soldOut` フラグは在庫数とは独立した「販売停止」スイッチとして残る。
 - **引き当ての流れ**: 決済開始で `reserved += qty` → 入金確定で `onHand -= qty; reserved -= qty` → 期限切れ・決済失敗・Session 生成失敗で `reserved -= qty`。決済ページに滞在している数分を押さえないと、同じ最後の 1 本を複数人が買えてしまう（「確定時に減らす」だけでは足りない）。
 - 売り越さないことを担保しているのは `UPDATE … WHERE on_hand - reserved >= qty` という **1 文の原子性**。D1 に対話的トランザクションは無いので、複数明細で途中が足りなければ、それまでに積んだ分を戻す（補償）。
-- `commitStock` は**冪等ではない**。Webhook からは「pending → confirmed に実際に更新できた初回だけ」呼ぶこと。
-- 全額返金や取消で `onHand` に戻すかは `canRestock` で判定する。取り消し・返金済みの注文は戻し終えているので足さない。発送後は戻さない — 品物が手元に無いため、返品を受け取ってから管理画面で足す。**部分返金では戻さない**（金額からはどの品を何本引き取ったか分からない）。
-- **`refunded` は終端**で、管理画面からほかのステータスへ動かせない。
-- **管理画面から手でステータスを動かしたときも辻褄を合わせる**（`adminUpdateOrderAction`）: `pending → confirmed` で確定、`→ cancelled` は pending なら解放・入金済み未発送なら戻し、発送後は何もしない。Webhook の自動経路だけ見ていると手動操作の分がずれる。
+- `commitStock` は**冪等ではない**。注文の在庫を動かすときは `applyStockMove` を通す。
+- **注文の在庫は `orders.stock_state` で持つ。** `reserved`（引き当て中）・`committed`（引き落とし済みで蔵にある）・`shipped`（蔵を出た）・`none`（何も残っていない）の 4 つ。`status` から推測しないこと — 手で動かせるので、pending は引き当て中のことも、確定を手で戻した引き落とし済みのこともある。どのステータスでどの状態になるかは `stockStateFor` に書いてある。
+- **`status` と `stock_state` は同じ UPDATE で動かし、WHERE に読んだときの `stock_state` を入れ、更新できたときだけ `applyStockMove`（`src/lib/order-stock.ts`）で本数を動かす。** 2 文に分けると、同時に走ったときに片方だけ動いて食い違う。pending の注文を消す経路は、消せた行だけが本数を動かす（DELETE が確保を兼ねる）。決済の開始で引き当てて、Stripe へ送り出す前に失敗して戻す `startCheckoutAction` だけは、注文がまだ誰にも見えていないので直接呼ぶ。
+- 全額返金や取消で戻るのは蔵にある分だけ。戻し終えた注文は `none` なので動かない。**`shipped` は戻らない** — 発送済みを押し間違えたのか品物がお客様の手元にあるのかは操作から分からず、自動で足して実数より多くなると売り越すので、戻っていたら人が数えて `/admin/products` で足す（発送済みから戻したときは `alertOps` で知らせる）。**部分返金では戻さない**（金額からはどの品を何本引き取ったか分からない）。
+- `applyStockMove` は例外を投げず、失敗したら `alertOps` で知らせる。D1 に対話的トランザクションが無く、複数行の途中で落ちるとどこまで動いたか分からないので、やり直さずに人が数える。
+- **`refunded` は終端**で、管理画面からほかのステータスへ動かせない。返金の操作を通さずに `refunded` へ動かすこともできない。
+- **管理画面から手でステータスを動かしたときも辻褄を合わせる**（`adminUpdateOrderAction`）。Webhook の自動経路だけ見ていると手動操作の分がずれる。取り消した注文を確定へ戻すと引き落とし直しになり、在庫が足りなければ保存を止める（`stock`）。更新は読んだときのステータスと在庫の状態を WHERE に入れて行い、開いた画面の値（`expectedStatus`）とも比べる。ずれていたら `conflict` を返す — 古い画面や Webhook と重なったときに、返金済みなどを上書きしない。ステータスが変わらない保存（追跡番号だけなど）では在庫に触らない。
 - Checkout Session には `expires_at` を 30 分（Stripe の下限）で入れている。既定の 24 時間のままだと、放棄された決済がまる 1 日ぶん在庫を押さえる。「戻る」で帰ってきた場合は `releaseAbandonedCheckoutAction` が期限切れを待たずに解放する（自分の pending 注文だけが対象）。
 - 在庫のテストは **node:sqlite のインメモリ DB に drizzle の実 SQL を流す**（`src/lib/__tests__/inventory.test.ts`）。スタブで戻り値を作ると、肝心の WHERE 句を検証したことにならない。`node:sqlite` の型は `@types/node@20` に無いので `src/types/node-sqlite.d.ts` で補っている。
 
@@ -97,7 +100,9 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 - `/account/orders/[orderRef]` が注文詳細、`/account/orders/[orderRef]/receipt` が Stripe の領収書への転送。
 - **退会しても注文は消さない**。`orders.user_id` は `ON DELETE SET NULL`（`0015`）で、紐づけだけが外れて注文の金額・宛先は残る。領収書の写しの保存が要り、プライバシーポリシーでも保存すると約束しているため。管理画面の注文は `user_id` が null でも `customer_*` の列で表示できるので、`user` と JOIN しないこと。領収書は決済時のメールに残ることを、退会画面で案内している。注文日から 9 年（`ORDER_PII_RETENTION_YEARS`）を過ぎた退会者の注文は、氏名・連絡先・住所と Stripe の ID を消し、金額と品目は残す。お問い合わせは 3 年（`CONTACT_RETENTION_YEARS`）で消す（`sweepExpiredPersonalData`。Cron ではなく `/admin` を開いたときに走る）。**プライバシーポリシーの保有期間がこの 2 つを読んでいる**ので、変えるなら公開の約束も変わる。返金メールも `accountDeleted` のときは `/account` へ案内しない。
 - **注文の取得は必ず userId でも絞る**（`getMyOrderByRefAction`）。orderRef は推測しにくいだけで秘密ではないので、番号だけで引くと他人の注文が見える。
-- **返金は全額・一部の両方を扱う**。`orders.refunded_amount` が累計額で、`status = "refunded"` は**全額返金のときだけ**付く（一部返金ではステータスは動かない。案内で「このまま発送」と書けるのは `willStillShip` が真の注文だけ）。判定は `refundStateOf()` に寄せる。冪等性は「返金前の累計」を WHERE と Stripe の idempotencyKey に入れて担保する。
+- **返金は全額・一部の両方を扱う**。`orders.refunded_amount` が累計額で、`status = "refunded"` は**全額返金のときだけ**付く（一部返金ではステータスは動かない。案内で「このまま発送」と書けるのは `willStillShip` が真の注文だけ）。判定は `refundStateOf()` に寄せる。冪等性は「返金前の累計」を WHERE と Stripe の idempotencyKey に入れて担保する。Webhook も同じで、同時に届いて先を越されたら読み直す（読み直さないと、今回の額を読み違えたまま返金メールを送る）。Webhook の `charge.refunds` は expand されないので、返金 id は `refunds.list` で引く。
+- 返金できる注文は `isRefundable()` で判定する。入金後に取り消した注文や手で pending へ戻した注文も返金でき、未入金の注文は返金できない（`paid_at` で見分ける）。
+- 確定を通らなかった入金（取り消した注文へのコンビニ払いや、開いたままの決済ページからの支払い）は、Webhook が入金日・PaymentIntent・お届け先を記録して `alertOps` で知らせる。ステータスは変えない。注文が見つからない入金（決済ページから戻って注文を消したあとの支払い）も知らせる。
 - **キャンセルは「依頼」であって実行ではない**。`requestOrderCancellationAction` は発送前（confirmed / preparing）に `cancel_requested_at` を刻んで ops へ通知するだけ。返金の実行は従来どおり owner だけが `adminRefundOrderAction` から行う（お客様の操作でお金が動く経路は作らない）。
 - 注文ステータスの表示は `OrderStatusPill`（`Record<OrderStatus, …>` なので新ステータス追加時に型で漏れが出る）と `OrderTimeline`（cancelled / refunded は進行段階ではないので専用表示）。
 
@@ -109,6 +114,7 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 - **CSV は `src/lib/csv.ts` の `toCsv()` を通す。** `=`・`+`・`-`・`@` で始まるセルを表計算ソフトが数式として実行するため無害化し、Excel が UTF-8 と判定できるよう BOM を付ける。素朴な join で書くとどちらも落ちる。
 - 納品書は `/admin/orders/[orderRef]/packing-slip`。領収書と役割が違い、**金額は出すが「領収いたしました」とは書かない**（未入金の注文にも同梱しうる）。送り状は配送業者のシステムが発行するものでないと受け付けられないので作らない。
 - `/admin/customers` は法人（取扱店）と個人でタブが分かれる。個人側の注文集計は SQL 側で行う。
+- 注文一覧と CSV は、未払いで放棄された注文（pending かつ `reserved`）だけを隠す。手で pending へ戻した注文は在庫を引き落としてあるので残す。
 - 注文ステータスの日本語ラベルは `src/data/fujisan-orders.ts` が唯一の出どころ（管理画面と顧客向けで言葉が割れていた）。
 - **数字（KPI）は暗色のヘッダーに入れず、帯の下の和紙の面に大きく出す**（`AdminHeader` の `kpis`）。ヘッダーは見出し・権限・タブだけ。表の広いページ（注文・商品）は `AdminHeader wide` で本文の幅と揃える。
 - ダッシュボードの表示は `AdminDashboardView`（データを受け取るだけ）。取得・認可は `src/app/admin/page.tsx`。直近の注文は `/admin/orders#order-<番号>` へ飛ぶ（`AdminOrderRow` に id を振ってある）。
@@ -247,7 +253,7 @@ npm run cf-typegen # cloudflare-env.d.ts 再生成（バインディング変更
 secret）は [`SETUP.md`](./SETUP.md) にまとめてある。
 
 本番 Worker は main から Cloudflare Workers Builds が自動デプロイする
-（2026-09-24 に main と本番が揃った）。D1 のマイグレーションは `0015` まで
+（2026-09-24 に main と本番が揃った）。D1 のマイグレーションは `0016` まで
 本番へ適用済み。**マイグレーションは自動では流れない**ので、スキーマを変えたときは
 push より先に `wrangler d1 migrations apply fujisan-db --remote` を実行すること。
 
