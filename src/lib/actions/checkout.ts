@@ -10,6 +10,7 @@ import { user as userTable } from "@/db/auth-schema";
 import { getLiveSkuMap } from "@/lib/catalog";
 import { skuKey } from "@/data/fujisan-products";
 import { MAX_QTY_PER_LINE, shippingFee } from "@/lib/cart/cart-core";
+import { applyStockMove } from "@/lib/order-stock";
 import {
   releaseStock,
   reserveStock,
@@ -362,14 +363,18 @@ export async function releaseAbandonedCheckoutAction(input: {
           eq(orderTable.orderRef, ref),
           eq(orderTable.userId, userId),
           eq(orderTable.status, "pending"),
+          // 確定後に手で pending へ戻した注文は入金済みなので消さない。
+          eq(orderTable.stockState, "reserved"),
         ),
       )
-      .returning({ itemsJson: orderTable.itemsJson });
+      .returning({
+        orderRef: orderTable.orderRef,
+        itemsJson: orderTable.itemsJson,
+      });
 
     if (deleted.length === 0) return { ok: false };
 
-    const items = JSON.parse(deleted[0].itemsJson) as OrderLine[];
-    await releaseStock(items);
+    await applyStockMove(deleted[0], "reserved", "none");
     return { ok: true };
   } catch (err) {
     console.error("[checkout] 放棄された決済の解放に失敗:", err);

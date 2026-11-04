@@ -1,7 +1,9 @@
 import {
   ORDER_STATUSES,
-  canRestock,
   isReceiptIssuable,
+  isRefundable,
+  parseOrderItems,
+  stockStateFor,
   willStillShip,
 } from "@/db/orders-schema";
 
@@ -51,20 +53,94 @@ describe("willStillShip", () => {
   });
 });
 
-// 引き落とした在庫を戻してよい注文か。蔵を出た注文には品物が無く、
-// 取り消し・返金済みの注文はもう戻してある。
-describe("canRestock", () => {
-  it.each(["pending", "confirmed", "preparing"] as const)(
-    "%s は戻してよい",
+describe("stockStateFor", () => {
+  it.each(["confirmed", "preparing"] as const)(
+    "%s は品物が蔵にある状態にする",
     (status) => {
-      expect(canRestock(status)).toBe(true);
+      expect(stockStateFor(status, "reserved")).toBe("committed");
+      expect(stockStateFor(status, "none")).toBe("committed");
     },
   );
 
-  it.each(["shipped", "delivered", "cancelled", "refunded"] as const)(
-    "%s は戻さない",
+  it.each(["shipped", "delivered"] as const)(
+    "%s は品物が蔵を出た状態にする",
     (status) => {
-      expect(canRestock(status)).toBe(false);
+      expect(stockStateFor(status, "reserved")).toBe("shipped");
+      expect(stockStateFor(status, "committed")).toBe("shipped");
     },
   );
+
+  // 蔵にある分だけ戻す。蔵を出た品物は手元に無いので、状態を変えない。
+  it.each(["cancelled", "refunded"] as const)(
+    "%s は蔵にある分を戻し、蔵を出た分は戻さない",
+    (status) => {
+      expect(stockStateFor(status, "reserved")).toBe("none");
+      expect(stockStateFor(status, "committed")).toBe("none");
+      expect(stockStateFor(status, "none")).toBe("none");
+      expect(stockStateFor(status, "shipped")).toBe("shipped");
+    },
+  );
+
+  // 品物の場所は操作からは分からない。自動で足すと売り越すので、蔵を出た扱いは解かない。
+  it.each(["pending", "confirmed", "preparing", "cancelled", "refunded"] as const)(
+    "蔵を出た注文は %s にしても蔵を出たままにする",
+    (status) => {
+      expect(stockStateFor(status, "shipped")).toBe("shipped");
+    },
+  );
+
+  // pending は引き当て中のことも、確定を手で戻した引き落とし済みのこともある。
+  it.each(["reserved", "committed", "none"] as const)(
+    "pending は在庫の状態（%s）を動かさない",
+    (current) => {
+      expect(stockStateFor("pending", current)).toBe(current);
+    },
+  );
+});
+
+describe("isRefundable", () => {
+  it.each(["confirmed", "preparing", "shipped", "delivered"] as const)(
+    "%s は返金できる",
+    (status) => {
+      expect(isRefundable({ status, paidAt: null })).toBe(true);
+    },
+  );
+
+  it("入金後に取り消した注文は返金できる", () => {
+    expect(
+      isRefundable({ status: "cancelled", paidAt: new Date(1000) }),
+    ).toBe(true);
+  });
+
+  it("入金済みで手で pending へ戻した注文は返金できる", () => {
+    expect(isRefundable({ status: "pending", paidAt: new Date(1000) })).toBe(
+      true,
+    );
+  });
+
+  it.each(["pending", "cancelled"] as const)(
+    "未入金の %s は返金できない",
+    (status) => {
+      expect(isRefundable({ status, paidAt: null })).toBe(false);
+    },
+  );
+
+  it("返金済みの注文は返金できない", () => {
+    expect(isRefundable({ status: "refunded", paidAt: new Date(1000) })).toBe(
+      false,
+    );
+  });
+});
+
+describe("parseOrderItems", () => {
+  it("壊れた値や配列でない値は空にする", () => {
+    expect(parseOrderItems("not json")).toEqual([]);
+    expect(parseOrderItems('{"slug":"shogun"}')).toEqual([]);
+  });
+
+  it("明細をそのまま返す", () => {
+    expect(parseOrderItems('[{"slug":"shogun","qty":2}]')).toEqual([
+      { slug: "shogun", qty: 2 },
+    ]);
+  });
 });

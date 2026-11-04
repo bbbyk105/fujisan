@@ -19,35 +19,55 @@ export const ORDER_STATUSES = [
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
 /**
- * 品物が蔵を出たか。発送後は品物が手元に戻っていないので、返金しても在庫は
- * 増やさない（返品を受け取ったら手で足す）。在庫を戻す判断は `canRestock` を使うこと。
+ * 注文が在庫に対して今どうなっているか。`orders.stock_state` に入る。
+ *
+ * `status` からは推測できない。`status` は人が手で動かせるので、たとえば pending は
+ * 「引き当て中」のことも「確定したあとに手で戻した（引き落とし済み）」こともある。
+ *
+ * - `reserved`: 引き当て中（`inventory.reserved` に積んである）
+ * - `committed`: 引き落とし済みで、品物は蔵にある
+ * - `shipped`: 引き落とし済みで、品物は蔵を出た。ここからは動かない（下の `stockStateFor`）
+ * - `none`: 在庫に何も残っていない（解放した、または戻した）
  */
-export function hasLeftTheKura(status: OrderStatus): boolean {
-  return status === "shipped" || status === "delivered";
-}
+export const STOCK_STATES = ["reserved", "committed", "shipped", "none"] as const;
+
+export type StockState = (typeof STOCK_STATES)[number];
 
 /**
- * 引き落とした在庫を、返金や取消で戻してよい注文か。
+ * そのステータスの注文があるべき在庫の状態。
  *
- * `hasLeftTheKura` の否定では足りない。cancelled と refunded は戻し終えているので、
- * もう一度足すと実数より多くなり、売り越しを防げなくなる。
+ * pending は動かさない（引き当て中のことも引き落とし済みのこともあるため）。
  *
- * pending を含むのは、確定したあとに手で pending へ戻した注文があるため。未入金の
- * pending は引き落としていないが、そちらは解放（`releaseStock`）の経路を通る。
+ * 一度 `shipped` になった注文は `shipped` のまま。発送済みを押し間違えて戻したのか、
+ * 品物がお客様の手元にあるのかは操作からは分からない。自動で足して実数より多くなると
+ * 売り越すので、戻っていたら人が数えて足す。
  */
-export function canRestock(status: OrderStatus | string): boolean {
-  return (
-    !hasLeftTheKura(status as OrderStatus) &&
-    status !== "cancelled" &&
-    status !== "refunded"
-  );
+export function stockStateFor(
+  status: OrderStatus,
+  current: StockState,
+): StockState {
+  if (current === "shipped") return "shipped";
+
+  switch (status) {
+    case "pending":
+      return current;
+    case "confirmed":
+    case "preparing":
+      return "committed";
+    case "shipped":
+    case "delivered":
+      return "shipped";
+    case "cancelled":
+    case "refunded":
+      return "none";
+  }
 }
 
 /**
  * これから発送する注文か。一部返金のあとの案内に使う。
  *
- * `hasLeftTheKura` の否定では足りない。品物が蔵にあっても、取り消した注文や
- * キャンセルを依頼された注文は発送しないので、「このまま発送します」とは言えない。
+ * 品物が蔵にあるだけでは足りない。取り消した注文やキャンセルを依頼された注文は
+ * 発送しないので、「このまま発送します」とは言えない。
  */
 export function willStillShip(order: {
   status: OrderStatus | string;
@@ -81,11 +101,35 @@ export function refundStateOf(order: {
 }
 
 /**
+ * 管理画面から返金できる注文か（返せる残額があるかは別に見る）。
+ *
+ * pending と取り消した注文は、入金の有無で分かれる。入金後に手で動かした注文は代金を
+ * 預かったままで、未入金の注文には返すお金が無い。
+ */
+export function isRefundable(order: {
+  status: OrderStatus | string;
+  paidAt: Date | null;
+}): boolean {
+  switch (order.status) {
+    case "confirmed":
+    case "preparing":
+    case "shipped":
+    case "delivered":
+      return true;
+    case "pending":
+    case "cancelled":
+      return order.paidAt !== null;
+    default:
+      return false;
+  }
+}
+
+/**
  * 領収書を発行してよいステータスか。
  *
- * 領収書は「代金を受け取って保持している」ことの証明なので、
- * 未入金のまま終わったもの（pending / cancelled）と、代金を返したもの
- * （refunded）には、注文詳細から案内しない。
+ * 領収書は「代金を受け取って保持している」ことの証明なので、未入金のものと、代金を
+ * 返したもの（refunded）には、注文詳細から案内しない。取り消した注文（cancelled）は
+ * 入金済みでも返金する前提なので案内しない。
  */
 export function isReceiptIssuable(status: OrderStatus): boolean {
   return (
@@ -117,6 +161,13 @@ export const order = sqliteTable(
     orderRef: text("order_ref").notNull().unique(),
     /** 進行ステータス。ORDER_STATUSES のいずれか。 */
     status: text("status").notNull().default("pending"),
+    /**
+     * 在庫の状態。STOCK_STATES のいずれか。注文は決済の開始で引き当てるので既定は reserved。
+     * `status` と同じ UPDATE で動かすこと（`src/lib/order-stock.ts`）。
+     */
+    stockState: text("stock_state", { enum: STOCK_STATES })
+      .notNull()
+      .default("reserved"),
 
     /** カート行のスナップショット（JSON 文字列）。型: OrderLine[] を JSON 化したもの。 */
     itemsJson: text("items_json").notNull(),
@@ -199,3 +250,13 @@ export type OrderLine = {
   unitPrice: number;
   lineTotal: number;
 };
+
+/** `items_json` を読む。壊れていたら空にする（注文の処理そのものは止めない）。 */
+export function parseOrderItems(json: string): OrderLine[] {
+  try {
+    const parsed = JSON.parse(json);
+    return Array.isArray(parsed) ? (parsed as OrderLine[]) : [];
+  } catch {
+    return [];
+  }
+}

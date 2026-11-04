@@ -117,6 +117,82 @@ describe("0015 注文を退会後も残す", () => {
   });
 });
 
+describe("0016 注文に在庫の状態を持たせる", () => {
+  const FILE = "0016_order_stock_state.sql";
+
+  /** 適用前の表に注文を 1 件入れ、0016 を流して在庫の状態を返す。 */
+  function stockStateAfterMigration(
+    status: string,
+    { paidAt = null, shippedAt = null }: {
+      paidAt?: number | null;
+      shippedAt?: number | null;
+    } = {},
+  ): string {
+    const db = new DatabaseSync(":memory:");
+    applyBefore(db, "0016");
+    db.prepare(
+      `INSERT INTO orders (id, order_ref, status, items_json, items_count, subtotal, shipping,
+        total, customer_name, customer_email, postal_code, address, phone, paid_at, shipped_at,
+        created_at, updated_at)
+       VALUES ('o_1', 'FJ-0001', ?, '[]', 1, 2750, 1100, 3850, '山田 太郎', 'taro@example.com',
+        '4170051', '静岡県富士市', '0545000000', ?, ?, 0, 0)`,
+    ).run(status, paidAt, shippedAt);
+
+    applyFile(db, FILE);
+
+    const row = db.prepare("SELECT stock_state FROM orders").get() as {
+      stock_state: string;
+    };
+    db.close();
+    return row.stock_state;
+  }
+
+  it.each([
+    ["confirmed", "committed"],
+    ["preparing", "committed"],
+    ["shipped", "shipped"],
+    ["delivered", "shipped"],
+  ])("%s の注文は %s になる", (status, expected) => {
+    expect(stockStateAfterMigration(status, { paidAt: 1000 })).toBe(expected);
+  });
+
+  // 一度発送した注文は、手で戻してあっても蔵を出た扱いにする（`stockStateFor` と同じ）。
+  it.each(["pending", "confirmed", "preparing"])(
+    "発送後に %s へ戻した注文は蔵を出たままにする",
+    (status) => {
+      expect(
+        stockStateAfterMigration(status, { paidAt: 1000, shippedAt: 2000 }),
+      ).toBe("shipped");
+    },
+  );
+
+  it("未入金の pending は引き当て中になる", () => {
+    expect(stockStateAfterMigration("pending")).toBe("reserved");
+  });
+
+  it("手で pending へ戻した入金済みの注文は引き落とし済みになる", () => {
+    expect(stockStateAfterMigration("pending", { paidAt: 1000 })).toBe(
+      "committed",
+    );
+  });
+
+  it.each(["cancelled", "refunded"])(
+    "発送前に終わった %s の注文は在庫に何も残らない",
+    (status) => {
+      expect(stockStateAfterMigration(status, { paidAt: 1000 })).toBe("none");
+    },
+  );
+
+  it.each(["cancelled", "refunded"])(
+    "発送後に終わった %s の注文は蔵を出たままにする",
+    (status) => {
+      expect(
+        stockStateAfterMigration(status, { paidAt: 1000, shippedAt: 2000 }),
+      ).toBe("shipped");
+    },
+  );
+});
+
 describe("マイグレーション", () => {
   it("頭から流して新しい DB を作れる", () => {
     const db = new DatabaseSync(":memory:");

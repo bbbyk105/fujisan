@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import type { OrderStatus } from "@/db/orders-schema";
-import { ORDER_STATUSES } from "@/db/orders-schema";
+import { ORDER_STATUSES, isRefundable } from "@/db/orders-schema";
 import { ORDER_STATUS_LABELS } from "@/data/fujisan-orders";
 import {
   adminUpdateOrderAction,
@@ -12,6 +12,12 @@ import { useUnsavedChanges } from "@/lib/unsaved-changes";
 
 const yen = new Intl.NumberFormat("ja-JP");
 
+const SAVE_ERRORS: Record<string, string> = {
+  refunded: "返金済みの注文のステータスは変更できません。",
+  conflict: "ほかの操作で注文が更新されました。画面を再読み込みしてください。",
+  stock: "在庫が足りないため変更できません。商品の在庫を確認してください。",
+};
+
 /** 表示ラベルは src/data/fujisan-orders.ts が唯一の出どころ。 */
 const ORDER_STATUS_LABELS_JA = Object.fromEntries(
   Object.entries(ORDER_STATUS_LABELS).map(([k, v]) => [k, v.ja]),
@@ -20,14 +26,6 @@ const ORDER_STATUS_LABELS_JA = Object.fromEntries(
 
 /** 手動のステータス変更で選べる値（refunded は返金操作からのみ到達させる）。 */
 const SELECTABLE_STATUSES = ORDER_STATUSES.filter((s) => s !== "refunded");
-
-/** 返金ボタンを表示できる（支払い済み・未返金）ステータス。 */
-const REFUNDABLE: OrderStatus[] = [
-  "confirmed",
-  "preparing",
-  "shipped",
-  "delivered",
-];
 
 const CARRIER_PRESETS = [
   "ヤマト運輸",
@@ -51,6 +49,7 @@ type Props = {
     total: number;
     trackingCarrier: string | null;
     trackingNumber: string | null;
+    paidAt: Date | null;
     shippedAt: Date | null;
     deliveredAt: Date | null;
     refundedAt: Date | null;
@@ -109,9 +108,9 @@ export function AdminOrderRow({ order, canRefund }: Props) {
     number !== (order.trackingNumber ?? "");
   useUnsavedChanges(dirty);
 
-  // owner かつ「支払い済み」で、まだ返せる残額がある注文にだけ返金欄を出す。
+  // owner かつ入金済みで、まだ返せる残額がある注文にだけ返金欄を出す。
   const showRefund =
-    canRefund && REFUNDABLE.includes(order.status) && remainingRefundable > 0;
+    canRefund && isRefundable(order) && remainingRefundable > 0;
 
   const handleSave = () => {
     setMessage(null);
@@ -119,6 +118,7 @@ export function AdminOrderRow({ order, canRefund }: Props) {
       const res = await adminUpdateOrderAction({
         orderId: order.id,
         status,
+        expectedStatus: order.status,
         trackingCarrier: carrier,
         trackingNumber: number,
       });
@@ -126,11 +126,7 @@ export function AdminOrderRow({ order, canRefund }: Props) {
         setMessage("保存しました");
         setTimeout(() => setMessage(null), 2500);
       } else {
-        setMessage(
-          res.error === "refunded"
-            ? "保存失敗: 返金済みの注文のステータスは変更できません。"
-            : `保存失敗: ${res.error}`,
-        );
+        setMessage(`保存失敗: ${SAVE_ERRORS[res.error] ?? res.error}`);
       }
     });
   };
@@ -139,7 +135,7 @@ export function AdminOrderRow({ order, canRefund }: Props) {
     unauth: "権限がありません（再ログイン）",
     forbidden: "返金は owner のみ可能です",
     invalid: "注文が見つかりません",
-    not_refundable: "この注文は返金できません（未決済/返金済み）",
+    not_refundable: "この注文は返金できません（未入金/返金済み）",
     amount: "返金額は 1 円以上、残額以下で指定してください",
     config: "Stripe の設定が未完了です",
     stripe: "Stripe 返金に失敗しました",
