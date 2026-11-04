@@ -127,7 +127,7 @@ export type StockWarning = {
  * 戻り値は「この確定で**はじめて**僅少・完売になった SKU」。
  * 呼び出し元がこれを人へ知らせる。毎回の在庫を通知すると鬱陶しくて
  * 読まれなくなるので、**またいだ瞬間だけ**を返す
- * （確定前から既に僅少だった SKU は含めない）。
+ * （既に僅少だった SKU は、完売するまで含めない）。
  */
 export async function commitStock(
   items: readonly OrderLine[],
@@ -157,9 +157,13 @@ export async function commitStock(
     if (!row || !before) continue;
 
     const after = toLevel(row);
-    const wasFine = !before.lowStock && before.available > 0;
-    const nowNeedsAttention = after.lowStock || after.available === 0;
-    if (wasFine && nowNeedsAttention) {
+    // 実在庫の動きで見る。available は引き当ての時点で減り、確定では変わらないので、
+    // 比べても何も分からない。実在庫なら、同時に引き当てた注文が順に確定しても、
+    // しきい値をまたぐのは 1 回だけになる。
+    const threshold = after.lowStockThreshold;
+    const crossedThreshold = before.onHand > threshold && after.onHand <= threshold;
+    const ranOut = before.onHand > 0 && after.onHand === 0;
+    if (crossedThreshold || ranOut) {
       warnings.push({
         slug: after.productSlug,
         ml: after.ml,

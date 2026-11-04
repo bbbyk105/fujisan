@@ -227,14 +227,21 @@ describe("確定にともなう在庫の警告", () => {
       .run("samurai", 300, onHand, threshold);
   }
 
+  /** 実際の流れで売る。決済の開始で引き当て、入金で確定する。 */
+  async function sell(qty: number) {
+    const items = [line("samurai", 300, qty)];
+    await reserveStock(items);
+    return commitStock(items);
+  }
+
   it("十分に残っているあいだは何も返さない", async () => {
     seedWithThreshold(20);
-    await expect(commitStock([line("samurai", 300, 1)])).resolves.toEqual([]);
+    await expect(sell(1)).resolves.toEqual([]);
   });
 
   it("しきい値を下回った瞬間に僅少として返す", async () => {
     seedWithThreshold(7); // 1 本売れて 6 本 → しきい値ちょうど
-    const warnings = await commitStock([line("samurai", 300, 1)]);
+    const warnings = await sell(1);
 
     expect(warnings).toEqual([
       expect.objectContaining({
@@ -248,16 +255,51 @@ describe("確定にともなう在庫の警告", () => {
 
   it("既に僅少だった SKU は、さらに売れても繰り返し通知しない", async () => {
     seedWithThreshold(4); // 最初から僅少
-    await expect(commitStock([line("samurai", 300, 1)])).resolves.toEqual([]);
+    await expect(sell(1)).resolves.toEqual([]);
   });
 
   it("完売したら soldOut として返す", async () => {
     // 完売は「僅少」とは別に扱う。販売が止まる事象なので文面も変える。
     seedWithThreshold(20);
-    const warnings = await commitStock([line("samurai", 300, 20)]);
+    const warnings = await sell(20);
 
     expect(warnings).toEqual([
       expect.objectContaining({ available: 0, soldOut: true }),
+    ]);
+  });
+
+  it("僅少から完売へ移ったときも知らせる", async () => {
+    seedWithThreshold(4); // 最初から僅少
+    const warnings = await sell(4);
+
+    expect(warnings).toEqual([
+      expect.objectContaining({ available: 0, soldOut: true }),
+    ]);
+  });
+
+  // 同時に引き当てた注文が順に確定しても、しきい値をまたぐのは 1 回だけ。
+  it("引き当てが重なっても、同じしきい値割れを重ねて知らせない", async () => {
+    seedWithThreshold(10, 5);
+    const a = [line("samurai", 300, 3)];
+    const b = [line("samurai", 300, 3)];
+    await reserveStock(a);
+    await reserveStock(b);
+
+    const warnings = [...(await commitStock(a)), ...(await commitStock(b))];
+
+    expect(warnings).toHaveLength(1);
+  });
+
+  it("引き当てが重なっても、完売は最後の確定で 1 回だけ知らせる", async () => {
+    seedWithThreshold(4, 0);
+    const a = [line("samurai", 300, 2)];
+    const b = [line("samurai", 300, 2)];
+    await reserveStock(a);
+    await reserveStock(b);
+
+    await expect(commitStock(a)).resolves.toEqual([]);
+    await expect(commitStock(b)).resolves.toEqual([
+      expect.objectContaining({ soldOut: true }),
     ]);
   });
 
