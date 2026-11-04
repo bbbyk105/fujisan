@@ -140,6 +140,31 @@ describe("adminUpdateOrderAction — 手動ステータス変更と在庫", () =
     }
   });
 
+  // 全額返金で在庫は戻してある。ここで動かすと二重に戻り、発送の一覧へ戻ることもある。
+  it.each(["cancelled", "confirmed", "preparing", "shipped"] as const)(
+    "返金済みの注文は %s に変えられず、在庫も動かない",
+    async (status) => {
+      orderRow = row("refunded");
+
+      expect(
+        await adminUpdateOrderAction({ orderId: "order_1", status }),
+      ).toEqual({ ok: false, error: "refunded" });
+      expect(restockCommitted).not.toHaveBeenCalled();
+    },
+  );
+
+  it("返金済みのまま追跡番号だけを保存することはできる", async () => {
+    orderRow = row("refunded");
+
+    expect(
+      await adminUpdateOrderAction({
+        orderId: "order_1",
+        status: "refunded",
+        trackingNumber: "1234",
+      }),
+    ).toEqual({ ok: true });
+  });
+
   it("同じステータスへの保存では在庫を動かさない", async () => {
     orderRow = row("confirmed");
     await adminUpdateOrderAction({ orderId: "order_1", status: "confirmed" });

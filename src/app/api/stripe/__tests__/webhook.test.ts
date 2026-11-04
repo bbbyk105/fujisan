@@ -663,6 +663,103 @@ describe("Stripe Webhook — Stripe 側で行われた返金の同期", () => {
     expect(String(alertOps.mock.calls[0][1])).toContain("発送は続きます");
   });
 
+  describe("全額返金で在庫を戻す条件", () => {
+    const fullRefundOf = async (status: string) => {
+      orderRow = baseOrderRow({ status, stripePaymentIntentId: "pi_test_1" });
+      givenCharge();
+      await postWebhook();
+    };
+
+    it.each(["confirmed", "preparing"])(
+      "入金済みで蔵にある注文（%s）は在庫へ戻す",
+      async (status) => {
+        await fullRefundOf(status);
+        expect(restockCommitted).toHaveBeenCalledTimes(1);
+      },
+    );
+
+    // 取り消したときに管理画面が在庫へ戻している。ここで足すと二重になる。
+    it("取り消した注文では在庫を戻さない", async () => {
+      await fullRefundOf("cancelled");
+      expect(restockCommitted).not.toHaveBeenCalled();
+    });
+
+    // この経路は PaymentIntent で注文を引くので、pending の行は一度確定したあとに
+    // 手で戻した注文だけ。在庫は引き落とし済みなので戻す。
+    it("確定後に手で pending へ戻した注文は在庫へ戻す", async () => {
+      await fullRefundOf("pending");
+      expect(restockCommitted).toHaveBeenCalledTimes(1);
+    });
+
+    it.each(["shipped", "delivered"])(
+      "発送後の注文（%s）では在庫を戻さない",
+      async (status) => {
+        await fullRefundOf(status);
+        expect(restockCommitted).not.toHaveBeenCalled();
+      },
+    );
+  });
+
+  // 取り消したときに在庫へ戻してある。「足してください」に従うと二重になる。
+  it("取り消した注文の一部返金では、在庫を足す案内を出さない", async () => {
+    orderRow = baseOrderRow({
+      status: "cancelled",
+      stripePaymentIntentId: "pi_test_1",
+    });
+    givenCharge({ amount_refunded: 1000, refunded: false });
+    await postWebhook();
+
+    expect(String(alertOps.mock.calls[0][1])).not.toContain("在庫を足して");
+    expect(String(alertOps.mock.calls[0][0])).not.toContain("在庫の確認");
+  });
+
+  describe("返金メールの金額", () => {
+    it("2 回目の返金では、累計ではなく今回の額を伝える", async () => {
+      orderRow = baseOrderRow({
+        status: "confirmed",
+        stripePaymentIntentId: "pi_test_1",
+        refundedAmount: 1000,
+      });
+      givenCharge({ amount_refunded: 1500, refunded: false });
+      await postWebhook();
+
+      expect(sendOrderRefundedEmail).toHaveBeenCalledWith(
+        expect.objectContaining({ refundAmount: 500 }),
+      );
+    });
+
+    it("残額を全部返したときも、今回の額を伝える", async () => {
+      orderRow = baseOrderRow({
+        status: "confirmed",
+        stripePaymentIntentId: "pi_test_1",
+        refundedAmount: 1000,
+      });
+      givenCharge();
+      await postWebhook();
+
+      expect(sendOrderRefundedEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          refundAmount: (orderRow!.total as number) - 1000,
+          partial: false,
+        }),
+      );
+    });
+
+    it("1 回目の返金では、その額を伝える", async () => {
+      orderRow = baseOrderRow({
+        status: "confirmed",
+        stripePaymentIntentId: "pi_test_1",
+        refundedAmount: null,
+      });
+      givenCharge({ amount_refunded: 1000, refunded: false });
+      await postWebhook();
+
+      expect(sendOrderRefundedEmail).toHaveBeenCalledWith(
+        expect.objectContaining({ refundAmount: 1000 }),
+      );
+    });
+  });
+
   it("返金が 0 円なら何もしない", async () => {
     givenCharge({ amount_refunded: 0, refunded: false });
     const res = await postWebhook();

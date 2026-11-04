@@ -1,5 +1,6 @@
 import {
   ORDER_STATUSES,
+  canRestock,
   isReceiptIssuable,
   willStillShip,
 } from "@/db/orders-schema";
@@ -48,4 +49,22 @@ describe("willStillShip", () => {
       willStillShip({ status: "confirmed", cancelRequestedAt: new Date() }),
     ).toBe(false);
   });
+});
+
+// 引き落とした在庫を戻してよい注文か。蔵を出た注文には品物が無く、
+// 取り消し・返金済みの注文はもう戻してある。
+describe("canRestock", () => {
+  it.each(["pending", "confirmed", "preparing"] as const)(
+    "%s は戻してよい",
+    (status) => {
+      expect(canRestock(status)).toBe(true);
+    },
+  );
+
+  it.each(["shipped", "delivered", "cancelled", "refunded"] as const)(
+    "%s は戻さない",
+    (status) => {
+      expect(canRestock(status)).toBe(false);
+    },
+  );
 });

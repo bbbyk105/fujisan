@@ -22,7 +22,7 @@ import {
   ORDER_STATUSES,
   type OrderLine,
   type OrderStatus,
-  hasLeftTheKura,
+  canRestock,
   willStillShip,
 } from "@/db/orders-schema";
 import {
@@ -206,7 +206,8 @@ export async function adminUpdateOrderAction(input: {
   trackingCarrier?: string;
   trackingNumber?: string;
 }): Promise<
-  { ok: true } | { ok: false; error: "unauth" | "forbidden" | "invalid" | "db" }
+  | { ok: true }
+  | { ok: false; error: "unauth" | "forbidden" | "invalid" | "refunded" | "db" }
 > {
   const gate = await requireStaff();
   if (!gate.ok) return { ok: false, error: gate.reason };
@@ -227,6 +228,10 @@ export async function adminUpdateOrderAction(input: {
     if (!current) return { ok: false, error: "invalid" };
 
     const prevStatus = current.status as OrderStatus;
+    // 全額返金は終端。動かすと発送の一覧へ戻ったり、在庫がもう一度戻ったりする。
+    if (prevStatus === "refunded" && input.status !== "refunded") {
+      return { ok: false, error: "refunded" };
+    }
     const now = new Date();
     const carrier = (input.trackingCarrier ?? "").trim();
     const number = (input.trackingNumber ?? "").trim();
@@ -269,7 +274,7 @@ export async function adminUpdateOrderAction(input: {
           if (prevStatus === "pending") {
             // 未入金のまま取消。引き当てを戻すだけ（実在庫は減っていない）。
             await releaseStock(items);
-          } else if (!hasLeftTheKura(prevStatus)) {
+          } else if (canRestock(prevStatus)) {
             // 入金済みだが未発送のまま取消。品物は蔵にあるので実在庫へ戻す。
             await restockCommitted(items);
           }
@@ -434,6 +439,7 @@ export async function adminRefundOrderAction(input: {
   // 同時に別経路（Webhook など）が先に反映していたら更新行ゼロになり、
   // 累計を二重に足すこともメールを重複送信することも無い。
   const totalRefunded = alreadyRefunded + amount;
+  const remaining = current.total - totalRefunded;
   let updated;
   try {
     const db = await getDb();
@@ -470,13 +476,13 @@ export async function adminRefundOrderAction(input: {
 
   // 既に反映済み（Webhook が先着した等）。メールは重複送信しない。
   if (updated.length === 0) {
-    return { ok: true, refunded: totalRefunded, remaining: 0 };
+    return { ok: true, refunded: totalRefunded, remaining };
   }
 
   // 未発送のまま**全額**返金したなら品物は蔵にあるので在庫に戻す。
   // 発送後は手元に無いので戻さない（返品を受け取ったら /admin/products で足す）。
   // 一部返金では戻さない — 金額からは、どの品を何本引き取ったか分からない。
-  if (isFullRefund && !hasLeftTheKura(current.status as OrderStatus)) {
+  if (isFullRefund && canRestock(current.status)) {
     try {
       await restockCommitted(safeParseItems(current.itemsJson));
     } catch (err) {

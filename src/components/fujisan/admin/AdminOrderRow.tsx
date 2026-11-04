@@ -126,7 +126,11 @@ export function AdminOrderRow({ order, canRefund }: Props) {
         setMessage("保存しました");
         setTimeout(() => setMessage(null), 2500);
       } else {
-        setMessage(`保存失敗: ${res.error}`);
+        setMessage(
+          res.error === "refunded"
+            ? "保存失敗: 返金済みの注文のステータスは変更できません。"
+            : `保存失敗: ${res.error}`,
+        );
       }
     });
   };
