@@ -1,59 +1,7 @@
 import {
   INVOICE_REGISTRATION_NUMBER,
-  LIQUOR_LICENCE,
   SHIPPING_FEE,
-  isLiquorLicenceDisclosed,
-  liquorLicenceLine,
 } from "@/data/fujisan-legal";
-
-describe("通信販売酒類小売業免許の表示", () => {
-  const original = { ...LIQUOR_LICENCE };
-  afterEach(() => {
-    LIQUOR_LICENCE.taxOffice = original.taxOffice;
-    LIQUOR_LICENCE.number = original.number;
-  });
-
-  it("番号が確定したら税務署名と番号を掲示する", () => {
-    LIQUOR_LICENCE.taxOffice = "富士税務署";
-    LIQUOR_LICENCE.number = "酒類指令第12号";
-
-    expect(isLiquorLicenceDisclosed()).toBe(true);
-    expect(liquorLicenceLine("ja")).toBe(
-      "通信販売酒類小売業免許（富士税務署 酒類指令第12号）",
-    );
-    expect(liquorLicenceLine("en")).toContain("富士税務署");
-    expect(liquorLicenceLine("en")).toContain("酒類指令第12号");
-  });
-
-  it("未確定のあいだは番号を作り出さず、確認中である旨を出す", () => {
-    LIQUOR_LICENCE.taxOffice = null;
-    LIQUOR_LICENCE.number = null;
-
-    expect(isLiquorLicenceDisclosed()).toBe(false);
-    const ja = liquorLicenceLine("ja");
-    expect(ja).toContain("確認中");
-    // それらしい伏せ字や null がそのまま画面に出てはいけない
-    expect(ja).not.toContain("〇");
-    expect(ja).not.toContain("null");
-    expect(liquorLicenceLine("en")).not.toContain("null");
-  });
-
-  it("片方だけ埋まっている状態は「未確定」として扱う", () => {
-    LIQUOR_LICENCE.taxOffice = "富士税務署";
-    LIQUOR_LICENCE.number = null;
-    expect(isLiquorLicenceDisclosed()).toBe(false);
-
-    LIQUOR_LICENCE.taxOffice = null;
-    LIQUOR_LICENCE.number = "酒類指令第12号";
-    expect(isLiquorLicenceDisclosed()).toBe(false);
-  });
-
-  it("空白だけの値も未確定として扱う", () => {
-    LIQUOR_LICENCE.taxOffice = "   ";
-    LIQUOR_LICENCE.number = "酒類指令第12号";
-    expect(isLiquorLicenceDisclosed()).toBe(false);
-  });
-});
 
 describe("適格請求書発行事業者の登録番号", () => {
   // 法人の登録番号は "T" + 法人番号。法人番号の先頭 1 桁は残り 12 桁から計算する

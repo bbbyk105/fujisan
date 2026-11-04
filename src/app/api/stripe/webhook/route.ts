@@ -283,6 +283,7 @@ async function syncRefundFromStripe(charge: Stripe.Charge): Promise<void> {
   // 返金メールはベストエフォート。返金自体は Stripe 側で成立している。
   try {
     await sendOrderRefundedEmail({
+      accountDeleted: row.userId === null,
       orderRef: row.orderRef,
       customerName: row.customerName,
       customerEmail: row.customerEmail,

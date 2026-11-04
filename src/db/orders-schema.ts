@@ -54,8 +54,7 @@ export function refundStateOf(order: {
  *
  * 領収書は「代金を受け取って保持している」ことの証明なので、
  * 未入金のまま終わったもの（pending / cancelled）と、代金を返したもの
- * （refunded）には発行しない。返金済みに全額の「上記正に領収いたしました」を
- * 出すと事実と食い違う。
+ * （refunded）には、注文詳細から案内しない。
  */
 export function isReceiptIssuable(status: OrderStatus): boolean {
   return (
@@ -74,9 +73,15 @@ export const order = sqliteTable(
   "orders",
   {
     id: text("id").primaryKey(),
-    userId: text("user_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
+    /**
+     * 注文したアカウント。**退会すると null になる**（注文そのものは残す）。
+     *
+     * 領収書は適格簡易請求書で写しの保存が要り、プライバシーポリシーにも
+     * 「退会後も税法・商法上必要な期間保存します」と書いている。ここを cascade に
+     * すると、退会と同時に売上の記録まで消える。お客様の名前や宛先は下の列に
+     * 注文時点の値が残るので、管理画面はこの列が null でも表示できる。
+     */
+    userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
     /** 顧客向けの注文番号（"FJ-XXXX"）。重複しないように unique。 */
     orderRef: text("order_ref").notNull().unique(),
     /** 進行ステータス。ORDER_STATUSES のいずれか。 */
@@ -123,10 +128,8 @@ export const order = sqliteTable(
     refundedAmount: integer("refunded_amount"),
 
     /**
-     * 領収書の宛名。null なら `customerName`（注文時の登録名）を使う。
-     *
-     * 「上様」や正式社名を入れたい要望に応えるためのもので、**金額には
-     * 一切関係しない**。お客様がご自身の注文に対してのみ設定できる。
+     * 使っていない列。領収書を Stripe へ移す前の、自前の領収書の宛名。
+     * 消すと元に戻せないので残してある（2026-11-04）。
      */
     receiptAddressee: text("receipt_addressee"),
 

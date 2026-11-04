@@ -71,8 +71,8 @@ export default function FujisanFooter() {
               className="text-paper-tint/70 underline decoration-gold/45 underline-offset-2 transition-colors hover:text-gold"
             >
               <L
-                ja="酒類販売管理者標識・通信販売酒類小売業免許情報はこちら"
-                en="Liquor sales manager notice & mail-order liquor retail licence"
+                ja="酒類販売管理者標識はこちら"
+                en="Liquor sales manager notice"
               />
             </Link>
           </p>

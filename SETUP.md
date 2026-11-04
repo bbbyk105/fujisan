@@ -19,7 +19,7 @@
 
 | | 内容 |
 |---|---|
-| ✅ | 本番 D1 のマイグレーションは `0014` まで適用済み |
+| ✅ | 本番 D1 のマイグレーションは `0015` まで適用済み（2026-11-04） |
 | ✅ | 独自ドメイン `sakefujisan.com`（www・workers.dev は apex へ転送） |
 | ✅ | メール送信: Resend で `sakefujisan.com` を認証済み、送信元は `info@sakefujisan.com` |
 | ✅ | メール受信: Cloudflare Email Routing で `info@` → `mtfujipharmacy@gmail.com` |
@@ -27,7 +27,7 @@
 | ✅ | Stripe 本番 Webhook（`we_1UAthnHTT9ZXTgS1xYg2XRl4`）: URL は sakefujisan.com、6 イベント |
 | ⚠️ | **決済は Stripe の sandbox（テスト）のまま**。本番キーへの切り替えはタスク4 |
 | ✅ | `ADMIN_EMAILS` = `mtfujipharmacy@gmail.com,bbbyk105@yahoo.co.jp` |
-| ⚠️ | 本番のユーザーは 0 人。管理者のアドレスで会員登録すると `/admin` に入れる（タスク2） |
+| ✅ | 管理者のアドレスのアカウントは登録・メール確認済み（2026-11-04 に確認。`/admin` に入れるかは画面で確かめる） |
 | ⚠️ | 本番 D1 に実在庫を入れた（2026-10-29、タスク5）。**sandbox の決済でも減る**ので、本番キーに切り替えたら数え直す（タスク4） |
 
 ### 本番 Worker の secret（`npx wrangler secret list` で確認済み）
@@ -66,26 +66,10 @@ staff の追加は `/admin/team` からメール招待でできます（招待�
 3. 確認メールのリンクを踏む（`requireEmailVerification: true` のため必須）
 4. https://sakefujisan.com/admin に入れることを確認
 
-## タスク3. 酒類販売の免許番号を入れる【法令】
+## タスク3. 酒類販売の免許番号を入れる（廃止: 2026-11-04）
 
-`src/data/fujisan-legal.ts` の `LIQUOR_LICENCE` が `null` のままです。
-通信販売での酒類販売では、免許番号の表示が必須です。
-
-**2026-10-29: 番号が届く前に公開すると本人が決めた。** 届いたら以下を行う。
-
-```ts
-export const LIQUOR_LICENCE = {
-  taxOffice: "◯◯税務署",      // 所轄の税務署名
-  number: "酒類指令第◯◯号",   // 免許番号
-};
-```
-
-未設定のあいだ特商法ページには「免許番号は確認中です」と表示されます。
-**それらしい伏せ字で埋めないこと。** 本物に見えたまま公開されます。
-
-埋めたら、Workers Builds の Build command の先頭に `npm run check:legal &&` を足す
-（タスク7）。`npm run check:legal` は `npm run deploy` の predeploy でしか走らず、
-**自動デプロイでは未記入のままでも本番に出せてしまう**ため。
+番号は入れないと本人が決めた。特商法ページの行、フッターの案内、`LIQUOR_LICENCE`、
+`npm run check:legal` の番号の検査を外してある（伏せ字の検査は残っている）。
 
 ## タスク4. Stripe を本番モードに切り替える
 
@@ -110,6 +94,24 @@ export const LIQUOR_LICENCE = {
 sandbox 側の Webhook の URL が旧 URL（workers.dev）のままでも、`/api/stripe/webhook` だけは
 転送から外してあるので届く。sandbox を使い続けるなら、sandbox のダッシュボードでも URL を
 `https://sakefujisan.com/api/stripe/webhook` にしておく。
+
+## タスク4-2. Stripe の領収書の設定（済: 2026-11-04）
+
+領収書は Stripe が出す。Checkout に `receipt_email` を渡しているので、本番の決済が成功すると
+自動で届く。アカウントは天地星空（オーストラリア向けのサイト）と共用で、下の設定はそちらにも効く。
+
+| 項目 | 値 | 場所 |
+|---|---|---|
+| 発行者名 | `株式会社 近藤薬局` | 設定 → ビジネス → ビジネスの詳細 → 公開情報の「法人名 (屋号)」。空だと明細書の表記が出る |
+| 明細書の表記 | `KONDO PHARMACY CO.,LTD`・`近藤薬局`・`コンドウヤッキョク` | 同じ画面の「明細書表記」 |
+| 問い合わせ先 | `info@sakefujisan.com` | 同じ画面の公開情報 |
+| 登録番号 | `JP TRN` `T4080103000596` | 請求書テンプレートの「納税者番号」 |
+| 領収書への記載 | 「領収書メールに登録番号を記載する」をオン | 設定 → ビジネス → 送信メール |
+| メールの言語 | 英語のまま（2026-11-04 本人） | 同じ画面の「デフォルトの言語」。アカウント全体の設定で、日本語にすると天地星空のお客様にも日本語で届く |
+
+テスト環境の領収書に登録番号を出すには、テスト環境にも税務 ID が要る（登録済み）。
+本番の領収書は、実決済（タスク6）で発行者名・問い合わせ先・登録番号・税率を確認する。
+テスト環境では自動メールが出ない。領収書は注文詳細の「領収書を表示」か `receipt_url` で開ける。
 
 ## タスク5. 実在庫を入力する（済: 2026-10-29）
 
@@ -142,11 +144,12 @@ Stripe 本番の決済からの一連の流れは、まだ本番で通してい�
 1. 一番安い「こころ 300ml（¥1,600）」を実際に購入
 2. 確認すること
    · 注文確定メールが info@sakefujisan.com から届く
+   · Stripe の領収書が届き、発行者名・登録番号・税率が正しい（タスク4-2）
    · /admin/orders に注文が出る（pending のまま残っていない）
    · /admin/products の在庫が 1本 減っている
 3. /admin/orders の返金ボタンで全額返金 → 返金メールが届く・在庫が戻る
 4. （任意）別の注文で「この額を返金」に一部だけ入れて、
-   注文が進行中のまま残り、差引額が領収書に出ることを確認
+   注文が進行中のまま残ることを確認
 ```
 
 > **注意**: 本番キーなので実際にカードへ請求が走ります。返金しても Stripe の
@@ -171,14 +174,13 @@ PR のブランチのビルドが**必ず失敗していた**（PR に常に赤�
   `previews` にバインディングを書き、secret は `wrangler preview base-config secret put` で入れる。
   D1 を本番と同じ `database_id` にすると、本番と行を共有する
 
-あわせて、Build command に lint とテストを入れる。免許番号とは関係なく、テストが
-落ちたまま本番へ出るのを止めるため、**いますぐ**入れてよい。
+あわせて、Build command に lint とテストを入れる。テストが落ちたまま本番へ出るのを
+止めるため。法令表示の伏せ字の検査も入れる（`npm run check:legal` は `npm run deploy` の
+predeploy でしか走らず、自動デプロイを通らない）。
 
 ```
-npm run lint && npm test && npx opennextjs-cloudflare build
+npm run check:legal && npm run lint && npm test && npx opennextjs-cloudflare build
 ```
-
-タスク3（免許番号）が済んだら、先頭に `npm run check:legal &&` を足す。
 
 ---
 
@@ -188,7 +190,7 @@ npm run lint && npm test && npx opennextjs-cloudflare build
   Google Cloud 側の承認済みリダイレクト URI に
   `https://sakefujisan.com/api/auth/callback/google` を登録する
 - **SNS**: `FujisanFooter.tsx` の `SOCIAL_LINKS`（空なら非表示）
-- **インボイス登録番号**: 済（2026-10-29）。`INVOICE_REGISTRATION_NUMBER` = `T4080103000596`。領収書に出る
+- **インボイス登録番号**: 済（2026-10-29）。`T4080103000596`。領収書に出す値は Stripe の設定で決まる（タスク4-2）。`INVOICE_REGISTRATION_NUMBER` は控え
 - **Google Search Console**: `sakefujisan.com` を登録し、`https://sakefujisan.com/sitemap.xml` を送信
 
 ---
@@ -196,16 +198,16 @@ npm run lint && npm test && npx opennextjs-cloudflare build
 ## 公開前の最終チェック
 
 - [x] `ADMIN_EMAILS` が設定済み
-- [ ] 管理者のアドレスで登録し、`/admin` に入れる
+- [ ] 管理者のアドレスで `/admin` に入れる（登録とメール確認は済み）
 - [ ] 自分以外のメールアドレスで会員登録が完了できる（確認メールが info@ から届く）
-- [ ] 免許番号が入っている（`npm run check:legal` が通る）— 番号が届く前に公開する（2026-10-29 本人）
-- [ ] Workers Builds の Build command に `npm run check:legal &&` が入っている — 番号が入ってから
 - [ ] Stripe が本番キー（`STRIPE_SECRET_KEY` と `STRIPE_WEBHOOK_SECRET` を同時に差し替え済み）
 - [x] 本番 D1 に実在庫を入れた（2026-10-29）
 - [ ] 本番キーに切り替えたあと、蔵の本数と在庫の SELECT が一致する（タスク4 の手順4）
 - [ ] `/admin/products` の在庫が、在庫の SELECT と同じ本数で出る（タスク2 の後）
+- [ ] Workers Builds の Build command に `npm run check:legal &&` が入っている
+- [ ] 本番の領収書の発行者名・問い合わせ先・登録番号・税率が正しい（タスク4-2）
 - [ ] 実決済テストで在庫が減り、返金もできた
-- [x] 本番 D1 に `0014` まで適用済み
+- [x] 本番 D1 に `0015` まで適用済み
 - [x] `BETTER_AUTH_URL` が `https://sakefujisan.com`
 - [x] Resend のドメインが `verified`、`RESEND_FROM` が `info@sakefujisan.com`
 - [x] `info@sakefujisan.com` 宛のメールが Gmail に届く
@@ -252,7 +254,7 @@ npm run lint && npm test && npx opennextjs-cloudflare build
 | 欄 | 値 |
 |---|---|
 | Production branch | `main` |
-| Build command | `npm run lint && npm test && npx opennextjs-cloudflare build` |
+| Build command | `npm run lint && npm test && npx opennextjs-cloudflare build`（先頭に `npm run check:legal &&` を足す。タスク7） |
 | Deploy command | `npx opennextjs-cloudflare deploy` |
 | Previews（非本番ブランチのビルド） | 無効（タスク7） |
 

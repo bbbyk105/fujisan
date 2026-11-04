@@ -33,7 +33,8 @@ import {
 
 type AdminOrderListItem = {
   id: string;
-  userId: string;
+  /** 退会したお客様の注文は null（注文の記録だけが残る）。 */
+  userId: string | null;
   orderRef: string;
   status: OrderStatus;
   items: OrderLine[];
@@ -485,6 +486,7 @@ export async function adminRefundOrderAction(input: {
   // 返金メール（ベストエフォート。失敗しても返金自体は成立している）。
   try {
     await sendOrderRefundedEmail({
+      accountDeleted: current.userId === null,
       orderRef: current.orderRef,
       customerName: current.customerName,
       customerEmail: current.customerEmail,

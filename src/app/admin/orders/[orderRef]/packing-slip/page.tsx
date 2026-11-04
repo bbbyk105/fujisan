@@ -201,7 +201,7 @@ export default async function PackingSlipPage(props: {
         <p className="mt-8 border-t border-indigo/12 pt-4 text-[10.5px] leading-[1.8] text-indigo/55">
           {UNDERAGE_NOTICE_JP}
           <br />
-          本書は納品の控えです。領収書はお客様のアカウントから発行いただけます。
+          本書は納品の控えです。領収書は決済時にお送りしたメール、またはお客様のアカウントからご確認いただけます。
         </p>
       </article>
     </main>

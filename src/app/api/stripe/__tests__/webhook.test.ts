@@ -582,6 +582,35 @@ describe("Stripe Webhook — Stripe 側で行われた返金の同期", () => {
     );
   });
 
+  it("退会済みのお客様の注文も返金でき、メールには退会済みであることを渡す", async () => {
+    orderRow = baseOrderRow({
+      status: "delivered",
+      stripePaymentIntentId: "pi_test_1",
+      userId: null,
+    });
+    givenCharge();
+    await postWebhook();
+
+    expect(updateCalls).toHaveLength(1);
+    expect(sendOrderRefundedEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ accountDeleted: true }),
+    );
+  });
+
+  it("会員の注文では退会済みとして扱わない", async () => {
+    orderRow = baseOrderRow({
+      status: "delivered",
+      stripePaymentIntentId: "pi_test_1",
+      userId: "u_1",
+    });
+    givenCharge();
+    await postWebhook();
+
+    expect(sendOrderRefundedEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ accountDeleted: false }),
+    );
+  });
+
   it("返金が 0 円なら何もしない", async () => {
     givenCharge({ amount_refunded: 0, refunded: false });
     const res = await postWebhook();

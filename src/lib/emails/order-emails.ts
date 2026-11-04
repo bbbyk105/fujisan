@@ -28,6 +28,8 @@ export type OrderEmailData = {
   trackingNumber?: string | null;
   /** 返金メール用: 実際に返金した金額（円）。未指定なら total を使う。 */
   refundAmount?: number;
+  /** 返金メール用: 退会済みのお客様か。ログインできないのでアカウントのページへ案内しない。 */
+  accountDeleted?: boolean;
   /**
    * 返金メール用: 一部返金か。
    * 一部返金の注文は**まだお届けする**ので、全額返金と同じ文面にしない
@@ -316,7 +318,9 @@ ${FUJISAN_LEGAL.sellerName} / ${FUJISAN_LEGAL.email}
 
 export async function sendOrderRefundedEmail(d: OrderEmailData): Promise<void> {
   const { opts, baseUrl } = await resendOpts();
-  const ctaUrl = `${baseUrl}/account`;
+  const cta = d.accountDeleted
+    ? { label: "ショップへ戻る", url: `${baseUrl}/shop/personal` }
+    : { label: "ご注文履歴を見る", url: `${baseUrl}/account` };
   const refund = d.refundAmount ?? d.total;
 
   const partial = d.partial === true;
@@ -382,8 +386,8 @@ TEL ${FUJISAN_LEGAL.phone} / ${FUJISAN_LEGAL.email}
     }It may take several days to appear on your statement.</span>`,
     d,
     extraBlock: refundBlock,
-    ctaLabel: "ご注文履歴を見る",
-    ctaUrl,
+    ctaLabel: cta.label,
+    ctaUrl: cta.url,
   });
 
   await sendEmail(

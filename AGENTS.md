@@ -55,6 +55,18 @@ Stripe ダッシュボードで以下を有効にする。どれか欠けると�
 500 を返して Stripe に再送させるのは「注文確定の DB 失敗」と「返金同期の DB 失敗」だけ。
 pending の掃除失敗はログのみ（入金に影響しないため）。
 
+### Stripe の領収書
+
+領収書は Stripe が出す（2026-11-04 本人）。自前では書面を組まない。宛名の指定もやめた（`orders.receipt_addressee` は使っていない列として残っている）。
+
+- `startCheckoutAction` が `payment_intent_data.receipt_email` と、全ての行に消費税 10%（内税）の `tax_rates` を渡す。領収書の品名・税率は Checkout に渡した内容がそのまま載る。内税なので請求額は変わらない。
+- 税率の id は `getConsumptionTaxRateId()` が決済のたびに探し、無ければ作る。**環境変数にもメモリにも持たないこと** — 本番キーへの切り替えやアーカイブで古い id が残ると、全ての決済が止まる。取得に失敗しても決済は止めず、`alertOps` で知らせる。
+- Stripe は消費税を行ごとに端数処理するので、領収書の税額が合計からの計算と 1 円ずれることがある（`docs/TODO.md`）。
+- 注文番号は領収書に載らない（品名の明細があると支払いの説明は出ない。2026-11-04 に実物で確認）。支払いの説明には入れてあるので、Stripe の管理画面では `FJ-…` で探せる。
+- `/account/orders/[orderRef]/receipt` は Stripe の領収書へ転送するだけのページ。リンクは 30 日で切れるので保存せず、`getMyOrderReceiptUrlAction` が開くたびに取り直す（userId でも絞る）。
+- 発行者名・問い合わせ先・登録番号は Stripe のダッシュボードの設定で決まる（`SETUP.md` のタスク4-2）。発行者名は「法人名 (屋号)」の欄で、空だと明細書の表記が出る。テスト環境の領収書に登録番号を出すには、テスト環境にも `jp_trn` の税務 ID が要る。
+- Stripe の領収書には返金日や返金分の税率が載らない。1 万円以上の一部返金で適格返還請求書を求められたら個別に対応する（`docs/TODO.md`）。
+
 ### Workers 上の Stripe（`src/lib/stripe.ts`）
 - Node の `http` が無いため `Stripe.createFetchHttpClient()` を必ず使う。
 - Webhook 署名検証は `constructEventAsync` + `createSubtleCryptoProvider()`（Web Crypto）。同期版 `constructEvent` は動かない。
@@ -81,10 +93,10 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 ## 注文の顧客向け機能
 
 - `/account` は **`?tab=orders|profile|security` のタブ**（既定は注文）。以前は 1 枚に縦に積んでいて、注文が増えると登録情報とセキュリティが埋もれた。表示は `AccountView`、取得・認可はページ側。
-- `/account/orders/[orderRef]` が注文詳細、`/account/orders/[orderRef]/receipt` が領収書。
+- `/account/orders/[orderRef]` が注文詳細、`/account/orders/[orderRef]/receipt` が Stripe の領収書への転送。
+- **退会しても注文は消さない**。`orders.user_id` は `ON DELETE SET NULL`（`0015`）で、紐づけだけが外れて注文の金額・宛先は残る。領収書の写しの保存が要り、プライバシーポリシーでも保存すると約束しているため。管理画面の注文は `user_id` が null でも `customer_*` の列で表示できるので、`user` と JOIN しないこと。領収書は決済時のメールに残ることを、退会画面で案内している。返金メールも `accountDeleted` のときは `/account` へ案内しない。
 - **注文の取得は必ず userId でも絞る**（`getMyOrderByRefAction`）。orderRef は推測しにくいだけで秘密ではないので、番号だけで引くと他人の注文が見える。
-- 領収書は PDF を生成せず、印刷（ブラウザの「PDF として保存」）に最適化したページとして出す。電子発行のため収入印紙は不要。適格請求書の登録番号は `INVOICE_REGISTRATION_NUMBER` が null のあいだ行ごと出さない。**宛名は `orders.receipt_addressee` に保存**でき（未指定なら登録名）、金額には影響しない。
-- **返金は全額・一部の両方を扱う**。`orders.refunded_amount` が累計額で、`status = "refunded"` は**全額返金のときだけ**付く（一部返金した注文は進行中のままで発送は続く）。判定は `refundStateOf()` に寄せる。冪等性は「返金前の累計」を WHERE と Stripe の idempotencyKey に入れて担保する。領収書は差引領収額を出す — 返した分まで「上記正に領収いたしました」と書くと事実と食い違う。
+- **返金は全額・一部の両方を扱う**。`orders.refunded_amount` が累計額で、`status = "refunded"` は**全額返金のときだけ**付く（一部返金した注文は進行中のままで発送は続く）。判定は `refundStateOf()` に寄せる。冪等性は「返金前の累計」を WHERE と Stripe の idempotencyKey に入れて担保する。
 - **キャンセルは「依頼」であって実行ではない**。`requestOrderCancellationAction` は発送前（confirmed / preparing）に `cancel_requested_at` を刻んで ops へ通知するだけ。返金の実行は従来どおり owner だけが `adminRefundOrderAction` から行う（お客様の操作でお金が動く経路は作らない）。
 - 注文ステータスの表示は `OrderStatusPill`（`Record<OrderStatus, …>` なので新ステータス追加時に型で漏れが出る）と `OrderTimeline`（cancelled / refunded は進行段階ではないので専用表示）。
 
@@ -143,7 +155,8 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 - **年齢確認は二重**:
   1. `AgeGate.tsx`（layout.tsx で全ページに配置）— 20歳確認モーダル。localStorage `fujisan-age-confirmed`、「いいえ」で東京都の未成年飲酒防止ページへ強制遷移。SSR は「確認済み」を返してハイドレーション不整合を回避。
   2. 決済開始前のチェックボックス（`CartView`）。**クライアントの state だけに頼らず、`startCheckoutAction` が `ageConfirmed !== true` を `age` エラーで弾く**（Server Action は直接呼べるため）。以前ここにあった `checkoutSchema.ageConfirmed`（Zod）は自前の住所フォーム廃止と同時に消えている。
-- **法令情報の唯一の出どころ**: `src/data/fujisan-legal.ts`。未成年飲酒防止表示（`UNDERAGE_NOTICE_JP/EN`、フッター・商品ページ・特商法ページで参照）、送料 `SHIPPING_FEE`（一律1,100円 / 15,000円以上無料 — カート計算・全ページ表記がこの定数を参照）、特商法・通販酒類小売業免許・酒類販売管理者標識。**未確定の値はダミー文字列で埋めず `null` にする**（`LIQUOR_LICENCE` / `INVOICE_REGISTRATION_NUMBER`）。それらしい伏せ字は本物に見えたまま公開されうる。`npm run deploy` は predeploy で `scripts/check-legal-disclosure.mjs` を実行し、未確定が残っていればデプロイを止める（dev / build / CI は止めない）。
+- **法令情報の唯一の出どころ**: `src/data/fujisan-legal.ts`。未成年飲酒防止表示（`UNDERAGE_NOTICE_JP/EN`、フッター・商品ページ・特商法ページで参照）、送料 `SHIPPING_FEE`（一律1,100円 / 15,000円以上無料 — カート計算・全ページ表記がこの定数を参照）、特商法・酒類販売管理者標識。**未確定の値はダミー文字列で埋めず `null` にする**（`INVOICE_REGISTRATION_NUMBER`）。それらしい伏せ字は本物に見えたまま公開されうる。`npm run deploy` は predeploy で `scripts/check-legal-disclosure.mjs` を実行し、`src/data/` に伏せ字が残っていればデプロイを止める（dev / build / CI は止めない）。
+- **通信販売酒類小売業免許の番号は掲示しない**（2026-11-04 本人の判断）。特商法ページの行、`LIQUOR_LICENCE`、predeploy の番号の検査は外した。
 - 発送は日本国内のみ（Stripe の `allowed_countries: ["JP"]` と checkout の郵便番号7桁バリデーションで担保）。
 
 ## フォームの保存
@@ -201,8 +214,8 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 ## 落とし穴
 
 - **Better Auth はメールの送信失敗を握りつぶし、画面には「送信しました」を出す**（`runInBackgroundOrAwait` がログに落とすだけで 200 を返す）。本番で届かないときは `npx wrangler tail fujisan --format json` を流しながら 1 通送らせ、`Resend send failed: <status>` を読む（401 はキー、403 はドメイン未認証）。`wrangler secret list` は secret の有無しか見ないので、キーが有効かは分からない（2026-09-24 に無効なキーで全メールが止まっていた）。
-- **`drizzle-kit generate` は使える**（以前は journal がずれていて禁止だった）。`meta/_journal.json` が `drizzle/` の SQL 15 本と 1 対 1 で対応し、最後の `0014_snapshot.json` が現在のスキーマ。`0006`〜`0013` は手書きで足された経緯から**中間スナップショットが無い**が、`generate` は最後のスナップショットしか読まないので支障はない（`drizzle-kit up` / `drop` は使わないこと）。このズレは `src/db/__tests__/migrations.test.ts` が見張っていて、SQL を足して journal に載せ忘れると落ちる。**SQL を手で足したときは journal にも追記する。**
-- **日付は必ず `src/lib/format-date.ts` のヘルパーで出す**。Workers は UTC で動くため `Intl.DateTimeFormat` に `timeZone: "Asia/Tokyo"` を指定しないと、JST 00:00〜09:00 の出来事が前日の日付になる（領収書の発行日がずれる）。ローカルの OS が JST だと気づけない。
+- **`drizzle-kit generate` は使える**（以前は journal がずれていて禁止だった）。`meta/_journal.json` が `drizzle/` の SQL と 1 対 1 で対応し、最後のスナップショットが現在のスキーマ。**表を作り直す差分で出る `PRAGMA foreign_keys` は外す**（D1 はトランザクションの中で流すので効かない）。その表を参照する表があるときは `DROP TABLE` の巻き添えを先に確かめること。`0006`〜`0013` は手書きで足された経緯から**中間スナップショットが無い**が、`generate` は最後のスナップショットしか読まないので支障はない（`drizzle-kit up` / `drop` は使わないこと）。このズレは `src/db/__tests__/migrations.test.ts` が見張っていて、SQL を足して journal に載せ忘れると落ちる。**SQL を手で足したときは journal にも追記する。**
+- **日付は必ず `src/lib/format-date.ts` のヘルパーで出す**。Workers は UTC で動くため `Intl.DateTimeFormat` に `timeZone: "Asia/Tokyo"` を指定しないと、JST 00:00〜09:00 の出来事が前日の日付になる（注文日や納品書の日付がずれる）。ローカルの OS が JST だと気づけない。
 - **Next.js 16 の `error.js` は `reset` ではなく `unstable_retry`**。旧 API 名のままだと再試行ボタンが動かない。`global-error.js` も同じ。
 - **`cloudflare-env.d.ts` は生成物で `.gitignore` 済み**。`prebuild` が `cf-typegen` を走らせるので `npm run build` は clone 直後でも通るが、エディタの型エラーを消すには一度 `npm run cf-typegen` が要る。
 - **dev は `next dev --webpack`**（Turbopack ではない）。`initOpenNextCloudflareForDev()` により dev でも D1/env バインディングが `.dev.vars` から供給される。
@@ -229,11 +242,11 @@ npm run cf-typegen # cloudflare-env.d.ts 再生成（バインディング変更
 ## 未対応事項
 
 コード側の積み残しは [`docs/TODO.md`](./docs/TODO.md)、環境を触らないと終わらない
-作業（免許番号・Stripe の Webhook・本番マイグレーション・Resend のドメイン認証・
+作業（Stripe の Webhook・本番マイグレーション・Resend のドメイン認証・
 secret）は [`SETUP.md`](./SETUP.md) にまとめてある。
 
 本番 Worker は main から Cloudflare Workers Builds が自動デプロイする
-（2026-09-24 に main と本番が揃った）。D1 のマイグレーションは `0014` まで
+（2026-09-24 に main と本番が揃った）。D1 のマイグレーションは `0015` まで
 本番へ適用済み。**マイグレーションは自動では流れない**ので、スキーマを変えたときは
 push より先に `wrangler d1 migrations apply fujisan-db --remote` を実行すること。
 
