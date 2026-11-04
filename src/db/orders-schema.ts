@@ -12,20 +12,35 @@ export const ORDER_STATUSES = [
   "preparing", // 蔵で準備中
   "shipped", // 発送済み（追跡番号あり）
   "delivered", // お届け済
-  "cancelled", // キャンセル（未決済のまま取消）
-  "refunded", // 返金済み（Stripe 返金完了。adminRefundOrderAction からのみ到達）
+  "cancelled", // キャンセル（未入金のまま、または入金後に管理画面で取消）
+  "refunded", // 全額返金済み（管理画面の返金か Webhook で到達。ここから他へは動かせない）
 ] as const;
 
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
 /**
- * 品物が蔵を出たか。
- *
- * 返金・取消のときに在庫を戻してよいかの判断に使う。発送後は品物が手元に
- * 戻っていないので、返金しても在庫は増やさない（返品を受け取ったら手で足す）。
+ * 品物が蔵を出たか。発送後は品物が手元に戻っていないので、返金しても在庫は
+ * 増やさない（返品を受け取ったら手で足す）。在庫を戻す判断は `canRestock` を使うこと。
  */
 export function hasLeftTheKura(status: OrderStatus): boolean {
   return status === "shipped" || status === "delivered";
+}
+
+/**
+ * 引き落とした在庫を、返金や取消で戻してよい注文か。
+ *
+ * `hasLeftTheKura` の否定では足りない。cancelled と refunded は戻し終えているので、
+ * もう一度足すと実数より多くなり、売り越しを防げなくなる。
+ *
+ * pending を含むのは、確定したあとに手で pending へ戻した注文があるため。未入金の
+ * pending は引き落としていないが、そちらは解放（`releaseStock`）の経路を通る。
+ */
+export function canRestock(status: OrderStatus | string): boolean {
+  return (
+    !hasLeftTheKura(status as OrderStatus) &&
+    status !== "cancelled" &&
+    status !== "refunded"
+  );
 }
 
 /**

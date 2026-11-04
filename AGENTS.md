@@ -85,7 +85,8 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 - **引き当ての流れ**: 決済開始で `reserved += qty` → 入金確定で `onHand -= qty; reserved -= qty` → 期限切れ・決済失敗・Session 生成失敗で `reserved -= qty`。決済ページに滞在している数分を押さえないと、同じ最後の 1 本を複数人が買えてしまう（「確定時に減らす」だけでは足りない）。
 - 売り越さないことを担保しているのは `UPDATE … WHERE on_hand - reserved >= qty` という **1 文の原子性**。D1 に対話的トランザクションは無いので、複数明細で途中が足りなければ、それまでに積んだ分を戻す（補償）。
 - `commitStock` は**冪等ではない**。Webhook からは「pending → confirmed に実際に更新できた初回だけ」呼ぶこと。
-- 未発送のまま返金すると `onHand` に自動で戻る（`hasLeftTheKura` で判定）。発送後は戻さない — 品物が手元に無いため、返品を受け取ってから管理画面で足す。**部分返金では戻さない**（金額からはどの品を何本引き取ったか分からない）。
+- 全額返金や取消で `onHand` に戻すかは `canRestock` で判定する。取り消し・返金済みの注文は戻し終えているので足さない。発送後は戻さない — 品物が手元に無いため、返品を受け取ってから管理画面で足す。**部分返金では戻さない**（金額からはどの品を何本引き取ったか分からない）。
+- **`refunded` は終端**で、管理画面からほかのステータスへ動かせない。
 - **管理画面から手でステータスを動かしたときも辻褄を合わせる**（`adminUpdateOrderAction`）: `pending → confirmed` で確定、`→ cancelled` は pending なら解放・入金済み未発送なら戻し、発送後は何もしない。Webhook の自動経路だけ見ていると手動操作の分がずれる。
 - Checkout Session には `expires_at` を 30 分（Stripe の下限）で入れている。既定の 24 時間のままだと、放棄された決済がまる 1 日ぶん在庫を押さえる。「戻る」で帰ってきた場合は `releaseAbandonedCheckoutAction` が期限切れを待たずに解放する（自分の pending 注文だけが対象）。
 - 在庫のテストは **node:sqlite のインメモリ DB に drizzle の実 SQL を流す**（`src/lib/__tests__/inventory.test.ts`）。スタブで戻り値を作ると、肝心の WHERE 句を検証したことにならない。`node:sqlite` の型は `@types/node@20` に無いので `src/types/node-sqlite.d.ts` で補っている。

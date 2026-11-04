@@ -25,13 +25,15 @@ jest.mock("@/lib/admin", () => ({
   isStaffOrAbove: () => true,
 }));
 jest.mock("@/lib/ops-alert", () => ({ alertOps: jest.fn() }));
+const restockCommitted = jest.fn();
 jest.mock("@/lib/inventory", () => ({
   commitStock: jest.fn(),
   releaseStock: jest.fn(),
-  restockCommitted: jest.fn(),
+  restockCommitted: (...a: unknown[]) => restockCommitted(...a),
 }));
 
 let row: Record<string, unknown>;
+let updatedRows: Array<{ id: unknown }> | null = null;
 jest.mock("@/db", () => ({
   getDb: async () => ({
     select: () => ({
@@ -39,7 +41,9 @@ jest.mock("@/db", () => ({
     }),
     update: () => ({
       set: () => ({
-        where: () => ({ returning: async () => [{ id: row.id }] }),
+        where: () => ({
+          returning: async () => updatedRows ?? [{ id: row.id }],
+        }),
       }),
     }),
   }),
@@ -82,7 +86,10 @@ const ORDER = {
   address: "静岡県富士市吉原",
 };
 
-beforeEach(() => jest.clearAllMocks());
+beforeEach(() => {
+  jest.clearAllMocks();
+  updatedRows = null;
+});
 
 describe("adminRefundOrderAction", () => {
   it("退会済みのお客様の注文も返金でき、メールには退会済みであることを渡す", async () => {
@@ -114,6 +121,48 @@ describe("adminRefundOrderAction", () => {
     expect(sendOrderRefundedEmail).toHaveBeenCalledWith(
       expect.objectContaining({ partial: true, stillShipping: true }),
     );
+  });
+
+  // Webhook が先に反映すると、こちらの UPDATE は 0 行になる。残額を 0 と返すと、
+  // 一部返金なのに画面に「全額を返金しました」と出て、次の判断を誤らせる。
+  describe("Webhook が先に反映していたとき", () => {
+    it("一部返金なら、残額をそのまま返す", async () => {
+      row = { ...ORDER, userId: "u_1", status: "preparing" };
+      updatedRows = [];
+
+      expect(
+        await adminRefundOrderAction({ orderId: "o_1", amountJpy: 1100 }),
+      ).toEqual({ ok: true, refunded: 1100, remaining: 2750 });
+    });
+
+    it("全額返金なら、残額は 0 を返す", async () => {
+      row = { ...ORDER, userId: "u_1", status: "preparing" };
+      updatedRows = [];
+
+      expect(await adminRefundOrderAction({ orderId: "o_1" })).toEqual({
+        ok: true,
+        refunded: 3850,
+        remaining: 0,
+      });
+    });
+
+    it("メールは重ねて送らない", async () => {
+      row = { ...ORDER, userId: "u_1", status: "preparing" };
+      updatedRows = [];
+
+      await adminRefundOrderAction({ orderId: "o_1", amountJpy: 1100 });
+
+      expect(sendOrderRefundedEmail).not.toHaveBeenCalled();
+    });
+
+    it("在庫は重ねて戻さない", async () => {
+      row = { ...ORDER, userId: "u_1", status: "preparing" };
+      updatedRows = [];
+
+      await adminRefundOrderAction({ orderId: "o_1" });
+
+      expect(restockCommitted).not.toHaveBeenCalled();
+    });
   });
 
   it("会員の注文では退会済みとして扱わない", async () => {

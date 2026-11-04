@@ -6,8 +6,7 @@ import { getDb } from "@/db";
 import {
   order as orderTable,
   type OrderLine,
-  type OrderStatus,
-  hasLeftTheKura,
+  canRestock,
   willStillShip,
 } from "@/db/orders-schema";
 import {
@@ -205,7 +204,7 @@ async function discardPendingOrder(
  *
  * - 対象は PaymentIntent で引き当てる（管理画面経由なら保存済み）。
  * - `status` を `refunded` にするのは**全額返し切ったときだけ**。一部返金では
- *   ステータスを動かさない（その注文はまだ発送する予定のもの）。
+ *   ステータスを動かさない（一部返金は発送の前にも後にも起き、取引は続く）。
  * - 冪等: 「これまでの累計より増えているときだけ」更新する。管理画面から
  *   返金した直後に同じ額の Webhook が来ても更新行ゼロとなり、
  *   累計の二重計上も返金メールの重複送信も起きない。
@@ -256,10 +255,9 @@ async function syncRefundFromStripe(charge: Stripe.Charge): Promise<void> {
   if (updated.length === 0) return; // 既に反映済み（管理画面から返金した等）
 
   if (isFullRefund) {
-    // 未発送のまま全額返金したなら品物は蔵にあるので在庫に戻す。
-    // 発送後（shipped / delivered）は手元に戻っていないので戻さない
-    // （返品を受け取ったら /admin/products で手で足す）。
-    if (!hasLeftTheKura(row.status as OrderStatus)) {
+    // 発送後は手元に戻っていないので戻さない（返品を受け取ったら /admin/products で
+    // 手で足す）。取り消した注文は取り消しのときに戻してあるので、足すと二重になる。
+    if (canRestock(row.status)) {
       try {
         await restockCommitted(safeParseItems(row.itemsJson));
       } catch (err) {
@@ -269,8 +267,12 @@ async function syncRefundFromStripe(charge: Stripe.Charge): Promise<void> {
   } else {
     // 一部返金では在庫を自動では戻さない — 金額からは、どの品を何本
     // 引き取ったのかが分からない。人が数えて入れる必要があるので知らせる。
+    // 取り消した注文は在庫を戻してあるので、足す案内を出すと二重になる。
+    const cancelled = row.status === "cancelled";
     await alertOps(
-      "一部返金が行われました（在庫の確認をお願いします）",
+      cancelled
+        ? "取り消した注文に一部返金が行われました"
+        : "一部返金が行われました（在庫の確認をお願いします）",
       [
         `注文番号: ${row.orderRef}`,
         `charge: ${charge.id}`,
@@ -279,7 +281,9 @@ async function syncRefundFromStripe(charge: Stripe.Charge): Promise<void> {
         stillShipping
           ? "注文は進行中のままです（発送は続きます）。"
           : "ステータスは変わりません（これから発送する注文ではありません）。",
-        "品物を引き取った場合は /admin/products で在庫を足してください。",
+        cancelled
+          ? "取り消しのときに在庫は戻してあります。"
+          : "品物を引き取った場合は /admin/products で在庫を足してください。",
       ].join("\n"),
     );
   }
@@ -299,9 +303,8 @@ async function syncRefundFromStripe(charge: Stripe.Charge): Promise<void> {
       total: row.total,
       postalCode: row.postalCode,
       address: row.address,
-      // 今回の Webhook で分かるのは**累計**。直前の累計との差分を出すことも
-      // できるが、ダッシュボード返金では控えが無い場合もあるため累計を出す。
-      refundAmount: refundedTotal,
+      // Webhook で分かるのは累計なので、直前の累計との差分が今回の額になる。
+      refundAmount: refundedTotal - (row.refundedAmount ?? 0),
       partial: !isFullRefund,
     });
   } catch (err) {

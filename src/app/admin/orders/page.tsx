@@ -212,7 +212,9 @@ export default async function AdminOrdersPage(props: {
                 <ul className="mt-4 flex flex-col gap-3 md:mt-4">
                   {visibleOrders.map((o) => (
                     <AdminOrderRow
-                      key={o.id}
+                      // 返金でステータスが変わったら入力の状態を作り直す。古い値のまま
+                      // だと未保存扱いになり、保存で元のステータスへ戻そうとする
+                      key={`${o.id}:${o.status}`}
                       order={o}
                       canRefund={isOwnerUser}
                     />
