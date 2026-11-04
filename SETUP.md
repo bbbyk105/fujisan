@@ -19,7 +19,7 @@
 
 | | 内容 |
 |---|---|
-| ✅ | 本番 D1 のマイグレーションは `0015` まで適用済み（2026-11-04） |
+| ✅ | 本番 D1 のマイグレーションは `0016` まで適用済み（2026-11-04） |
 | ✅ | 独自ドメイン `sakefujisan.com`（www・workers.dev は apex へ転送） |
 | ✅ | メール送信: Resend で `sakefujisan.com` を認証済み、送信元は `info@sakefujisan.com` |
 | ✅ | メール受信: Cloudflare Email Routing で `info@` → `mtfujipharmacy@gmail.com` |
@@ -208,7 +208,7 @@ npm run check:legal && npm run lint && npm test && npx opennextjs-cloudflare bui
 - [ ] Workers Builds の Build command に `npm run check:legal &&` が入っている
 - [ ] 本番の領収書の発行者名・問い合わせ先・登録番号・税率が正しい（タスク4-2）
 - [ ] 実決済テストで在庫が減り、返金もできた
-- [x] 本番 D1 に `0015` まで適用済み
+- [x] 本番 D1 に `0016` まで適用済み
 - [x] `BETTER_AUTH_URL` が `https://sakefujisan.com`
 - [x] Resend のドメインが `verified`、`RESEND_FROM` が `info@sakefujisan.com`
 - [x] `info@sakefujisan.com` 宛のメールが Gmail に届く
