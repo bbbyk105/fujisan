@@ -6,7 +6,6 @@ import {
   FUJISAN_LEGAL,
   UNDERAGE_NOTICE_JP,
   UNDERAGE_NOTICE_EN,
-  liquorLicenceLine,
 } from "@/data/fujisan-legal";
 import { L } from "@/i18n/Localized";
 import { buildMetadata } from "@/lib/seo";
@@ -14,7 +13,7 @@ import { buildMetadata } from "@/lib/seo";
 export const metadata = buildMetadata({
   title: "特定商取引法に基づく表示",
   description:
-    "FUJISAN SAKE オンラインショップの特定商取引法に基づく表示、酒類販売管理者標識、通信販売酒類小売業免許の情報を掲載しています。",
+    "FUJISAN SAKE オンラインショップの特定商取引法に基づく表示と酒類販売管理者標識を掲載しています。",
   path: "/tokushoho",
 });
 
@@ -132,10 +131,6 @@ const rows = [
       />
     ),
   },
-  {
-    label: <L en="Liquor sales licence" ja="通信販売酒類小売業免許" />,
-    value: <L en={liquorLicenceLine("en")} ja={liquorLicenceLine("ja")} />,
-  },
 ];
 
 /** 酒税法第86条の9 の標識。特商法の表とは根拠法が違うので別の表にする */
@@ -185,11 +180,11 @@ export default function TokushohoPage() {
         }
         lead={
           <L
-            en="In accordance with Article 11 of the Act on Specified Commercial Transactions, the sale conditions, business information, and liquor licence details for this shop are disclosed below."
-            ja="特定商取引に関する法律第11条（通信販売についての広告）に基づき、当オンラインショップにおける販売条件・事業者情報・酒類販売関連免許情報を開示いたします。"
+            en="In accordance with Article 11 of the Act on Specified Commercial Transactions, the sale conditions and business information for this shop are disclosed below."
+            ja="特定商取引に関する法律第11条（通信販売についての広告）に基づき、当オンラインショップにおける販売条件・事業者情報を開示いたします。"
           />
         }
-        meta={<L en="Last updated 2026.09" ja="最終更新 2026.09" />}
+        meta={<L en="Last updated 2026.11" ja="最終更新 2026.11" />}
       />
 
       {/* 未成年飲酒防止表示。法定表示の表より前に、独立して置く */}

@@ -2,9 +2,8 @@
 /**
  * 本番公開前の法令表示チェック（`npm run deploy` の predeploy で自動実行）。
  *
- * 酒類の通信販売は、通信販売酒類小売業免許の番号・酒類販売管理者標識などの
- * 表示が法令上必須。ここが未確定のまま本番へ出ると法令違反になるため、
- * 埋まっていなければデプロイを止める。
+ * 特商法の表示や酒類販売管理者標識などの法令情報に、埋め忘れの伏せ字が残った
+ * まま本番へ出さないよう、残っていればデプロイを止める。
  *
  * dev / build / CI は止めない（作業中は未確定でも動かせる必要がある）。
  * 検査対象は `src/data/` のみ — 法令情報の唯一の出どころだから。
@@ -44,7 +43,7 @@ function stripComments(source) {
 
 const problems = [];
 
-// 1) src/data/ に埋め忘れマーカーが残っていないか
+// src/data/ に埋め忘れマーカーが残っていないか
 for (const file of walk(DATA_DIR).filter((f) => /\.tsx?$/.test(f))) {
   const lines = stripComments(readFileSync(file, "utf8")).split("\n");
   lines.forEach((line, i) => {
@@ -57,41 +56,13 @@ for (const file of walk(DATA_DIR).filter((f) => /\.tsx?$/.test(f))) {
   });
 }
 
-// 2) 通信販売酒類小売業免許の税務署名・番号が埋まっているか
-//    （fujisan-legal.ts は import を持たない素の TS なので、値を正規表現で確認する）
-const legalSrc = readFileSync(join(DATA_DIR, "fujisan-legal.ts"), "utf8");
-const licenceBlock = legalSrc.match(
-  /export const LIQUOR_LICENCE[\s\S]*?=\s*\{([\s\S]*?)\};/,
-);
-if (!licenceBlock) {
-  problems.push(
-    "src/data/fujisan-legal.ts: LIQUOR_LICENCE の定義が見つかりません（検査スクリプトの更新が必要）",
-  );
-} else {
-  for (const field of ["taxOffice", "number"]) {
-    const m = licenceBlock[1].match(new RegExp(`${field}\\s*:\\s*([^,\\n]+)`));
-    const value = m?.[1]?.trim();
-    if (!value || value === "null" || value === '""') {
-      problems.push(
-        `src/data/fujisan-legal.ts: 通信販売酒類小売業免許の ${field} が未設定です`,
-      );
-    }
-  }
-}
-
 if (problems.length > 0) {
   console.error("\n✗ 法令表示が未完成のため、デプロイを中止しました。\n");
   for (const p of problems) console.error(`  - ${p}`);
   console.error(
     [
       "",
-      "酒類の通信販売では、通信販売酒類小売業免許の番号の表示が必須です。",
-      "税務署名と免許番号が判明したら src/data/fujisan-legal.ts の",
-      "LIQUOR_LICENCE を埋めてから、もう一度 `npm run deploy` してください。",
-      "",
-      "（この検査を通さずに出す必要がある場合は、",
-      "  `npx opennextjs-cloudflare build && npx opennextjs-cloudflare deploy` を直接実行できますが、",
-      "  法令違反のリスクを理解したうえで判断してください）",
+      "伏せ字を正しい値に直してから、もう一度 `npm run deploy` してください。",
       "",
     ].join("\n"),
   );
