@@ -133,7 +133,7 @@ const rows = [
   },
 ];
 
-/** 酒税法第86条の9 の標識。特商法の表とは根拠法が違うので別の表にする */
+/** 酒税の保全及び酒類業組合等に関する法律第86条の9 の標識。特商法の表とは根拠法が違うので別の表にする */
 const managerRows = [
   {
     label: <L en="Premises name" ja="販売場の名称" />,
@@ -230,8 +230,8 @@ export default function TokushohoPage() {
         </h2>
         <p className="ed-p mt-5">
           <L
-            en="Pursuant to Article 86-9 of the Liquor Tax Act, the sales manager notice is posted as follows."
-            ja="酒税法第86条の9に基づき、以下のとおり標識を掲示いたします。"
+            en="Pursuant to Article 86-9 of the Act on Securing of Liquor Tax and on Liquor Business Associations, the sales manager notice is posted as follows."
+            ja="酒税の保全及び酒類業組合等に関する法律第86条の9に基づき、以下のとおり標識を掲示いたします。"
           />
         </p>
         <EdDataList rows={managerRows} className="mt-10" />
