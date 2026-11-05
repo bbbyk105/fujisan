@@ -92,6 +92,18 @@ jest.mock("@/lib/rate-limit", () => ({
   clientIpFrom: () => "203.0.113.1",
 }));
 
+const verifyTurnstile = jest.fn();
+jest.mock("@/lib/turnstile", () => ({
+  verifyTurnstile: (...a: unknown[]) => verifyTurnstile(...a),
+}));
+
+let mockSiteKey: string | null = "site";
+jest.mock("@/data/fujisan-turnstile", () => ({
+  get TURNSTILE_SITE_KEY() {
+    return mockSiteKey;
+  },
+}));
+
 import { startCheckoutAction } from "@/lib/actions/checkout";
 
 const SHOGUN = getFujisanProductBySlug("shogun")!;
@@ -134,6 +146,9 @@ beforeEach(() => {
   reserveStock.mockResolvedValue({ ok: true });
   releaseStock.mockResolvedValue(undefined);
   consumeRateLimit.mockResolvedValue({ ok: true });
+  env.TURNSTILE_SECRET_KEY = undefined;
+  mockSiteKey = "site";
+  verifyTurnstile.mockResolvedValue(true);
 });
 
 // ログインなしで注文を作り在庫を押さえられるので、入力と回数をサーバーで絞る。
@@ -296,6 +311,92 @@ describe("startCheckoutAction — ゲスト購入", () => {
       customerEmail: "a@example.com",
     });
     expect(consumeRateLimit).not.toHaveBeenCalled();
+  });
+});
+
+// カードなしで在庫を押さえられるので、ゲストの決済開始はボットを止める。
+describe("startCheckoutAction — ゲストのボット判定", () => {
+  const ITEMS = [{ slug: "shogun", ml: 300, qty: 1 }];
+  const guest = (turnstileToken?: string) =>
+    start({ items: ITEMS, guestEmail: "guest@example.com", turnstileToken });
+
+  beforeEach(() => {
+    getSession.mockResolvedValue(null);
+    env.TURNSTILE_SECRET_KEY = "secret";
+  });
+
+  it("判定に通れば決済へ進む", async () => {
+    const res = await guest("token");
+
+    expect(res.ok).toBe(true);
+    expect(verifyTurnstile).toHaveBeenCalledWith({
+      secret: "secret",
+      token: "token",
+      ip: "203.0.113.1",
+    });
+  });
+
+  it("判定に落ちたら bot を返し、注文も在庫も動かさない", async () => {
+    verifyTurnstile.mockResolvedValue(false);
+
+    await expect(guest("token")).resolves.toEqual({ ok: false, error: "bot" });
+    expect(inserted).toHaveLength(0);
+    expect(reserveStock).not.toHaveBeenCalled();
+    expect(sessionsCreate).not.toHaveBeenCalled();
+  });
+
+  // 判定に落ちる要求に枠を使わせると、ボットが同じ IP のお客様を締め出せる。
+  it("判定に落ちたら、回数を消費しない", async () => {
+    verifyTurnstile.mockResolvedValue(false);
+
+    await guest("fake-token");
+
+    expect(consumeRateLimit).not.toHaveBeenCalled();
+  });
+
+  it("判定を通っても、回数の上限を超えていたら止める", async () => {
+    consumeRateLimit.mockResolvedValue({ ok: false, retryAfterSec: 60 });
+
+    await expect(guest("token")).resolves.toEqual({ ok: false, error: "rate" });
+    expect(inserted).toHaveLength(0);
+  });
+
+  it("秘密鍵が未設定の間は判定しない（キーを入れるまで決済を止めない）", async () => {
+    env.TURNSTILE_SECRET_KEY = undefined;
+
+    const res = await guest();
+
+    expect(res.ok).toBe(true);
+    expect(verifyTurnstile).not.toHaveBeenCalled();
+  });
+
+  // ウィジェットが無いのに判定すると、ゲスト全員が止まる。
+  it("サイトキーが無ければ、秘密鍵があっても判定しない", async () => {
+    mockSiteKey = null;
+
+    const res = await guest();
+
+    expect(res.ok).toBe(true);
+    expect(verifyTurnstile).not.toHaveBeenCalled();
+  });
+
+  // トークンの無いボットに枠を使わせると、同じ IP のお客様が締め出される。
+  it("トークンが無ければ bot を返し、回数を消費しない", async () => {
+    await expect(guest()).resolves.toEqual({ ok: false, error: "bot" });
+
+    expect(consumeRateLimit).not.toHaveBeenCalled();
+    expect(inserted).toHaveLength(0);
+  });
+
+  it("ログイン中は判定しない", async () => {
+    getSession.mockResolvedValue({
+      user: { id: "user_1", email: "a@example.com", name: "佐藤 優子" },
+    });
+
+    const res = await start({ items: ITEMS });
+
+    expect(res.ok).toBe(true);
+    expect(verifyTurnstile).not.toHaveBeenCalled();
   });
 });
 

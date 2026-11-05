@@ -46,6 +46,44 @@ jest.mock("@/lib/cart/useCart", () => {
   };
 });
 
+let mockSiteKey: string | null = null;
+jest.mock("@/data/fujisan-turnstile", () => ({
+  get TURNSTILE_SITE_KEY() {
+    return mockSiteKey;
+  },
+}));
+
+// ウィジェットの中身は TurnstileWidget.test.tsx で見る。
+const mockWidget: {
+  onToken: (token: string | null) => void;
+  onFailure: () => void;
+  mounts: number;
+} = {
+  onToken: () => {},
+  onFailure: () => {},
+  mounts: 0,
+};
+jest.mock("@/components/fujisan/cart/TurnstileWidget", () => {
+  const { useEffect } = jest.requireActual("react");
+  return {
+    TurnstileWidget: ({
+      onToken,
+      onFailure,
+    }: {
+      onToken: (token: string | null) => void;
+      onFailure: () => void;
+    }) => {
+      mockWidget.onToken = onToken;
+      mockWidget.onFailure = onFailure;
+      useEffect(() => {
+        mockWidget.mounts += 1;
+      }, []);
+      return <div data-testid="turnstile" />;
+    },
+  };
+});
+
+import { act } from "@testing-library/react";
 import { CartView } from "@/components/fujisan/cart/CartView";
 
 const RESUME_REDIRECT = encodeURIComponent("/cart?resume=checkout");
@@ -63,10 +101,22 @@ const signedIn = () =>
 const ageCheckbox = () => screen.getByRole<HTMLInputElement>("checkbox");
 const payButton = () =>
   screen.getByRole("button", { name: /お支払いへ進む/ });
-const guestEmailInput = () => screen.getByLabelText(/メールアドレス/);
+const guestEmailInput = () =>
+  document.getElementById("guest-email") as HTMLInputElement;
+const guestEmailConfirmInput = () =>
+  document.getElementById("guest-email-confirm") as HTMLInputElement;
+/** ゲストのメールアドレスを、確認欄まで入れる。 */
+const fillGuestEmail = (email: string, confirmation = email) => {
+  fireEvent.change(guestEmailInput(), { target: { value: email } });
+  fireEvent.change(guestEmailConfirmInput(), {
+    target: { value: confirmation },
+  });
+};
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockSiteKey = null;
+  mockWidget.mounts = 0;
   sessionStorage.clear();
   window.history.replaceState(null, "", "/cart");
   // 決済ページへの移動そのものは jsdom では動かないので、呼び出しまでを見る。
@@ -264,9 +314,7 @@ describe("CartView — 決済ページから戻ったとき", () => {
     render(<CartView />);
 
     fireEvent.click(ageCheckbox());
-    fireEvent.change(guestEmailInput(), {
-      target: { value: "guest@example.com" },
-    });
+    fillGuestEmail("guest@example.com");
     fireEvent.click(payButton());
     await screen.findByRole("button", { name: /移動中/ });
 
@@ -309,15 +357,199 @@ describe("CartView — 決済ページから戻ったとき", () => {
   });
 });
 
+describe("CartView — ゲストのボット判定", () => {
+  beforeEach(() => {
+    mockSiteKey = "site";
+  });
+
+  const pay = () => fireEvent.click(payButton());
+
+  const fillGuest = () => {
+    fireEvent.click(ageCheckbox());
+    fillGuestEmail("guest@example.com");
+  };
+
+  it("キーが未設定の間はウィジェットを出さない", () => {
+    mockSiteKey = null;
+    signedOut();
+    render(<CartView />);
+
+    fillGuest();
+
+    expect(screen.queryByTestId("turnstile")).toBeNull();
+  });
+
+  it("ログイン中はウィジェットを出さない", () => {
+    signedIn();
+    render(<CartView />);
+
+    expect(screen.queryByTestId("turnstile")).toBeNull();
+  });
+
+  // ログインするお客様や、見ているだけの人の情報を Cloudflare へ送らない。
+  it("ゲストのメールアドレスを入れるまで読み込まない", () => {
+    signedOut();
+    render(<CartView />);
+
+    expect(screen.queryByTestId("turnstile")).toBeNull();
+
+    fillGuest();
+
+    expect(screen.queryByTestId("turnstile")).toBeTruthy();
+  });
+
+  it("形式の整ったメールアドレスが入るまで読み込まない", () => {
+    signedOut();
+    render(<CartView />);
+
+    fireEvent.change(guestEmailInput(), { target: { value: "gue" } });
+
+    expect(screen.queryByTestId("turnstile")).toBeNull();
+  });
+
+  it("判定が終わっていなければ進ませない", () => {
+    signedOut();
+    render(<CartView />);
+
+    fillGuest();
+    pay();
+
+    expect(startCheckoutAction).not.toHaveBeenCalled();
+    expect(screen.getByRole("alert").textContent).toContain("確認");
+  });
+
+  // 判定の途中で作り直すと、押すたびに最初からやり直しになる。
+  it("判定の途中で押しても、ウィジェットは作り直さない", () => {
+    signedOut();
+    render(<CartView />);
+
+    fillGuest();
+    pay();
+
+    expect(mockWidget.mounts).toBe(1);
+  });
+
+  it("ウィジェットが失敗していたら、押したときに作り直す", () => {
+    signedOut();
+    render(<CartView />);
+
+    fillGuest();
+    act(() => mockWidget.onFailure());
+    pay();
+
+    expect(mockWidget.mounts).toBe(2);
+  });
+
+  it("判定が済んだら、確認が終わっていないという表示を消す", () => {
+    signedOut();
+    render(<CartView />);
+
+    fillGuest();
+    pay();
+    act(() => mockWidget.onToken("token"));
+
+    expect(screen.queryByRole("alert")).toBeNull();
+  });
+
+  // 訂正の途中で形式が崩れても、済ませた判定を捨てない。
+  it("メールアドレスを直している途中でも、ウィジェットを消さない", () => {
+    signedOut();
+    render(<CartView />);
+
+    fillGuest();
+    fireEvent.change(guestEmailInput(), { target: { value: "guest@" } });
+
+    expect(screen.queryByTestId("turnstile")).toBeTruthy();
+    expect(mockWidget.mounts).toBe(1);
+  });
+
+  // 使ったトークンは再送できない。
+  it("ブラウザの「戻る」で復元されたら、判定を取り直す", async () => {
+    const errSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    startCheckoutAction.mockResolvedValue({
+      ok: true,
+      url: "https://checkout.stripe.com/c/pay/cs_test_1",
+    });
+    signedOut();
+    render(<CartView />);
+
+    fillGuest();
+    act(() => mockWidget.onToken("token"));
+    pay();
+    await screen.findByRole("button", { name: /移動中/ });
+
+    const restored = new Event("pageshow");
+    Object.defineProperty(restored, "persisted", { value: true });
+    fireEvent(window, restored);
+    errSpy.mockRestore();
+
+    await waitFor(() => expect(mockWidget.mounts).toBe(2));
+  });
+
+  it("判定が済んだらトークンを添えて決済を始める", async () => {
+    signedOut();
+    render(<CartView />);
+
+    fillGuest();
+    act(() => mockWidget.onToken("token"));
+    pay();
+
+    await waitFor(() => expect(startCheckoutAction).toHaveBeenCalledTimes(1));
+    expect(startCheckoutAction.mock.calls[0][0]).toMatchObject({
+      guestEmail: "guest@example.com",
+      turnstileToken: "token",
+    });
+  });
+
+  // トークンは 1 回しか使えない。読み込みに失敗していても、作り直せば読み直せる。
+  it("決済を始められなかったら、ウィジェットを作り直す", async () => {
+    startCheckoutAction.mockResolvedValue({ ok: false, error: "bot" });
+    signedOut();
+    render(<CartView />);
+
+    fillGuest();
+    act(() => mockWidget.onToken("token"));
+    pay();
+
+    await screen.findByRole("alert");
+    expect(mockWidget.mounts).toBe(2);
+  });
+
+  it("通信に失敗したときも、ウィジェットを作り直す", async () => {
+    startCheckoutAction.mockRejectedValue(new Error("network"));
+    signedOut();
+    render(<CartView />);
+
+    fillGuest();
+    act(() => mockWidget.onToken("token"));
+    pay();
+
+    await screen.findByRole("alert");
+    expect(mockWidget.mounts).toBe(2);
+  });
+
+  it("使い終わったトークンを次の決済に使わない", async () => {
+    startCheckoutAction.mockResolvedValue({ ok: false, error: "stripe" });
+    signedOut();
+    render(<CartView />);
+
+    fillGuest();
+    act(() => mockWidget.onToken("token"));
+    pay();
+    await screen.findByRole("alert");
+    pay();
+
+    expect(startCheckoutAction).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe("CartView — ゲストとして購入", () => {
   it("メールアドレスを入れれば、ログインせずに決済へ進める", async () => {
     signedOut();
     render(<CartView />);
 
     fireEvent.click(ageCheckbox());
-    fireEvent.change(guestEmailInput(), {
-      target: { value: "guest@example.com" },
-    });
+    fillGuestEmail("guest@example.com");
     fireEvent.click(payButton());
 
     await waitFor(() => expect(startCheckoutAction).toHaveBeenCalledTimes(1));
@@ -345,12 +577,68 @@ describe("CartView — ゲストとして購入", () => {
     expect(guestEmailInput().getAttribute("aria-invalid")).toBe("true");
   });
 
+  // 打ち間違えると、宛名と住所の入った確定メールが他人へ届く。
+  it("確認欄と一致しなければ進ませない", () => {
+    signedOut();
+    render(<CartView />);
+
+    fireEvent.click(ageCheckbox());
+    fillGuestEmail("taro@gmail.com", "taro@gmial.com");
+    fireEvent.click(payButton());
+
+    expect(startCheckoutAction).not.toHaveBeenCalled();
+    expect(guestEmailConfirmInput().getAttribute("aria-invalid")).toBe("true");
+    expect(screen.getByRole("alert").textContent).toContain("一致しません");
+  });
+
+  it("上の欄を直したら、一致しないというエラーを消す", () => {
+    signedOut();
+    render(<CartView />);
+
+    fireEvent.click(ageCheckbox());
+    fillGuestEmail("taro@gmial.com", "taro@gmail.com");
+    fireEvent.click(payButton());
+    fireEvent.change(guestEmailInput(), {
+      target: { value: "taro@gmail.com" },
+    });
+
+    expect(guestEmailConfirmInput().getAttribute("aria-invalid")).toBeNull();
+  });
+
+  it("確認欄が空なら進ませない", () => {
+    signedOut();
+    render(<CartView />);
+
+    fireEvent.click(ageCheckbox());
+    fireEvent.change(guestEmailInput(), {
+      target: { value: "guest@example.com" },
+    });
+    fireEvent.click(payButton());
+
+    expect(startCheckoutAction).not.toHaveBeenCalled();
+    expect(guestEmailConfirmInput().getAttribute("aria-invalid")).toBe("true");
+  });
+
+  it("大文字と小文字の違いでは止めない", async () => {
+    signedOut();
+    render(<CartView />);
+
+    fireEvent.click(ageCheckbox());
+    fillGuestEmail("Guest@Example.com", "guest@example.com");
+    fireEvent.click(payButton());
+
+    await waitFor(() => expect(startCheckoutAction).toHaveBeenCalledTimes(1));
+    expect(startCheckoutAction.mock.calls[0][0].guestEmail).toBe(
+      "Guest@Example.com",
+    );
+  });
+
   it("形式が違うメールアドレスでは進ませない", () => {
     signedOut();
     render(<CartView />);
 
     fireEvent.click(ageCheckbox());
-    fireEvent.change(guestEmailInput(), { target: { value: "not-an-email" } });
+    fillGuestEmail("not-an-email");
     fireEvent.click(payButton());
 
     expect(startCheckoutAction).not.toHaveBeenCalled();
@@ -360,9 +648,7 @@ describe("CartView — ゲストとして購入", () => {
     signedOut();
     render(<CartView />);
 
-    fireEvent.change(guestEmailInput(), {
-      target: { value: "guest@example.com" },
-    });
+    fillGuestEmail("guest@example.com");
     fireEvent.click(payButton());
 
     expect(startCheckoutAction).not.toHaveBeenCalled();
@@ -375,9 +661,7 @@ describe("CartView — ゲストとして購入", () => {
     render(<CartView />);
 
     fireEvent.click(ageCheckbox());
-    fireEvent.change(guestEmailInput(), {
-      target: { value: "guest@example.com" },
-    });
+    fillGuestEmail("guest@example.com");
     fireEvent.click(payButton());
 
     expect((await screen.findByRole("alert")).textContent).toContain(

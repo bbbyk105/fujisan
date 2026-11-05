@@ -12,13 +12,16 @@ jest.mock("@/components/fujisan/editorial/DocumentPage", () => ({
     sections,
     updated,
   }: {
-    sections: Array<{ body: React.ReactNode[] }>;
+    sections: Array<{ body?: React.ReactNode[]; bullets?: React.ReactNode[] }>;
     updated: string;
   }) => (
     <main>
       <p>{updated}</p>
       {sections.map((s, i) => (
-        <section key={i}>{s.body}</section>
+        <section key={i}>
+          {s.body}
+          {s.bullets}
+        </section>
       ))}
     </main>
   ),
@@ -50,5 +53,16 @@ describe("プライバシーポリシーの保有期間", () => {
 
   it("内容を変えた月を最終更新に出す", () => {
     expect(text()).toContain("2026.11");
+  });
+
+  // 利用目的は「以下に限る」と書いている。Turnstile の目的が無いと公開中の文面が矛盾する。
+  it("利用目的に自動操作の防止を含める", () => {
+    expect(text()).toContain("不正利用や自動操作の防止");
+  });
+
+  it("ゲスト購入のボット判定を案内する", () => {
+    const { container } = render(<PrivacyPage />);
+
+    expect(container.textContent).toContain("Cloudflare Turnstile");
   });
 });
