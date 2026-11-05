@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
+import { AdminContactReply } from "@/components/fujisan/admin/AdminContactReply";
 import {
   adminSetContactStatusAction,
   type AdminContactItem,
@@ -12,7 +13,6 @@ import {
   type ContactStatus,
 } from "@/data/fujisan-contact";
 import { formatDateTimeJp } from "@/lib/format-date";
-import { gmailComposeHref } from "@/lib/mailto";
 import { useUnsavedChanges } from "@/lib/unsaved-changes";
 
 const ERROR_MESSAGES: Record<string, string> = {
@@ -21,12 +21,6 @@ const ERROR_MESSAGES: Record<string, string> = {
   invalid: "入力が不正です。",
   db: "保存に失敗しました。時間をおいて再度お試しください。",
   conflict: "ほかの管理者が先に更新しました。最新の状況を表示しています。",
-};
-
-const COPY_LABELS = {
-  idle: "アドレスをコピー",
-  copied: "コピーしました",
-  failed: "コピーできませんでした",
 };
 
 /** 選んでいる状況の色。行を見渡したときに、未対応が見つかるようにする。 */
@@ -42,23 +36,16 @@ const STATUS_STYLE: Record<ContactStatus, string> = {
  * 受付の情報と対応状況を左に、お客様と本文を右に置く。対応するときは必ず本文を
  * 読むので、折りたたまない（対応済みは既定の一覧に出さない）。
  *
- * **返信は mailto: にしない。** 開き先は端末の設定で決まり、ブラウザが受け取ると
- * 何も起きない（2026-11-05 に本番で発生）。受信先の Gmail のアカウントで作成画面を
- * 開き、Gmail 以外で書く人のためにアドレスのコピーも置く。
- *
  * **対応状況は「保存」を押すまで保存しない。** 以前は select を切り替えた瞬間に
  * 保存していたため、選び間違えただけで「対応済み」になり、未対応の一覧から
  * 消えてしまうことがあった。管理画面の他のフォームとも作法を揃える。
  */
 export function AdminContactRow({
   message,
-  replyAccount,
   onDone,
   onConflict,
 }: {
   message: AdminContactItem;
-  /** 返信に使う Gmail のアカウント（お問い合わせの受信先）。 */
-  replyAccount: string;
   /** 対応済みで保存できたとき。既定の一覧では、この行が消えるので結果を一覧に残す。 */
   onDone?: () => void;
   /** 先に更新されていたとき。その更新で行が消えることがあるので、これも一覧に残す。 */
@@ -73,26 +60,22 @@ export function AdminContactRow({
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [pending, startTransition] = useTransition();
+  const [hasDraft, setHasDraft] = useState(false);
 
-  const [copyState, setCopyState] = useState<keyof typeof COPY_LABELS>("idle");
-  const copyTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const label = CONTACT_SUBJECT_LABELS[message.subject];
   const dirty = status !== message.status;
   useUnsavedChanges(dirty);
 
-  const copyEmail = async () => {
-    try {
-      await navigator.clipboard.writeText(message.email);
-      setCopyState("copied");
-    } catch {
-      setCopyState("failed");
-    }
-    clearTimeout(copyTimer.current);
-    copyTimer.current = setTimeout(() => setCopyState("idle"), 2500);
-  };
-
   const save = () => {
+    // 既定の一覧では対応済みの行が消え、書きかけも一緒に消える。
+    if (
+      status === "done" &&
+      hasDraft &&
+      !window.confirm("書きかけの返信はまだ送信されていません。対応済みにしますか？")
+    ) {
+      return;
+    }
     setError(null);
     setSaved(false);
     startTransition(async () => {
@@ -136,28 +119,7 @@ export function AdminContactRow({
         <p className="mt-5 max-w-[70ch] whitespace-pre-wrap text-[14.5px] leading-[1.95] text-indigo/88 [overflow-wrap:anywhere]">
           {message.message}
         </p>
-        <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2">
-          <a
-            href={gmailComposeHref(
-              message.email,
-              `Re: ${message.locale === "en" ? label.en : label.ja} — FUJISAN SAKE`,
-              replyAccount,
-            )}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex min-h-[44px] items-center border border-indigo/30 px-5 text-[13px] font-semibold text-indigo no-underline transition-colors hover:border-indigo"
-          >
-            Gmail で返信
-          </a>
-          <button
-            type="button"
-            onClick={copyEmail}
-            aria-live="polite"
-            className="min-h-[44px] text-[13px] text-indigo/65 underline decoration-indigo/25 underline-offset-4 transition-colors hover:text-indigo"
-          >
-            {COPY_LABELS[copyState]}
-          </button>
-        </div>
+        <AdminContactReply message={message} onDraftChange={setHasDraft} />
       </div>
 
       <div className="mt-7 md:col-start-1 md:row-start-2 md:mt-6">

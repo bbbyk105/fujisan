@@ -33,12 +33,6 @@ const VIEWS = [
   { href: "/admin/contacts?view=all", label: "すべて", openOnly: false },
 ];
 
-/**
- * `info@` の転送先。Cloudflare Email Routing のルールと揃える。
- * サーバーのこのファイルに置いて管理者の画面へだけ渡す（共有の定数にすると公開の JS に載る）。
- */
-const REPLY_GMAIL_ACCOUNT = "mtfujipharmacy@gmail.com";
-
 export default async function AdminContactsPage(props: {
   searchParams?: SearchParams;
 }) {
@@ -115,7 +109,6 @@ export default async function AdminContactsPage(props: {
               key={openOnly ? "open" : "all"}
               messages={messages}
               openOnly={openOnly}
-              replyAccount={REPLY_GMAIL_ACCOUNT}
             />
             {messages.length >= CONTACT_LIST_LIMIT && (
               <p className="mt-6 text-[13px] leading-[1.8] text-indigo/65">

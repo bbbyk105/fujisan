@@ -164,7 +164,7 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 - スパム対策は 2 段: ハニーポット（`website` の隠し入力。値が入っていたら成功を装って静かに捨てる）＋ 同一 IP の連投制限（10 分に 5 件）。**生 IP は保存せず SHA-256 の先頭16文字だけ**を持つ。
 - 管理画面の一覧（`/admin/contacts`）は既定で未対応・対応中だけを出し、対応済みは「すべて」（`?view=all`）で見る。本文は折りたたまない（対応するときは必ず読むので）。対応状況の保存は読んだときの状況を WHERE に入れ、先に変えられていたら `conflict` を返す（古い画面から保存すると対応者の記録が消える）。件数は上限で切られた一覧からではなく SQL で数える。
 - **お客様が入力したアドレスの mailto は `mailtoHref`（`src/lib/mailto.ts`）で作る。** 入力の検証は `?` や `&` を通すので、`mailto:${email}` と書くと返信の下書きに BCC や本文を差し込める（HTML のエスケープでは防げない）。
-- **管理画面の返信ボタンを mailto: にしない。** 開き先は端末の設定で決まり、ブラウザが受け取ると何も起きない（2026-11-05 に本番で発生）。受信先の Gmail のアカウントを指定して作成画面を開き（`gmailComposeHref`。指定しないとブラウザの既定のアカウントで開く）、アドレスのコピーも置く。転送先を変えたら `src/app/admin/contacts/page.tsx` の `REPLY_GMAIL_ACCOUNT` も変える。
+- **お問い合わせへの返信は管理画面から `info@` で送る**（`adminReplyContactAction` → `sendContactReply`）。mailto: は開き先が端末の設定で決まり、ブラウザが受け取ると何も起きない（2026-11-05 に本番で発生）。Gmail の作成画面を開く形は差出人が Gmail のアドレスになるのでやめた。宛先は入力で受け取らず D1 から引く。画面が読んだ返信の数と比べ、ずれていたら `conflict` で止める（開いたままの画面から 2 通届くのを防ぐ）。送ってから記録する（`recorded: false` は届いているので再送させない）。`sendEmail` はキーが無いと正常に終わるので、`sendContactReply` は先にキーを確かめる。管理者への通知メールには Reply-To を入れない（そのまま返信すると Gmail のアドレスから届き、記録も残らない）。返信は `contact_reply` に残り、`ON DELETE CASCADE` でお問い合わせと一緒に消える（プライバシーポリシーの保有期間を守るため）。お客様からの再返信は `info@` から Gmail へ届き、管理画面には入らない。
 - 用件・対応状況のコードは `src/data/fujisan-contact.ts` が唯一の出どころ。サーバー依存を持たないのでクライアントからも読める（`src/lib/emails/contact-emails.ts` は `server-only` に依存するため、ラベルをそこに置かないこと）。
 
 ## SEO
@@ -271,7 +271,7 @@ npm run cf-typegen # cloudflare-env.d.ts 再生成（バインディング変更
 secret）は [`SETUP.md`](./SETUP.md) にまとめてある。
 
 本番 Worker は main から Cloudflare Workers Builds が自動デプロイする
-（2026-09-24 に main と本番が揃った）。D1 のマイグレーションは `0016` まで
+（2026-09-24 に main と本番が揃った）。D1 のマイグレーションは `0017` まで
 本番へ適用済み。**マイグレーションは自動では流れない**ので、スキーマを変えたときは
 push より先に `wrangler d1 migrations apply fujisan-db --remote` を実行すること。
 

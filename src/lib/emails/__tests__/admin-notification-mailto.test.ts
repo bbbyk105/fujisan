@@ -46,6 +46,20 @@ describe("管理者への通知メールの mailto", () => {
     expect(mailtoQueryKeys()).toEqual([]);
   });
 
+  // そのまま返信できると、Gmail のアドレスからお客様へ届き、管理画面に記録も残らない。
+  it("お問い合わせの通知には、返信先としてお客様を入れない", async () => {
+    await sendContactAdminNotification({
+      name: "佐藤",
+      email: "sato@example.com",
+      subject: "general",
+      message: "本文",
+      locale: "ja",
+    } as Parameters<typeof sendContactAdminNotification>[0]);
+
+    expect(sendEmail.mock.calls[0][0].replyTo).toBeUndefined();
+    expect(sendEmail.mock.calls[0][0].text).toContain("管理画面から");
+  });
+
   it("取扱店の申請の通知に宛先以外を差し込ませない", async () => {
     await sendTradeApplicationNotification({
       companyName: "佐藤酒店",

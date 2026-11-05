@@ -2,17 +2,27 @@
 
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { and, count, desc, eq, ne } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, ne } from "drizzle-orm";
 import { getAuth } from "@/lib/auth";
 import { getDb } from "@/db";
 import { getEffectiveAdminRole, isStaffOrAbove } from "@/lib/admin";
-import { contactMessage } from "@/db/contact-schema";
+import { contactMessage, contactReply } from "@/db/contact-schema";
 import {
   CONTACT_LIST_LIMIT,
+  CONTACT_REPLY_MAX,
   CONTACT_STATUSES,
   type ContactStatus,
   type ContactSubject,
 } from "@/data/fujisan-contact";
+import { sendContactReply } from "@/lib/emails/contact-emails";
+import { alertOps } from "@/lib/ops-alert";
+
+export type AdminContactReplyItem = {
+  id: string;
+  body: string;
+  sentByEmail: string;
+  createdAt: Date;
+};
 
 export type AdminContactItem = {
   id: string;
@@ -25,6 +35,8 @@ export type AdminContactItem = {
   handledByEmail: string | null;
   handledAt: Date | null;
   createdAt: Date;
+  /** 送信した返信。古い順。 */
+  replies: AdminContactReplyItem[];
 };
 
 async function requireStaff(): Promise<
@@ -58,18 +70,43 @@ export async function adminListContactsAction(input?: {
 
   try {
     const db = await getDb();
-    const [rows, tallies] = await Promise.all([
+    const listed = input?.openOnly ? ne(contactMessage.status, "done") : undefined;
+    const [rows, tallies, replies] = await Promise.all([
       db
         .select()
         .from(contactMessage)
-        .where(input?.openOnly ? ne(contactMessage.status, "done") : undefined)
+        .where(listed)
         .orderBy(desc(contactMessage.createdAt))
         .limit(CONTACT_LIST_LIMIT),
       db
         .select({ status: contactMessage.status, n: count() })
         .from(contactMessage)
         .groupBy(contactMessage.status),
+      // id を並べて渡さず副問い合わせにする。D1 は 1 文のバインド数が 100 までで、
+      // 一覧の上限（200 件）を渡すと失敗する。
+      db
+        .select()
+        .from(contactReply)
+        .where(
+          inArray(
+            contactReply.contactId,
+            db
+              .select({ id: contactMessage.id })
+              .from(contactMessage)
+              .where(listed)
+              .orderBy(desc(contactMessage.createdAt))
+              .limit(CONTACT_LIST_LIMIT),
+          ),
+        )
+        .orderBy(asc(contactReply.createdAt)),
     ]);
+    const repliesByContact = new Map<string, AdminContactReplyItem[]>();
+    for (const { contactId, id, body, sentByEmail, createdAt } of replies) {
+      const list = repliesByContact.get(contactId) ?? [];
+      list.push({ id, body, sentByEmail, createdAt });
+      repliesByContact.set(contactId, list);
+    }
+
     const tally = (status: ContactStatus) =>
       tallies.find((t) => t.status === status)?.n ?? 0;
 
@@ -87,6 +124,7 @@ export async function adminListContactsAction(input?: {
         handledByEmail: row.handledByEmail,
         handledAt: row.handledAt ?? null,
         createdAt: row.createdAt,
+        replies: repliesByContact.get(row.id) ?? [],
       })),
     };
   } catch {
@@ -149,4 +187,111 @@ export async function adminSetContactStatusAction(input: {
   } catch {
     return { ok: false, error: "db" };
   }
+}
+
+/**
+ * 管理者向け: お客様へ返信を送り、記録する。未対応なら対応中にする。
+ *
+ * 宛先は入力で受け取らず、D1 の問い合わせから引く（Server Action は直接呼べる）。
+ * 画面が読んだ返信の数（expectedReplies）と比べ、ずれていたら送らない。開いたままの
+ * 画面から送ると、ほかの管理者の返信に気づかないまま 2 通届いてしまう。
+ *
+ * **送ってから記録する。** 逆にすると、送れなかったのに「送信済み」の記録が残る
+ * 時間ができる。記録だけに失敗したときはお客様に届いているので成功として返し、
+ * 同じ返信を送り直されないよう `recorded: false` で伝えて、人にも知らせる。
+ */
+export async function adminReplyContactAction(input: {
+  id: string;
+  body: string;
+  expectedReplies: number;
+}): Promise<
+  | { ok: true; recorded: boolean }
+  | {
+      ok: false;
+      error:
+        | "unauth"
+        | "forbidden"
+        | "invalid"
+        | "gone"
+        | "conflict"
+        | "send"
+        | "db";
+    }
+> {
+  const gate = await requireStaff();
+  if (!gate.ok) return { ok: false, error: gate.reason };
+
+  const body = typeof input.body === "string" ? input.body.trim() : "";
+  if (!input.id || !body || body.length > CONTACT_REPLY_MAX) {
+    return { ok: false, error: "invalid" };
+  }
+
+  let db: Awaited<ReturnType<typeof getDb>>;
+  let row: typeof contactMessage.$inferSelect | undefined;
+  let replyCount: number;
+  try {
+    db = await getDb();
+    [row] = await db
+      .select()
+      .from(contactMessage)
+      .where(eq(contactMessage.id, input.id))
+      .limit(1);
+    [{ n: replyCount }] = await db
+      .select({ n: count() })
+      .from(contactReply)
+      .where(eq(contactReply.contactId, input.id));
+  } catch {
+    return { ok: false, error: "db" };
+  }
+  if (!row) return { ok: false, error: "gone" };
+  if (replyCount !== input.expectedReplies) {
+    revalidatePath("/admin/contacts");
+    return { ok: false, error: "conflict" };
+  }
+
+  try {
+    await sendContactReply({
+      name: row.name,
+      email: row.email,
+      subject: row.subject as ContactSubject,
+      message: row.message,
+      locale: row.locale === "en" ? "en" : "ja",
+      reply: body,
+    });
+  } catch (err) {
+    console.error("[contact] 返信を送信できませんでした:", err);
+    return { ok: false, error: "send" };
+  }
+
+  try {
+    await db.insert(contactReply).values({
+      id: crypto.randomUUID(),
+      contactId: row.id,
+      body,
+      sentByEmail: gate.email,
+    });
+  } catch (err) {
+    console.error("[contact] 返信を記録できませんでした:", err);
+    await alertOps(
+      "お問い合わせの返信を記録できませんでした",
+      `お客様へは送信済みですが、管理画面に記録されていません。\nお問い合わせ: ${row.id}\n送信者: ${gate.email}`,
+    );
+    revalidatePath("/admin/contacts");
+    return { ok: true, recorded: false };
+  }
+
+  // 返信は記録できているので、ここの失敗は報告しない（画面で直せる）。
+  try {
+    await db
+      .update(contactMessage)
+      .set({ status: "in_progress" })
+      .where(
+        and(eq(contactMessage.id, row.id), eq(contactMessage.status, "new")),
+      );
+  } catch (err) {
+    console.error("[contact] 対応状況を更新できませんでした:", err);
+  }
+
+  revalidatePath("/admin/contacts");
+  return { ok: true, recorded: true };
 }

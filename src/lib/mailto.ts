@@ -14,20 +14,6 @@ export function mailtoHref(email: string, subject?: string): string {
   return `mailto:${to}${subject ? `?subject=${encodePart(subject)}` : ""}`;
 }
 
-/**
- * Gmail の新規作成画面を開く URL。
- *
- * `mailto:` の開き先は端末の設定で決まり、ブラウザが受け取ると何も起きないことがある。
- * `account` を指定しないと、ブラウザの既定の Google アカウントで開く。
- */
-export function gmailComposeHref(
-  email: string,
-  subject: string,
-  account: string,
-): string {
-  return `https://mail.google.com/mail/?authuser=${encodePart(account)}&view=cm&fs=1&to=${encodePart(email)}&su=${encodePart(subject)}`;
-}
-
 /** 壊れた文字（孤立サロゲート）は encodeURIComponent が例外にするので、置き換えて続ける。 */
 function encodePart(value: string): string {
   try {
