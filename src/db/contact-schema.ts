@@ -47,3 +47,29 @@ export const contactMessage = sqliteTable(
     index("contact_message_ip_hash_idx").on(table.ipHash, table.createdAt),
   ],
 );
+
+/**
+ * 管理画面からお客様へ送った返信。送信できたものだけを残す（下書きは持たない）。
+ *
+ * お問い合わせと一緒に消える（`ON DELETE CASCADE`）。保有期間を過ぎて
+ * contact_message を消したときに返信だけが残ると、プライバシーポリシーの
+ * 「お問い合わせの記録は最長 3 年」を守れなくなる。
+ */
+export const contactReply = sqliteTable(
+  "contact_reply",
+  {
+    id: text("id").primaryKey(),
+    contactId: text("contact_id")
+      .notNull()
+      .references(() => contactMessage.id, { onDelete: "cascade" }),
+    body: text("body").notNull(),
+    /** 送信した管理者のメール（監査用） */
+    sentByEmail: text("sent_by_email").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+      .notNull(),
+  },
+  (table) => [
+    index("contact_reply_contact_id_idx").on(table.contactId, table.createdAt),
+  ],
+);

@@ -30,6 +30,9 @@ export const CONTACT_STATUS_LABELS: Record<ContactStatus, string> = {
   done: "対応済み",
 };
 
+/** 管理画面から送る返信の本文の上限。 */
+export const CONTACT_REPLY_MAX = 5000;
+
 /** 管理画面の一覧に出す上限。`"use server"` のファイルは定数を export できないのでここに置く。 */
 export const CONTACT_LIST_LIMIT = 200;
 

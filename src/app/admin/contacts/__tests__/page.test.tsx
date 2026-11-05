@@ -12,6 +12,7 @@ const listContacts = jest.fn();
 jest.mock("@/lib/actions/admin-contacts", () => ({
   adminListContactsAction: (...a: unknown[]) => listContacts(...a),
   adminSetContactStatusAction: jest.fn(),
+  adminReplyContactAction: jest.fn(),
 }));
 const getSession = jest.fn();
 jest.mock("@/lib/session", () => ({
@@ -52,6 +53,7 @@ const MESSAGE = {
   handledByEmail: null,
   handledAt: null,
   createdAt: new Date("2026-09-25T04:00:00Z"),
+  replies: [],
 };
 
 beforeEach(() => {

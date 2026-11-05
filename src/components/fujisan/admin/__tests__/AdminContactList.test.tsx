@@ -24,6 +24,7 @@ const MESSAGE = {
   handledByEmail: null,
   handledAt: null,
   createdAt: new Date("2026-09-25T04:00:00Z"),
+  replies: [],
 };
 
 async function markDone() {
@@ -41,11 +42,11 @@ beforeEach(() => {
 describe("AdminContactList", () => {
   it("対応済みにして行が消えても、結果を残す", async () => {
     const { rerender } = render(
-      <AdminContactList replyAccount="shop@example.com" messages={[MESSAGE]} openOnly />,
+      <AdminContactList messages={[MESSAGE]} openOnly />,
     );
 
     await markDone();
-    rerender(<AdminContactList replyAccount="shop@example.com" messages={[]} openOnly />);
+    rerender(<AdminContactList messages={[]} openOnly />);
 
     expect(screen.queryByRole("listitem")).toBeNull();
     expect(screen.getByTestId("contact-result").textContent).toContain(
@@ -54,7 +55,7 @@ describe("AdminContactList", () => {
   });
 
   it("「すべて」では行が残るので、一覧には結果を出さない", async () => {
-    render(<AdminContactList replyAccount="shop@example.com" messages={[MESSAGE]} openOnly={false} />);
+    render(<AdminContactList messages={[MESSAGE]} openOnly={false} />);
 
     await markDone();
 
@@ -66,7 +67,7 @@ describe("AdminContactList", () => {
 
   it("保存に失敗したら、対応済みにしたとは出さない", async () => {
     setStatusAction.mockResolvedValue({ ok: false, error: "db" });
-    render(<AdminContactList replyAccount="shop@example.com" messages={[MESSAGE]} openOnly />);
+    render(<AdminContactList messages={[MESSAGE]} openOnly />);
 
     await markDone();
 
@@ -77,11 +78,11 @@ describe("AdminContactList", () => {
   it("先に更新されて行が消えても、そのことを残す", async () => {
     setStatusAction.mockResolvedValue({ ok: false, error: "conflict" });
     const { rerender } = render(
-      <AdminContactList replyAccount="shop@example.com" messages={[MESSAGE]} openOnly />,
+      <AdminContactList messages={[MESSAGE]} openOnly />,
     );
 
     await markDone();
-    rerender(<AdminContactList replyAccount="shop@example.com" messages={[]} openOnly />);
+    rerender(<AdminContactList messages={[]} openOnly />);
 
     expect(screen.getByTestId("contact-result").textContent).toContain(
       "佐藤 優子 様のお問い合わせは、ほかの管理者が先に更新しました",
@@ -89,7 +90,7 @@ describe("AdminContactList", () => {
   });
 
   it("対応が残っている分が無ければ、対応済みの見方を案内する", () => {
-    render(<AdminContactList replyAccount="shop@example.com" messages={[]} openOnly />);
+    render(<AdminContactList messages={[]} openOnly />);
     expect(screen.getByText(/対応済みのお問い合わせは/)).toBeTruthy();
   });
 });

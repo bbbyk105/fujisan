@@ -12,7 +12,7 @@ import {
 /**
  * お問い合わせの通知メール。
  *
- * - 管理者宛（引き合いが来たことの通知。Reply-To に送信者を入れてそのまま返信できる）
+ * - 管理者宛（引き合いが来たことの通知。返信は管理画面から `info@` で送る）
  * - 送信者宛（自動受領確認）
  *
  * どちらも **ベストエフォート**。受領の正は D1 の contact_message 表なので、
@@ -40,6 +40,11 @@ function escapeHtml(s: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+/** 本文の改行を残す。CSS の pre-wrap は Outlook などで効かないことがある。 */
+function multiline(s: string): string {
+  return escapeHtml(s).replace(/\n/g, "<br />");
 }
 
 async function resendOpts(): Promise<{
@@ -81,7 +86,7 @@ export async function sendContactAdminNotification(
     "",
     `管理画面: ${baseUrl}/admin/contacts`,
     "",
-    "※ このメールにそのまま返信すると、お客様宛に届きます。",
+    "※ 返信は管理画面から送ってください。info@ から送信され、記録も残ります。",
   ].join("\n");
 
   const html = `
@@ -95,12 +100,12 @@ export async function sendContactAdminNotification(
     </table>
     <div style="margin:20px 0;padding:14px 0;border-top:1px solid #d9cfb8;border-bottom:1px solid #d9cfb8;font-size:14px;line-height:1.8;white-space:pre-wrap;">${escapeHtml(data.message)}</div>
     <p style="font-size:13px;"><a href="${baseUrl}/admin/contacts" style="color:#0B1A2E;">管理画面で開く →</a></p>
-    <p style="font-size:12px;color:#0B1A2E99;">このメールにそのまま返信すると、お客様宛に届きます。</p>
+    <p style="font-size:12px;color:#0B1A2E99;">返信は管理画面から送ってください。info@ から送信され、記録も残ります。</p>
   </div>`;
 
   for (const to of admins) {
     await sendEmail(
-      { to, subject, text, html, replyTo: data.email },
+      { to, subject, text, html },
       opts,
     );
   }
@@ -161,4 +166,68 @@ export async function sendContactAcknowledgement(
   </div>`;
 
   await sendEmail({ to: data.email, subject, text, html }, opts);
+}
+
+/**
+ * 管理画面からの返信をお客様へ送る。本文は管理者が書き、宛名・引用・販売者の表記を
+ * ここで付ける。
+ *
+ * ほかのメールと違い **失敗は例外で返す**。管理者が送信ボタンを押した結果なので、
+ * 届いていないのに「送信しました」と出してはいけない。
+ *
+ * お客様の返信は `info@` に届く（Reply-To）。受信は Cloudflare Email Routing。
+ */
+export async function sendContactReply(
+  data: Omit<ContactNotification, "id"> & { reply: string },
+): Promise<void> {
+  const { opts } = await resendOpts();
+  // sendEmail はキーが無いとコンソールへ出して正常に終わる。送れていないのに
+  // 「送信しました」と記録しないよう、ここで止める。
+  if (!opts.apiKey) throw new Error("RESEND_API_KEY が未設定です");
+
+  const en = data.locale === "en";
+  const label = CONTACT_SUBJECT_LABELS[data.subject];
+  const subject = `Re: ${en ? label.en : label.ja} — FUJISAN SAKE`;
+  const greeting = en ? `Dear ${data.name},` : `${data.name} 様`;
+  const quoteHeading = en ? "Your message" : "いただいた内容";
+
+  const text = [
+    greeting,
+    "",
+    data.reply,
+    "",
+    `── ${quoteHeading} ──`,
+    data.message,
+    "──────────────",
+    "",
+    FUJISAN_LEGAL.sellerName,
+    FUJISAN_LEGAL.address,
+    `${FUJISAN_LEGAL.phone}（${FUJISAN_LEGAL.phoneHours}）`,
+    FUJISAN_LEGAL.email,
+  ].join("\n");
+
+  const html = `
+  <div style="font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans',sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#0B1A2E;">
+    <p style="font-size:15px;line-height:1.9;">${escapeHtml(greeting)}</p>
+    <p style="font-size:14px;line-height:1.9;">${multiline(data.reply)}</p>
+    <p style="margin:28px 0 0;font-size:12px;color:#6D7682;">${escapeHtml(quoteHeading)}</p>
+    <p style="margin:8px 0 0;padding:14px 0;border-top:1px solid #d9cfb8;border-bottom:1px solid #d9cfb8;font-size:13px;line-height:1.8;color:#6D7682;">${multiline(data.message)}</p>
+    <p style="margin-top:24px;font-size:12px;line-height:1.8;color:#6D7682;">
+      ${escapeHtml(FUJISAN_LEGAL.sellerName)}<br />
+      ${escapeHtml(FUJISAN_LEGAL.address)}<br />
+      ${escapeHtml(FUJISAN_LEGAL.phone)}（${escapeHtml(FUJISAN_LEGAL.phoneHours)}）<br />
+      ${escapeHtml(FUJISAN_LEGAL.email)}
+    </p>
+  </div>`;
+
+  await sendEmail(
+    {
+      to: data.email,
+      subject,
+      text,
+      html,
+      replyTo: FUJISAN_LEGAL.email,
+    },
+    opts,
+  );
 }
