@@ -47,13 +47,13 @@ export function UnsavedChangesGuard() {
       const url = new URL(a.href, window.location.href);
       // mailto: や tel: は画面を離れない
       if (url.protocol !== "http:" && url.protocol !== "https:") return;
-      // 同じページの中の #見出し への移動も離れない
+      // 同じ URL や、同じページの中の #見出し への移動も離れない。フォームは作り直されない
+      // ので、ここで確認して登録を捨てると、変更が残ったまま以後の確認が出なくなる。
       const here = window.location;
       if (
         url.origin === here.origin &&
         url.pathname === here.pathname &&
-        url.search === here.search &&
-        url.hash !== ""
+        url.search === here.search
       ) {
         return;
       }

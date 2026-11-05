@@ -13,6 +13,7 @@ import { getEffectiveAdminRole, isOwner, isStaffOrAbove } from "@/lib/admin";
 import { readTradeAccount } from "@/lib/trade";
 import type { TradeStatus } from "@/data/fujisan-trade";
 import { buildMetadata } from "@/lib/seo";
+import { loginPathFor } from "@/lib/safe-redirect";
 
 export const metadata = buildMetadata({
   title: "Account",
@@ -40,11 +41,11 @@ export default async function AccountPage({
   searchParams: Promise<{ tab?: string }>;
 }) {
   const session = await getSession();
+  const { tab: rawTab } = await searchParams;
   if (!session) {
-    redirect("/login/personal");
+    redirect(loginPathFor("/account", { tab: rawTab }));
   }
 
-  const { tab: rawTab } = await searchParams;
   const tab: AccountTab = ACCOUNT_TABS.includes(rawTab as AccountTab)
     ? (rawTab as AccountTab)
     : "orders";

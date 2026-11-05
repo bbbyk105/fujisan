@@ -107,6 +107,57 @@ export function AdminNav({
 }
 
 /**
+ * 1 つの画面の中の絞り込みタブ。上の AdminNav と同じく、下線だけで現在地を示す。
+ * 項目が多い画面でも折り返さず、狭い画面では横に送る。
+ */
+export function AdminSubNav({
+  label,
+  items,
+}: {
+  /** このタブが何を切り替えるか。読み上げに使う */
+  label: string;
+  items: Array<{
+    href: string;
+    label: string;
+    active: boolean;
+    /** 件数。渡さなければ出さない */
+    count?: number;
+  }>;
+}) {
+  return (
+    <div className="border-b border-indigo/15">
+      <nav
+        aria-label={label}
+        className="-mx-7 overflow-x-auto px-7 md:mx-0 md:px-0"
+      >
+        <ul className="flex min-w-max gap-7">
+          {items.map((item) => (
+            <li key={item.href}>
+              <Link
+                href={item.href}
+                aria-current={item.active ? "page" : undefined}
+                className={`block border-b-2 pb-3 pt-1 text-[14px] no-underline transition-colors ${
+                  item.active
+                    ? "border-gold font-semibold text-indigo"
+                    : "border-transparent text-indigo/60 hover:text-indigo"
+                }`}
+              >
+                {item.label}
+                {item.count !== undefined && (
+                  <span className="ml-1.5 text-[12.5px] font-normal tabular-nums text-indigo/55">
+                    {item.count}
+                  </span>
+                )}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </div>
+  );
+}
+
+/**
  * 管理者以外がアクセスしたときの画面。
  * ログイン中のアドレスを必ず出す — 「入れない」とき、どのアカウントで
  * 入っているのかが分からないと直しようがない。

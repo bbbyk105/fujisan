@@ -52,7 +52,7 @@ describe("領収書の表示", () => {
   it("未ログインならログインへ送り、戻り先を付ける", async () => {
     getSession.mockResolvedValue(null);
     await expect(open()).rejects.toThrow(
-      "redirect:/login/personal?next=/account/orders/FJ-0001/receipt",
+      `redirect:/login/personal?redirect=${encodeURIComponent("/account/orders/FJ-0001/receipt")}`,
     );
     expect(getMyOrderReceiptUrlAction).not.toHaveBeenCalled();
   });

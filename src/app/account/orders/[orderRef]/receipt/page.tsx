@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { getMyOrderReceiptUrlAction } from "@/lib/actions/orders";
 import { buildMetadata } from "@/lib/seo";
+import { loginPathFor } from "@/lib/safe-redirect";
 
 export const metadata = buildMetadata({
   title: "Receipt",
@@ -26,7 +27,7 @@ export default async function ReceiptPage({
   const { orderRef } = await params;
   const session = await getSession();
   if (!session) {
-    redirect(`/login/personal?next=/account/orders/${orderRef}/receipt`);
+    redirect(loginPathFor(`/account/orders/${orderRef}/receipt`));
   }
 
   const url = await getMyOrderReceiptUrlAction(orderRef);

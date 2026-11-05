@@ -1,4 +1,14 @@
-import { safeRedirectPath, withRedirect } from "@/lib/safe-redirect";
+/**
+ * @jest-environment node
+ */
+
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import {
+  loginPathFor,
+  safeRedirectPath,
+  withRedirect,
+} from "@/lib/safe-redirect";
 
 // ログイン後の戻り先は URL から読むので、誰でも細工したリンクを踏ませられる。
 // 外へ飛ばせると、本物のログイン画面を踏み台にした詐欺に使われる。
@@ -60,5 +70,47 @@ describe("withRedirect", () => {
 
   it("戻り先が無ければ、パスをそのまま返す", () => {
     expect(withRedirect("/login/personal", null)).toBe("/login/personal");
+  });
+});
+
+describe("loginPathFor", () => {
+  it("ログイン画面が読む redirect に戻り先を入れる", () => {
+    expect(loginPathFor("/admin/contacts")).toBe(
+      `/login/personal?redirect=${encodeURIComponent("/admin/contacts")}`,
+    );
+  });
+
+  it("絞り込みも含めて戻す", () => {
+    const url = new URL(
+      loginPathFor("/admin/orders", { filter: "action", from: "2026-11-01" }),
+      "https://example.com",
+    );
+
+    expect(url.searchParams.get("redirect")).toBe(
+      "/admin/orders?filter=action&from=2026-11-01",
+    );
+  });
+
+  it("値の無い絞り込みは付けない", () => {
+    expect(loginPathFor("/admin/customers", { q: "", tab: undefined })).toBe(
+      `/login/personal?redirect=${encodeURIComponent("/admin/customers")}`,
+    );
+  });
+});
+
+describe("ログインへの転送", () => {
+  // ログイン画面が読むのは redirect だけ。`?next=` と書くと、ログイン後に戻れない。
+  it("読まれない ?next= を使っていない", () => {
+    const pages = readdirSync(join(__dirname, "../../app"), {
+      recursive: true,
+      encoding: "utf8",
+    }).filter((f) => f.endsWith("page.tsx"));
+    const offenders = pages.filter((f) =>
+      readFileSync(join(__dirname, "../../app", f), "utf8").includes(
+        "/login/personal?next=",
+      ),
+    );
+
+    expect(offenders).toEqual([]);
   });
 });

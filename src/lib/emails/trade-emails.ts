@@ -3,6 +3,7 @@ import { sendEmail } from "@/lib/email";
 import { getOwnerEmailsFromEnv } from "@/lib/admin";
 import { FUJISAN_LEGAL } from "@/data/fujisan-legal";
 import { SITE_URL } from "@/lib/seo";
+import { mailtoHref } from "@/lib/mailto";
 import {
   TRADE_BUSINESS_TYPE_LABELS,
   type TradeBusinessType,
@@ -80,7 +81,7 @@ export async function sendTradeApplicationNotification(
     <table style="width:100%;border-collapse:collapse;font-size:14px;">
       <tr><td style="padding:8px 0;color:#0B1A2E99;width:8em;">会社・店舗</td><td style="padding:8px 0;">${escapeHtml(data.companyName)}</td></tr>
       <tr><td style="padding:8px 0;color:#0B1A2E99;">ご担当者</td><td style="padding:8px 0;">${escapeHtml(data.contactName)}</td></tr>
-      <tr><td style="padding:8px 0;color:#0B1A2E99;">メール</td><td style="padding:8px 0;"><a href="mailto:${escapeHtml(data.email)}" style="color:#0B1A2E;">${escapeHtml(data.email)}</a></td></tr>
+      <tr><td style="padding:8px 0;color:#0B1A2E99;">メール</td><td style="padding:8px 0;"><a href="${escapeHtml(mailtoHref(data.email))}" style="color:#0B1A2E;">${escapeHtml(data.email)}</a></td></tr>
       <tr><td style="padding:8px 0;color:#0B1A2E99;">業態</td><td style="padding:8px 0;">${escapeHtml(label.ja)}</td></tr>
       <tr><td style="padding:8px 0;color:#0B1A2E99;">免許番号</td><td style="padding:8px 0;">${escapeHtml(data.licenceNumber || "（申告なし）")}</td></tr>
     </table>

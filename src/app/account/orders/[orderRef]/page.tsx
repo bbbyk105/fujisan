@@ -13,6 +13,7 @@ import { getFujisanProductBySlug } from "@/data/fujisan-products";
 import { L } from "@/i18n/Localized";
 import { buildMetadata } from "@/lib/seo";
 import { formatDateJp } from "@/lib/format-date";
+import { loginPathFor } from "@/lib/safe-redirect";
 
 export const metadata = buildMetadata({
   title: "Order detail",
@@ -37,7 +38,7 @@ export default async function OrderDetailPage({
   const session = await getSession();
   const { orderRef } = await params;
   if (!session) {
-    redirect(`/login/personal?next=/account/orders/${orderRef}`);
+    redirect(loginPathFor(`/account/orders/${orderRef}`));
   }
 
   // 自分の注文でなければ 404。存在の有無も漏らさない。

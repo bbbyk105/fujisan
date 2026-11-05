@@ -12,6 +12,7 @@ import { getSession } from "@/lib/session";
 import { getEffectiveAdminRole, isOwner, isStaffOrAbove } from "@/lib/admin";
 import { adminDashboardAction } from "@/lib/actions/admin-dashboard";
 import { buildMetadata } from "@/lib/seo";
+import { loginPathFor } from "@/lib/safe-redirect";
 
 export const metadata = buildMetadata({
   title: "Admin",
@@ -27,7 +28,7 @@ const yen = new Intl.NumberFormat("ja-JP");
 export default async function AdminDashboardPage() {
   const session = await getSession();
   const u = session?.user as { id?: string; email?: string } | undefined;
-  if (!session) redirect("/login/personal?next=/admin");
+  if (!session) redirect(loginPathFor("/admin"));
 
   const role = await getEffectiveAdminRole({ userId: u?.id, email: u?.email });
   if (!isStaffOrAbove(role)) return <AdminForbidden email={u?.email} />;

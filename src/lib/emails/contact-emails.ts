@@ -3,6 +3,7 @@ import { sendEmail } from "@/lib/email";
 import { getOwnerEmailsFromEnv } from "@/lib/admin";
 import { FUJISAN_LEGAL } from "@/data/fujisan-legal";
 import { SITE_URL } from "@/lib/seo";
+import { mailtoHref } from "@/lib/mailto";
 import {
   CONTACT_SUBJECT_LABELS,
   type ContactSubject,
@@ -89,7 +90,7 @@ export async function sendContactAdminNotification(
     <table style="width:100%;border-collapse:collapse;font-size:14px;">
       <tr><td style="padding:8px 0;color:#0B1A2E99;width:6em;">用件</td><td style="padding:8px 0;">${escapeHtml(label.ja)}</td></tr>
       <tr><td style="padding:8px 0;color:#0B1A2E99;">お名前</td><td style="padding:8px 0;">${escapeHtml(data.name)}</td></tr>
-      <tr><td style="padding:8px 0;color:#0B1A2E99;">メール</td><td style="padding:8px 0;"><a href="mailto:${escapeHtml(data.email)}" style="color:#0B1A2E;">${escapeHtml(data.email)}</a></td></tr>
+      <tr><td style="padding:8px 0;color:#0B1A2E99;">メール</td><td style="padding:8px 0;"><a href="${escapeHtml(mailtoHref(data.email))}" style="color:#0B1A2E;">${escapeHtml(data.email)}</a></td></tr>
       <tr><td style="padding:8px 0;color:#0B1A2E99;">言語</td><td style="padding:8px 0;">${data.locale === "en" ? "English" : "日本語"}</td></tr>
     </table>
     <div style="margin:20px 0;padding:14px 0;border-top:1px solid #d9cfb8;border-bottom:1px solid #d9cfb8;font-size:14px;line-height:1.8;white-space:pre-wrap;">${escapeHtml(data.message)}</div>
