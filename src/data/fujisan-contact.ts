@@ -7,8 +7,17 @@
  */
 
 /** フォームの select と 1:1 で対応する用件コード。 */
-export const CONTACT_SUBJECTS = ["general", "trade", "visit", "press"] as const;
-export type ContactSubject = (typeof CONTACT_SUBJECTS)[number];
+export const CONTACT_SUBJECTS = ["general", "trade", "press"] as const;
+
+/**
+ * 受け付けをやめた用件。新しくは受け付けないが、D1 に残っている過去の
+ * お問い合わせを管理画面で表示するためにラベルは残す（蔵見学は行っていない）。
+ */
+type RetiredContactSubject = "visit";
+
+export type ContactSubject =
+  | (typeof CONTACT_SUBJECTS)[number]
+  | RetiredContactSubject;
 
 export const CONTACT_SUBJECT_LABELS: Record<
   ContactSubject,

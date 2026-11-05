@@ -19,7 +19,7 @@ export default function CartPage() {
   return (
     <EditorialPage className="flex flex-col">
       <EditorialPageHeader
-        kicker={<L en="Purchase" ja="ご購入" />}
+        width="wide"
         title={<L en="Your cart" ja="カート" />}
         lead={
           <L

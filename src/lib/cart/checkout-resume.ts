@@ -8,12 +8,25 @@
 export const CHECKOUT_RESUME_PATH = "/cart?resume=checkout";
 
 const AGE_CONFIRMED_KEY = "fujisan-checkout-age-confirmed";
+const SHIPPING_REGION_KEY = "fujisan-checkout-shipping-region";
 
 /** 確認の記録を使える時間。ログインや登録を終えて戻るのに足りる長さにする。 */
 const AGE_CONFIRMED_TTL_MS = 30 * 60 * 1000;
 
 export function rememberAgeConfirmed(): void {
   sessionStorage.setItem(AGE_CONFIRMED_KEY, String(Date.now()));
+}
+
+/**
+ * カートで選んだお届け地域。タブの中では残し、買い物を続けて戻ったときや
+ * ログインから戻ったときに選び直さなくて済むようにする。
+ */
+export function rememberShippingRegion(region: string): void {
+  sessionStorage.setItem(SHIPPING_REGION_KEY, region);
+}
+
+export function readShippingRegion(): string | null {
+  return sessionStorage.getItem(SHIPPING_REGION_KEY);
 }
 
 /** 確認の記録を読み、同時に消す。 */

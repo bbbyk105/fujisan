@@ -16,7 +16,6 @@ export type DocumentSection = {
 };
 
 type Props = {
-  kicker?: ReactNode;
   title: ReactNode;
   lead?: ReactNode;
   updated?: string;
@@ -30,7 +29,6 @@ type Props = {
  * 番号・見出し・索引の 3 つだけを頼りに走査できる状態を保つ。
  */
 export default function DocumentPage({
-  kicker,
   title,
   lead,
   updated,
@@ -42,7 +40,6 @@ export default function DocumentPage({
   return (
     <EditorialPage>
       <EditorialPageHeader
-        kicker={kicker}
         title={title}
         lead={lead}
         meta={

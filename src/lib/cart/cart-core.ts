@@ -6,7 +6,11 @@ import {
   type FujisanProduct,
   type FujisanVolume,
 } from "@/data/fujisan-products";
-import { SHIPPING_FEE } from "@/data/fujisan-legal";
+import {
+  SHIPPING_FEE,
+  SHIPPING_REGIONS,
+  type ShippingRegion,
+} from "@/data/fujisan-legal";
 
 export const CART_STORAGE_KEY = "fujisan_cart_v1";
 /** 1 銘柄・容量あたりの上限本数（ProductPurchaseBlock の数量上限と揃える）。 */
@@ -170,12 +174,73 @@ export function cartSubtotal(
   }, 0);
 }
 
-/** 小計に対する送料（円）。空カートは 0、しきい値以上は無料。 */
-export function shippingFee(subtotal: number): number {
+/**
+ * 小計とお届け地域に対する送料（円）。空カートは 0。
+ * しきい値以上で無料になるのは基本送料だけで、地域の追加分は残る。
+ */
+export function shippingFee(
+  subtotal: number,
+  region: ShippingRegion = "mainland",
+): number {
   if (subtotal <= 0) return 0;
   const threshold = SHIPPING_FEE.freeThresholdJpy;
-  if (threshold > 0 && subtotal >= threshold) return 0;
-  return SHIPPING_FEE.flatJpy;
+  const base =
+    threshold > 0 && subtotal >= threshold ? 0 : SHIPPING_FEE.flatJpy;
+  return base + SHIPPING_REGIONS[region].surchargeJpy;
+}
+
+export function isShippingRegion(value: unknown): value is ShippingRegion {
+  return typeof value === "string" && Object.hasOwn(SHIPPING_REGIONS, value);
+}
+
+type PostalArea = "hokkaido" | "okinawa" | "other";
+
+/**
+ * 郵便番号の先頭 2 桁から分かる区分。確実に分かるのは北海道（00・04〜09）と
+ * 沖縄（90）だけで、01〜03 は東北。読めない番号は null。
+ */
+function postalAreaOf(postalCode: string): PostalArea | null {
+  const digits = postalCode.replace(/\D/g, "");
+  if (digits.length !== 7) return null;
+  if (/^(00|0[4-9])/.test(digits)) return "hokkaido";
+  if (digits.startsWith("90")) return "okinawa";
+  return "other";
+}
+
+/** 郵便番号で確実に決まる地域。それ以外は離島のことがあるので null。 */
+export function regionOfPostalCode(postalCode: string): ShippingRegion | null {
+  const area = postalAreaOf(postalCode);
+  if (area === "hokkaido") return "hokkaido";
+  if (area === "okinawa") return "remote";
+  return null;
+}
+
+/**
+ * 選んだ地域が郵便番号と明らかに合わないか。「沖縄・離島」は北海道や本州の番号でも
+ * 離島のことがあるので、合わないとは言えない。読めない番号は判定しない。
+ */
+export function shippingRegionMismatch(
+  selected: ShippingRegion,
+  postalCode: string,
+): boolean {
+  const area = postalAreaOf(postalCode);
+  if (area === null) return false;
+  if (selected === "mainland") return area !== "other";
+  if (selected === "hokkaido") return area !== "hokkaido";
+  return false;
+}
+
+/**
+ * 発送前に人が確かめる注文か。明らかに合わないものに加えて、沖縄以外の番号で
+ * 「沖縄・離島」が選ばれた注文も見る（離島は自己申告で、選び間違いと見分けられない）。
+ */
+export function shippingRegionNeedsReview(
+  selected: ShippingRegion,
+  postalCode: string,
+): boolean {
+  if (shippingRegionMismatch(selected, postalCode)) return true;
+  const area = postalAreaOf(postalCode);
+  return selected === "remote" && area !== null && area !== "okinawa";
 }
 
 /** 送料無料まであと何円か。無料化済み・無効時は 0。 */

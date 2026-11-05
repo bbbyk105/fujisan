@@ -5,7 +5,7 @@ import {
   EditorialSectionHead,
 } from "@/components/fujisan/editorial/EditorialSection";
 import { EdFaq } from "@/components/fujisan/editorial/ui";
-import { FUJISAN_LEGAL, SHIPPING_FEE } from "@/data/fujisan-legal";
+import { FUJISAN_LEGAL } from "@/data/fujisan-legal";
 import { L } from "@/i18n/Localized";
 import { buildMetadata } from "@/lib/seo";
 
@@ -79,8 +79,8 @@ const groups = [
         q: <L en="Can I send a bottle as a gift?" ja="ギフトとして贈れますか？" />,
         a: (
           <L
-            en="Every bottle ships in a presentation box wrapped in washi, so it arrives ready to give. Noshi wrapping and message cards are not yet available at checkout. Write to us before ordering and we will do what we can."
-            ja="各ボトルは和紙で包んだ化粧箱でお届けしますので、そのまま贈り物にお使いいただけます。のし紙やメッセージカードは、現在ご購入手続きの中では承っておりません。ご注文前にご連絡いただければ、できる限り対応いたします。"
+            en="Gift wrapping, noshi paper and message cards are not available at checkout. Write to us before ordering and we will do what we can."
+            ja="ギフト用の包装、のし紙、メッセージカードは、現在ご購入手続きの中では承っておりません。ご注文前にご連絡いただければ、できる限り対応いたします。"
           />
         ),
       },
@@ -95,8 +95,8 @@ const groups = [
           <L
             en={
               <>
-                Within Japan only. {SHIPPING_FEE.flatEn}. {SHIPPING_FEE.freeEn}.
-                Full details are on the{" "}
+                Within Japan only. {FUJISAN_LEGAL.shippingFeeNoteEn} Full
+                details are on the{" "}
                 <a href="/shipping" className="ed-link">
                   shipping page
                 </a>
@@ -105,8 +105,8 @@ const groups = [
             }
             ja={
               <>
-                お届けは日本国内のみです。送料は{SHIPPING_FEE.flat}です。
-                {SHIPPING_FEE.free}です。詳しくは
+                お届けは日本国内のみです。送料は
+                {FUJISAN_LEGAL.shippingFeeNote}詳しくは
                 <a href="/shipping" className="ed-link">
                   お届けと返品
                 </a>
@@ -119,17 +119,8 @@ const groups = [
     ],
   },
   {
-    heading: <L en="Visits and trade" ja="蔵見学とお取引" />,
+    heading: <L en="Trade" ja="お取引" />,
     items: [
-      {
-        q: <L en="Can I visit the brewery?" ja="蔵見学はできますか？" />,
-        a: (
-          <L
-            en="Small-group visits to Makino Shuzo, the kura that brews the Bushido series, can be arranged by appointment. Visits run from November through March, while the brewhouse is at work."
-            ja="武士道シリーズを醸す牧野酒造合資会社の蔵見学を、ご予約制・少人数で承っています。仕込みの行われる11月から3月までの実施です。"
-          />
-        ),
-      },
       {
         q: (
           <L
@@ -169,7 +160,6 @@ export default function FaqPage() {
   return (
     <EditorialPage>
       <EditorialPageHeader
-        kicker={<L en="Guidance" ja="ご案内" />}
         title={<L en="Frequently asked" ja="よくあるご質問" />}
         lead={
           <L
@@ -177,7 +167,7 @@ export default function FaqPage() {
             ja="保管や飲み方、ご注文について、よくいただくご質問をまとめています。"
           />
         }
-        meta={<L en="Last updated 2026.09" ja="最終更新 2026.09" />}
+        meta={<L en="Last updated 2026.11" ja="最終更新 2026.11" />}
       />
 
       {groups.map((g, i) => (

@@ -460,7 +460,7 @@ details:not([open]) > :not(summary) {
     /* 濃淡は別の色を足さず、この 4 つの変数を濃色面で差し替えて作る */
     --ed-ink: #0B1A2E;
     --ed-body: rgba(11, 26, 46, 0.82);
-    --ed-muted: rgba(11, 26, 46, 0.58);
+    --ed-muted: rgba(11, 26, 46, 0.66);
     --ed-rule: rgba(11, 26, 46, 0.13);
     --ed-rule-strong: rgba(11, 26, 46, 0.26);
     --ed-gold: #C9A84C;
@@ -580,11 +580,12 @@ details:not([open]) > :not(summary) {
     color: var(--ed-muted);
   }
 
-  /* 唯一の「ラベル」。大文字にはしない（和文が入るため） */
+  /* 唯一の「ラベル」。大文字にはしない（和文が入るため）。
+     和文の小さな字は字間を広げると読みにくいので、詰めて少し大きくする */
   .ed-label {
-    font-size: 11px;
+    font-size: 12.5px;
     font-weight: 600;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.04em;
     line-height: 1.6;
     color: var(--ed-muted);
   }
@@ -596,7 +597,7 @@ details:not([open]) > :not(summary) {
     font-size: 12px;
     font-weight: 500;
     letter-spacing: 0.12em;
-    color: var(--ed-gold-ink);
+    color: var(--ed-muted);
   }
 
   /* ── 罫 ─────────────────────────────────────────── */

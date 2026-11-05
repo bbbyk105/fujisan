@@ -21,7 +21,7 @@ export function AccountNavLink({ mobile = false }: { mobile?: boolean }) {
     return (
       <Link
         href={href}
-        className="flex items-center justify-between border-b border-indigo/10 py-4 text-[13px] font-semibold tracking-[0.14em] text-indigo/82 no-underline transition-colors hover:text-indigo"
+        className="flex items-center justify-between border-b border-indigo/10 py-4 text-[13px] font-semibold tracking-[0.04em] text-indigo/82 no-underline transition-colors hover:text-indigo"
       >
         <span>
           {signedIn ? (

@@ -22,7 +22,7 @@ import { buildMetadata } from "@/lib/seo";
 export const metadata = buildMetadata({
   title: "Wholesale & Trade",
   description:
-    "Wholesale and trade enquiries for restaurants, bars, shops, and hotels. Case pricing and a dedicated contact, in Japanese or English.",
+    "Wholesale and trade enquiries for restaurants, bars, shops, and hotels, in Japanese or English.",
   path: "/shop/business",
 });
 
@@ -41,8 +41,8 @@ const terms = [
     label: <L en="Logistics" ja="配送・物流" />,
     value: (
       <L
-        en="Cool-chain delivery across Japan; export by sea or air with our partner forwarder."
-        ja="国内はクール便、海外へは提携する輸送会社を通じて、海上・航空輸送に対応します。"
+        en="Export by sea or air with our partner forwarder."
+        ja="海外へは提携する輸送会社を通じて、海上・航空輸送に対応します。"
       />
     ),
   },
@@ -50,8 +50,8 @@ const terms = [
     label: <L en="Your contact" ja="担当窓口" />,
     value: (
       <L
-        en="One named contact for orders, replenishment, and brewery visits, in Japanese or English."
-        ja="ご注文から在庫の補充、蔵見学のご相談まで、専任の担当が日本語・英語でお応えします。"
+        en="We handle orders and replenishment in Japanese or English."
+        ja="ご注文や在庫の補充のご相談に、日本語・英語でお応えします。"
       />
     ),
   },
@@ -101,8 +101,8 @@ const faqs = [
     q: <L en="Do you ship internationally?" ja="海外への輸出は可能ですか？" />,
     a: (
       <L
-        en="Yes. We ship to partners across Asia, Europe, and North America via our forwarder. Tell us your destination and we will confirm route, lead time, and documentation."
-        ja="はい、承っております。提携する輸送会社を通じて、アジア・欧州・北米への出荷実績があります。お届け先の国・地域をお知らせいただければ、輸送ルート・納期・必要書類をご案内します。"
+        en="Yes. We have shipped other sake, outside the Bushido series, to Asia, Europe, and North America via our forwarder. Tell us your destination and we will confirm route, lead time, and documentation."
+        ja="はい、承っております。提携する輸送会社を通じて、武士道シリーズ以外の酒類でアジア・欧州・北米への出荷実績があります。お届け先の国・地域をお知らせいただければ、輸送ルート・納期・必要書類をご案内します。"
       />
     ),
   },
@@ -135,7 +135,6 @@ export default function ShopBusinessPage() {
   return (
     <EditorialPage>
       <EditorialPageHeader
-        kicker={<L en="Purchase" ja="ご購入" />}
         title={<L en="Trade accounts" ja="法人・取扱店のお客様" />}
         lead={
           <L

@@ -56,12 +56,6 @@ export default async function CraftPage({
   return (
     <EditorialPage>
       <EditorialPageHeader
-        kicker={
-          <>
-            <span className="ed-num mr-3">{pillar.num}</span>
-            <L en={pillar.eyebrow} ja={pillar.jp} />
-          </>
-        }
         title={<L en={pillar.title} ja={pillar.catchJp} />}
         lead={<L en={pillar.lead} ja={pillar.leadJp} />}
         width="narrow"

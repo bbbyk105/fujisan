@@ -12,7 +12,7 @@ import { buildMetadata } from "@/lib/seo";
 export const metadata = buildMetadata({
   title: "Contact",
   description:
-    "Contact FUJISAN SAKE about our sake, your order, trade and wholesale, or brewery visits.",
+    "Contact FUJISAN SAKE about our sake, your order, or trade and wholesale.",
   path: "/contact",
 });
 
@@ -53,18 +53,13 @@ const desk = [
   },
 ];
 
+/** 営業時間は特商法の表記と同じ値を読む（2 か所に書くと食い違う） */
 const hours = [
   {
-    label: <L en="Mon – Fri" ja="月〜金" />,
-    value: "09:00 – 17:00 JST",
-  },
-  {
-    label: <L en="Saturday" ja="土曜" />,
-    value: "10:00 – 15:00 JST",
-  },
-  {
-    label: <L en="Sunday & holidays" ja="日曜・祝日" />,
-    value: <L en="Closed" ja="休業" />,
+    label: <L en="Hours" ja="受付時間" />,
+    value: (
+      <L en={FUJISAN_LEGAL.phoneHoursEn} ja={FUJISAN_LEGAL.phoneHours} />
+    ),
   },
 ];
 
@@ -76,8 +71,8 @@ export default function ContactPage() {
         title={<L en="Contact" ja="お問い合わせ" />}
         lead={
           <L
-            en="Questions about our sake or your order, trade listings, and brewery visits."
-            ja="商品やご注文について、お店でのお取り扱い、蔵見学のご相談を承ります。"
+            en="Questions about our sake or your order, and trade listings."
+            ja="商品やご注文について、お店でのお取り扱いのご相談を承ります。"
           />
         }
       />

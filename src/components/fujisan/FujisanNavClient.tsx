@@ -275,7 +275,7 @@ export function FujisanNavClient({ links }: Props) {
                       : "text-indigo/75 hover:text-indigo"
                   }`}
                 >
-                  {link.label}
+                  <L en={link.label} ja={link.jp} />
                   {active ? (
                     <span className="absolute -bottom-2 left-0 right-0 h-px bg-indigo/80" />
                   ) : null}
@@ -313,7 +313,7 @@ export function FujisanNavClient({ links }: Props) {
                       : "text-indigo/75 hover:text-indigo"
                   }`}
                 >
-                  {link.label}
+                  <L en={link.label} ja={link.jp} />
                   <svg
                     aria-hidden
                     viewBox="0 0 10 6"
@@ -360,19 +360,12 @@ export function FujisanNavClient({ links }: Props) {
                               {String(i + 1).padStart(2, "0")}
                             </span>
                             <span className="flex flex-col gap-0.5">
-                              <span className="font-serif text-[12px] font-semibold tracking-[0.18em] text-indigo transition-colors group-hover/sub:text-gold">
-                                {child.label}
+                              <span className="font-serif text-[13px] font-semibold tracking-[0.04em] text-indigo transition-colors group-hover/sub:text-gold">
+                                <L en={child.label} ja={child.jp} />
                               </span>
-                              {child.jp && (
-                                <span className="font-jp text-[11.5px] tracking-[0.12em] text-gold/85">
-                                  {child.jp}
-                                </span>
-                              )}
-                              {child.desc && (
-                                <span className="mt-1 text-[11px] leading-[1.55] text-indigo/65">
-                                  {child.desc}
-                                </span>
-                              )}
+                              <span className="mt-1 text-[12px] leading-[1.55] text-indigo/66">
+                                <L en={child.desc} ja={child.descJp} />
+                              </span>
                             </span>
                           </Link>
                         </li>
@@ -432,12 +425,8 @@ export function FujisanNavClient({ links }: Props) {
           className="flex min-h-0 flex-1 flex-col overflow-y-auto px-7 pb-8 pt-9 sm:px-9"
         >
           <p data-menu-item className="flex items-center gap-4">
-            <span className="font-serif text-[11px] font-medium tracking-[0.12em] text-gold">
-              MENU
-            </span>
-            <span className="h-px w-10 bg-gold/55" />
-            <span className="font-jp text-[11.5px] tracking-[0.12em] text-indigo/55">
-              <L en="NAVIGATION" ja="メニュー" />
+            <span className="font-jp text-[12.5px] tracking-[0.04em] text-indigo/66">
+              <L en="Menu" ja="メニュー" />
             </span>
           </p>
 
@@ -468,7 +457,7 @@ export function FujisanNavClient({ links }: Props) {
                           : "text-indigo/85 group-hover:text-indigo"
                       }`}
                     >
-                      {link.label}
+                      <L en={link.label} ja={link.jp} />
                     </span>
                     {active ? (
                       <span
@@ -491,14 +480,9 @@ export function FujisanNavClient({ links }: Props) {
                               aria-hidden
                               className="h-px w-4 self-center bg-gold/50 transition-all duration-300 group-hover/sub:w-6 group-hover/sub:bg-gold"
                             />
-                            <span className="font-serif text-[12.5px] font-semibold tracking-[0.18em] text-indigo/80 transition-colors duration-300 group-hover/sub:text-indigo">
-                              {child.label}
+                            <span className="font-serif text-[13px] font-semibold tracking-[0.04em] text-indigo/80 transition-colors duration-300 group-hover/sub:text-indigo">
+                              <L en={child.label} ja={child.jp} />
                             </span>
-                            {child.jp ? (
-                              <span className="font-jp text-[11px] tracking-[0.22em] text-gold/85">
-                                {child.jp}
-                              </span>
-                            ) : null}
                           </Link>
                         </li>
                       ))}
@@ -516,7 +500,7 @@ export function FujisanNavClient({ links }: Props) {
             </div>
             <div className="mt-6 flex items-center justify-between gap-4">
               <LocaleSwitch />
-              <p className="font-jp text-[11px] tracking-[0.12em] text-indigo/45">
+              <p className="font-jp text-[12px] tracking-[0.04em] text-indigo/66">
                 <L en="SAKE FROM THE FOOT OF MT. FUJI" ja="富士山麓の日本酒" />
               </p>
             </div>

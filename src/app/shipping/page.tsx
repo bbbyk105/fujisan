@@ -1,14 +1,14 @@
 import DocumentPage, {
   type DocumentSection,
 } from "@/components/fujisan/editorial/DocumentPage";
-import { FUJISAN_LEGAL, SHIPPING_FEE } from "@/data/fujisan-legal";
+import { FUJISAN_LEGAL } from "@/data/fujisan-legal";
 import { L } from "@/i18n/Localized";
 import { buildMetadata } from "@/lib/seo";
 
 export const metadata = buildMetadata({
   title: "Shipping & Returns",
   description:
-    "How we ship the Fujisan collection — temperature-controlled, hand-packed — and how to handle returns or damage.",
+    "How we ship the Fujisan collection, and how to handle returns or damage.",
   path: "/shipping",
 });
 
@@ -26,13 +26,18 @@ const sections: DocumentSection[] = [
     bullets: [
       <L
         key="1"
-        en={`Japan: nationwide (${SHIPPING_FEE.remoteEn})`}
-        ja={`国内: 全国（${SHIPPING_FEE.remote}）`}
+        en="Japan: nationwide"
+        ja="国内: 全国"
       />,
       <L
         key="2"
-        en={`Shipping: ${SHIPPING_FEE.flatEn} / ${SHIPPING_FEE.freeEn}`}
-        ja={`送料: ${SHIPPING_FEE.flat} ／ ${SHIPPING_FEE.free}`}
+        en={`Shipping: ${FUJISAN_LEGAL.shippingFeeNoteEn}`}
+        ja={`送料: ${FUJISAN_LEGAL.shippingFeeNote}`}
+      />,
+      <L
+        key="2b"
+        en="Choose your delivery area in the cart. All islands, including those off Hokkaido, Honshu, Shikoku and Kyushu, count as Okinawa and remote islands. If the area and address differ, we may contact you before dispatch."
+        ja="お届け地域はカートでお選びください。沖縄以外の離島も「沖縄・離島」です。選んだ地域と住所が異なる場合は、発送前にご連絡することがあります。"
       />,
       <L
         key="3"
@@ -43,22 +48,6 @@ const sections: DocumentSection[] = [
   },
   {
     num: "02",
-    heading: <L en="Packing & temperature" ja="梱包と温度管理" />,
-    body: [
-      <L
-        key="b1"
-        en="Each bottle is hand-wrapped in washi paper, cushioned in moulded fibre, and packed in a chilled outer box so the sake stays below 18°C in transit."
-        ja="各ボトルは和紙で包み、モールドファイバーで保護し、保冷外箱に詰めてお届けします。輸送中も18℃以下に保てるよう梱包しています。"
-      />,
-      <L
-        key="b2"
-        en="Daiginjo and aroma-driven bottles are dispatched on Mondays and Tuesdays only, so they avoid weekend warehouse holds."
-        ja="大吟醸や香り高い銘柄は、週末の倉庫保管を避けるため、月・火曜のみの発送としています。"
-      />,
-    ],
-  },
-  {
-    num: "03",
     heading: <L en="Lead times & tracking" ja="発送と追跡" />,
     body: [
       <L
@@ -81,7 +70,7 @@ const sections: DocumentSection[] = [
     ],
   },
   {
-    num: "04",
+    num: "03",
     heading: <L en="Receiving your order" ja="お受け取りについて" />,
     body: [
       <L
@@ -97,7 +86,7 @@ const sections: DocumentSection[] = [
     ],
   },
   {
-    num: "05",
+    num: "04",
     heading: <L en="Damage & defects" ja="破損・不良品" />,
     body: [
       <L
@@ -108,7 +97,7 @@ const sections: DocumentSection[] = [
     ],
   },
   {
-    num: "06",
+    num: "05",
     heading: <L en="Returns" ja="返品について" />,
     body: [
       <L
@@ -123,15 +112,14 @@ const sections: DocumentSection[] = [
 export default function ShippingPage() {
   return (
     <DocumentPage
-      kicker={<L en="Ordering" ja="ご注文" />}
       title={<L en="Shipping & Returns" ja="お届けと返品" />}
       lead={
         <L
-          en="Where we ship, how we pack, delivery times, receiving your order, and what to do about damage or returns."
-          ja="お届けできる地域、梱包、発送までの日数、お受け取り、破損や返品のときの対応をまとめています。"
+          en="Where we ship, delivery times, receiving your order, and what to do about damage or returns."
+          ja="お届けできる地域、発送までの日数、お受け取り、破損や返品のときの対応をまとめています。"
         />
       }
-      updated="2026.09"
+      updated="2026.11"
       sections={sections}
     />
   );

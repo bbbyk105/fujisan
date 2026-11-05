@@ -38,30 +38,28 @@ export default async function EmailVerifiedPage({
       brand={
         role === "business"
           ? {
-              kanji: "取引",
-              kickerJp: "取扱店のご登録",
-              titleEn: "For trade accounts",
-              titleJp: "取扱店の方へ",
-              textEn:
-                "Once your application is approved, sign in to view wholesale pricing. Orders are arranged after a quote.",
-              textJp:
-                "審査が済むと、ログインして卸価格をご覧いただけます。ご注文はお見積りのうえで承ります。",
               crumbHref: "/shop/business",
               crumbEn: "Back to trade",
               crumbJp: "取扱店ページへ戻る",
+              panel: {
+                titleEn: "For trade accounts",
+                titleJp: "取扱店の方へ",
+                textEn: "Orders are arranged after a quote.",
+                textJp: "ご注文はお見積りのうえで承ります。",
+              },
             }
           : {
-              kanji: "会員",
-              kickerJp: "会員登録",
-              titleEn: "What you can do with an account",
-              titleJp: "ログインしてできること",
-              textEn:
-                "Order to your saved address, check your order history, and reorder the same bottle in a few steps.",
-              textJp:
-                "登録した住所でのご注文、注文履歴の確認、同じ銘柄の再注文ができます。",
               crumbHref: "/shop/personal",
               crumbEn: "Back to shop",
               crumbJp: "ショップへ戻る",
+              panel: {
+                titleEn: "What you can do with an account",
+                titleJp: "ログインしてできること",
+                textEn:
+                  "Order to your saved address, check your order history, and reorder the same bottle in a few steps.",
+                textJp:
+                  "登録した住所でのご注文、注文履歴の確認、同じ銘柄の再注文ができます。",
+              },
             }
       }
     >

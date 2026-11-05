@@ -62,27 +62,22 @@ export default function AgeGate() {
       aria-modal="true"
       aria-labelledby="age-gate-title"
       aria-describedby="age-gate-desc"
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-indigo/85 px-6 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-indigo/92 px-6"
     >
-      <div className="w-full max-w-[460px] border border-gold/40 bg-paper-card px-7 py-9 text-center text-indigo shadow-[0_30px_70px_rgba(11,26,46,0.45)] md:px-10 md:py-12">
-        <p className="font-serif text-[11.5px] font-semibold tracking-[0.12em] text-gold">
-          AGE VERIFICATION
-        </p>
-        <div className="mx-auto mt-3 h-px w-10 bg-gold/60" />
-
+      <div className="w-full max-w-[460px] bg-paper-card px-7 py-9 text-center text-indigo md:px-10 md:py-12">
         <h2
           id="age-gate-title"
-          className="mt-6 font-serif text-[clamp(22px,2.6vw,28px)] font-semibold leading-[1.25] tracking-[0.06em]"
+          className="font-serif text-[clamp(22px,2.6vw,28px)] font-semibold leading-[1.25] tracking-[0.06em]"
         >
-          あなたは20歳以上ですか？
+          <L
+            ja="あなたは20歳以上ですか？"
+            en="Are you 20 years of age or older?"
+          />
         </h2>
-        <p className="mt-2 font-serif text-[12px] tracking-[0.18em] text-indigo/70">
-          Are you 20 years of age or older?
-        </p>
 
         <div
           id="age-gate-desc"
-          className="mt-7 space-y-1.5 text-[11.5px] leading-[1.7] text-indigo/80"
+          className="mt-6 space-y-1.5 text-[12.5px] leading-[1.7] text-indigo/80"
         >
           <L
             ja={
@@ -103,25 +98,13 @@ export default function AgeGate() {
         </div>
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
-          <button
-            type="button"
-            onClick={onYes}
-            className="ed-btn"
-          >
-            はい（20歳以上）
+          <button type="button" onClick={onYes} className="ed-btn">
+            <L ja="はい（20歳以上）" en="Yes, I am 20 or older" />
           </button>
-          <button
-            type="button"
-            onClick={onNo}
-            className="ed-btn-ghost"
-          >
-            いいえ
+          <button type="button" onClick={onNo} className="ed-btn-ghost">
+            <L ja="いいえ" en="No" />
           </button>
         </div>
-
-        <p className="mt-7 text-[11.5px] leading-[1.7] tracking-[0.04em] text-indigo/60">
-          ご利用にあたり、ご年齢をご確認ください。20歳未満の方の閲覧・購入はご遠慮いただいております。
-        </p>
       </div>
     </div>
   );

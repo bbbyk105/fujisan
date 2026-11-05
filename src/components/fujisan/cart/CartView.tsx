@@ -12,6 +12,7 @@ import {
 import {
   MAX_QTY_PER_LINE,
   amountToFreeShipping,
+  isShippingRegion,
   shippingFee,
 } from "@/lib/cart/cart-core";
 import { useCart } from "@/lib/cart/useCart";
@@ -23,7 +24,9 @@ import {
 import {
   CHECKOUT_RESUME_PATH,
   rememberAgeConfirmed,
+  rememberShippingRegion,
   takeAgeConfirmed,
+  readShippingRegion,
 } from "@/lib/cart/checkout-resume";
 import { pushToast } from "@/lib/cart/toast-store";
 import { useSession } from "@/lib/auth-client";
@@ -32,8 +35,19 @@ import {
   releaseAbandonedCheckoutAction,
   startCheckoutAction,
 } from "@/lib/actions/checkout";
-import { fujisanProducts, primaryVolume } from "@/data/fujisan-products";
-import { SHIPPING_FEE } from "@/data/fujisan-legal";
+import {
+  fujisanProducts,
+  isVolumeSoldOut,
+  primaryVolume,
+} from "@/data/fujisan-products";
+import {
+  FUJISAN_LEGAL,
+  SHIPPING_FEE,
+  SHIPPING_REGIONS,
+  UNDERAGE_NOTICE_EN,
+  UNDERAGE_NOTICE_JP,
+  type ShippingRegion,
+} from "@/data/fujisan-legal";
 import { TURNSTILE_SITE_KEY } from "@/data/fujisan-turnstile";
 import { inputCls } from "@/components/fujisan/auth/ui";
 import { TurnstileWidget } from "@/components/fujisan/cart/TurnstileWidget";
@@ -50,10 +64,14 @@ import { useLocale } from "@/i18n/useLocale";
 const yen = new Intl.NumberFormat("ja-JP");
 
 /** 決済開始の失敗理由。サーバーの戻り値から導くので、増えたら型で気づける。 */
-type CheckoutError = Extract<
-  Awaited<ReturnType<typeof startCheckoutAction>>,
-  { ok: false }
->["error"];
+type CheckoutError =
+  | Extract<
+      Awaited<ReturnType<typeof startCheckoutAction>>,
+      { ok: false }
+    >["error"]
+  | "regionRequired";
+
+const SHIPPING_REGION_KEYS = Object.keys(SHIPPING_REGIONS) as ShippingRegion[];
 
 
 /** やめた決済の在庫を解放し、終わったら在庫を取り直す。 */
@@ -179,6 +197,16 @@ export function CartView() {
   }
   const [submitting, setSubmitting] = useState(false);
   const [checkoutError, setCheckoutError] = useState<CheckoutError | null>(null);
+  // お届け地域。送料はこれで決まる。Stripe の決済ページは住所で送料を変えられないので、
+  // ここで選んでもらい、カートの合計と請求額を揃える。いちばん安い地域を初期値に
+  // すると、選び忘れがそのまま送料の不足になるので、選ぶまで決済へ進ませない。
+  const [shippingRegion, setShippingRegion] = useState<ShippingRegion | null>(
+    null,
+  );
+  const chooseShippingRegion = (region: ShippingRegion) => {
+    setShippingRegion(region);
+    rememberShippingRegion(region);
+  };
   // 在庫が足りなかった SKU（決済開始時にサーバーが返す）。どれが買えないかを名指しする。
   const [shortages, setShortages] = useState<
     Array<{ slug: string; ml: number; available: number }>
@@ -202,6 +230,8 @@ export function CartView() {
     const params = new URLSearchParams(window.location.search);
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setCanceled(params.get("canceled") === "1");
+    const remembered = readShippingRegion();
+    if (isShippingRegion(remembered)) setShippingRegion(remembered);
 
     // 決済を途中でやめて戻ってきたら、その注文が押さえていた在庫をすぐ解放する。
     // Session の期限切れ（30分）を待っても Webhook が解放するが、
@@ -232,7 +262,7 @@ export function CartView() {
   }, []);
 
   /** 確認が済んだ状態で決済を始め、Stripe の決済ページへ移る。 */
-  const startCheckout = async (guest?: string) => {
+  const startCheckout = async (region: ShippingRegion, guest?: string) => {
     setSubmitting(true);
     let res: Awaited<ReturnType<typeof startCheckoutAction>>;
     try {
@@ -240,6 +270,7 @@ export function CartView() {
         items: lines.map((l) => ({ slug: l.slug, ml: l.ml, qty: l.qty })),
         locale,
         ageConfirmed: true,
+        shippingRegion: region,
         ...(guest ? { guestEmail: guest } : {}),
         ...(guest && turnstileToken ? { turnstileToken } : {}),
       });
@@ -259,6 +290,7 @@ export function CartView() {
     setSubmitting(false);
     setCheckoutError(res.error);
     setShortages(res.shortages ?? []);
+    if (res.shippingRegion) chooseShippingRegion(res.shippingRegion);
     retryTurnstile();
     // セッションが切れていた。取り直して、ログインかゲストかを選べるようにする。
     if (res.error === "unauth") void refetch();
@@ -277,7 +309,10 @@ export function CartView() {
     window.history.replaceState(null, "", "/cart");
     if (!takeAgeConfirmed()) return;
     setAgeConfirmed(true);
-    if (loggedIn && lines.length > 0) void startCheckout();
+    const remembered = readShippingRegion();
+    if (loggedIn && lines.length > 0 && isShippingRegion(remembered)) {
+      void startCheckout(remembered);
+    }
   });
   useEffect(() => {
     if (ready && !isPending) resumeCheckout();
@@ -292,8 +327,12 @@ export function CartView() {
       setCheckoutError("age");
       return;
     }
+    if (!shippingRegion) {
+      setCheckoutError("regionRequired");
+      return;
+    }
     if (loggedIn) {
-      await startCheckout();
+      await startCheckout(shippingRegion);
       return;
     }
     const issue = guestEmailIssue(guestEmail);
@@ -309,7 +348,7 @@ export function CartView() {
       if (turnstileFailed) retryTurnstile();
       return;
     }
-    await startCheckout(guestEmail.trim());
+    await startCheckout(shippingRegion, guestEmail.trim());
   };
 
   const handleTurnstileToken = (token: string | null) => {
@@ -360,7 +399,7 @@ export function CartView() {
   if (!ready) {
     return (
       <section className="bg-paper">
-        <div className="mx-auto min-h-[40vh] max-w-[1280px] px-7 py-20 md:px-12" />
+        <div className="ed-wrap ed-wrap-wide min-h-[40vh] py-20" />
       </section>
     );
   }
@@ -368,36 +407,26 @@ export function CartView() {
   if (lines.length === 0) {
     return (
       <section className="bg-paper">
-        <div className="mx-auto max-w-[1280px] px-7 py-24 text-center md:px-12 md:py-32">
-          <p className="ed-label">
-            <L en="Your cart is empty" ja="カートは空です" />
+        <div className="ed-wrap ed-wrap-wide py-14 md:py-20">
+          <p className="ed-p">
+            <L en="Your cart is empty." ja="カートに商品は入っていません。" />
           </p>
-          <h2 className="mt-5 font-serif text-[clamp(22px,2.4vw,30px)] font-semibold tracking-[0.04em] text-indigo">
-            <L
-              en="No bottles yet."
-              ja="まだ、何も入っていません。"
-            />
-          </h2>
-          <p className="mx-auto mt-4 max-w-[440px] text-[13.5px] leading-[1.78] text-indigo/76">
-            <L
-              en="Browse the collection and add the bottle that calls to you."
-              ja="コレクションから、一本お選びください。"
-            />
-          </p>
-          <Link
-            href="/shop/personal"
-            className="ed-btn mt-9"
-          >
-            <L en="Browse the collection" ja="コレクションを見る" />
+          <Link href="/shop/personal" className="ed-btn mt-7">
+            <L en="View products" ja="商品一覧を見る" />
           </Link>
 
-          {/* 人気の銘柄サジェスト */}
-          <div className="mt-16 border-t border-indigo/12 pt-12">
+          {/* 売れ行きの順ではないので「人気」とは書かない。全銘柄を並べる */}
+          <div className="mt-16 border-t border-indigo/12 pt-10">
             <p className="ed-label">
-              <L en="Popular bottles" ja="人気の銘柄" />
+              <L en="The Bushido series" ja="武士道シリーズ" />
             </p>
-            <div className="mx-auto mt-8 grid max-w-[680px] grid-cols-1 gap-6 sm:grid-cols-3">
-              {fujisanProducts.slice(0, 3).map((p) => (
+            <div className="mt-8 grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-5">
+              {fujisanProducts.map((p) => {
+                const volume = primaryVolume(p);
+                const soldOut =
+                  isVolumeSoldOut(volume) ||
+                  catalog[liveKey(p.slug, volume.ml)]?.soldOut === true;
+                return (
                 <div key={p.slug} className="flex flex-col items-center">
                   <Link
                     href={`/products/${p.slug}`}
@@ -421,19 +450,26 @@ export function CartView() {
                   <p className="mt-1 font-serif text-[13px] font-semibold text-indigo">
                     <LivePrice
                       slug={p.slug}
-                      ml={primaryVolume(p).ml}
-                      fallback={primaryVolume(p).priceJpy}
+                      ml={volume.ml}
+                      fallback={volume.priceJpy}
                     />
                   </p>
-                  <button
-                    type="button"
-                    onClick={() => quickAdd(p.slug, primaryVolume(p).ml, p.name)}
-                    className="ed-btn mt-3"
-                  >
-                    <L en="Add" ja="追加" />
-                  </button>
+                  {soldOut ? (
+                    <p className="ed-small mt-3">
+                      <L en="Sold out" ja="完売" />
+                    </p>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => quickAdd(p.slug, volume.ml, p.name)}
+                      className="ed-btn mt-3"
+                    >
+                      <L en="Add" ja="追加" />
+                    </button>
+                  )}
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
@@ -441,25 +477,25 @@ export function CartView() {
     );
   }
 
-  const shipping = shippingFee(subtotal);
-  const total = subtotal + shipping;
+  // 地域を選ぶまで送料と合計は決まらない。
+  const shipping = shippingRegion ? shippingFee(subtotal, shippingRegion) : null;
+  const total = shipping === null ? null : subtotal + shipping;
+  const region = shippingRegion ? SHIPPING_REGIONS[shippingRegion] : null;
+  const surcharge = region?.surchargeJpy ?? 0;
+  const totalLabel = total === null ? "" : `（¥${yen.format(total)}）`;
   const toFree = amountToFreeShipping(subtotal);
   const freeReached = SHIPPING_FEE.freeThresholdJpy > 0 && toFree === 0;
-  const freeProgress =
-    SHIPPING_FEE.freeThresholdJpy > 0
-      ? Math.min(100, (subtotal / SHIPPING_FEE.freeThresholdJpy) * 100)
-      : 100;
 
   return (
     <section className="bg-paper">
-      <div className="mx-auto grid max-w-[1280px] grid-cols-1 gap-12 px-7 py-16 md:px-12 md:py-20 lg:grid-cols-[1.5fr_1fr] lg:gap-16">
+      <div className="ed-wrap ed-wrap-wide grid grid-cols-1 gap-12 py-16 md:py-20 lg:grid-cols-[1.5fr_1fr] lg:gap-16">
         {/* Line items */}
         <div>
           <div className="flex items-baseline justify-between border-b border-indigo/15 pb-4">
             <p className="ed-label">
               <L en="Items" ja="ご注文の商品" />
             </p>
-            <p className="text-[11px] font-semibold tracking-[0.2em] text-indigo/60">
+            <p className="text-[12.5px] font-semibold tracking-[0.04em] text-indigo/66">
               <L en={`${count} bottle(s)`} ja={`${count} 本`} />
             </p>
           </div>
@@ -502,7 +538,7 @@ export function CartView() {
                       >
                         {product.name}
                       </Link>
-                      <p className="mt-1 text-[11.5px] font-semibold tracking-[0.16em] text-indigo/62">
+                      <p className="mt-1 text-[12.5px] font-semibold tracking-[0.04em] text-indigo/66">
                         <L
                           en={product.variantLine}
                           ja={product.variantLineJp}
@@ -524,7 +560,7 @@ export function CartView() {
                       onChange={(next) => setQty(slug, ml, next)}
                     />
                     {confirmingKey === lineKey ? (
-                      <div className="flex items-center gap-3 text-[11px] tracking-[0.14em]">
+                      <div className="flex items-center gap-3 text-[12.5px] tracking-[0.04em]">
                         <span className="text-indigo/70">
                           <L en="Remove?" ja="削除しますか？" />
                         </span>
@@ -549,7 +585,7 @@ export function CartView() {
                       <button
                         type="button"
                         onClick={() => setConfirmingKey(lineKey)}
-                        className="cursor-pointer text-[11px] tracking-[0.18em] text-indigo/55 underline decoration-indigo/20 underline-offset-4 transition-colors hover:text-crimson"
+                        className="cursor-pointer text-[12.5px] tracking-[0.04em] text-indigo/66 underline decoration-indigo/20 underline-offset-4 transition-colors hover:text-crimson"
                       >
                         <L en="Remove" ja="削除" />
                       </button>
@@ -563,7 +599,7 @@ export function CartView() {
 
           <Link
             href="/shop/personal"
-            className="group/link mt-7 inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.22em] text-indigo/70 no-underline transition-colors hover:text-indigo"
+            className="group/link mt-7 inline-flex items-center gap-2 text-[12.5px] font-semibold tracking-[0.04em] text-indigo/70 no-underline transition-colors hover:text-indigo"
           >
             <span aria-hidden>←</span>
             <L en="Continue shopping" ja="買い物を続ける" />
@@ -576,7 +612,55 @@ export function CartView() {
             <L en="Order summary" ja="ご注文内容" />
           </p>
 
-          <dl className="mt-7 space-y-3 text-[13px] text-indigo/85">
+          <div className="mt-6">
+            <label htmlFor="shipping-region" className="ed-label block">
+              <L en="Delivery area" ja="お届け地域" />
+            </label>
+            <select
+              id="shipping-region"
+              value={shippingRegion ?? ""}
+              aria-invalid={checkoutError === "regionRequired" ? "true" : undefined}
+              onChange={(e) => {
+                if (!isShippingRegion(e.target.value)) return;
+                chooseShippingRegion(e.target.value);
+                setCheckoutError((c) =>
+                  c === "region" || c === "regionRequired" ? null : c,
+                );
+              }}
+              className={inputCls}
+            >
+              <option value="" disabled>
+                {locale === "en" ? "Select an area" : "選択してください"}
+              </option>
+              {SHIPPING_REGION_KEYS.map((key) => {
+                const { ja, en, surchargeJpy } = SHIPPING_REGIONS[key];
+                const name = locale === "en" ? en : ja;
+                return (
+                  <option key={key} value={key}>
+                    {surchargeJpy > 0
+                      ? `${name}（+¥${yen.format(surchargeJpy)}）`
+                      : name}
+                  </option>
+                );
+              })}
+            </select>
+            <p className="ed-small mt-2">
+              <L
+                en="For any island, choose Okinawa and remote islands."
+                ja="沖縄以外の離島へお届けする場合も「沖縄・離島」を選んでください。"
+              />
+            </p>
+            {checkoutError === "regionRequired" ? (
+              <p role="alert" className="mt-2 text-[12.5px] font-semibold text-crimson">
+                <L
+                  en="Please choose your delivery area."
+                  ja="お届け地域を選んでください。"
+                />
+              </p>
+            ) : null}
+          </div>
+
+          <dl className="mt-6 space-y-3 text-[13px] text-indigo/85">
             <div className="flex items-center justify-between">
               <dt>
                 <L en="Subtotal (tax incl.)" ja="小計（税込）" />
@@ -588,7 +672,9 @@ export function CartView() {
                 <L en="Shipping" ja="送料" />
               </dt>
               <dd className="font-semibold">
-                {shipping === 0 ? (
+                {shipping === null ? (
+                  <L en="Choose an area" ja="地域を選ぶと表示します" />
+                ) : shipping === 0 ? (
                   <L en="Free" ja="無料" />
                 ) : (
                   `¥${yen.format(shipping)}`
@@ -597,11 +683,16 @@ export function CartView() {
             </div>
           </dl>
 
-          {/* 送料無料までの進捗 */}
+          {/* 送料無料までの残額 */}
           {SHIPPING_FEE.freeThresholdJpy > 0 ? (
             <div className="mt-6">
               <p className="text-[11px] leading-[1.6] tracking-[0.02em] text-indigo/72">
-                {freeReached ? (
+                {freeReached && region && surcharge > 0 ? (
+                  <L
+                    en={`Base shipping is free. ¥${yen.format(surcharge)} is added for ${region.en}.`}
+                    ja={`基本送料は無料です。${region.ja}の追加分 ¥${yen.format(surcharge)} がかかります。`}
+                  />
+                ) : freeReached ? (
                   <L
                     en="Your order ships free."
                     ja={
@@ -615,42 +706,37 @@ export function CartView() {
                   />
                 ) : (
                   <L
-                    en={`Add ¥${yen.format(toFree)} more for free shipping.`}
+                    en={`Add ¥${yen.format(toFree)} more for free ${surcharge > 0 ? "base " : ""}shipping.`}
                     ja={
                       <>
                         あと
                         <span className="font-semibold text-indigo">
                           ¥{yen.format(toFree)}
                         </span>
-                        で送料無料
+                        で{surcharge > 0 ? "基本送料が無料" : "送料無料"}
+                        です。
                       </>
                     }
                   />
                 )}
               </p>
-              <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-indigo/10">
-                <div
-                  className="h-full rounded-full bg-gold transition-[width] duration-500"
-                  style={{ width: `${freeProgress}%` }}
-                />
-              </div>
             </div>
           ) : null}
 
           <div className="mt-5 flex items-baseline justify-between border-t border-indigo/15 pt-5">
-            <p className="text-[11px] font-semibold tracking-[0.2em] text-indigo/70">
+            <p className="text-[12.5px] font-semibold tracking-[0.04em] text-indigo/70">
               <L en="Total" ja="合計" />
             </p>
             {/* 金額は年齢確認より小さくする（国税局指導）。拡大しないこと。 */}
             <p className="font-serif text-[18px] font-semibold tracking-[0.02em] text-indigo">
-              ¥{yen.format(total)}
+              {total === null ? "—" : `¥${yen.format(total)}`}
             </p>
           </div>
 
           <p className="mt-3 text-[11.5px] leading-[1.7] text-indigo/55">
             <L
-              en={`${SHIPPING_FEE.flatEn} · ${SHIPPING_FEE.freeEn}`}
-              ja={`${SHIPPING_FEE.flat}・${SHIPPING_FEE.free}`}
+              en={FUJISAN_LEGAL.shippingFeeNoteEn}
+              ja={FUJISAN_LEGAL.shippingFeeNote}
             />
           </p>
 
@@ -731,6 +817,25 @@ export function CartView() {
               />
             </span>
           </label>
+          {/* 申込みの年齢確認のすぐ近くに置く表示（20歳未満の者の飲酒防止に関する表示基準） */}
+          <div className="mt-3 space-y-1 text-[13.5px] leading-[1.7] text-indigo/85">
+            <L
+              ja={
+                <>
+                  {UNDERAGE_NOTICE_JP.map((line) => (
+                    <p key={line}>{line}</p>
+                  ))}
+                </>
+              }
+              en={
+                <>
+                  {UNDERAGE_NOTICE_EN.map((line) => (
+                    <p key={line}>{line}</p>
+                  ))}
+                </>
+              }
+            />
+          </div>
           {checkoutError === "age" ? (
             <p role="alert" className="mt-2 text-[12.5px] font-semibold text-crimson">
               <L
@@ -889,12 +994,18 @@ export function CartView() {
           {/* 決済開始エラー（年齢・完売以外） */}
           {checkoutError &&
           checkoutError !== "age" &&
+          checkoutError !== "regionRequired" &&
           checkoutError !== "soldout" ? (
             <p
               role="alert"
               className="mt-5 border border-crimson/40 bg-crimson/6 px-4 py-3 text-[11.5px] leading-[1.7] text-crimson"
             >
-              {checkoutError === "rate" ? (
+              {checkoutError === "region" ? (
+                <L
+                  en="We changed your delivery area to match your saved address. Please check the shipping fee and try again."
+                  ja="ご登録の住所に合わせてお届け地域を変更しました。送料をご確認のうえ、もう一度お進みください。"
+                />
+              ) : checkoutError === "rate" ? (
                 <L
                   en="Too many attempts to start payment. Please wait a while and try again, or sign in to continue."
                   ja="決済の開始が続いたため、受け付けを止めています。時間をおいてもう一度お試しいただくか、ログインしてお進みください。"
@@ -930,27 +1041,64 @@ export function CartView() {
             </p>
           ) : null}
 
+          {/* 確定の前に見せる事項（特商法 12 条の 6）。Stripe の決済ページにも同じ内容を出す */}
+          <dl className="mt-6 space-y-2 text-[12.5px] leading-[1.7] text-indigo/72">
+            <div>
+              <dt className="font-semibold">
+                <L en="Delivery" ja="お届け" />
+              </dt>
+              <dd>
+                <L
+                  en={FUJISAN_LEGAL.deliveryTimingEn}
+                  ja={FUJISAN_LEGAL.deliveryTiming}
+                />
+              </dd>
+            </div>
+            <div>
+              <dt className="font-semibold">
+                <L en="Payment" ja="お支払い" />
+              </dt>
+              <dd>
+                <L
+                  en={`${FUJISAN_LEGAL.paymentMethodsEn} ${FUJISAN_LEGAL.paymentTimingEn}`}
+                  ja={`${FUJISAN_LEGAL.paymentMethods}。${FUJISAN_LEGAL.paymentTiming}`}
+                />
+              </dd>
+            </div>
+            <div>
+              <dt className="font-semibold">
+                <L en="Returns" ja="返品" />
+              </dt>
+              <dd>
+                <L
+                  en={FUJISAN_LEGAL.returnsPolicyEn}
+                  ja={FUJISAN_LEGAL.returnsPolicy}
+                />
+              </dd>
+            </div>
+          </dl>
+
           <button
             type="button"
             onClick={handleCheckout}
             disabled={submitting || !sessionChecked || blockedByStock}
-            className={`group/btn mt-6 inline-flex w-full items-center justify-center gap-3 px-7 py-4 text-[11px] font-semibold tracking-[0.12em] transition-all ${
+            className={`group/btn mt-6 inline-flex w-full items-center justify-center gap-3 px-7 py-4 text-[13px] font-semibold tracking-[0.06em] transition-all ${
               submitting || !sessionChecked || blockedByStock
                 ? "cursor-not-allowed border border-indigo/25 bg-indigo/12 text-indigo/45"
                 : "cursor-pointer border border-indigo bg-indigo text-paper-card hover:bg-indigo-lift"
             }`}
           >
             {submitting ? (
-              <L en="REDIRECTING TO PAYMENT…" ja="決済ページへ移動中…" />
+              <L en="Redirecting to payment…" ja="決済ページへ移動中…" />
             ) : sessionChecked && !loggedIn ? (
               <L
-                en={`CONTINUE AS GUEST · ¥${yen.format(total)}`}
-                ja={`ゲストとしてお支払いへ進む · ¥${yen.format(total)}`}
+                en={`Continue as guest${totalLabel}`}
+                ja={`ゲストとしてお支払いへ進む${totalLabel}`}
               />
             ) : (
               <L
-                en={`PROCEED TO PAYMENT · ¥${yen.format(total)}`}
-                ja={`お支払いへ進む · ¥${yen.format(total)}`}
+                en={`Proceed to payment${totalLabel}`}
+                ja={`お支払いへ進む${totalLabel}`}
               />
             )}
           </button>

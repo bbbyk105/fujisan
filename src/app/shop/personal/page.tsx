@@ -52,8 +52,8 @@ const steps = [
     heading: <L en="Receive it at home" ja="ご自宅で受け取る" />,
     body: (
       <L
-        en="Checked by hand, packed in a chilled outer box, and dispatched within two business days. The courier verifies age again at the door."
-        ja="ひとつずつ検品し、保冷外箱に詰めて、原則2営業日以内に発送します。お受け取りの際にも年齢の確認をお願いします。"
+        en="Checked by hand and dispatched within two business days. The courier verifies age again at the door."
+        ja="ひとつずつ検品し、原則2営業日以内に発送します。お受け取りの際にも年齢の確認をお願いします。"
       />
     ),
   },
@@ -130,7 +130,6 @@ export default function ShopPersonalPage() {
     <EditorialPage>
       <EditorialPageHeader
         width="wide"
-        kicker={<L en="Purchase" ja="ご購入" />}
         title={<L en="Personal orders" ja="個人のお客様" />}
         lead={
           <L

@@ -1029,3 +1029,67 @@ describe("Stripe Webhook — 失敗時の扱い", () => {
     expect(sendOrderConfirmedEmail).not.toHaveBeenCalled();
   });
 });
+
+describe("Stripe Webhook — 送料の地域と住所", () => {
+  const SESSION = { id: "cs_test_1", payment_status: "paid" };
+
+  it("選んだ地域と住所が合わなければ運用へ知らせる", async () => {
+    givenEvent("checkout.session.completed", {
+      ...SESSION,
+      metadata: { orderId: ORDER_ID, shippingRegion: "mainland" },
+    });
+    sessionsRetrieve.mockResolvedValue(
+      fullSession({
+        collected_information: {
+          shipping_details: {
+            name: "佐藤 優子",
+            address: {
+              postal_code: "060-0001",
+              state: "北海道",
+              city: "札幌市",
+              line1: "中央区1-1",
+            },
+          },
+        },
+      }),
+    );
+
+    await postWebhook();
+
+    expect(alertOps).toHaveBeenCalledTimes(1);
+    expect(String(alertOps.mock.calls[0][0])).toContain("お届け地域");
+    expect(String(alertOps.mock.calls[0][1])).toContain("FJ-ABC123");
+    expect(String(alertOps.mock.calls[0][1])).toContain("本州・四国・九州");
+  });
+
+  it("沖縄以外の番号で「沖縄・離島」が選ばれたら確かめてもらう", async () => {
+    givenEvent("checkout.session.completed", {
+      ...SESSION,
+      metadata: { orderId: ORDER_ID, shippingRegion: "remote" },
+    });
+
+    await postWebhook();
+
+    expect(alertOps).toHaveBeenCalledTimes(1);
+    expect(String(alertOps.mock.calls[0][1])).toContain("沖縄・離島");
+  });
+
+  it("合っていれば知らせない", async () => {
+    givenEvent("checkout.session.completed", {
+      ...SESSION,
+      metadata: { orderId: ORDER_ID, shippingRegion: "mainland" },
+    });
+
+    await postWebhook();
+
+    expect(alertOps).not.toHaveBeenCalled();
+  });
+
+  it("地域の記録が無い決済（この機能より前のもの）は判定しない", async () => {
+    givenEvent("checkout.session.completed", SESSION);
+
+    await postWebhook();
+
+    expect(alertOps).not.toHaveBeenCalled();
+  });
+});

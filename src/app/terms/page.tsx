@@ -104,7 +104,6 @@ const sections: DocumentSection[] = [
 export default function TermsPage() {
   return (
     <DocumentPage
-      kicker={<L en="Legal" ja="規約" />}
       title={<L en="Terms of Use" ja="利用規約" />}
       lead={
         <L

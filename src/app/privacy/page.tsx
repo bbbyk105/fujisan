@@ -67,8 +67,8 @@ const sections: DocumentSection[] = [
     bullets: [
       <L
         key="1"
-        en="Account: name (or company name and contact person), email address, telephone number, postal code and address"
-        ja="アカウント情報: お名前（法人の場合は会社名・ご担当者名）、メールアドレス、電話番号、郵便番号、住所"
+        en="Account: name (or company name and contact person), email address, telephone number, postal code and address. For trade accounts, also business type and liquor licence number"
+        ja="アカウント情報: お名前（法人の場合は会社名・ご担当者名）、メールアドレス、電話番号、郵便番号、住所。法人の場合は業態・酒類販売業免許番号も取得します"
       />,
       <L
         key="2"
@@ -186,8 +186,8 @@ const sections: DocumentSection[] = [
     body: [
       <L
         key="b"
-        en="We use no advertising or analytics cookies. The only cookie we set is the one that keeps you signed in. Your cart, language choice and age confirmation are kept in your browser's local storage and are never sent to us."
-        ja="広告・アクセス解析のためのクッキーは使用していません。当社が設定するクッキーは、ログイン状態を保持するためのものだけです。カートの中身・表示言語・年齢確認の記録は、お使いのブラウザのローカルストレージに保存され、当社へ送信されることはありません。"
+        en="We use no advertising or analytics cookies. The only cookie we set is the one that keeps you signed in. Your cart, delivery area, language choice and age confirmation are kept in your browser's storage. Your cart and delivery area are sent to us only when you start checkout."
+        ja="広告・アクセス解析のためのクッキーは使用していません。当社が設定するクッキーは、ログイン状態を保持するためのものだけです。カートの中身・お届け地域・表示言語・年齢確認の記録は、お使いのブラウザに保存されます。カートの中身とお届け地域は、ご購入の手続きに進むときに当社へ送信されます。"
       />,
     ],
     bullets: [
@@ -198,8 +198,8 @@ const sections: DocumentSection[] = [
       />,
       <L
         key="2"
-        en="Local storage: cart contents, language preference, age confirmation"
-        ja="ローカルストレージ: カートの中身、表示言語、年齢確認の記録"
+        en="Browser storage: cart contents, delivery area, language preference, age confirmation"
+        ja="ブラウザの保存領域: カートの中身、お届け地域、表示言語、年齢確認の記録"
       />,
       <L
         key="3"
@@ -301,7 +301,6 @@ const sections: DocumentSection[] = [
 export default function PrivacyPage() {
   return (
     <DocumentPage
-      kicker={<L en="Legal" ja="規約" />}
       title={<L en="Privacy Policy" ja="プライバシーポリシー" />}
       lead={
         <L

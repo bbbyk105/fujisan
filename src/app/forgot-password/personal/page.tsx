@@ -17,27 +17,22 @@ export default function ForgotPasswordPersonalPage() {
       mode="login"
       showRoleSwitch={false}
       brand={{
-        kanji: "設定",
-        kickerJp: "個人のお客様",
-        titleEn: "Resetting your password",
-        titleJp: "パスワードの再設定",
-        textEn:
-          "Enter your email and we'll send a secure link to set a new password.",
-        textJp:
-          "ご登録のメールアドレスをご入力ください。パスワードを再設定するためのリンクをお送りします。",
         crumbHref: "/login/personal",
         crumbEn: "Back to sign in",
         crumbJp: "ログインへ戻る",
+        panel: {
+          titleEn: "Personal customers",
+          titleJp: "個人のお客様",
+          textEn: "If you can't recall your email address, please contact us.",
+          textJp: "メールアドレスが分からない場合は、お問い合わせください。",
+        },
       }}
     >
       <AuthHeading
-        role="personal"
-        eyebrowEn="RESET PASSWORD"
-        eyebrowJp="パスワード再設定"
         titleEn="Forgot your password?"
         titleJp="パスワードをお忘れですか？"
-        leadEn="Enter the email you registered with. We'll send you a link to set a new password."
-        leadJp="ご登録のメールアドレスを入力してください。新しいパスワードを設定するリンクをお送りします。"
+        leadEn="Enter the email for your personal account. We'll send you a link to set a new password."
+        leadJp="個人アカウントのメールアドレスを入力してください。新しいパスワードを設定するリンクをお送りします。"
       />
       <ForgotPasswordForm role="personal" />
     </AuthShell>

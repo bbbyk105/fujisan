@@ -3,8 +3,6 @@ import { Reveal } from "@/components/reveal/Reveal";
 import { revealDelays } from "@/components/reveal/constants";
 
 type Props = {
-  /** ページの属する区分。「ご案内」「ご購入」など短い名詞。省略可 */
-  kicker?: ReactNode;
   /** ページ名。<L> で日英どちらか一方だけが出る */
   title: ReactNode;
   /** 1〜2 文の導入。無理に付けない */
@@ -24,12 +22,11 @@ const widthCls = {
 /**
  * 対象ページ共通の扉。
  *
- * 写真も章番号も大文字のアイブロウも置かない。名前・導入・罫だけで、
+ * 写真も章番号も見出しの上のラベルも置かない。名前・導入・罫だけで、
  * どのページも同じ高さから始まるようにする。商品ページの
  * `FujisanInnerHero`（写真ヒーロー）とは役割が違うので混ぜないこと。
  */
 export function EditorialPageHeader({
-  kicker,
   title,
   lead,
   meta,
@@ -40,17 +37,7 @@ export function EditorialPageHeader({
       {/* 下の余白は置かない。扉の終わりは罫で、そこから先の間隔は
           各章の padding が持つ（同じ間隔がページをまたいで揃う） */}
       <div className={`ed-wrap pt-14 md:pt-24 ${widthCls[width]}`}>
-        {kicker ? (
-          <Reveal as="p" className="ed-label">
-            {kicker}
-          </Reveal>
-        ) : null}
-
-        <Reveal
-          as="h1"
-          className={`ed-title ${kicker ? "mt-4" : ""}`}
-          delay={kicker ? revealDelays.d1 : 0}
-        >
+        <Reveal as="h1" className="ed-title">
           {title}
         </Reveal>
 

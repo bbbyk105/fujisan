@@ -4,11 +4,11 @@ import { FujisanRidge } from "./FujisanRidge";
 import { L } from "@/i18n/Localized";
 
 const FOOTER_LINKS = [
-  { label: "特定商取引法", href: "/tokushoho" },
-  { label: "PRIVACY POLICY", href: "/privacy" },
-  { label: "TERMS OF USE", href: "/terms" },
-  { label: "SHIPPING & RETURNS", href: "/shipping" },
-  { label: "FAQ", href: "/faq" },
+  { ja: "特定商取引法に基づく表示", en: "Legal notice", href: "/tokushoho" },
+  { ja: "プライバシーポリシー", en: "Privacy policy", href: "/privacy" },
+  { ja: "利用規約", en: "Terms of use", href: "/terms" },
+  { ja: "お届けと返品", en: "Shipping & returns", href: "/shipping" },
+  { ja: "よくあるご質問", en: "FAQ", href: "/faq" },
 ];
 
 /**
@@ -80,18 +80,18 @@ export default function FujisanFooter() {
       </div>
 
       <div className="mx-auto flex max-w-[1360px] flex-col items-center justify-between gap-5 px-7 py-7 text-[11px] text-paper-tint/88 md:flex-row md:px-12">
-        <p className="tracking-[0.12em] text-paper-tint/70">
-          © {new Date().getFullYear()} FUJISAN SAKE · ALL RIGHTS RESERVED
+        <p className="text-[12px] tracking-[0.04em] text-paper-tint/70">
+          © {new Date().getFullYear()} FUJISAN SAKE
         </p>
 
-        <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 tracking-[0.22em] font-medium md:gap-x-8">
+        <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 font-medium tracking-[0.04em] md:gap-x-8">
           {FOOTER_LINKS.map((item) => (
             <li key={item.href}>
               <Link
                 href={item.href}
-                className="text-[11.5px] text-paper-tint/72 no-underline transition-colors hover:text-gold"
+                className="text-[12px] text-paper-tint/72 no-underline transition-colors hover:text-gold"
               >
-                {item.label}
+                <L ja={item.ja} en={item.en} />
               </Link>
             </li>
           ))}
