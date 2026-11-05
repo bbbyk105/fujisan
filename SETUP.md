@@ -27,6 +27,7 @@
 | ✅ | Stripe 本番 Webhook（`we_1UAthnHTT9ZXTgS1xYg2XRl4`）: URL は sakefujisan.com、6 イベント |
 | ✅ | Stripe は本番の制限付きキー（`fujisan-production`）に切り替え済み（2026-11-04）。Checkout の開始と期限切れの Webhook は本番で確認済み |
 | ⚠️ | **実際の決済と返金のテストは未実施**（タスク6） |
+| ⚠️ | Cloudflare Turnstile はサイトキーを入れ済み（2026-11-05）。秘密鍵 `TURNSTILE_SECRET_KEY` を入れるまで、サーバーの判定は動かない（タスク8） |
 | ✅ | `ADMIN_EMAILS` = `mtfujipharmacy@gmail.com,bbbyk105@yahoo.co.jp` |
 | ✅ | 管理者のアドレスのアカウントは登録・メール確認済み（2026-11-04 に確認。`/admin` に入れるかは画面で確かめる） |
 | ⚠️ | 本番 D1 の在庫は全 SKU 12 本で、本番キーへの切り替え時点でも変わっていない（2026-11-04）。蔵の実数と突き合わせる（タスク4 の手順4） |
@@ -197,6 +198,39 @@ npm run check:legal && npm run lint && npm test && npx opennextjs-cloudflare bui
 
 ---
 
+
+## タスク8. Cloudflare Turnstile を有効にする
+
+ゲストの決済開始のボット判定。カードなしで在庫を 30 分押さえられるので、これが無いと同じ IP から
+1 時間に 2 回で売り切れの状態を保てる。
+
+1. Cloudflare のダッシュボード → Turnstile → Add widget
+   - Widget name: `fujisan-guest-checkout`
+   - Hostname: `sakefujisan.com`
+   - Widget mode: Managed
+2. 表示された**サイトキー**を `src/data/fujisan-turnstile.ts` に入れてデプロイする（公開してよい値。
+   済: 2026-11-05）
+3. **秘密鍵**を入れる
+
+   ```bash
+   npx wrangler secret put TURNSTILE_SECRET_KEY
+   ```
+
+判定はサイトキーと秘密鍵の両方がそろってから動くので、順番はどちらが先でも決済は止まらない。
+
+手元では必ず Cloudflare のテスト用のキーを使う。本番のサイトキーは localhost で動かない（許可しない）
+ので、付けずに起動するとゲストの決済へ進めない。秘密鍵は `.dev.vars` の `TURNSTILE_SECRET_KEY`、
+サイトキーは起動コマンドの前に付ける。
+
+```bash
+NEXT_PUBLIC_TURNSTILE_SITE_KEY=1x00000000000000000000AA npx next dev --webpack -p 3100
+```
+
+| 用途 | サイトキー | 秘密鍵 |
+| --- | --- | --- |
+| 必ず成功 | `1x00000000000000000000AA` | `1x0000000000000000000000000000000AA` |
+| 必ず失敗 | `1x00000000000000000000AA` | `2x0000000000000000000000000000000AA` |
+
 ## 任意
 
 - **Google ログイン**: `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` を両方入れる（片方だけでは無効）。
@@ -218,6 +252,7 @@ npm run check:legal && npm run lint && npm test && npx opennextjs-cloudflare bui
 - [ ] 本番キーに切り替えたあと、蔵の本数と在庫の SELECT が一致する（タスク4 の手順4）
 - [ ] `/admin/products` の在庫が、在庫の SELECT と同じ本数で出る（タスク2 の後）
 - [ ] Workers Builds の Build command に `npm run check:legal &&` が入っている
+- [ ] Cloudflare Turnstile のサイトキーと秘密鍵を入れ、ゲストの決済で判定が動く（タスク8）
 - [ ] 本番の領収書の発行者名・問い合わせ先・登録番号・税率が正しい（タスク4-2）
 - [ ] 実決済テストで在庫が減り、返金もできた
 - [x] 本番 D1 に `0016` まで適用済み
