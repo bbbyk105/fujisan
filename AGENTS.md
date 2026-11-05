@@ -50,7 +50,7 @@ BtoC（個人）と BtoB（法人取扱店・卸価格表示）の二系統の�
 - **「戻る」で注文を消す前に `checkout.sessions.expire` で決済ページを閉じる**（ゲストも会員も）。Session は期限まで有効で、閉じないと注文の無い支払いができてしまう。閉じられないときや id が無いときは消さずに Webhook へ任せる（期限切れなら消す）。そのために決済の開始で `stripe_session_id` を控えている。ブラウザの「戻る」は `cancel_url` を通らないので、`pageshow` で同じ解放を行う。解放のあとは `refreshLiveCatalog` で在庫を取り直す。
 - `user_id` が null の注文にはログインできるアカウントが無い（ゲストと退会者）。メールは `noAccount` を渡して `/account` へ案内しない。9 年後の匿名化も同じ条件で対象になるので、プライバシーポリシーにもゲストを書いてある。
 - カートのログイン・新規登録のリンクは `redirect` に `CHECKOUT_RESUME_PATH` を付ける。20 歳以上の確認を `sessionStorage` に残して移動し（`src/lib/cart/checkout-resume.ts`）、戻ったらそのまま決済を始める。確認が残っていなければカートを見せるだけで、自動では進まない（確認メールを別のタブで開いた場合など）。ログイン画面の案内が「そのまま」と言い切らないのはこのため。
-- **`redirect` は必ず `safeRedirectPath` を通し、URL に付けるときは `withRedirect` を使う。** URL から読む値なので、そのまま遷移すると外部サイトや `javascript:` へ飛ばせる。正規化で外へ出る値（`/.//evil.example`）もあるので、自前で書かないこと。
+- **`redirect` は必ず `safeRedirectPath` を通し、URL に付けるときは `withRedirect` を使う（未ログインのページから飛ばすときは `loginPathFor`）。** URL から読む値なので、そのまま遷移すると外部サイトや `javascript:` へ飛ばせる。正規化で外へ出る値（`/.//evil.example`）もあるので、自前で書かないこと。
 - カートの分岐は `isPending` ではなく `sessionChecked` で見る。Better Auth はタブへ戻るたびにセッションを取り直し、未ログインだとそのあいだ `isPending` が true に戻るので、ゲストの入力欄が作り直される。
 
 ### 購読すべき Webhook イベント
@@ -122,7 +122,7 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 
 ## 管理画面
 
-- ナビと暗色ヘッダーは `AdminChrome`（`AdminHeader` / `AdminNav` / `AdminForbidden` / `AdminFooterBar`）に集約。各ページで行き来のリンクを書かない。
+- ナビと暗色ヘッダーは `AdminChrome`（`AdminHeader` / `AdminNav` / `AdminSubNav` / `AdminForbidden` / `AdminFooterBar`）に集約。各ページで行き来のリンクを書かない。画面の中の絞り込みタブは `AdminSubNav`（下線だけで現在地を示す）を使い、枠付きのボタンを並べない。
 - `/admin` はダッシュボード（売上・要対応・在庫アラート・直近の注文）。期間の区切りは **`jstDayStart` / `jstMonthStart`** を使う（UTC で切ると JST 09:00 で日が変わり、朝の売上が前日に混ざる）。
 - 注文一覧は**期間の絞り込みと CSV 書き出しが同じ条件で動く**。画面で絞ったのに CSV が全件出ると、会計に渡す前に突き合わせが要る。期間は SQL 側で絞ること（取得後に捨てると上限 200 件が期間外で埋まる）。
 - **CSV は `src/lib/csv.ts` の `toCsv()` を通す。** `=`・`+`・`-`・`@` で始まるセルを表計算ソフトが数式として実行するため無害化し、Excel が UTF-8 と判定できるよう BOM を付ける。素朴な join で書くとどちらも落ちる。
@@ -162,6 +162,8 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 - フォーム（`FujisanContactForm`）→ Server Action `submitContactAction`（`src/lib/actions/contact.ts`）。
 - **受領の正は D1 の `contact_message` 表**。まず保存してからメールを送るので、Resend が落ちても問い合わせは失われず `/admin/contacts` から拾える。DB 保存に失敗したときだけお客様にエラーを返す。
 - スパム対策は 2 段: ハニーポット（`website` の隠し入力。値が入っていたら成功を装って静かに捨てる）＋ 同一 IP の連投制限（10 分に 5 件）。**生 IP は保存せず SHA-256 の先頭16文字だけ**を持つ。
+- 管理画面の一覧（`/admin/contacts`）は既定で未対応・対応中だけを出し、対応済みは「すべて」（`?view=all`）で見る。本文は折りたたまない（対応するときは必ず読むので）。対応状況の保存は読んだときの状況を WHERE に入れ、先に変えられていたら `conflict` を返す（古い画面から保存すると対応者の記録が消える）。件数は上限で切られた一覧からではなく SQL で数える。
+- **お客様が入力したアドレスの mailto は `mailtoHref`（`src/lib/mailto.ts`）で作る。** 入力の検証は `?` や `&` を通すので、`mailto:${email}` と書くと返信の下書きに BCC や本文を差し込める（HTML のエスケープでは防げない）。
 - 用件・対応状況のコードは `src/data/fujisan-contact.ts` が唯一の出どころ。サーバー依存を持たないのでクライアントからも読める（`src/lib/emails/contact-emails.ts` は `server-only` に依存するため、ラベルをそこに置かないこと）。
 
 ## SEO

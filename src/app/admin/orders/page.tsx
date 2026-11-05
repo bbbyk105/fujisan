@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import FujisanNav from "@/components/fujisan/FujisanNav";
 import FujisanFooter from "@/components/fujisan/FujisanFooter";
@@ -9,6 +8,7 @@ import {
   AdminFooterBar,
   AdminHeader,
   AdminKpi,
+  AdminSubNav,
 } from "@/components/fujisan/admin/AdminChrome";
 import { getSession } from "@/lib/session";
 import {
@@ -19,6 +19,7 @@ import {
 import { adminListOrdersAction } from "@/lib/actions/admin-orders";
 import type { OrderStatus } from "@/db/orders-schema";
 import { buildMetadata } from "@/lib/seo";
+import { loginPathFor } from "@/lib/safe-redirect";
 
 export const metadata = buildMetadata({
   title: "Admin · Orders",
@@ -63,9 +64,10 @@ export default async function AdminOrdersPage(props: {
     | { id?: string; email?: string }
     | undefined;
   const email = sessUser?.email;
+  const params = (await props.searchParams) ?? {};
 
   if (!session) {
-    redirect("/login/personal?next=/admin/orders");
+    redirect(loginPathFor("/admin/orders", params));
   }
   const role = await getEffectiveAdminRole({
     userId: sessUser?.id,
@@ -76,7 +78,6 @@ export default async function AdminOrdersPage(props: {
   }
   const isOwnerUser = isOwner(role);
 
-  const params = (await props.searchParams) ?? {};
   // 期間は SQL 側で絞る（取得してから捨てると、上限 200 件が期間外の注文で
   // 埋まって、指定した期間の注文が出てこない）。
   const from = params.from ?? "";
@@ -158,38 +159,17 @@ export default async function AdminOrdersPage(props: {
             <AdminOrderToolbar from={from} to={to} />
 
             {/* ステータス絞り込みタブ */}
-            <nav
-              aria-label="注文の絞り込み"
-              className="flex flex-wrap items-center gap-2 border-b border-indigo/15 pb-4"
-            >
-              {FILTERS.map((f) => {
-                const active = f.key === filter.key;
-                const count = f.statuses
+            <AdminSubNav
+              label="注文の絞り込み"
+              items={FILTERS.map((f) => ({
+                href: buildFilterHref(f.key, from, to),
+                label: f.label,
+                active: f.key === filter.key,
+                count: f.statuses
                   ? orders.filter((o) => f.statuses!.includes(o.status)).length
-                  : orders.length;
-                return (
-                  <Link
-                    key={f.key}
-                    href={buildFilterHref(f.key, from, to)}
-                    aria-current={active ? "page" : undefined}
-                    className={`inline-flex items-center gap-2 border px-4 py-2 text-[10.5px] font-semibold tracking-[0.2em] no-underline transition-colors ${
-                      active
-                        ? "border-indigo bg-indigo text-paper-card"
-                        : "border-indigo/20 bg-transparent text-indigo/70 hover:border-indigo/50 hover:text-indigo"
-                    }`}
-                  >
-                    {f.label}
-                    <span
-                      className={`font-serif text-[11.5px] tracking-normal ${
-                        active ? "text-paper-card/75" : "text-indigo/45"
-                      }`}
-                    >
-                      {count}
-                    </span>
-                  </Link>
-                );
-              })}
-            </nav>
+                  : orders.length,
+              }))}
+            />
 
             {visibleOrders.length === 0 ? (
               <div className="mt-8 border border-dashed border-indigo/25 bg-paper/55 px-7 py-14 text-center">

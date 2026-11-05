@@ -9,6 +9,7 @@ import { orderStatusJp } from "@/data/fujisan-orders";
 import { FUJISAN_LEGAL, UNDERAGE_NOTICE_JP } from "@/data/fujisan-legal";
 import { formatDateJp, formatDateTimeJp } from "@/lib/format-date";
 import { buildMetadata } from "@/lib/seo";
+import { loginPathFor } from "@/lib/safe-redirect";
 
 export const metadata = buildMetadata({
   title: "Admin · Packing slip",
@@ -39,7 +40,7 @@ export default async function PackingSlipPage(props: {
   const session = await getSession();
   const u = session?.user as { id?: string; email?: string } | undefined;
   if (!session) {
-    redirect(`/login/personal?next=/admin/orders/${orderRef}/packing-slip`);
+    redirect(loginPathFor(`/admin/orders/${orderRef}/packing-slip`));
   }
 
   const role = await getEffectiveAdminRole({ userId: u?.id, email: u?.email });

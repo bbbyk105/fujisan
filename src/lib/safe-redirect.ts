@@ -34,3 +34,19 @@ export function withRedirect(
   if (!safe) return path;
   return `${path}${path.includes("?") ? "&" : "?"}redirect=${encodeURIComponent(safe)}`;
 }
+
+/**
+ * ログイン画面の URL。ログイン後に、絞り込みも含めて同じ画面へ戻す。
+ * ログイン画面が読むのは `redirect` だけなので、ほかの名前で渡しても戻れない。
+ */
+export function loginPathFor(
+  path: string,
+  query: Record<string, string | undefined> = {},
+): string {
+  const search = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (value) search.set(key, value);
+  }
+  const qs = search.toString();
+  return withRedirect("/login/personal", qs ? `${path}?${qs}` : path);
+}

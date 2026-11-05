@@ -2,12 +2,13 @@
 
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { and, desc, eq, ne } from "drizzle-orm";
+import { and, count, desc, eq, ne } from "drizzle-orm";
 import { getAuth } from "@/lib/auth";
 import { getDb } from "@/db";
 import { getEffectiveAdminRole, isStaffOrAbove } from "@/lib/admin";
 import { contactMessage } from "@/db/contact-schema";
 import {
+  CONTACT_LIST_LIMIT,
   CONTACT_STATUSES,
   type ContactStatus,
   type ContactSubject,
@@ -44,7 +45,12 @@ export async function adminListContactsAction(input?: {
   /** true なら対応済み（done）を除いて未対応・対応中だけ返す。 */
   openOnly?: boolean;
 }): Promise<
-  | { ok: true; messages: AdminContactItem[] }
+  | {
+      ok: true;
+      messages: AdminContactItem[];
+      /** 全件の集計。messages は上限で切られるので、そこから数えない。 */
+      counts: { new: number; inProgress: number };
+    }
   | { ok: false; error: "unauth" | "forbidden" | "db" }
 > {
   const gate = await requireStaff();
@@ -52,15 +58,24 @@ export async function adminListContactsAction(input?: {
 
   try {
     const db = await getDb();
-    const rows = await db
-      .select()
-      .from(contactMessage)
-      .where(input?.openOnly ? ne(contactMessage.status, "done") : undefined)
-      .orderBy(desc(contactMessage.createdAt))
-      .limit(200);
+    const [rows, tallies] = await Promise.all([
+      db
+        .select()
+        .from(contactMessage)
+        .where(input?.openOnly ? ne(contactMessage.status, "done") : undefined)
+        .orderBy(desc(contactMessage.createdAt))
+        .limit(CONTACT_LIST_LIMIT),
+      db
+        .select({ status: contactMessage.status, n: count() })
+        .from(contactMessage)
+        .groupBy(contactMessage.status),
+    ]);
+    const tally = (status: ContactStatus) =>
+      tallies.find((t) => t.status === status)?.n ?? 0;
 
     return {
       ok: true,
+      counts: { new: tally("new"), inProgress: tally("in_progress") },
       messages: rows.map((row) => ({
         id: row.id,
         name: row.name,
@@ -83,20 +98,32 @@ export async function adminListContactsAction(input?: {
  * 管理者向け: 対応状況を更新する。
  * done に進めた瞬間に、対応した管理者のメールと日時を記録する（監査用）。
  * done から戻した場合はその記録を消す。
+ *
+ * 読んだときの状況（expectedStatus）を WHERE に入れる。古い画面から保存すると、
+ * ほかの管理者の更新と対応者の記録を消してしまうので、そのときは `conflict` を返す。
  */
 export async function adminSetContactStatusAction(input: {
   id: string;
   status: ContactStatus;
+  expectedStatus: ContactStatus;
 }): Promise<
-  { ok: true } | { ok: false; error: "unauth" | "forbidden" | "invalid" | "db" }
+  | { ok: true }
+  | {
+      ok: false;
+      error: "unauth" | "forbidden" | "invalid" | "conflict" | "db";
+    }
 > {
   const gate = await requireStaff();
   if (!gate.ok) return { ok: false, error: gate.reason };
 
   if (!input.id) return { ok: false, error: "invalid" };
-  if (!CONTACT_STATUSES.includes(input.status)) {
+  if (
+    !CONTACT_STATUSES.includes(input.status) ||
+    !CONTACT_STATUSES.includes(input.expectedStatus)
+  ) {
     return { ok: false, error: "invalid" };
   }
+  if (input.status === input.expectedStatus) return { ok: true };
 
   try {
     const db = await getDb();
@@ -109,13 +136,16 @@ export async function adminSetContactStatusAction(input: {
         handledAt: done ? new Date() : null,
       })
       .where(
-        and(eq(contactMessage.id, input.id), ne(contactMessage.status, input.status)),
+        and(
+          eq(contactMessage.id, input.id),
+          eq(contactMessage.status, input.expectedStatus),
+        ),
       )
       .returning({ id: contactMessage.id });
 
-    // 更新行ゼロ＝既に同じ状態。二重クリックでもエラーにしない。
-    if (updated.length > 0) revalidatePath("/admin/contacts");
-    return { ok: true };
+    // 更新できなかったときは画面が古いので、そのときも読み直す。
+    revalidatePath("/admin/contacts");
+    return updated.length > 0 ? { ok: true } : { ok: false, error: "conflict" };
   } catch {
     return { ok: false, error: "db" };
   }

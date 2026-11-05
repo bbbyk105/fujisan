@@ -7,6 +7,7 @@ import {
   AdminFooterBar,
   AdminHeader,
   AdminKpi,
+  AdminSubNav,
 } from "@/components/fujisan/admin/AdminChrome";
 import { getSession } from "@/lib/session";
 import { getEffectiveAdminRole, isStaffOrAbove, isOwner } from "@/lib/admin";
@@ -17,6 +18,7 @@ import {
 import { AdminPersonalRow } from "@/components/fujisan/admin/AdminPersonalRow";
 import { AdminTradeRow } from "@/components/fujisan/admin/AdminTradeRow";
 import { buildMetadata } from "@/lib/seo";
+import { loginPathFor } from "@/lib/safe-redirect";
 
 export const metadata = buildMetadata({
   title: "Admin · Trade Accounts",
@@ -41,13 +43,13 @@ export default async function AdminCustomersPage(props: {
 }) {
   const session = await getSession();
   const u = session?.user as { id?: string; email?: string } | undefined;
-  if (!session) redirect("/login/personal?next=/admin/customers");
+  const params = (await props.searchParams) ?? {};
+  if (!session) redirect(loginPathFor("/admin/customers", params));
 
   const role = await getEffectiveAdminRole({ userId: u?.id, email: u?.email });
   if (!isStaffOrAbove(role)) return <AdminForbidden email={u?.email} />;
   const isOwnerUser = isOwner(role);
 
-  const params = (await props.searchParams) ?? {};
   const q = params.q?.trim() ?? "";
   const tab = params.tab === "personal" ? "personal" : "trade";
 
@@ -120,29 +122,16 @@ export default async function AdminCustomersPage(props: {
 
       {/* Body */}
       <section className="mx-auto w-full max-w-[1280px] flex-1 px-7 pb-24 pt-12 md:px-12 md:pt-14">
-        {/* タブ */}
-        <nav
-          aria-label="顧客の種別"
-          className="mb-6 flex flex-wrap items-center gap-2 border-b border-indigo/15 pb-4"
-        >
-          {TABS.map((t) => {
-            const active = t.key === tab;
-            return (
-              <Link
-                key={t.key}
-                href={tabHref(t.key)}
-                aria-current={active ? "page" : undefined}
-                className={`inline-flex items-center gap-2 border px-4 py-2 text-[10.5px] font-semibold tracking-[0.2em] no-underline transition-colors ${
-                  active
-                    ? "border-indigo bg-indigo text-paper-card"
-                    : "border-indigo/20 bg-transparent text-indigo/70 hover:border-indigo/50 hover:text-indigo"
-                }`}
-              >
-                {t.label}
-              </Link>
-            );
-          })}
-        </nav>
+        <div className="mb-6">
+          <AdminSubNav
+            label="顧客の種別"
+            items={TABS.map((t) => ({
+              href: tabHref(t.key),
+              label: t.label,
+              active: t.key === tab,
+            }))}
+          />
+        </div>
 
         {/* Search */}
         <form

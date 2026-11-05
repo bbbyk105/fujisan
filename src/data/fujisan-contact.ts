@@ -30,6 +30,9 @@ export const CONTACT_STATUS_LABELS: Record<ContactStatus, string> = {
   done: "対応済み",
 };
 
+/** 管理画面の一覧に出す上限。`"use server"` のファイルは定数を export できないのでここに置く。 */
+export const CONTACT_LIST_LIMIT = 200;
+
 /**
  * お問い合わせの記録を持ち続ける年数（受付日から）。
  * プライバシーポリシーの文面もこの値を読むので、変えると公開の約束も変わる。

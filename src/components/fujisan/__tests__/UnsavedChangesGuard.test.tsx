@@ -129,6 +129,21 @@ describe("UnsavedChangesGuard", () => {
     expect(onNavigate).toHaveBeenCalledTimes(1);
   });
 
+  // 同じ URL ではフォームが作り直されない。ここで同意させて登録を捨てると、
+  // 変更が残ったまま、次の移動で確認が出なくなる。
+  it("今いる URL へのリンクは、画面が変わらないので止めない", () => {
+    const onNavigate = jest.fn();
+    const { getByText } = render(
+      <Page dirty onNavigate={onNavigate} href={window.location.href} />,
+    );
+
+    fireEvent.click(getByText("移動"));
+
+    expect(confirmSpy).not.toHaveBeenCalled();
+    expect(onNavigate).toHaveBeenCalled();
+    expect(hasUnsavedChanges()).toBe(true);
+  });
+
   it("Cmd / Ctrl を押しながらのクリックは新しいタブなので止めない", () => {
     const onNavigate = jest.fn();
     const { getByText } = render(<Page dirty onNavigate={onNavigate} />);

@@ -17,6 +17,7 @@ import {
 } from "@/lib/actions/admin-team";
 import { AdminInviteRow } from "@/components/fujisan/admin/AdminInviteRow";
 import { buildMetadata } from "@/lib/seo";
+import { loginPathFor } from "@/lib/safe-redirect";
 
 export const metadata = buildMetadata({
   title: "Admin · Team",
@@ -37,7 +38,7 @@ export default async function AdminTeamPage() {
   const userId = sessUser?.id;
 
   if (!session) {
-    redirect("/login/personal?next=/admin/team");
+    redirect(loginPathFor("/admin/team"));
   }
   const role = await getEffectiveAdminRole({ userId, email });
   if (!isOwner(role)) {

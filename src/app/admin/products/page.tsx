@@ -12,6 +12,7 @@ import { getSession } from "@/lib/session";
 import { getEffectiveAdminRole, isOwner, isStaffOrAbove } from "@/lib/admin";
 import { adminListProductsAction } from "@/lib/actions/admin-products";
 import { buildMetadata } from "@/lib/seo";
+import { loginPathFor } from "@/lib/safe-redirect";
 
 export const metadata = buildMetadata({
   title: "Admin · Products",
@@ -25,7 +26,7 @@ export const dynamic = "force-dynamic";
 export default async function AdminProductsPage() {
   const session = await getSession();
   const u = session?.user as { id?: string; email?: string } | undefined;
-  if (!session) redirect("/login/personal?next=/admin/products");
+  if (!session) redirect(loginPathFor("/admin/products"));
 
   const role = await getEffectiveAdminRole({ userId: u?.id, email: u?.email });
   if (!isStaffOrAbove(role)) return <AdminForbidden email={u?.email} />;
