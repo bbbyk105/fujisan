@@ -25,10 +25,11 @@
 | ✅ | メール受信: Cloudflare Email Routing で `info@` → `mtfujipharmacy@gmail.com` |
 | ✅ | DMARC（`_dmarc` TXT `v=DMARC1; p=none;`） |
 | ✅ | Stripe 本番 Webhook（`we_1UAthnHTT9ZXTgS1xYg2XRl4`）: URL は sakefujisan.com、6 イベント |
-| ⚠️ | **決済は Stripe の sandbox（テスト）のまま**。本番キーへの切り替えはタスク4 |
+| ✅ | Stripe は本番の制限付きキー（`fujisan-production`）に切り替え済み（2026-11-04）。Checkout の開始と期限切れの Webhook は本番で確認済み |
+| ⚠️ | **実際の決済と返金のテストは未実施**（タスク6） |
 | ✅ | `ADMIN_EMAILS` = `mtfujipharmacy@gmail.com,bbbyk105@yahoo.co.jp` |
 | ✅ | 管理者のアドレスのアカウントは登録・メール確認済み（2026-11-04 に確認。`/admin` に入れるかは画面で確かめる） |
-| ⚠️ | 本番 D1 の在庫は全 SKU 12 本（2026-11-04、タスク5）。**sandbox の決済でも減る**ので、本番キーに切り替えたら数え直す（タスク4） |
+| ⚠️ | 本番 D1 の在庫は全 SKU 12 本で、本番キーへの切り替え時点でも変わっていない（2026-11-04）。蔵の実数と突き合わせる（タスク4 の手順4） |
 
 ### 本番 Worker の secret（`npx wrangler secret list` で確認済み）
 
@@ -38,8 +39,8 @@ OK  BETTER_AUTH_SECRET
 OK  BETTER_AUTH_URL          = https://sakefujisan.com
 OK  RESEND_API_KEY           ← 2026-09-24 に差し替え（前のキーは 401 で全メールが止まっていた）
 OK  RESEND_FROM              = FUJISAN SAKE <info@sakefujisan.com>
-OK  STRIPE_SECRET_KEY        ← sandbox のキー。本番公開時に差し替え（タスク4）
-OK  STRIPE_WEBHOOK_SECRET    ← 同上
+OK  STRIPE_SECRET_KEY        ← 本番の制限付きキー（タスク4）
+OK  STRIPE_WEBHOOK_SECRET    ← 本番 Webhook の署名シークレット（タスク4）
 --  GOOGLE_CLIENT_ID         （未設定 = Google ログインは無効）
 --  GOOGLE_CLIENT_SECRET
 ```
@@ -73,7 +74,18 @@ staff の追加は `/admin/team` からメール招待でできます（招待�
 
 ## タスク4. Stripe を本番モードに切り替える
 
-いまの `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` は sandbox のもの。
+2026-11-04 に本番へ切り替え済み。キーを作り直すときの手順として残す。
+
+本番のキーの発行はダッシュボードでしかできない（`stripe login` のキーは本番アプリ向けではない）。
+このアカウントは天地星空と共用なので、既存のキーはローテーションせず、fujisan 専用の
+制限付きキーを新しく作る。
+
+| 権限 | 設定 |
+| --- | --- |
+| Checkout Sessions | 書き込み |
+| Tax Rates | 書き込み |
+| Payment Intents | 読み取り |
+| Charges | 書き込み（Refunds はここに含まれる） |
 
 1. Stripe の本番利用申請（事業者情報・振込先口座）を済ませる
 2. 本番の Webhook はもうある（`we_1UAthnHTT9ZXTgS1xYg2XRl4`、sakefujisan.com、6 イベント）。
@@ -81,7 +93,7 @@ staff の追加は `/admin/team` からメール招待でできます（招待�
 3. 本番の鍵を入れる
 
    ```bash
-   npx wrangler secret put STRIPE_SECRET_KEY      # sk_live_...
+   npx wrangler secret put STRIPE_SECRET_KEY      # rk_live_...
    npx wrangler secret put STRIPE_WEBHOOK_SECRET  # 手順2の whsec_...
    ```
 
@@ -201,7 +213,7 @@ npm run check:legal && npm run lint && npm test && npx opennextjs-cloudflare bui
 - [x] `ADMIN_EMAILS` が設定済み
 - [ ] 管理者のアドレスで `/admin` に入れる（登録とメール確認は済み）
 - [ ] 自分以外のメールアドレスで会員登録が完了できる（確認メールが info@ から届く）
-- [ ] Stripe が本番キー（`STRIPE_SECRET_KEY` と `STRIPE_WEBHOOK_SECRET` を同時に差し替え済み）
+- [x] Stripe が本番キー（`STRIPE_SECRET_KEY` と `STRIPE_WEBHOOK_SECRET` を同時に差し替え済み）
 - [x] 本番 D1 に実在庫を入れた（2026-10-29）
 - [ ] 本番キーに切り替えたあと、蔵の本数と在庫の SELECT が一致する（タスク4 の手順4）
 - [ ] `/admin/products` の在庫が、在庫の SELECT と同じ本数で出る（タスク2 の後）

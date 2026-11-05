@@ -33,7 +33,7 @@ import {
 
 type AdminOrderListItem = {
   id: string;
-  /** 退会したお客様の注文は null（注文の記録だけが残る）。 */
+  /** ゲスト購入と、退会したお客様の注文は null（注文の記録だけが残る）。 */
   userId: string | null;
   orderRef: string;
   status: OrderStatus;
@@ -341,6 +341,7 @@ export async function adminUpdateOrderAction(input: {
     // メール送信に失敗しても管理操作自体は成功させる（在庫・状態の更新は済んでいる）。
     if (prevStatus !== input.status) {
       const emailData: OrderEmailData = {
+        noAccount: current.userId === null,
         orderRef: current.orderRef,
         customerName: current.customerName,
         customerEmail: current.customerEmail,
@@ -362,6 +363,18 @@ export async function adminUpdateOrderAction(input: {
         }
       } catch (err) {
         console.error("[admin:orders] 配送通知メールの送信に失敗:", err);
+        // ゲストには注文を見るページが無く、追跡番号を知る手段がメールしか無い。
+        if (emailData.noAccount) {
+          await alertOps(
+            "アカウントの無いお客様へ配送の通知を送れませんでした",
+            [
+              `注文番号: ${current.orderRef}`,
+              `宛先: ${current.customerEmail}`,
+              "",
+              "ステータスは更新済みです。追跡番号を個別にご連絡ください。",
+            ].join("\n"),
+          );
+        }
       }
     }
 
@@ -540,7 +553,7 @@ export async function adminRefundOrderAction(input: {
   // 返金メール（ベストエフォート。失敗しても返金自体は成立している）。
   try {
     await sendOrderRefundedEmail({
-      accountDeleted: current.userId === null,
+      noAccount: current.userId === null,
       stillShipping: willStillShip(current),
       orderRef: current.orderRef,
       customerName: current.customerName,

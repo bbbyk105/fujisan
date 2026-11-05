@@ -31,6 +31,8 @@ export const RATE_LIMITS = {
   sendEmail: { max: 5, windowMs: 60 * 60 * 1000 },
   /** トークンやパスワードを検証する操作（再設定・パスワード変更） */
   verify: { max: 10, windowMs: 10 * 60 * 1000 },
+  /** ゲストの決済開始（ログインなしで注文を作り、在庫を 30 分押さえられる） */
+  guestCheckout: { max: 10, windowMs: 60 * 60 * 1000 },
 } as const;
 
 export type RateLimitBucket = keyof typeof RATE_LIMITS;

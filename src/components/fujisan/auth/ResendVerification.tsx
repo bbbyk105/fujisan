@@ -13,16 +13,19 @@ type State = "idle" | "sending" | "sent" | "error";
 export function ResendVerification({
   email,
   role,
+  redirect,
 }: {
   email: string;
   role: "personal" | "business";
+  /** 確認のあと、ログインして戻る先。 */
+  redirect?: string | null;
 }) {
   const [state, setState] = useState<State>("idle");
 
   const onResend = async () => {
     if (state === "sending" || state === "sent") return;
     setState("sending");
-    const res = await resendVerificationAction({ email, role });
+    const res = await resendVerificationAction({ email, role, redirect });
     setState(res.ok ? "sent" : "error");
   };
 

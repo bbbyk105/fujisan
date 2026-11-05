@@ -2,8 +2,8 @@
  * @jest-environment node
  */
 
-// 退会したお客様の注文も返金できる。そのメールが「ご注文履歴を見る」で
-// /account へ案内すると、もうログインできない先へ送ることになる。
+// アカウントが無いお客様（退会済み・ゲスト購入）の注文も返金できる。そのメールが
+// 「ご注文履歴を見る」で /account へ案内すると、入れない先へ送ることになる。
 
 const sendEmail = jest.fn();
 jest.mock("@/lib/email", () => ({
@@ -41,15 +41,15 @@ describe("返金のお知らせ", () => {
     expect(sent().html).toContain("https://sakefujisan.com/account");
   });
 
-  it("退会済みのお客様には、入れないアカウントのページへ案内しない", async () => {
-    await sendOrderRefundedEmail({ ...ORDER, accountDeleted: true });
+  it("アカウントが無いお客様には、入れないアカウントのページへ案内しない", async () => {
+    await sendOrderRefundedEmail({ ...ORDER, noAccount: true });
     expect(sent().text).not.toContain("/account");
     expect(sent().html).not.toContain("/account");
     expect(sent().html).not.toContain("ご注文履歴");
   });
 
-  it("退会済みでも返金額は伝える", async () => {
-    await sendOrderRefundedEmail({ ...ORDER, accountDeleted: true });
+  it("アカウントが無くても返金額は伝える", async () => {
+    await sendOrderRefundedEmail({ ...ORDER, noAccount: true });
     expect(sent().html).toContain("3,850");
   });
 });

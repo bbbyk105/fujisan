@@ -29,6 +29,9 @@ jest.mock("@opennextjs/cloudflare", () => ({
 /** insert された注文行と delete された注文 id を記録する最小の drizzle スタブ。 */
 const inserted: Array<Record<string, unknown>> = [];
 const deleted: unknown[] = [];
+/** update された値。決済の開始では Session の id を控える。 */
+const updated: Array<Record<string, unknown>> = [];
+let updateShouldThrow = false;
 /** select（登録済みのお届け先）が返す行。 */
 let profileRow: Record<string, unknown> | undefined;
 
@@ -45,6 +48,14 @@ jest.mock("@/db", () => ({
       values: async (row: Record<string, unknown>) => {
         inserted.push(row);
       },
+    }),
+    update: () => ({
+      set: (values: Record<string, unknown>) => ({
+        where: async () => {
+          if (updateShouldThrow) throw new Error("d1 unavailable");
+          updated.push(values);
+        },
+      }),
     }),
     delete: () => ({
       where: async (cond: unknown) => {
@@ -75,6 +86,12 @@ jest.mock("@/lib/inventory", () => ({
   releaseStock: (...a: unknown[]) => releaseStock(...a),
 }));
 
+const consumeRateLimit = jest.fn();
+jest.mock("@/lib/rate-limit", () => ({
+  consumeRateLimit: (...a: unknown[]) => consumeRateLimit(...a),
+  clientIpFrom: () => "203.0.113.1",
+}));
+
 import { startCheckoutAction } from "@/lib/actions/checkout";
 
 const SHOGUN = getFujisanProductBySlug("shogun")!;
@@ -102,6 +119,8 @@ beforeEach(() => {
   jest.clearAllMocks();
   inserted.length = 0;
   deleted.length = 0;
+  updated.length = 0;
+  updateShouldThrow = false;
   profileRow = undefined;
   env.STRIPE_SECRET_KEY = "sk_test_123";
   getSession.mockResolvedValue({
@@ -114,6 +133,170 @@ beforeEach(() => {
   getConsumptionTaxRateId.mockResolvedValue("txr_test_10");
   reserveStock.mockResolvedValue({ ok: true });
   releaseStock.mockResolvedValue(undefined);
+  consumeRateLimit.mockResolvedValue({ ok: true });
+});
+
+// ログインなしで注文を作り在庫を押さえられるので、入力と回数をサーバーで絞る。
+describe("startCheckoutAction — ゲスト購入", () => {
+  const ITEMS = [{ slug: "shogun", ml: 300, qty: 1 }];
+
+  beforeEach(() => {
+    getSession.mockResolvedValue(null);
+  });
+
+  it("メールアドレスがあれば、アカウントに紐づかない注文を作る", async () => {
+    const res = await start({ items: ITEMS, guestEmail: "guest@example.com" });
+
+    expect(res).toMatchObject({
+      ok: true,
+      url: "https://checkout.stripe.com/c/pay/cs_test_1",
+    });
+    expect(lastOrder()).toMatchObject({
+      userId: null,
+      status: "pending",
+      customerEmail: "guest@example.com",
+      address: "",
+    });
+  });
+
+  it("住所と電話番号は Stripe の決済ページで必ず入力してもらう", async () => {
+    await start({ items: ITEMS, guestEmail: "guest@example.com" });
+
+    expect(lastSessionArgs()).toMatchObject({
+      shipping_address_collection: { allowed_countries: ["JP"] },
+      phone_number_collection: { enabled: true },
+    });
+  });
+
+  it("確認メールの宛先と領収書の宛先に、入力されたアドレスを使う", async () => {
+    await start({ items: ITEMS, guestEmail: "  guest@example.com " });
+
+    expect(lastSessionArgs().customer_email).toBe("guest@example.com");
+    expect(lastSessionArgs().payment_intent_data.receipt_email).toBe(
+      "guest@example.com",
+    );
+  });
+
+  // 本人を確かめられないので、推測できない注文の id を「決済を始めたブラウザ」の鍵にする。
+  it("決済ページから戻る URL に、注文を解放するための鍵を付ける", async () => {
+    await start({ items: ITEMS, guestEmail: "guest@example.com" });
+
+    expect(lastSessionArgs().cancel_url).toContain(
+      `&key=${lastOrder().id as string}`,
+    );
+  });
+
+  // ブラウザの「戻る」は cancel_url を通らないので、画面が自分で解放できるようにする。
+  it("注文番号と鍵を返す", async () => {
+    const res = await start({ items: ITEMS, guestEmail: "guest@example.com" });
+
+    expect(res).toMatchObject({
+      orderRef: lastOrder().orderRef,
+      guestKey: lastOrder().id,
+    });
+  });
+
+  it("決済ページを閉じられるよう、Session の id を注文に控える", async () => {
+    await start({ items: ITEMS, guestEmail: "guest@example.com" });
+
+    expect(updated).toContainEqual({ stripeSessionId: "cs_test_1" });
+  });
+
+  it("Session の id を控えられなくても、決済は止めない", async () => {
+    updateShouldThrow = true;
+    const errSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+
+    const res = await start({ items: ITEMS, guestEmail: "guest@example.com" });
+    errSpy.mockRestore();
+
+    expect(res.ok).toBe(true);
+  });
+
+  it("形式が違うメールアドレスは invalid で拒否し、回数を消費しない", async () => {
+    // 全角の入力は Stripe が拒否する。ここで止めないと原因の分からないエラーになる。
+    for (const guestEmail of [
+      "",
+      "   ",
+      "not-an-email",
+      "ｔａｒｏ@gmail.com",
+      "taro@ｇｍａｉｌ.com",
+      "a@b..com",
+    ]) {
+      expect(await start({ items: ITEMS, guestEmail })).toEqual({
+        ok: false,
+        error: "invalid",
+      });
+    }
+    expect(consumeRateLimit).not.toHaveBeenCalled();
+    expect(inserted).toHaveLength(0);
+  });
+
+  it("20 歳以上の確認は省けず、回数も消費しない", async () => {
+    const res = await startCheckoutAction({
+      items: ITEMS,
+      guestEmail: "guest@example.com",
+    });
+
+    expect(res).toEqual({ ok: false, error: "age" });
+    expect(consumeRateLimit).not.toHaveBeenCalled();
+    expect(inserted).toHaveLength(0);
+  });
+
+  it("回数の上限を超えたら rate を返し、注文も在庫も動かさない", async () => {
+    consumeRateLimit.mockResolvedValue({ ok: false, retryAfterSec: 60 });
+
+    const res = await start({ items: ITEMS, guestEmail: "guest@example.com" });
+
+    expect(res).toEqual({ ok: false, error: "rate" });
+    expect(consumeRateLimit).toHaveBeenCalledWith(
+      expect.objectContaining({ bucket: "guestCheckout" }),
+    );
+    expect(inserted).toHaveLength(0);
+    expect(reserveStock).not.toHaveBeenCalled();
+    expect(sessionsCreate).not.toHaveBeenCalled();
+  });
+
+  // 1 行ごとの上限だけだと、同じ商品を複数行に分けてすり抜けられる。
+  it("同じ商品が複数行に分かれたカートは invalid で拒否する", async () => {
+    const res = await start({
+      items: [
+        { slug: "shogun", ml: 300, qty: 12 },
+        { slug: "shogun", ml: 300, qty: 12 },
+      ],
+      guestEmail: "guest@example.com",
+    });
+
+    expect(res).toEqual({ ok: false, error: "invalid" });
+    expect(inserted).toHaveLength(0);
+    expect(reserveStock).not.toHaveBeenCalled();
+  });
+
+  it("不正なカートでは回数を消費しない", async () => {
+    const res = await start({
+      items: [{ slug: "nope", ml: 300, qty: 1 }],
+      guestEmail: "guest@example.com",
+    });
+
+    expect(res).toEqual({ ok: false, error: "invalid" });
+    expect(consumeRateLimit).not.toHaveBeenCalled();
+  });
+
+  it("ログイン中ならゲストの入力は使わず、アカウントの注文にする", async () => {
+    getSession.mockResolvedValue({
+      user: { id: "user_1", email: "a@example.com", name: "佐藤 優子" },
+    });
+
+    await start({ items: ITEMS, guestEmail: "guest@example.com" });
+
+    expect(lastSessionArgs().cancel_url).not.toContain("key=");
+    expect(lastOrder().id).toBeTruthy();
+
+    expect(lastOrder()).toMatchObject({
+      userId: "user_1",
+      customerEmail: "a@example.com",
+    });
+    expect(consumeRateLimit).not.toHaveBeenCalled();
+  });
 });
 
 describe("startCheckoutAction — ガード", () => {
@@ -363,6 +546,7 @@ describe("startCheckoutAction — Stripe セッション", () => {
     expect(res).toEqual({
       ok: true,
       url: "https://checkout.stripe.com/c/pay/cs_test_1",
+      orderRef: lastOrder().orderRef,
     });
     expect(deleted).toHaveLength(0);
   });

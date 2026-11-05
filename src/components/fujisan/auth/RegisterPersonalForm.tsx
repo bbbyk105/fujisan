@@ -2,7 +2,9 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { registerPersonalAction } from "@/lib/actions/auth";
+import { safeRedirectPath, withRedirect } from "@/lib/safe-redirect";
 import type { AuthErrorKey } from "@/lib/auth-errors";
 import {
   getFieldErrors,
@@ -29,6 +31,11 @@ export function RegisterPersonalForm({
 }: {
   googleEnabled?: boolean;
 }) {
+  // カートから来たときは、登録とログインのあとカートへ戻す。
+  const params = useSearchParams();
+  const redirect = safeRedirectPath(params.get("redirect"));
+  const loginHref = withRedirect("/login/personal", redirect);
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -61,7 +68,12 @@ export function RegisterPersonalForm({
       return;
     }
     setSubmitting(true);
-    const res = await registerPersonalAction({ name, email, password });
+    const res = await registerPersonalAction({
+      name,
+      email,
+      password,
+      redirect,
+    });
     setSubmitting(false);
     if (!res.ok) {
       setErrorKey(res.error);
@@ -79,9 +91,9 @@ export function RegisterPersonalForm({
             ja={`${email} に確認メールを送信しました。リンクを開いてメールアドレスを認証のうえ、ログインしてください。`}
           />
         </Notice>
-        <ResendVerification email={email} role="personal" />
+        <ResendVerification email={email} role="personal" redirect={redirect} />
         <Link
-          href="/login/personal"
+          href={loginHref}
           className="font-semibold text-indigo underline decoration-gold/60 underline-offset-4 transition-colors hover:decoration-gold"
         >
           <L en="Go to sign in" ja="ログイン画面へ" />
@@ -177,7 +189,13 @@ export function RegisterPersonalForm({
           <OrDivider>
             <L en="OR" ja="または" />
           </OrDivider>
-          <GoogleButton redirectTo="/account">
+          <GoogleButton
+            redirectTo={redirect ?? "/account"}
+            errorRedirectTo={withRedirect(
+              "/login/personal?error=google",
+              redirect,
+            )}
+          >
             <L en="Continue with Google" ja="Google で続ける" />
           </GoogleButton>
         </>
@@ -186,7 +204,7 @@ export function RegisterPersonalForm({
       <p className="mt-2 text-[12.5px] leading-[1.7] text-indigo/72">
         <L en="Already have an account?" ja="すでにアカウントをお持ちですか？" />{" "}
         <Link
-          href="/login/personal"
+          href={loginHref}
           className="font-semibold text-indigo underline decoration-gold/60 underline-offset-4 transition-colors hover:decoration-gold"
         >
           <L en="Sign in" ja="ログイン" />

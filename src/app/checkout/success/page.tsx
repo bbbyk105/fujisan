@@ -3,6 +3,7 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { EditorialPage } from "@/components/fujisan/editorial/EditorialPage";
 import { EdDataList } from "@/components/fujisan/editorial/ui";
 import { ClearCartOnMount } from "@/components/fujisan/cart/ClearCartOnMount";
+import { getSession } from "@/lib/session";
 import { getStripe } from "@/lib/stripe";
 import { L } from "@/i18n/Localized";
 import { buildMetadata } from "@/lib/seo";
@@ -40,13 +41,26 @@ async function loadSummary(sessionId?: string): Promise<Summary | null> {
   }
 }
 
+/** ログインしているか。読めなくても完了画面は出す（支払いは済んでいる）。 */
+async function isSignedIn(): Promise<boolean> {
+  try {
+    const session = await getSession();
+    return Boolean(session?.user?.id);
+  } catch {
+    return false;
+  }
+}
+
 export default async function CheckoutSuccessPage({
   searchParams,
 }: {
   searchParams: Promise<{ session_id?: string }>;
 }) {
   const { session_id } = await searchParams;
-  const summary = await loadSummary(session_id);
+  const [summary, signedIn] = await Promise.all([
+    loadSummary(session_id),
+    isSignedIn(),
+  ]);
   const pending = summary !== null && !summary.paid; // コンビニ等の後払い待ち
 
   return (
@@ -114,10 +128,38 @@ export default async function CheckoutSuccessPage({
           />
         ) : null}
 
+        {/* ゲストには注文を見るページが無いので、問い合わせの方法を伝える */}
+        {signedIn ? null : (
+          <p className="ed-lead mt-10">
+            <L
+              en={
+                <>
+                  Questions about your order? Please{" "}
+                  <Link href="/contact" className="ed-link">
+                    contact us
+                  </Link>{" "}
+                  with your order number.
+                </>
+              }
+              ja={
+                <>
+                  ご注文についてのお問い合わせは、注文番号を添えて
+                  <Link href="/contact" className="ed-link">
+                    お問い合わせ
+                  </Link>
+                  からご連絡ください。
+                </>
+              }
+            />
+          </p>
+        )}
+
         <div className="mt-12 flex flex-wrap items-center gap-x-10 gap-y-4">
-          <Link href="/account" className="ed-btn">
-            <L en="View my orders" ja="注文・配送を見る" />
-          </Link>
+          {signedIn ? (
+            <Link href="/account" className="ed-btn">
+              <L en="View my orders" ja="注文・配送を見る" />
+            </Link>
+          ) : null}
           <Link href="/shop/personal" className="ed-link text-[13px]">
             <L en="Back to the shop" ja="ショップへ戻る" />
           </Link>

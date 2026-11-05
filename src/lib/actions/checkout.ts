@@ -1,7 +1,7 @@
 "use server";
 
 import { headers } from "next/headers";
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getAuth } from "@/lib/auth";
 import { getDb } from "@/db";
@@ -17,7 +17,9 @@ import {
   type ShortageLine,
 } from "@/lib/inventory";
 import { alertOps } from "@/lib/ops-alert";
+import { clientIpFrom, consumeRateLimit } from "@/lib/rate-limit";
 import { getConsumptionTaxRateId, getStripe } from "@/lib/stripe";
+import { guestEmailIssue } from "@/lib/validation/email";
 
 /** カートから送られてくる最小限の行（価格はサーバーで引き直す）。 */
 type CartInput = { slug: string; ml: number; qty: number };
@@ -60,7 +62,9 @@ function makeOrderRef(): string {
  * - 注文行はここで pending 保存。登録住所はこの時点で書き込み、Stripe 収集の
  *   場合は支払い完了後に Webhook が書き戻す（Webhook は既存値を空で潰さない）。
  * - 金額はクライアント申告を信用せず、slug + ml からカタログ価格を引き直す。
- * - 認証必須（注文は user に紐づく。ゲスト購入は受け付けない）。
+ * - ログインしていなくても、メールアドレスがあればゲストとして購入できる。注文は
+ *   user に紐づかず（`userId` は null）、お届け先は必ず Stripe の決済ページで集める。
+ *   ログインなしで在庫を押さえられるので、回数は IP ごとに絞る。
  */
 export async function startCheckoutAction(input: {
   items: CartInput[];
@@ -72,8 +76,16 @@ export async function startCheckoutAction(input: {
    * スキーマごと消えて、クライアントの state だけが残っていた。
    */
   ageConfirmed?: boolean;
+  /** ゲスト購入のメールアドレス。ログイン中は使わない。 */
+  guestEmail?: string;
 }): Promise<
-  | { ok: true; url: string }
+  | {
+      ok: true;
+      url: string;
+      /** ブラウザの「戻る」で帰ったときに、画面から解放するための注文番号と鍵。 */
+      orderRef: string;
+      guestKey?: string;
+    }
   | {
       ok: false;
       error:
@@ -83,7 +95,8 @@ export async function startCheckoutAction(input: {
         | "stripe"
         | "db"
         | "soldout"
-        | "age";
+        | "age"
+        | "rate";
       /** soldout のとき、どの SKU が何本まで買えるか。UI で名指しするのに使う。 */
       shortages?: ShortageLine[];
     }
@@ -94,11 +107,19 @@ export async function startCheckoutAction(input: {
   const user = session?.user as
     | { id?: string; email?: string; name?: string }
     | undefined;
-  if (!user?.id) return { ok: false, error: "unauth" };
+  const userId = user?.id ?? null;
+  if (!userId && input.guestEmail === undefined) {
+    return { ok: false, error: "unauth" };
+  }
 
   // 20歳以上の確認。酒類の販売なので、UI のチェックボックスだけに頼らず
   // サーバー側でも必須にする（アクションは直接呼べるため）。
   if (input.ageConfirmed !== true) return { ok: false, error: "age" };
+
+  if (!userId && guestEmailIssue(input.guestEmail)) {
+    return { ok: false, error: "invalid" };
+  }
+  const customerEmail = (userId ? user?.email : input.guestEmail)?.trim() ?? "";
 
   if (!Array.isArray(input.items) || input.items.length === 0) {
     return { ok: false, error: "invalid" };
@@ -109,7 +130,12 @@ export async function startCheckoutAction(input: {
   // カタログ定数を直接読むと、管理画面で変えた価格が決済に効かない。
   const live = await getLiveSkuMap();
   const items: OrderLine[] = [];
+  // 本数の上限は 1 行ごとなので、同じ商品を複数行に分けるとすり抜ける。カートは
+  // 1 商品 1 行なので、分かれていれば画面を通っていない入力として弾く。
+  const seen = new Set<string>();
   for (const ci of input.items) {
+    if (seen.has(skuKey(ci.slug, ci.ml))) return { ok: false, error: "invalid" };
+    seen.add(skuKey(ci.slug, ci.ml));
     const sku = live.get(skuKey(ci.slug, ci.ml));
     if (!sku) return { ok: false, error: "invalid" };
     // カタログ側で販売停止にした SKU は決済に進ませない
@@ -149,8 +175,18 @@ export async function startCheckoutAction(input: {
     "",
   );
 
+  // 入力の検証が済んでから数える。不正な入力で枠を使わせない。
+  if (!userId) {
+    const limit = await consumeRateLimit({
+      bucket: "guestCheckout",
+      ip: clientIpFrom(await headers()),
+    });
+    if (!limit.ok) return { ok: false, error: "rate" };
+  }
+
   // 登録済みのお届け先（アカウントの登録情報）。郵便番号7桁＋住所が揃っていれば
-  // それを注文に使い、Stripe 決済ページでの住所収集を省略する。
+  // それを注文に使い、Stripe 決済ページでの住所収集を省略する。ゲストには無いので、
+  // 下の Session で住所と電話番号を必須で集める。
   let savedAddress: {
     postalCode: string;
     address: string;
@@ -161,32 +197,34 @@ export async function startCheckoutAction(input: {
   const orderRef = makeOrderRef();
   try {
     const db = await getDb();
-    const [profile] = await db
-      .select({
-        name: userTable.name,
-        phone: userTable.phone,
-        postalCode: userTable.postalCode,
-        address: userTable.address,
-      })
-      .from(userTable)
-      .where(eq(userTable.id, user.id))
-      .limit(1);
-    const postal = (profile?.postalCode ?? "").trim();
-    const addr = (profile?.address ?? "").trim();
-    if (/^\d{7}$/.test(postal) && addr.length > 0) {
-      savedAddress = {
-        postalCode: postal,
-        address: addr,
-        phone: (profile?.phone ?? "").trim(),
-        name: (profile?.name ?? user.name ?? "").trim(),
-      };
+    if (userId) {
+      const [profile] = await db
+        .select({
+          name: userTable.name,
+          phone: userTable.phone,
+          postalCode: userTable.postalCode,
+          address: userTable.address,
+        })
+        .from(userTable)
+        .where(eq(userTable.id, userId))
+        .limit(1);
+      const postal = (profile?.postalCode ?? "").trim();
+      const addr = (profile?.address ?? "").trim();
+      if (/^\d{7}$/.test(postal) && addr.length > 0) {
+        savedAddress = {
+          postalCode: postal,
+          address: addr,
+          phone: (profile?.phone ?? "").trim(),
+          name: (profile?.name ?? user?.name ?? "").trim(),
+        };
+      }
     }
 
     // 注文を pending で保存。登録住所があればその場で書き込み、
     // 無ければ空で開始して支払い完了時に Webhook が Stripe から書き戻す。
     await db.insert(orderTable).values({
       id,
-      userId: user.id,
+      userId,
       orderRef,
       status: "pending",
       itemsJson: JSON.stringify(items),
@@ -194,8 +232,8 @@ export async function startCheckoutAction(input: {
       subtotal,
       shipping,
       total,
-      customerName: savedAddress?.name || (user.name ?? "").trim(),
-      customerEmail: (user.email ?? "").trim(),
+      customerName: savedAddress?.name || (user?.name ?? "").trim(),
+      customerEmail,
       postalCode: savedAddress?.postalCode ?? "",
       address: savedAddress?.address ?? "",
       phone: savedAddress?.phone ?? "",
@@ -234,7 +272,6 @@ export async function startCheckoutAction(input: {
     );
   }
   const taxRates = taxRateId ? { tax_rates: [taxRateId] } : {};
-  const customerEmail = (user.email ?? "").trim() || undefined;
   const lineItems = items.map((it) => ({
     quantity: it.qty,
     price_data: {
@@ -260,7 +297,7 @@ export async function startCheckoutAction(input: {
     const checkout = await stripe.checkout.sessions.create({
       mode: "payment",
       line_items: lineItems,
-      customer_email: customerEmail,
+      customer_email: customerEmail || undefined,
       // サイトの言語切替（data-locale）に合わせる。auto はブラウザ依存でズレるため使わない。
       locale: input.locale === "en" ? "en" : "ja",
       // 登録済みのお届け先があれば Stripe での住所収集を省略（登録住所へ発送）。
@@ -293,8 +330,9 @@ export async function startCheckoutAction(input: {
       },
       success_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       // 「戻る」で帰ってきたときは、期限切れを待たずにその場で在庫を解放する
-      // （orderId を持たせて、その注文だけを対象にする）。
-      cancel_url: `${baseUrl}/cart?canceled=1&order=${orderRef}`,
+      // （orderId を持たせて、その注文だけを対象にする）。ゲストは本人を確かめられない
+      // ので、推測できない注文の id を「決済を始めたブラウザ」の鍵として持たせる。
+      cancel_url: `${baseUrl}/cart?canceled=1&order=${orderRef}${userId ? "" : `&key=${id}`}`,
     });
 
     if (!checkout.url) {
@@ -302,13 +340,53 @@ export async function startCheckoutAction(input: {
       await releaseReservation(items);
       return { ok: false, error: "stripe" };
     }
-    return { ok: true, url: checkout.url };
+    await rememberSession(id, checkout.id);
+    return {
+      ok: true,
+      url: checkout.url,
+      orderRef,
+      ...(userId ? {} : { guestKey: id }),
+    };
   } catch {
     // Stripe 失敗時は孤立した pending 注文を掃除し、押さえた在庫も戻す
     // （戻さないと、売れていないのに在庫だけ減ったままになる）。
     await deletePendingOrder(id);
     await releaseReservation(items);
     return { ok: false, error: "stripe" };
+  }
+}
+
+/**
+ * Stripe の決済ページを閉じる。閉じられたら、または期限が切れていたら true。
+ * それ以外は支払いが進んでいる可能性があるので false。
+ */
+async function closeCheckoutSession(
+  stripe: ReturnType<typeof getStripe>,
+  sessionId: string,
+): Promise<boolean> {
+  try {
+    await stripe.checkout.sessions.expire(sessionId);
+    return true;
+  } catch (err) {
+    console.error("[checkout] 決済ページを閉じられませんでした:", err);
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    return session.status === "expired";
+  }
+}
+
+/**
+ * Session の id を注文に控える。「戻る」で帰ってきたときに決済ページを閉じるため。
+ * 控えられなくても決済は止めない（その注文は期限切れの Webhook が片付ける）。
+ */
+async function rememberSession(orderId: string, sessionId: string): Promise<void> {
+  try {
+    const db = await getDb();
+    await db
+      .update(orderTable)
+      .set({ stripeSessionId: sessionId })
+      .where(eq(orderTable.id, orderId));
+  } catch (err) {
+    console.error("[checkout] Session の id を控えられませんでした:", err);
   }
 }
 
@@ -334,6 +412,13 @@ async function releaseReservation(items: OrderLine[]): Promise<void> {
 /**
  * 決済ページから「戻る」で帰ってきたときに、その注文の引き当てを解放する。
  *
+ * ゲストの注文は `guestKey`（決済ページから戻る URL に付けた注文の id）が要る。
+ * 本人を確かめられないので、注文番号だけでは消せないようにする。
+ *
+ * **消す前に Stripe の決済ページを閉じる。** Session は期限まで有効なので、開いたまま
+ * 消すと、ブラウザの「戻る」から注文の無い支払いができてしまう。閉じられないときや
+ * Session の id が無いときは、消さずに Webhook へ任せる。
+ *
  * 期限切れ（30分）を待っても Webhook が解放するが、その間その在庫は誰も買えない。
  * 自分で引き返したと分かっているなら、待たずに戻したほうがよい。
  *
@@ -345,28 +430,52 @@ async function releaseReservation(items: OrderLine[]): Promise<void> {
  */
 export async function releaseAbandonedCheckoutAction(input: {
   orderRef: string;
+  guestKey?: string;
 }): Promise<{ ok: boolean }> {
   const auth = await getAuth();
   const session = await auth.api.getSession({ headers: await headers() });
   const userId = session?.user?.id;
-  if (!userId) return { ok: false };
+  const guestKey =
+    typeof input.guestKey === "string" ? input.guestKey : undefined;
+  const owner = guestKey
+    ? and(eq(orderTable.id, guestKey), isNull(orderTable.userId))
+    : userId
+      ? eq(orderTable.userId, userId)
+      : null;
+  if (!owner) return { ok: false };
 
   const ref = input.orderRef.trim();
   if (!ref) return { ok: false };
 
+  const abandoned = and(
+    eq(orderTable.orderRef, ref),
+    owner,
+    eq(orderTable.status, "pending"),
+    // 確定後に手で pending へ戻した注文は入金済みなので消さない。
+    eq(orderTable.stockState, "reserved"),
+  );
+
   try {
     const db = await getDb();
+    const [target] = await db
+      .select({ stripeSessionId: orderTable.stripeSessionId })
+      .from(orderTable)
+      .where(abandoned)
+      .limit(1);
+    if (!target?.stripeSessionId) return { ok: false };
+
+    const { env } = await getCloudflareContext({ async: true });
+    const key = (env as StartCheckoutEnv).STRIPE_SECRET_KEY;
+    if (!key) return { ok: false };
+    const closed = await closeCheckoutSession(
+      getStripe(key),
+      target.stripeSessionId,
+    );
+    if (!closed) return { ok: false };
+
     const deleted = await db
       .delete(orderTable)
-      .where(
-        and(
-          eq(orderTable.orderRef, ref),
-          eq(orderTable.userId, userId),
-          eq(orderTable.status, "pending"),
-          // 確定後に手で pending へ戻した注文は入金済みなので消さない。
-          eq(orderTable.stockState, "reserved"),
-        ),
-      )
+      .where(abandoned)
       .returning({
         orderRef: orderTable.orderRef,
         itemsJson: orderTable.itemsJson,

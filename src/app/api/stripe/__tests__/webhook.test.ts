@@ -305,6 +305,55 @@ describe("Stripe Webhook — 注文確定", () => {
   });
 });
 
+describe("Stripe Webhook — 確定メールの案内先", () => {
+  it("アカウントが無い注文は noAccount を渡す", async () => {
+    orderRow = baseOrderRow({ userId: null });
+    givenEvent("checkout.session.completed");
+    await postWebhook();
+
+    expect(sendOrderConfirmedEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ noAccount: true }),
+    );
+  });
+
+  it("会員の注文には渡さない", async () => {
+    orderRow = baseOrderRow({ userId: "u_1" });
+    givenEvent("checkout.session.completed");
+    await postWebhook();
+
+    expect(sendOrderConfirmedEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ noAccount: false }),
+    );
+  });
+
+  // ゲストには注文を見るページが無く、メールが唯一の記録になる。
+  it("アカウントが無い注文で確定メールが失敗したら、人に知らせる", async () => {
+    const errSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    sendOrderConfirmedEmail.mockRejectedValueOnce(new Error("resend down"));
+    orderRow = baseOrderRow({ userId: null });
+    givenEvent("checkout.session.completed");
+
+    const res = await postWebhook();
+    errSpy.mockRestore();
+
+    expect(res.status).toBe(200);
+    expect(alertOps).toHaveBeenCalledTimes(1);
+    expect(alertOps.mock.calls[0][1]).toContain("FJ-ABC123");
+  });
+
+  it("会員の注文では確定メールが失敗しても知らせない", async () => {
+    const errSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    sendOrderConfirmedEmail.mockRejectedValueOnce(new Error("resend down"));
+    orderRow = baseOrderRow({ userId: "u_1" });
+    givenEvent("checkout.session.completed");
+
+    await postWebhook();
+    errSpy.mockRestore();
+
+    expect(alertOps).not.toHaveBeenCalled();
+  });
+});
+
 describe("Stripe Webhook — 在庫の反映", () => {
   it("入金確定で押さえていた在庫を確定する", async () => {
     givenEvent("checkout.session.completed");
@@ -712,7 +761,7 @@ describe("Stripe Webhook — Stripe 側で行われた返金の同期", () => {
 
     expect(updateCalls).toHaveLength(1);
     expect(sendOrderRefundedEmail).toHaveBeenCalledWith(
-      expect.objectContaining({ accountDeleted: true }),
+      expect.objectContaining({ noAccount: true }),
     );
   });
 
@@ -726,7 +775,7 @@ describe("Stripe Webhook — Stripe 側で行われた返金の同期", () => {
     await postWebhook();
 
     expect(sendOrderRefundedEmail).toHaveBeenCalledWith(
-      expect.objectContaining({ accountDeleted: false }),
+      expect.objectContaining({ noAccount: false }),
     );
   });
 
