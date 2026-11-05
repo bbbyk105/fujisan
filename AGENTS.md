@@ -28,7 +28,7 @@ BtoC（個人）と BtoB（法人取扱店・卸価格表示）の二系統の�
 ## Stripe 決済フロー（b86fa89 で統合）
 
 1. カート (`CartView`) → Server Action `startCheckoutAction`（`src/lib/actions/checkout.ts`）
-   - 認証必須（ゲスト購入なし）。金額はクライアント申告を信用せず、slug+ml から**実勢カタログ**（`getLiveSkuMap`）で引き直す。
+   - ログインまたはゲスト（メールアドレスのみ。下の「ゲスト購入」）。金額はクライアント申告を信用せず、slug+ml から**実勢カタログ**（`getLiveSkuMap`）で引き直す。
    - 注文を `pending` で D1 に保存（**住所は空文字で開始**）→ Checkout Session 作成 → Stripe の URL を返す。
    - お届け先・電話は **Stripe 決済ページで収集**（`shipping_address_collection: JP のみ`）。自前住所フォームは廃止済み。
    - Session 作成失敗時は pending 注文を削除して掃除する。
@@ -38,6 +38,18 @@ BtoC（個人）と BtoB（法人取扱店・卸価格表示）の二系統の�
    - 住所・電話は `sessions.retrieve` で取り直して注文に書き戻す。
    - **メール失敗は 500 にしない**（ログのみ）。500 を返すのは DB 確定失敗時だけ（Stripe が再送）。
 3. `/checkout/success` は `force-dynamic`。session_id で Stripe を参照し、`payment_status !== "paid"` なら「お支払い手続き中」を表示。マウント時にカートを空にする。
+
+### ゲスト購入とログイン後の戻り先
+
+- ログインしていなくても、カートでメールアドレスを入れれば購入できる。注文は `user_id` が null で、**お届け先と電話番号は Stripe の決済ページで必須**（自前の住所フォームは作らない）。メールアドレスをカートで聞くのは、決済前に `receipt_email` を渡さないと領収書の宛先を指定できないから。
+- **20 歳以上の確認はゲストも省けない**。`startCheckoutAction` は UI と同じくサーバーで確かめる。
+- ログインなしで注文を作り在庫を 30 分押さえられるので、IP ごとに回数を絞る（`guestCheckout`）。入力の検証を通ってから数える。
+- ゲストは本人を確かめられないので、`releaseAbandonedCheckoutAction` は注文番号だけでは動かない。決済ページから戻る URL に注文の id（推測できない UUID）を `key` として付け、これを「決済を始めたブラウザ」の鍵にする。
+- **「戻る」で注文を消す前に `checkout.sessions.expire` で決済ページを閉じる**（ゲストも会員も）。Session は期限まで有効で、閉じないと注文の無い支払いができてしまう。閉じられないときや id が無いときは消さずに Webhook へ任せる（期限切れなら消す）。そのために決済の開始で `stripe_session_id` を控えている。ブラウザの「戻る」は `cancel_url` を通らないので、`pageshow` で同じ解放を行う。解放のあとは `refreshLiveCatalog` で在庫を取り直す。
+- `user_id` が null の注文にはログインできるアカウントが無い（ゲストと退会者）。メールは `noAccount` を渡して `/account` へ案内しない。9 年後の匿名化も同じ条件で対象になるので、プライバシーポリシーにもゲストを書いてある。
+- カートのログイン・新規登録のリンクは `redirect` に `CHECKOUT_RESUME_PATH` を付ける。20 歳以上の確認を `sessionStorage` に残して移動し（`src/lib/cart/checkout-resume.ts`）、戻ったらそのまま決済を始める。確認が残っていなければカートを見せるだけで、自動では進まない（確認メールを別のタブで開いた場合など）。ログイン画面の案内が「そのまま」と言い切らないのはこのため。
+- **`redirect` は必ず `safeRedirectPath` を通し、URL に付けるときは `withRedirect` を使う。** URL から読む値なので、そのまま遷移すると外部サイトや `javascript:` へ飛ばせる。正規化で外へ出る値（`/.//evil.example`）もあるので、自前で書かないこと。
+- カートの分岐は `isPending` ではなく `sessionChecked` で見る。Better Auth はタブへ戻るたびにセッションを取り直し、未ログインだとそのあいだ `isPending` が true に戻るので、ゲストの入力欄が作り直される。
 
 ### 購読すべき Webhook イベント
 
@@ -98,7 +110,7 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 
 - `/account` は **`?tab=orders|profile|security` のタブ**（既定は注文）。以前は 1 枚に縦に積んでいて、注文が増えると登録情報とセキュリティが埋もれた。表示は `AccountView`、取得・認可はページ側。
 - `/account/orders/[orderRef]` が注文詳細、`/account/orders/[orderRef]/receipt` が Stripe の領収書への転送。
-- **退会しても注文は消さない**。`orders.user_id` は `ON DELETE SET NULL`（`0015`）で、紐づけだけが外れて注文の金額・宛先は残る。領収書の写しの保存が要り、プライバシーポリシーでも保存すると約束しているため。管理画面の注文は `user_id` が null でも `customer_*` の列で表示できるので、`user` と JOIN しないこと。領収書は決済時のメールに残ることを、退会画面で案内している。注文日から 9 年（`ORDER_PII_RETENTION_YEARS`）を過ぎた退会者の注文は、氏名・連絡先・住所と Stripe の ID を消し、金額と品目は残す。お問い合わせは 3 年（`CONTACT_RETENTION_YEARS`）で消す（`sweepExpiredPersonalData`。Cron ではなく `/admin` を開いたときに走る）。**プライバシーポリシーの保有期間がこの 2 つを読んでいる**ので、変えるなら公開の約束も変わる。返金メールも `accountDeleted` のときは `/account` へ案内しない。
+- **退会しても注文は消さない**。`orders.user_id` は `ON DELETE SET NULL`（`0015`）で、紐づけだけが外れて注文の金額・宛先は残る。領収書の写しの保存が要り、プライバシーポリシーでも保存すると約束しているため。管理画面の注文は `user_id` が null でも `customer_*` の列で表示できるので、`user` と JOIN しないこと。領収書は決済時のメールに残ることを、退会画面で案内している。注文日から 9 年（`ORDER_PII_RETENTION_YEARS`）を過ぎた退会者の注文は、氏名・連絡先・住所と Stripe の ID を消し、金額と品目は残す。お問い合わせは 3 年（`CONTACT_RETENTION_YEARS`）で消す（`sweepExpiredPersonalData`。Cron ではなく `/admin` を開いたときに走る）。**プライバシーポリシーの保有期間がこの 2 つを読んでいる**ので、変えるなら公開の約束も変わる。`user_id` が null の注文はゲスト購入も同じで、9 年後の匿名化の対象になり、メールは `noAccount` で `/account` へ案内しない。
 - **注文の取得は必ず userId でも絞る**（`getMyOrderByRefAction`）。orderRef は推測しにくいだけで秘密ではないので、番号だけで引くと他人の注文が見える。
 - **返金は全額・一部の両方を扱う**。`orders.refunded_amount` が累計額で、`status = "refunded"` は**全額返金のときだけ**付く（一部返金ではステータスは動かない。案内で「このまま発送」と書けるのは `willStillShip` が真の注文だけ）。判定は `refundStateOf()` に寄せる。冪等性は「返金前の累計」を WHERE と Stripe の idempotencyKey に入れて担保する。Webhook も同じで、同時に届いて先を越されたら読み直す（読み直さないと、今回の額を読み違えたまま返金メールを送る）。Webhook の `charge.refunds` は expand されないので、返金 id は `refunds.list` で引く。
 - 返金できる注文は `isRefundable()` で判定する。入金後に取り消した注文や手で pending へ戻した注文も返金でき、未入金の注文は返金できない（`paid_at` で見分ける）。
@@ -220,6 +232,7 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 
 ## 落とし穴
 
+- **`@testing-library/jest-dom` は入っていない**。`toHaveAttribute` などは使えないので、`getAttribute` と `textContent` で確かめる。
 - **Better Auth はメールの送信失敗を握りつぶし、画面には「送信しました」を出す**（`runInBackgroundOrAwait` がログに落とすだけで 200 を返す）。本番で届かないときは `npx wrangler tail fujisan --format json` を流しながら 1 通送らせ、`Resend send failed: <status>` を読む（401 はキー、403 はドメイン未認証）。`wrangler secret list` は secret の有無しか見ないので、キーが有効かは分からない（2026-09-24 に無効なキーで全メールが止まっていた）。
 - **`drizzle-kit generate` は使える**（以前は journal がずれていて禁止だった）。`meta/_journal.json` が `drizzle/` の SQL と 1 対 1 で対応し、最後のスナップショットが現在のスキーマ。**表を作り直す差分で出る `PRAGMA foreign_keys` は外す**（D1 はトランザクションの中で流すので効かない）。その表を参照する表があるときは `DROP TABLE` の巻き添えを先に確かめること。`0006`〜`0013` は手書きで足された経緯から**中間スナップショットが無い**が、`generate` は最後のスナップショットしか読まないので支障はない（`drizzle-kit up` / `drop` は使わないこと）。このズレは `src/db/__tests__/migrations.test.ts` が見張っていて、SQL を足して journal に載せ忘れると落ちる。**SQL を手で足したときは journal にも追記する。**
 - **日付は必ず `src/lib/format-date.ts` のヘルパーで出す**。Workers は UTC で動くため `Intl.DateTimeFormat` に `timeZone: "Asia/Tokyo"` を指定しないと、JST 00:00〜09:00 の出来事が前日の日付になる（注文日や納品書の日付がずれる）。ローカルの OS が JST だと気づけない。
