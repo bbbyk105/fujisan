@@ -17,9 +17,9 @@ import {
   reserveStock,
   type ShortageLine,
 } from "@/lib/inventory";
-import { alertOps } from "@/lib/ops-alert";
 import { clientIpFrom, consumeRateLimit } from "@/lib/rate-limit";
-import { getConsumptionTaxRateId, getStripe } from "@/lib/stripe";
+import { CONSUMPTION_TAX_NOTE } from "@/data/fujisan-legal";
+import { getStripe } from "@/lib/stripe";
 import { verifyTurnstile } from "@/lib/turnstile";
 import { guestEmailIssue } from "@/lib/validation/email";
 
@@ -282,29 +282,20 @@ export async function startCheckoutAction(input: {
 
   // Stripe Checkout Session を生成
   const stripe = getStripe(e.STRIPE_SECRET_KEY);
-  // 領収書は Stripe が出すので、税率と宛先はここで渡した内容がそのまま載る。
-  const taxRateId = await getConsumptionTaxRateId(stripe);
-  if (!taxRateId) {
-    // 決済は止めないが、この注文の領収書には税率が載らない（後から足せない）。
-    await alertOps(
-      "Stripe の消費税率を用意できませんでした",
-      [
-        `注文番号: ${orderRef}`,
-        "",
-        "決済は続行しています。この注文の Stripe の領収書には税率が載りません。",
-        "Stripe の障害が無いか、秘密鍵に Tax Rate の権限があるかを確認してください。",
-      ].join("\n"),
-    );
-  }
-  const taxRates = taxRateId ? { tax_rates: [taxRateId] } : {};
+  // 領収書は Stripe が出し、品名はここで渡した内容がそのまま載る。Stripe の税率
+  // （tax_rates）は使わない。行ごとに端数処理するので、領収書の税額が税率ごとに 1 回の
+  // 計算と 1 円ずれる注文ができる。適格簡易請求書は税額か税率のどちらかでよいので、
+  // 税率を品名に書く。
+  const taxNote = CONSUMPTION_TAX_NOTE[input.locale === "en" ? "en" : "ja"];
   const lineItems = items.map((it) => ({
     quantity: it.qty,
     price_data: {
       currency: "jpy",
       unit_amount: it.unitPrice, // JPY は最小単位＝円。整数をそのまま渡す。
-      product_data: { name: `${it.name} ${it.variant}（${it.ml}ml）` },
+      product_data: {
+        name: `${it.name} ${it.variant}（${it.ml}ml） ${taxNote}`,
+      },
     },
-    ...taxRates,
   }));
   if (shipping > 0) {
     lineItems.push({
@@ -312,9 +303,8 @@ export async function startCheckoutAction(input: {
       price_data: {
         currency: "jpy",
         unit_amount: shipping,
-        product_data: { name: "配送料 / Shipping" },
+        product_data: { name: `配送料 / Shipping ${taxNote}` },
       },
-      ...taxRates,
     });
   }
 
@@ -348,7 +338,7 @@ export async function startCheckoutAction(input: {
       metadata: { orderId: id, orderRef },
       payment_intent_data: {
         metadata: { orderId: id, orderRef },
-        // Stripe の管理画面で注文番号から支払いを探すため。領収書には載らない。
+        // Stripe の管理画面で注文番号から支払いを探すため。領収書の SUMMARY にも載る。
         description: `ご注文 ${orderRef}`,
         // 指定すると、本番の決済が成功したときに Stripe が領収書を送る。
         ...(customerEmail ? { receipt_email: customerEmail } : {}),

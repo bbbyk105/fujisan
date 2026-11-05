@@ -49,6 +49,15 @@ export const SHIPPING_FEE = {
  */
 export const INVOICE_REGISTRATION_NUMBER: string | null = "T4080103000596";
 
+/**
+ * 領収書の適用税率。Stripe の領収書には税額を出さず、品名のこの表記で税率を示す。
+ * 酒類は軽減税率の対象外で、送料も 10%。
+ */
+export const CONSUMPTION_TAX_NOTE = {
+  ja: "税込・税率10%",
+  en: "incl. 10% consumption tax",
+} as const;
+
 export const FUJISAN_LEGAL = {
   // 特商法
   sellerName: "株式会社 近藤薬局",

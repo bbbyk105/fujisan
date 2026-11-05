@@ -19,7 +19,7 @@
 
 | | 内容 |
 |---|---|
-| ✅ | 本番 D1 のマイグレーションは `0016` まで適用済み（2026-11-04） |
+| ✅ | 本番 D1 のマイグレーションは `0017` まで適用済み（2026-11-05） |
 | ✅ | 独自ドメイン `sakefujisan.com`（www・workers.dev は apex へ転送） |
 | ✅ | メール送信: Resend で `sakefujisan.com` を認証済み、送信元は `info@sakefujisan.com` |
 | ✅ | メール受信: Cloudflare Email Routing で `info@` → `mtfujipharmacy@gmail.com` |
@@ -27,10 +27,10 @@
 | ✅ | Stripe 本番 Webhook（`we_1UAthnHTT9ZXTgS1xYg2XRl4`）: URL は sakefujisan.com、6 イベント |
 | ✅ | Stripe は本番の制限付きキー（`fujisan-production`）に切り替え済み（2026-11-04）。Checkout の開始と期限切れの Webhook は本番で確認済み |
 | ⚠️ | **実際の決済と返金のテストは未実施**（タスク6） |
-| ⚠️ | Cloudflare Turnstile はサイトキーを入れ済み（2026-11-05）。秘密鍵 `TURNSTILE_SECRET_KEY` を入れるまで、サーバーの判定は動かない（タスク8） |
+| ✅ | Cloudflare Turnstile はサイトキーと秘密鍵を登録済み（2026-11-05）。ゲストの決済で判定が動くかは実決済で確かめる（タスク6・タスク8） |
 | ✅ | `ADMIN_EMAILS` = `mtfujipharmacy@gmail.com,bbbyk105@yahoo.co.jp` |
-| ✅ | 管理者のアドレスのアカウントは登録・メール確認済み（2026-11-04 に確認。`/admin` に入れるかは画面で確かめる） |
-| ⚠️ | 本番 D1 の在庫は全 SKU 12 本で、本番キーへの切り替え時点でも変わっていない（2026-11-04）。蔵の実数と突き合わせる（タスク4 の手順4） |
+| ✅ | 管理者のアドレスのアカウントは登録・メール確認済み。`bbbyk105@yahoo.co.jp` で `/admin` に入れることを確認（2026-11-05） |
+| ✅ | 本番 D1 の在庫は全 SKU 12 本で、蔵の実数と合っている（2026-11-05 本人確認） |
 
 ### 本番 Worker の secret（`npx wrangler secret list` で確認済み）
 
@@ -84,9 +84,10 @@ staff の追加は `/admin/team` からメール招待でできます（招待�
 | 権限 | 設定 |
 | --- | --- |
 | Checkout Sessions | 書き込み |
-| Tax Rates | 書き込み |
 | Payment Intents | 読み取り |
 | Charges | 書き込み（Refunds はここに含まれる） |
+
+`Tax Rates` は 2026-11-05 から使っていない。この変更のデプロイ後に `fujisan-production` から外す（デプロイ前に外すと、古いコードの決済で税率を取得できず、運用通知が飛ぶ）。
 
 1. Stripe の本番利用申請（事業者情報・振込先口座）を済ませる
 2. 本番の Webhook はもうある（`we_1UAthnHTT9ZXTgS1xYg2XRl4`、sakefujisan.com、6 イベント）。
@@ -123,7 +124,7 @@ sandbox 側の Webhook の URL が旧 URL（workers.dev）のままでも、`/ap
 | メールの言語 | 英語のまま（2026-11-04 本人） | 同じ画面の「デフォルトの言語」。アカウント全体の設定で、日本語にすると天地星空のお客様にも日本語で届く |
 
 テスト環境の領収書に登録番号を出すには、テスト環境にも税務 ID が要る（登録済み）。
-本番の領収書は、実決済（タスク6）で発行者名・問い合わせ先・登録番号・税率を確認する。
+本番の領収書は、実決済（タスク6）で発行者名・問い合わせ先・登録番号・品名の税率を確認する。
 テスト環境では自動メールが出ない。領収書は注文詳細の「領収書を表示」か `receipt_url` で開ける。
 
 ## タスク5. 実在庫を入力する（済: 2026-10-29）
@@ -158,7 +159,7 @@ Stripe 本番の決済からの一連の流れは、まだ本番で通してい�
 1. 一番安い「こころ 300ml（¥1,600）」を実際に購入
 2. 確認すること
    · 注文確定メールが info@sakefujisan.com から届く
-   · Stripe の領収書が届き、発行者名・登録番号・税率が正しい（タスク4-2）
+   · Stripe の領収書が届き、発行者名・登録番号・品名の税率が正しい（タスク4-2）
    · /admin/orders に注文が出る（pending のまま残っていない）
    · /admin/products の在庫が 1本 減っている
 3. /admin/orders の返金ボタンで全額返金 → 返金メールが届く・在庫が戻る
@@ -189,12 +190,14 @@ PR のブランチのビルドが**必ず失敗していた**（PR に常に赤�
   D1 を本番と同じ `database_id` にすると、本番と行を共有する
 
 あわせて、Build command に lint とテストを入れる。テストが落ちたまま本番へ出るのを
-止めるため。法令表示の伏せ字の検査も入れる（`npm run check:legal` は `npm run deploy` の
-predeploy でしか走らず、自動デプロイを通らない）。
+止めるため。
 
 ```
-npm run check:legal && npm run lint && npm test && npx opennextjs-cloudflare build
+npm run lint && npm test && npx opennextjs-cloudflare build
 ```
+
+`npm run check:legal` は入れない（2026-11-05）。検査するのは `src/data/` の伏せ字だけで、いまは
+残っていない。`npm run deploy` の predeploy でしか走らないので、法令の値を書き換えたときは手で流す。
 
 ---
 
@@ -245,17 +248,19 @@ NEXT_PUBLIC_TURNSTILE_SITE_KEY=1x00000000000000000000AA npx next dev --webpack -
 ## 公開前の最終チェック
 
 - [x] `ADMIN_EMAILS` が設定済み
-- [ ] 管理者のアドレスで `/admin` に入れる（登録とメール確認は済み）
-- [ ] 自分以外のメールアドレスで会員登録が完了できる（確認メールが info@ から届く）
+- [x] 管理者のアドレスで `/admin` に入れる（2026-11-05）
+- [x] 自分以外のメールアドレスで会員登録が完了できる（2026-11-05 本人確認）
 - [x] Stripe が本番キー（`STRIPE_SECRET_KEY` と `STRIPE_WEBHOOK_SECRET` を同時に差し替え済み）
 - [x] 本番 D1 に実在庫を入れた（2026-10-29）
-- [ ] 本番キーに切り替えたあと、蔵の本数と在庫の SELECT が一致する（タスク4 の手順4）
-- [ ] `/admin/products` の在庫が、在庫の SELECT と同じ本数で出る（タスク2 の後）
-- [ ] Workers Builds の Build command に `npm run check:legal &&` が入っている
-- [ ] Cloudflare Turnstile のサイトキーと秘密鍵を入れ、ゲストの決済で判定が動く（タスク8）
-- [ ] 本番の領収書の発行者名・問い合わせ先・登録番号・税率が正しい（タスク4-2）
+- [x] 本番キーに切り替えたあと、蔵の本数と在庫の SELECT が一致する（2026-11-05 本人確認。全 SKU 12 本）
+- [x] `/admin/products` の在庫が、在庫の SELECT と同じ本数で出る（2026-11-05 本人確認）
+- [x] Stripe の登録サイトを確認した（2026-11-05 本人確認）
+- [x] Cloudflare Turnstile のサイトキーと秘密鍵を入れた（2026-11-05）
+- [ ] ゲストの決済で Turnstile の判定が動く（タスク6 の実決済で確かめる）
+- [ ] 本番の領収書の発行者名・問い合わせ先・登録番号・品名の税率が正しい（タスク4-2）
+- [ ] デプロイ後に `fujisan-production` から `Tax Rates` の権限を外した（タスク4）
 - [ ] 実決済テストで在庫が減り、返金もできた
-- [x] 本番 D1 に `0016` まで適用済み
+- [x] 本番 D1 に `0017` まで適用済み
 - [x] `BETTER_AUTH_URL` が `https://sakefujisan.com`
 - [x] Resend のドメインが `verified`、`RESEND_FROM` が `info@sakefujisan.com`
 - [x] `info@sakefujisan.com` 宛のメールが Gmail に届く
@@ -302,7 +307,7 @@ NEXT_PUBLIC_TURNSTILE_SITE_KEY=1x00000000000000000000AA npx next dev --webpack -
 | 欄 | 値 |
 |---|---|
 | Production branch | `main` |
-| Build command | `npm run lint && npm test && npx opennextjs-cloudflare build`（先頭に `npm run check:legal &&` を足す。タスク7） |
+| Build command | `npm run lint && npm test && npx opennextjs-cloudflare build` |
 | Deploy command | `npx opennextjs-cloudflare deploy` |
 | Previews（非本番ブランチのビルド） | 無効（タスク7） |
 

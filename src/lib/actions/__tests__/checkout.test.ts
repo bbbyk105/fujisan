@@ -66,15 +66,8 @@ jest.mock("@/db", () => ({
 }));
 
 const sessionsCreate = jest.fn();
-const getConsumptionTaxRateId = jest.fn();
 jest.mock("@/lib/stripe", () => ({
   getStripe: () => ({ checkout: { sessions: { create: sessionsCreate } } }),
-  getConsumptionTaxRateId: (...a: unknown[]) => getConsumptionTaxRateId(...a),
-}));
-
-const alertOps = jest.fn();
-jest.mock("@/lib/ops-alert", () => ({
-  alertOps: (...a: unknown[]) => alertOps(...a),
 }));
 
 // 在庫の中身は inventory.test.ts が実 SQL で見る。ここでは
@@ -126,6 +119,12 @@ const lastOrder = () => inserted[inserted.length - 1];
 /** Stripe に渡した Checkout Session の引数。 */
 const lastSessionArgs = () =>
   sessionsCreate.mock.calls[sessionsCreate.mock.calls.length - 1][0];
+/** Stripe に渡した品名。領収書にそのまま載る。 */
+const lastLineNames = (): string[] =>
+  lastSessionArgs().line_items.map(
+    (line: { price_data: { product_data: { name: string } } }) =>
+      line.price_data.product_data.name,
+  );
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -142,7 +141,6 @@ beforeEach(() => {
     id: "cs_test_1",
     url: "https://checkout.stripe.com/c/pay/cs_test_1",
   });
-  getConsumptionTaxRateId.mockResolvedValue("txr_test_10");
   reserveStock.mockResolvedValue({ ok: true });
   releaseStock.mockResolvedValue(undefined);
   consumeRateLimit.mockResolvedValue({ ok: true });
@@ -680,43 +678,41 @@ describe("startCheckoutAction — Stripe の領収書", () => {
     );
   });
 
-  it("商品の行と送料の行の両方に消費税 10% を付ける", async () => {
+  // Stripe の税率は行ごとに端数処理するので、領収書に税額が出ると、税率ごとに
+  // 1 回という適格請求書の決まりと合わない注文ができる（¥2,100×5 と ¥1,850×5 で
+  // Stripe は ¥1,796、1 回で計算すると ¥1,795）。
+  it("領収書に税額が出ないよう、Stripe の税率を渡さない", async () => {
     await start({ items: CART });
     const lines = lastSessionArgs().line_items;
     expect(lines.length).toBe(2);
     for (const line of lines) {
-      expect(line.tax_rates).toEqual(["txr_test_10"]);
-    }
-  });
-
-  it("税率を付けても、Stripe へ渡す金額は税込のカタログ価格のまま", async () => {
-    await start({ items: CART });
-    const [item, shipping] = lastSessionArgs().line_items;
-    expect(item.price_data.unit_amount).toBe(SHOGUN_300.priceJpy);
-    expect(shipping.price_data.unit_amount).toBe(SHIPPING_FEE.flatJpy);
-  });
-
-  it("税率を用意できなくても決済は止めない", async () => {
-    getConsumptionTaxRateId.mockResolvedValue(null);
-    const res = await start({ items: CART });
-
-    expect(res.ok).toBe(true);
-    for (const line of lastSessionArgs().line_items) {
       expect(line).not.toHaveProperty("tax_rates");
     }
   });
 
-  it("税率を用意できなかったら、税率の無い領収書が出ることを人に知らせる", async () => {
-    getConsumptionTaxRateId.mockResolvedValue(null);
+  // 適格簡易請求書は税額か税率のどちらかでよい。税額を出さないので税率が要る。
+  it("領収書の適用税率として、商品と送料の品名に税率を書く", async () => {
     await start({ items: CART });
+    const names = lastLineNames();
 
-    expect(alertOps).toHaveBeenCalledTimes(1);
-    expect(String(alertOps.mock.calls[0][0])).toContain("税率");
+    expect(names.length).toBe(2);
+    for (const name of names) expect(name).toContain("税込・税率10%");
   });
 
-  it("税率があるときは通知しない", async () => {
+  it("英語のページからの決済は、品名の税率も英語で書く", async () => {
+    await start({ items: CART, locale: "en" });
+
+    for (const name of lastLineNames()) {
+      expect(name).toContain("incl. 10% consumption tax");
+      expect(name).not.toContain("税込");
+    }
+  });
+
+  it("Stripe へ渡す金額は税込のカタログ価格のまま", async () => {
     await start({ items: CART });
-    expect(alertOps).not.toHaveBeenCalled();
+    const [item, shipping] = lastSessionArgs().line_items;
+    expect(item.price_data.unit_amount).toBe(SHOGUN_300.priceJpy);
+    expect(shipping.price_data.unit_amount).toBe(SHIPPING_FEE.flatJpy);
   });
 
   it("Stripe の管理画面で探せるよう、注文番号を支払いの説明に入れる", async () => {
