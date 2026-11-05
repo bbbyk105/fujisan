@@ -25,49 +25,6 @@ export function getStripe(secretKey: string): Stripe {
   return client;
 }
 
-/** 税率の問い合わせは必須ではないので、遅いときは待たずに諦める。 */
-const TAX_RATE_REQUEST = { timeout: 3000, maxNetworkRetries: 0 };
-
-/**
- * 消費税 10%（内税）の Tax Rate の id を返す。無ければ作る。
- *
- * 領収書は Stripe が出すので、Checkout の行に税率を渡さないと領収書に載らない。
- * 内税なので請求額は変わらない。酒類は軽減税率の対象外で、送料も 10%。
- *
- * **id を環境変数で持たず、メモリにも残さない。** sandbox と本番で id が違い、
- * 本番キーへ切り替えたときに古い id が残ると全ての決済が止まる。アカウントは
- * 天地星空と共用で、ダッシュボードからアーカイブされた場合も同じことが起きる。
- *
- * 失敗したら `null`。領収書の税率のために決済を止めない（呼び出し側が人に知らせる）。
- */
-export async function getConsumptionTaxRateId(
-  stripe: Stripe,
-): Promise<string | null> {
-  try {
-    const { data } = await stripe.taxRates.list(
-      { active: true, inclusive: true, limit: 100 },
-      TAX_RATE_REQUEST,
-    );
-    const existing = data.find((r) => r.percentage === 10 && r.country === "JP");
-    if (existing) return existing.id;
-
-    const created = await stripe.taxRates.create(
-      {
-        display_name: "消費税",
-        percentage: 10,
-        inclusive: true,
-        country: "JP",
-        tax_type: "jct",
-      },
-      TAX_RATE_REQUEST,
-    );
-    return created.id;
-  } catch (err) {
-    console.error("[stripe] 消費税の Tax Rate を用意できませんでした:", err);
-    return null;
-  }
-}
-
 /**
  * 支払いの領収書のリンクを Stripe から取得する。無ければ `null`。
  *

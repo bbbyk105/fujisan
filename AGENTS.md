@@ -73,10 +73,9 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 
 領収書は Stripe が出す（2026-11-04 本人）。自前では書面を組まない。宛名の指定もやめた（`orders.receipt_addressee` は使っていない列として残っている）。
 
-- `startCheckoutAction` が `payment_intent_data.receipt_email` と、全ての行に消費税 10%（内税）の `tax_rates` を渡す。領収書の品名・税率は Checkout に渡した内容がそのまま載る。内税なので請求額は変わらない。
-- 税率の id は `getConsumptionTaxRateId()` が決済のたびに探し、無ければ作る。**環境変数にもメモリにも持たないこと** — 本番キーへの切り替えやアーカイブで古い id が残ると、全ての決済が止まる。取得に失敗しても決済は止めず、`alertOps` で知らせる。
-- Stripe は消費税を行ごとに端数処理するので、領収書の税額が合計からの計算と 1 円ずれることがある（`docs/TODO.md`）。
-- 注文番号は領収書に載らない（品名の明細があると支払いの説明は出ない。2026-11-04 に実物で確認）。支払いの説明には入れてあるので、Stripe の管理画面では `FJ-…` で探せる。
+- `startCheckoutAction` が `payment_intent_data.receipt_email` を渡す。領収書の品名は Checkout に渡した内容がそのまま載る。
+- **Stripe の税率（`tax_rates`）は使わない。** Stripe は行ごとに端数処理するので、領収書に税額を出すと、税率ごとに 1 回という適格請求書の決まり（国税庁タックスアンサー No.6371）と合わない注文ができる（¥2,100×5 と ¥1,850×5 で Stripe は ¥1,796、1 回の計算は ¥1,795）。小売業の領収書は税額か適用税率のどちらかでよいので（No.6625）、税額は出さず、品名に「税込・税率10%」（`CONSUMPTION_TAX_NOTE`）を書く（2026-11-05）。
+- 注文番号は支払いの説明（`ご注文 FJ-…`）として領収書の SUMMARY に載る（2026-11-05 にテスト環境で確認）。Stripe の管理画面でも `FJ-…` で探せる。
 - `/account/orders/[orderRef]/receipt` は Stripe の領収書へ転送するだけのページ。リンクは 30 日で切れるので保存せず、`getMyOrderReceiptUrlAction` が開くたびに取り直す（userId でも絞る）。
 - 発行者名・問い合わせ先・登録番号は Stripe のダッシュボードの設定で決まる（`SETUP.md` のタスク4-2）。発行者名は「法人名 (屋号)」の欄で、空だと明細書の表記が出る。テスト環境の領収書に登録番号を出すには、テスト環境にも `jp_trn` の税務 ID が要る。
 - Stripe の領収書には返金日や返金分の税率が載らない。1 万円以上の一部返金で適格返還請求書を求められたら個別に対応する（`docs/TODO.md`）。
@@ -112,7 +111,7 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 
 - `/account` は **`?tab=orders|profile|security` のタブ**（既定は注文）。以前は 1 枚に縦に積んでいて、注文が増えると登録情報とセキュリティが埋もれた。表示は `AccountView`、取得・認可はページ側。
 - `/account/orders/[orderRef]` が注文詳細、`/account/orders/[orderRef]/receipt` が Stripe の領収書への転送。
-- **退会しても注文は消さない**。`orders.user_id` は `ON DELETE SET NULL`（`0015`）で、紐づけだけが外れて注文の金額・宛先は残る。領収書の写しの保存が要り、プライバシーポリシーでも保存すると約束しているため。管理画面の注文は `user_id` が null でも `customer_*` の列で表示できるので、`user` と JOIN しないこと。領収書は決済時のメールに残ることを、退会画面で案内している。注文日から 9 年（`ORDER_PII_RETENTION_YEARS`）を過ぎた退会者の注文は、氏名・連絡先・住所と Stripe の ID を消し、金額と品目は残す。お問い合わせは 3 年（`CONTACT_RETENTION_YEARS`）で消す（`sweepExpiredPersonalData`。Cron ではなく `/admin` を開いたときに走る）。**プライバシーポリシーの保有期間がこの 2 つを読んでいる**ので、変えるなら公開の約束も変わる。`user_id` が null の注文はゲスト購入も同じで、9 年後の匿名化の対象になり、メールは `noAccount` で `/account` へ案内しない。
+- **退会しても注文は消さない**。`orders.user_id` は `ON DELETE SET NULL`（`0015`）で、紐づけだけが外れて注文の金額・宛先は残る。領収書の写しの保存が要り、プライバシーポリシーでも保存すると約束しているため。管理画面の注文は `user_id` が null でも `customer_*` の列で表示できるので、`user` と JOIN しないこと。領収書は決済時のメールに残ることを、退会画面で案内している。注文日から 9 年（`ORDER_PII_RETENTION_YEARS`）を過ぎた退会者の注文は、氏名・連絡先・住所と Stripe の ID を消し、金額と品目は残す。9 年は消費税法の写しの保存（課税期間の末日の翌日から 2〜3 か月＋7 年で、取引日から最長約 8 年 3 か月）を満たす年数。小売業の領収書に買い手の氏名は要らないので、個人情報を消しても金額・品目・日付が残れば足りる。お問い合わせは 3 年（`CONTACT_RETENTION_YEARS`）で消す（`sweepExpiredPersonalData`。Cron ではなく `/admin` を開いたときに走る）。**プライバシーポリシーの保有期間がこの 2 つを読んでいる**ので、変えるなら公開の約束も変わる。`user_id` が null の注文はゲスト購入も同じで、9 年後の匿名化の対象になり、メールは `noAccount` で `/account` へ案内しない。
 - **注文の取得は必ず userId でも絞る**（`getMyOrderByRefAction`）。orderRef は推測しにくいだけで秘密ではないので、番号だけで引くと他人の注文が見える。
 - **返金は全額・一部の両方を扱う**。`orders.refunded_amount` が累計額で、`status = "refunded"` は**全額返金のときだけ**付く（一部返金ではステータスは動かない。案内で「このまま発送」と書けるのは `willStillShip` が真の注文だけ）。判定は `refundStateOf()` に寄せる。冪等性は「返金前の累計」を WHERE と Stripe の idempotencyKey に入れて担保する。Webhook も同じで、同時に届いて先を越されたら読み直す（読み直さないと、今回の額を読み違えたまま返金メールを送る）。Webhook の `charge.refunds` は expand されないので、返金 id は `refunds.list` で引く。
 - 返金できる注文は `isRefundable()` で判定する。入金後に取り消した注文や手で pending へ戻した注文も返金でき、未入金の注文は返金できない（`paid_at` で見分ける）。
@@ -179,7 +178,7 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 - **年齢確認は二重**:
   1. `AgeGate.tsx`（layout.tsx で全ページに配置）— 20歳確認モーダル。localStorage `fujisan-age-confirmed`、「いいえ」で東京都の未成年飲酒防止ページへ強制遷移。SSR は「確認済み」を返してハイドレーション不整合を回避。
   2. 決済開始前のチェックボックス（`CartView`）。**クライアントの state だけに頼らず、`startCheckoutAction` が `ageConfirmed !== true` を `age` エラーで弾く**（Server Action は直接呼べるため）。以前ここにあった `checkoutSchema.ageConfirmed`（Zod）は自前の住所フォーム廃止と同時に消えている。
-- **法令情報の唯一の出どころ**: `src/data/fujisan-legal.ts`。未成年飲酒防止表示（`UNDERAGE_NOTICE_JP/EN`、フッター・商品ページ・特商法ページで参照）、送料 `SHIPPING_FEE`（一律1,100円 / 15,000円以上無料 — カート計算・全ページ表記がこの定数を参照）、特商法・酒類販売管理者標識。**未確定の値はダミー文字列で埋めず `null` にする**（`INVOICE_REGISTRATION_NUMBER`）。それらしい伏せ字は本物に見えたまま公開されうる。`npm run deploy` は predeploy で `scripts/check-legal-disclosure.mjs` を実行し、`src/data/` に伏せ字が残っていればデプロイを止める（dev / build / CI は止めない）。
+- **法令情報の唯一の出どころ**: `src/data/fujisan-legal.ts`。未成年飲酒防止表示（`UNDERAGE_NOTICE_JP/EN`、フッター・商品ページ・特商法ページで参照）、送料 `SHIPPING_FEE`（一律1,100円 / 15,000円以上無料 — カート計算・全ページ表記がこの定数を参照）、特商法・酒類販売管理者標識。**未確定の値はダミー文字列で埋めず `null` にする**（`INVOICE_REGISTRATION_NUMBER`）。それらしい伏せ字は本物に見えたまま公開されうる。`npm run deploy` は predeploy で `scripts/check-legal-disclosure.mjs` を実行し、`src/data/` に伏せ字が残っていればデプロイを止める（dev / build / CI は止めない）。自動デプロイ（Workers Builds）はこの経路を通らないので、法令の値を書き換えたときは手で `npm run check:legal` を流す。
 - **通信販売酒類小売業免許の番号は掲示しない**（2026-11-04 本人の判断）。特商法ページの行、`LIQUOR_LICENCE`、predeploy の番号の検査は外した。
 - 発送は日本国内のみ（Stripe の `allowed_countries: ["JP"]` と checkout の郵便番号7桁バリデーションで担保）。
 
