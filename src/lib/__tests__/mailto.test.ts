@@ -4,7 +4,7 @@
 
 // 宛先は公開フォームから入る値。`?` や `&` で BCC や本文を差し込めないこと。
 
-import { mailtoHref } from "@/lib/mailto";
+import { gmailComposeHref, mailtoHref } from "@/lib/mailto";
 
 describe("mailtoHref", () => {
   it("普通の宛先はそのまま読める形で返す", () => {
@@ -38,5 +38,26 @@ describe("mailtoHref", () => {
   it("件名は 1 つだけになる", () => {
     const url = new URL(mailtoHref("x@example.com?bcc=e@a.example", "件名"));
     expect([...url.searchParams.keys()]).toEqual(["subject"]);
+  });
+});
+
+describe("gmailComposeHref", () => {
+  it("空白を + にしない（件名にそのまま出ないよう %20 にする）", () => {
+    const href = gmailComposeHref(
+      "a+b@example.com",
+      "Re: 件名 two words",
+      "shop@example.com",
+    );
+
+    expect(href).toContain("Re%3A%20");
+    expect(href).not.toContain("+");
+    expect(new URL(href).searchParams.get("to")).toBe("a+b@example.com");
+    expect(new URL(href).searchParams.get("authuser")).toBe("shop@example.com");
+  });
+
+  it("壊れた文字が入っていても例外にしない", () => {
+    expect(() =>
+      gmailComposeHref("\ud800@example.com", "件名", "shop@example.com"),
+    ).not.toThrow();
   });
 });

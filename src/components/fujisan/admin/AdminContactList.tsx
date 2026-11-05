@@ -15,9 +15,12 @@ import type { AdminContactItem } from "@/lib/actions/admin-contacts";
 export function AdminContactList({
   messages,
   openOnly,
+  replyAccount,
 }: {
   messages: AdminContactItem[];
   openOnly: boolean;
+  /** 返信に使う Gmail のアカウント（お問い合わせの受信先）。 */
+  replyAccount: string;
 }) {
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -50,6 +53,7 @@ export function AdminContactList({
             <AdminContactRow
               key={m.id}
               message={m}
+              replyAccount={replyAccount}
               onDone={
                 openOnly
                   ? () =>

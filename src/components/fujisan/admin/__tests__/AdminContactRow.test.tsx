@@ -11,6 +11,8 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 import { AdminContactRow } from "../AdminContactRow";
 import { hasUnsavedChanges } from "@/lib/unsaved-changes";
 
+const INBOX = "shop@example.com";
+
 const setStatusAction = jest.fn();
 jest.mock("@/lib/actions/admin-contacts", () => ({
   adminSetContactStatusAction: (...a: unknown[]) => setStatusAction(...a),
@@ -39,14 +41,14 @@ beforeEach(() => {
 
 describe("AdminContactRow", () => {
   it("本文を開かなくても読める", () => {
-    render(<AdminContactRow message={message()} />);
+    render(<AdminContactRow replyAccount={INBOX} message={message()} />);
     expect(screen.getByRole("listitem").textContent).toContain(
       "取扱いについて\n教えてください。",
     );
   });
 
   it("選んだだけでは保存せず、保存を押すと保存する", async () => {
-    const { unmount } = render(<AdminContactRow message={message()} />);
+    const { unmount } = render(<AdminContactRow replyAccount={INBOX} message={message()} />);
     expect(screen.queryByRole("button", { name: "保存" })).toBeNull();
 
     fireEvent.click(screen.getByRole("radio", { name: "対応済み" }));
@@ -68,7 +70,7 @@ describe("AdminContactRow", () => {
   });
 
   it("元の状況に戻したら、未保存として扱わない", () => {
-    render(<AdminContactRow message={message()} />);
+    render(<AdminContactRow replyAccount={INBOX} message={message()} />);
 
     fireEvent.click(screen.getByRole("radio", { name: "対応中" }));
     fireEvent.click(screen.getByRole("radio", { name: "未対応" }));
@@ -79,7 +81,7 @@ describe("AdminContactRow", () => {
 
   it("保存に失敗したら理由を出し、選んだ状況は残す", async () => {
     setStatusAction.mockResolvedValue({ ok: false, error: "db" });
-    render(<AdminContactRow message={message()} />);
+    render(<AdminContactRow replyAccount={INBOX} message={message()} />);
 
     fireEvent.click(screen.getByRole("radio", { name: "対応中" }));
     await act(async () => {
@@ -92,53 +94,158 @@ describe("AdminContactRow", () => {
     ).toBe(true);
   });
 
-  it("返信の宛先と用件入りの件名を渡す", () => {
-    render(<AdminContactRow message={message()} />);
-    const href = screen
-      .getByRole("link", { name: "メールで返信" })
-      .getAttribute("href");
-
-    expect(href).toBe(
-      `mailto:sato@example.com?subject=${encodeURIComponent("Re: 卸・取扱店 — FUJISAN SAKE")}`,
-    );
-  });
-
   it("英語のページから届いたことが分かる", () => {
-    render(<AdminContactRow message={message({ locale: "en" })} />);
+    render(<AdminContactRow replyAccount={INBOX} message={message({ locale: "en" })} />);
     expect(screen.getByText("英語のページから")).toBeTruthy();
   });
 
-  // 公開フォームから入る値なので、宛先の ? や & で BCC や本文を差し込めてはいけない。
-  it("宛先に ? や & が入っていても、件名以外を差し込ませない", () => {
-    render(
-      <AdminContactRow
-        message={message({
-          email: "x@example.com?bcc=evil%40attacker.example&body=hi&a=",
-        })}
-      />,
-    );
-    const href = screen
-      .getByRole("link", { name: "メールで返信" })
-      .getAttribute("href") as string;
-    const query = new URL(href).searchParams;
+  describe("返信", () => {
+    function composeUrl() {
+      const link = screen.getByRole("link", { name: "Gmail で返信" });
+      return { link, url: new URL(link.getAttribute("href") as string) };
+    }
 
-    expect([...query.keys()]).toEqual(["subject"]);
-  });
+    afterEach(() => {
+      jest.useRealTimers();
+      delete (navigator as { clipboard?: unknown }).clipboard;
+    });
 
-  it("英語のページからのお問い合わせには英語の件名で返信する", () => {
-    render(<AdminContactRow message={message({ locale: "en" })} />);
-    const href = screen
-      .getByRole("link", { name: "メールで返信" })
-      .getAttribute("href");
+    // mailto: は端末の設定しだいで何も起きないので、Gmail の作成画面を開く。
+    // アカウントを指定しないと、ブラウザの既定の Google アカウントで開いて、
+    // 個人のアドレスからお客様へ返信してしまう。
+    it("宛先と用件入りの件名を入れて、店の受信アカウントの作成画面を新しいタブで開く", () => {
+      render(<AdminContactRow replyAccount={INBOX} message={message()} />);
+      const { link, url } = composeUrl();
 
-    expect(href).toContain(encodeURIComponent("Re: Trade & Wholesale"));
+      expect(url.origin).toBe("https://mail.google.com");
+      expect(url.searchParams.get("authuser")).toBe(INBOX);
+      expect(url.searchParams.get("to")).toBe("sato@example.com");
+      expect(url.searchParams.get("su")).toBe("Re: 卸・取扱店 — FUJISAN SAKE");
+      expect(link.getAttribute("target")).toBe("_blank");
+      expect(link.getAttribute("rel")).toContain("noopener");
+    });
+
+    it("英語のページからのお問い合わせには英語の件名で返信する", () => {
+      render(<AdminContactRow replyAccount={INBOX} message={message({ locale: "en" })} />);
+
+      expect(composeUrl().url.searchParams.get("su")).toBe(
+        "Re: Trade & Wholesale — FUJISAN SAKE",
+      );
+    });
+
+    // 公開フォームから入る値なので、宛先の ? や & で BCC や本文を差し込めてはいけない。
+    it("宛先に ? や & が入っていても、ほかの欄を差し込ませない", () => {
+      const email = "x@example.com?bcc=evil%40attacker.example&bcc=e@a.example";
+      render(<AdminContactRow replyAccount={INBOX} message={message({ email })} />);
+      const { url } = composeUrl();
+
+      expect(url.searchParams.get("to")).toBe(email);
+      expect([...url.searchParams.keys()]).toEqual([
+        "authuser",
+        "view",
+        "fs",
+        "to",
+        "su",
+      ]);
+    });
+
+    it("アドレスをコピーできる", async () => {
+      const writeText = jest.fn().mockResolvedValue(undefined);
+      Object.defineProperty(navigator, "clipboard", {
+        configurable: true,
+        value: { writeText },
+      });
+      render(<AdminContactRow replyAccount={INBOX} message={message()} />);
+
+      await act(async () => {
+        fireEvent.click(
+          screen.getByRole("button", { name: "アドレスをコピー" }),
+        );
+      });
+
+      expect(writeText).toHaveBeenCalledWith("sato@example.com");
+      expect(screen.getByRole("button", { name: "コピーしました" })).toBeTruthy();
+    });
+
+    it("コピーできなかったら、そのことを伝える", async () => {
+      Object.defineProperty(navigator, "clipboard", {
+        configurable: true,
+        value: { writeText: jest.fn().mockRejectedValue(new Error("denied")) },
+      });
+      render(<AdminContactRow replyAccount={INBOX} message={message()} />);
+
+      await act(async () => {
+        fireEvent.click(
+          screen.getByRole("button", { name: "アドレスをコピー" }),
+        );
+      });
+
+      expect(
+        screen.getByRole("button", { name: "コピーできませんでした" }),
+      ).toBeTruthy();
+    });
+
+    it("クリップボードが使えない環境でも、できなかったことを伝える", async () => {
+      render(<AdminContactRow replyAccount={INBOX} message={message()} />);
+
+      await act(async () => {
+        fireEvent.click(
+          screen.getByRole("button", { name: "アドレスをコピー" }),
+        );
+      });
+
+      expect(
+        screen.getByRole("button", { name: "コピーできませんでした" }),
+      ).toBeTruthy();
+    });
+
+    it("押し直しても、前のタイマーで新しい結果を消さない", async () => {
+      jest.useFakeTimers();
+      Object.defineProperty(navigator, "clipboard", {
+        configurable: true,
+        value: {
+          writeText: jest
+            .fn()
+            .mockRejectedValueOnce(new Error("denied"))
+            .mockResolvedValue(undefined),
+        },
+      });
+      render(<AdminContactRow replyAccount={INBOX} message={message()} />);
+
+      await act(async () => {
+        fireEvent.click(
+          screen.getByRole("button", { name: "アドレスをコピー" }),
+        );
+      });
+      act(() => {
+        jest.advanceTimersByTime(2400);
+      });
+      await act(async () => {
+        fireEvent.click(
+          screen.getByRole("button", { name: "コピーできませんでした" }),
+        );
+      });
+      act(() => {
+        jest.advanceTimersByTime(200);
+      });
+
+      expect(screen.getByRole("button", { name: "コピーしました" })).toBeTruthy();
+
+      act(() => {
+        jest.advanceTimersByTime(2500);
+      });
+      expect(
+        screen.getByRole("button", { name: "アドレスをコピー" }),
+      ).toBeTruthy();
+    });
   });
 
   it("ほかの管理者の更新が届いたら、触っていない行を未保存にしない", () => {
-    const { rerender } = render(<AdminContactRow message={message()} />);
+    const { rerender } = render(<AdminContactRow replyAccount={INBOX} message={message()} />);
 
     rerender(
       <AdminContactRow
+        replyAccount={INBOX}
         message={message({
           status: "done",
           handledByEmail: "staff@example.com",
@@ -157,7 +264,7 @@ describe("AdminContactRow", () => {
 
   it("保存に失敗したあと選び直したら、エラーを消す", async () => {
     setStatusAction.mockResolvedValue({ ok: false, error: "db" });
-    render(<AdminContactRow message={message()} />);
+    render(<AdminContactRow replyAccount={INBOX} message={message()} />);
 
     fireEvent.click(screen.getByRole("radio", { name: "対応中" }));
     await act(async () => {
@@ -170,7 +277,7 @@ describe("AdminContactRow", () => {
 
   it("保存中は選び直せない", () => {
     setStatusAction.mockReturnValue(new Promise(() => {}));
-    render(<AdminContactRow message={message()} />);
+    render(<AdminContactRow replyAccount={INBOX} message={message()} />);
 
     fireEvent.click(screen.getByRole("radio", { name: "対応中" }));
     fireEvent.click(screen.getByRole("button", { name: /保存/ }));
@@ -182,10 +289,10 @@ describe("AdminContactRow", () => {
   });
 
   it("選んでいる最中にほかの管理者の更新が届いても、選択は消さない", () => {
-    const { rerender } = render(<AdminContactRow message={message()} />);
+    const { rerender } = render(<AdminContactRow replyAccount={INBOX} message={message()} />);
 
     fireEvent.click(screen.getByRole("radio", { name: "対応中" }));
-    rerender(<AdminContactRow message={message({ status: "done" })} />);
+    rerender(<AdminContactRow replyAccount={INBOX} message={message({ status: "done" })} />);
 
     expect(
       (screen.getByRole("radio", { name: "対応中" }) as HTMLInputElement)
@@ -195,14 +302,14 @@ describe("AdminContactRow", () => {
   });
 
   it("保存したあとにほかの管理者が変えても、未保存にならない", async () => {
-    const { rerender } = render(<AdminContactRow message={message()} />);
+    const { rerender } = render(<AdminContactRow replyAccount={INBOX} message={message()} />);
 
     fireEvent.click(screen.getByRole("radio", { name: "対応中" }));
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: "保存" }));
     });
-    rerender(<AdminContactRow message={message({ status: "in_progress" })} />);
-    rerender(<AdminContactRow message={message({ status: "done" })} />);
+    rerender(<AdminContactRow replyAccount={INBOX} message={message({ status: "in_progress" })} />);
+    rerender(<AdminContactRow replyAccount={INBOX} message={message({ status: "done" })} />);
 
     expect(screen.queryByRole("button", { name: "保存" })).toBeNull();
     expect(hasUnsavedChanges()).toBe(false);
@@ -211,7 +318,7 @@ describe("AdminContactRow", () => {
   // 古い選択のまま残すと、もう一度の保存で相手の更新と対応者の記録を消してしまう。
   it("先に更新されていたら伝えて、最新の状況と対応者を見せる", async () => {
     setStatusAction.mockResolvedValue({ ok: false, error: "conflict" });
-    const { rerender } = render(<AdminContactRow message={message()} />);
+    const { rerender } = render(<AdminContactRow replyAccount={INBOX} message={message()} />);
 
     fireEvent.click(screen.getByRole("radio", { name: "対応中" }));
     await act(async () => {
@@ -219,6 +326,7 @@ describe("AdminContactRow", () => {
     });
     rerender(
       <AdminContactRow
+        replyAccount={INBOX}
         message={message({
           status: "done",
           handledByEmail: "staff@example.com",
@@ -239,13 +347,14 @@ describe("AdminContactRow", () => {
   });
 
   it("保存の結果を知らせる領域は、結果が出る前からある", () => {
-    render(<AdminContactRow message={message()} />);
+    render(<AdminContactRow replyAccount={INBOX} message={message()} />);
     expect(screen.getByRole("status").textContent).toBe("");
   });
 
   it("対応済みの行で別の状況を選んでいるあいだは、対応者を出さない", () => {
     render(
       <AdminContactRow
+        replyAccount={INBOX}
         message={message({
           status: "done",
           handledByEmail: "staff@example.com",
@@ -264,6 +373,7 @@ describe("AdminContactRow", () => {
   it("対応済みには対応した人を出す", () => {
     render(
       <AdminContactRow
+        replyAccount={INBOX}
         message={message({
           status: "done",
           handledByEmail: "staff@example.com",
