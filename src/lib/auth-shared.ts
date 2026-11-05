@@ -3,6 +3,8 @@
  * の双方で共有する。サーバー専用の依存を含めないこと（クライアントから import される）。
  */
 
+import { withRedirect } from "@/lib/safe-redirect";
+
 export const ACCOUNT_ROLES = ["personal", "business"] as const;
 export type AccountRole = (typeof ACCOUNT_ROLES)[number];
 
@@ -22,10 +24,17 @@ export const EMAIL_VERIFIED_PATH = "/email-verified";
  */
 export const AUTH_LINK_TTL_SEC = 60 * 60;
 
-export function emailVerifiedCallbackURL(role: AccountRole): string {
-  return role === "business"
-    ? `${EMAIL_VERIFIED_PATH}?role=business`
-    : EMAIL_VERIFIED_PATH;
+/** `redirect` はログイン後の戻り先。カートから登録したお客様を決済へ戻すのに使う。 */
+export function emailVerifiedCallbackURL(
+  role: AccountRole,
+  redirect?: string | null,
+): string {
+  return withRedirect(
+    role === "business"
+      ? `${EMAIL_VERIFIED_PATH}?role=business`
+      : EMAIL_VERIFIED_PATH,
+    redirect,
+  );
 }
 
 /** Better Auth の user テーブルに追加するカスタム項目。 */

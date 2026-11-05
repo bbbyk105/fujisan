@@ -72,8 +72,8 @@ const sections: DocumentSection[] = [
       />,
       <L
         key="2"
-        en="Orders: items ordered, amounts, delivery address, telephone number, and delivery status"
-        ja="ご注文情報: ご注文商品、金額、お届け先住所、電話番号、配送状況"
+        en="Orders: items ordered, amounts, delivery address, email address, telephone number, and delivery status"
+        ja="ご注文情報: ご注文商品、金額、お届け先住所、メールアドレス、電話番号、配送状況"
       />,
       <L
         key="3"
@@ -82,8 +82,8 @@ const sections: DocumentSection[] = [
       />,
       <L
         key="3b"
-        en="For enquiries, we store a one-way hash of your IP address (never the address itself), used only to block repeated automated submissions."
-        ja="お問い合わせの際、連投による自動送信を防ぐ目的でのみ、IP アドレスを復元できない形に変換した値を保存します（IP アドレスそのものは保存しません）。"
+        en="For enquiries and guest purchases, we store a one-way hash of your IP address (never the address itself), used only to block repeated automated submissions and attempts to hold stock."
+        ja="お問い合わせとゲストとしてのご購入の際、連投による自動送信や在庫の占有を防ぐ目的でのみ、IP アドレスを復元できない形に変換した値を保存します（IP アドレスそのものは保存しません）。"
       />,
       <L
         key="3c"
@@ -204,8 +204,8 @@ const sections: DocumentSection[] = [
     body: [
       <L
         key="b"
-        en={`Account information is kept while your account is open. You can close your account yourself from the account page once any order in progress has been delivered. Order records are kept after an account is closed, as tax and accounting records. For closed accounts, once ${ORDER_PII_RETENTION_YEARS} years have passed since the order date, we delete your name, address, email address, phone number and other details that identify you, and keep only the record of amounts and items. Enquiry records are kept for up to ${CONTACT_RETENTION_YEARS} years.`}
-        ja={`アカウント情報は、アカウントをご利用の間、保有します。進行中のご注文がお届け済みになれば、アカウントページからご自身で退会いただけます。ご注文の記録は、税務・会計の記録として退会後も保存します。退会されたお客様のご注文は、注文日から${ORDER_PII_RETENTION_YEARS}年を過ぎると、お名前・ご住所・メールアドレス・電話番号など個人を特定できる情報を削除し、金額と品目の記録のみを残します。お問い合わせの記録は最長${CONTACT_RETENTION_YEARS}年間保存します。`}
+        en={`Account information is kept while your account is open. You can close your account yourself from the account page once any order in progress has been delivered. Order records are kept after an account is closed, as tax and accounting records. For closed accounts and guest purchases, once ${ORDER_PII_RETENTION_YEARS} years have passed since the order date, we delete your name, address, email address, phone number and other details that identify you, and keep only the record of amounts and items. Enquiry records are kept for up to ${CONTACT_RETENTION_YEARS} years.`}
+        ja={`アカウント情報は、アカウントをご利用の間、保有します。進行中のご注文がお届け済みになれば、アカウントページからご自身で退会いただけます。ご注文の記録は、税務・会計の記録として退会後も保存します。退会されたお客様とゲストとしてご購入のお客様のご注文は、注文日から${ORDER_PII_RETENTION_YEARS}年を過ぎると、お名前・ご住所・メールアドレス・電話番号など個人を特定できる情報を削除し、金額と品目の記録のみを残します。お問い合わせの記録は最長${CONTACT_RETENTION_YEARS}年間保存します。`}
       />,
     ],
   },

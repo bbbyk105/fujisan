@@ -33,8 +33,8 @@ function emit() {
   for (const cb of listeners) cb();
 }
 
-function load(): void {
-  if (cache || inflight) return;
+function load(force = false): void {
+  if ((cache && !force) || inflight) return;
   inflight = fetch("/api/catalog", { cache: "no-store" })
     .then((res): Promise<{ skus?: LiveCatalog } | null> =>
       res.ok
@@ -54,6 +54,15 @@ function load(): void {
     .finally(() => {
       inflight = null;
     });
+}
+
+/**
+ * 在庫を取り直す。決済をやめて引き当てを解放したあとなど、読んだ値が古くなったときに使う。
+ * 取得中の結果は解放の前の値かもしれないので、終わるのを待ってから読み直す。
+ */
+export function refreshLiveCatalog(): void {
+  if (inflight) void inflight.then(() => load(true));
+  else load(true);
 }
 
 function subscribe(cb: () => void): () => void {

@@ -357,7 +357,7 @@ async function syncRefundFromStripe(
   // 返金メールはベストエフォート。返金自体は Stripe 側で成立している。
   try {
     await sendOrderRefundedEmail({
-      accountDeleted: row.userId === null,
+      noAccount: row.userId === null,
       stillShipping,
       orderRef: row.orderRef,
       customerName: row.customerName,
@@ -468,6 +468,7 @@ async function fulfillOrder(
   await applyStockMove(row, row.stockState, stockTarget);
 
   const data: OrderEmailData = {
+    noAccount: row.userId === null,
     orderRef: row.orderRef,
     customerName,
     customerEmail,
@@ -486,13 +487,25 @@ async function fulfillOrder(
     await sendOrderConfirmedEmail(data);
   } catch (err) {
     console.error("[stripe:webhook] 確定メール送信に失敗:", err);
+    // ゲストには注文を見るページが無く、このメールが唯一の記録になる。
+    if (data.noAccount) {
+      await alertOps(
+        "アカウントの無いお客様へ確定メールを送れませんでした",
+        [
+          `注文番号: ${row.orderRef}`,
+          `宛先: ${customerEmail}`,
+          "",
+          "入金は確定しています。お客様は注文番号を確認できないので、個別にご連絡ください。",
+        ].join("\n"),
+      );
+    }
   }
 }
 
 /**
- * 注文が無いのに入金があったことを知らせる。決済ページから戻って注文を消したあとに、
- * 開いたままのページで支払われると起こる（Session は期限まで有効）。
- * お金だけ受け取っているので、人が返金する。
+ * 注文が無いのに入金があったことを知らせる。「戻る」の解放は決済ページを閉じてから
+ * 注文を消すので、通常は起こらない。手で注文を消した場合や、閉じる処理と支払いが
+ * 重なった場合に備える。お金だけ受け取っているので、人が返金する。
  */
 async function alertPaymentWithoutOrder(
   session: Stripe.Checkout.Session,

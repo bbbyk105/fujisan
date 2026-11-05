@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { L } from "@/i18n/Localized";
 import { AUTH_LINK_TTL_SEC, type AccountRole } from "@/lib/auth-shared";
+import { withRedirect } from "@/lib/safe-redirect";
 import { AuthHeading } from "./AuthShell";
 
 /**
@@ -21,11 +22,15 @@ export function emailVerifiedStateOf(error: string | undefined): EmailVerifiedSt
 export function EmailVerifiedView({
   role,
   state,
+  redirectTo,
 }: {
   role: AccountRole;
   state: EmailVerifiedState;
+  /** ログインのあとに戻る先（カートから登録したとき）。検証済みの値を渡すこと。 */
+  redirectTo?: string | null;
 }) {
-  const loginHref = role === "business" ? "/login/business" : "/login/personal";
+  const loginPath = role === "business" ? "/login/business" : "/login/personal";
+  const loginHref = withRedirect(loginPath, redirectTo);
   const hours = Math.round(AUTH_LINK_TTL_SEC / 3600);
 
   if (state === "ok") {

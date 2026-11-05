@@ -29,6 +29,36 @@ describe("emailVerifiedCallbackURL", () => {
   });
 });
 
+describe("emailVerifiedCallbackURL — 登録後の戻り先", () => {
+  it("カートから来た登録は、戻り先を引き継ぐ", () => {
+    expect(emailVerifiedCallbackURL("personal", "/cart?resume=checkout")).toBe(
+      "/email-verified?redirect=%2Fcart%3Fresume%3Dcheckout",
+    );
+  });
+
+  it("外へ出る戻り先は引き継がない", () => {
+    expect(
+      emailVerifiedCallbackURL("personal", "https://evil.example/"),
+    ).toBe("/email-verified");
+  });
+});
+
+describe("EmailVerifiedView — 登録後の戻り先", () => {
+  it("確認できたら、ログインのあと元の画面へ戻るリンクを出す", () => {
+    const { getByRole } = render(
+      <EmailVerifiedView
+        role="personal"
+        state="ok"
+        redirectTo="/cart?resume=checkout"
+      />,
+    );
+
+    expect(getByRole("link", { name: /ログインする/ }).getAttribute("href")).toBe(
+      "/login/personal?redirect=%2Fcart%3Fresume%3Dcheckout",
+    );
+  });
+});
+
 describe("EmailVerifiedView", () => {
   it("確認できたら、その旨とログインへの入口を出す", () => {
     const { container, getByRole } = render(

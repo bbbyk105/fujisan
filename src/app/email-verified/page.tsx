@@ -3,6 +3,7 @@ import {
   EmailVerifiedView,
   emailVerifiedStateOf,
 } from "@/components/fujisan/auth/EmailVerifiedView";
+import { safeRedirectPath } from "@/lib/safe-redirect";
 import { buildMetadata } from "@/lib/seo";
 
 export const metadata = buildMetadata({
@@ -25,6 +26,9 @@ export default async function EmailVerifiedPage({
   const params = await searchParams;
   const role = params.role === "business" ? "business" : "personal";
   const error = typeof params.error === "string" ? params.error : undefined;
+  const redirectTo = safeRedirectPath(
+    typeof params.redirect === "string" ? params.redirect : null,
+  );
 
   return (
     <AuthShell
@@ -61,7 +65,11 @@ export default async function EmailVerifiedPage({
             }
       }
     >
-      <EmailVerifiedView role={role} state={emailVerifiedStateOf(error)} />
+      <EmailVerifiedView
+        role={role}
+        state={emailVerifiedStateOf(error)}
+        redirectTo={redirectTo}
+      />
     </AuthShell>
   );
 }

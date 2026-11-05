@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { AuthShell, AuthHeading } from "@/components/fujisan/auth/AuthShell";
 import { RegisterPersonalForm } from "@/components/fujisan/auth/RegisterPersonalForm";
 import { isGoogleEnabled } from "@/lib/auth";
@@ -41,7 +42,9 @@ export default async function RegisterPersonalPage() {
         leadEn="For individual customers. You must be 20 or older to purchase alcohol in Japan."
         leadJp="個人のお客様向けです。酒類のご購入は20歳以上の方に限ります。"
       />
-      <RegisterPersonalForm googleEnabled={googleEnabled} />
+      <Suspense>
+        <RegisterPersonalForm googleEnabled={googleEnabled} />
+      </Suspense>
     </AuthShell>
   );
 }

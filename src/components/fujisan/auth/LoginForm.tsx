@@ -4,6 +4,8 @@ import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { signInAction } from "@/lib/actions/auth";
+import { CHECKOUT_RESUME_PATH } from "@/lib/cart/checkout-resume";
+import { safeRedirectPath, withRedirect } from "@/lib/safe-redirect";
 import type { AuthErrorKey } from "@/lib/auth-errors";
 import {
   getFieldErrors,
@@ -34,7 +36,8 @@ export function LoginForm({
 }) {
   const params = useSearchParams();
   const fallback = role === "business" ? "/shop/business" : "/account";
-  const redirectTo = params.get("redirect") || fallback;
+  const requestedRedirect = safeRedirectPath(params.get("redirect"));
+  const redirectTo = requestedRedirect ?? fallback;
   const googleError = params.get("error") === "google";
 
   const [email, setEmail] = useState("");
@@ -45,8 +48,10 @@ export function LoginForm({
   >({});
   const [submitting, setSubmitting] = useState(false);
 
-  const registerHref =
-    role === "business" ? "/register/business" : "/register/personal";
+  const registerHref = withRedirect(
+    role === "business" ? "/register/business" : "/register/personal",
+    requestedRedirect,
+  );
 
   const clearError = (field: string) =>
     setFieldErrors((prev) => {
@@ -78,6 +83,15 @@ export function LoginForm({
 
   return (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-7">
+      {requestedRedirect === CHECKOUT_RESUME_PATH && (
+        <Notice tone="info">
+          <L
+            en="After you sign in, we'll take you back to your cart to pay."
+            ja="ログインするとカートへ戻り、お支払いへ進めます。"
+          />
+        </Notice>
+      )}
+
       {googleError && !errorKey && (
         <Notice tone="error">
           <L
@@ -94,7 +108,11 @@ export function LoginForm({
               en="Please verify your email using the link we sent to your inbox. Didn't get it?"
               ja="メールアドレスの確認が必要です。お送りした確認メールのリンクをクリックしてください。届いていない場合は、こちらから再送できます。"
             />
-            <ResendVerification email={email} role={role} />
+            <ResendVerification
+              email={email}
+              role={role}
+              redirect={requestedRedirect}
+            />
           </div>
         </Notice>
       )}
@@ -172,7 +190,13 @@ export function LoginForm({
           <OrDivider>
             <L en="OR" ja="または" />
           </OrDivider>
-          <GoogleButton redirectTo={redirectTo}>
+          <GoogleButton
+            redirectTo={redirectTo}
+            errorRedirectTo={withRedirect(
+              "/login/personal?error=google",
+              requestedRedirect,
+            )}
+          >
             <L en="Continue with Google" ja="Google で続ける" />
           </GoogleButton>
         </>

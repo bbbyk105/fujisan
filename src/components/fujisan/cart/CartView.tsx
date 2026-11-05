@@ -2,38 +2,63 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+  type MouseEvent,
+} from "react";
 import {
   MAX_QTY_PER_LINE,
   amountToFreeShipping,
   shippingFee,
 } from "@/lib/cart/cart-core";
 import { useCart } from "@/lib/cart/useCart";
-import { useLiveCatalog, liveKey } from "@/lib/cart/useLiveCatalog";
+import {
+  liveKey,
+  refreshLiveCatalog,
+  useLiveCatalog,
+} from "@/lib/cart/useLiveCatalog";
+import {
+  CHECKOUT_RESUME_PATH,
+  rememberAgeConfirmed,
+  takeAgeConfirmed,
+} from "@/lib/cart/checkout-resume";
 import { pushToast } from "@/lib/cart/toast-store";
 import { useSession } from "@/lib/auth-client";
+import { withRedirect } from "@/lib/safe-redirect";
 import {
   releaseAbandonedCheckoutAction,
   startCheckoutAction,
 } from "@/lib/actions/checkout";
 import { fujisanProducts, primaryVolume } from "@/data/fujisan-products";
 import { SHIPPING_FEE } from "@/data/fujisan-legal";
+import { inputCls } from "@/components/fujisan/auth/ui";
+import { FieldError } from "@/components/fujisan/FieldError";
 import { LivePrice } from "@/components/fujisan/LivePrice";
+import { guestEmailIssue } from "@/lib/validation/email";
+import type { FieldErrorKey } from "@/lib/validation/forms";
 import { L } from "@/i18n/Localized";
 import { useLocale } from "@/i18n/useLocale";
 
 const yen = new Intl.NumberFormat("ja-JP");
 
-/** 決済開始の失敗理由。"login"/"age" はフロント固有のゲート、それ以外は action 由来。 */
-type CheckoutError =
-  | "unauth"
-  | "invalid"
-  | "config"
-  | "stripe"
-  | "db"
-  | "soldout"
-  | "login"
-  | "age";
+/** 決済開始の失敗理由。サーバーの戻り値から導くので、増えたら型で気づける。 */
+type CheckoutError = Extract<
+  Awaited<ReturnType<typeof startCheckoutAction>>,
+  { ok: false }
+>["error"];
+
+
+/** やめた決済の在庫を解放し、終わったら在庫を取り直す。 */
+function releaseOrder(orderRef: string, guestKey?: string | null) {
+  const refresh = () => refreshLiveCatalog();
+  void releaseAbandonedCheckoutAction({
+    orderRef,
+    ...(guestKey ? { guestKey } : {}),
+  }).then(refresh, refresh);
+}
 
 function QtyStepper({
   qty,
@@ -113,13 +138,22 @@ export function CartView() {
   // 実勢在庫。カートを開いた時点で「買えない」ことに気づけるようにする。
   // 取得前・取得失敗時は空なので、従来どおり決済開始時のサーバー検証に委ねる。
   const { catalog } = useLiveCatalog();
-  const { data: session, isPending } = useSession();
+  const { data: session, isPending, refetch } = useSession();
+  // ログイン状態を一度でも確かめたか。Better Auth はタブへ戻るたびに取り直し、未ログイン
+  // だとそのあいだ isPending が true に戻る。isPending で分岐すると、ゲストの入力欄が
+  // 作り直されてフォーカスが外れ、貼り付けが空振りする。
+  const [sessionChecked, setSessionChecked] = useState(false);
+  if (!isPending && !sessionChecked) setSessionChecked(true);
   const locale = useLocale();
   // 削除確認中の行（`${slug}-${ml}`）。null のときは確認テロップを出していない。
   const [confirmingKey, setConfirmingKey] = useState<string | null>(null);
 
   // 決済開始まわりの状態
   const [ageConfirmed, setAgeConfirmed] = useState(false);
+  const [guestEmail, setGuestEmail] = useState("");
+  const [guestEmailError, setGuestEmailError] = useState<FieldErrorKey | null>(
+    null,
+  );
   const [submitting, setSubmitting] = useState(false);
   const [checkoutError, setCheckoutError] = useState<CheckoutError | null>(null);
   // 在庫が足りなかった SKU（決済開始時にサーバーが返す）。どれが買えないかを名指しする。
@@ -151,30 +185,47 @@ export function CartView() {
     // その間その在庫は誰も買えない。引き返したと分かっているなら待つ必要はない。
     const abandoned = params.get("order");
     if (params.get("canceled") === "1" && abandoned) {
-      void releaseAbandonedCheckoutAction({ orderRef: abandoned });
+      releaseOrder(abandoned, params.get("key"));
     }
   }, []);
 
-  // 「お支払いへ進む」: 年齢確認・ログインを確認し、Stripe 決済ページへ遷移する。
-  const handleCheckout = async () => {
-    if (submitting) return;
-    setCheckoutError(null);
-    setShortages([]);
-    if (!session?.user?.id) {
-      setCheckoutError("login");
-      return;
-    }
-    if (!ageConfirmed) {
-      setCheckoutError("age");
-      return;
-    }
+  // 決済ページからブラウザの「戻る」で帰ると、移動中の状態のまま復元される。
+  // cancel_url を通らないので、始めた注文の在庫もここで解放する。解放しないと、
+  // 最後の 1 本では自分の引き当てに負けて完売と表示される。
+  const startedOrder = useRef<{ orderRef: string; guestKey?: string } | null>(
+    null,
+  );
+  useEffect(() => {
+    const onPageShow = (event: PageTransitionEvent) => {
+      if (!event.persisted) return;
+      setSubmitting(false);
+      const started = startedOrder.current;
+      startedOrder.current = null;
+      if (started?.orderRef) releaseOrder(started.orderRef, started.guestKey);
+    };
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, []);
+
+  /** 確認が済んだ状態で決済を始め、Stripe の決済ページへ移る。 */
+  const startCheckout = async (guest?: string) => {
     setSubmitting(true);
-    const res = await startCheckoutAction({
-      items: lines.map((l) => ({ slug: l.slug, ml: l.ml, qty: l.qty })),
-      locale,
-      ageConfirmed,
-    });
+    let res: Awaited<ReturnType<typeof startCheckoutAction>>;
+    try {
+      res = await startCheckoutAction({
+        items: lines.map((l) => ({ slug: l.slug, ml: l.ml, qty: l.qty })),
+        locale,
+        ageConfirmed: true,
+        ...(guest ? { guestEmail: guest } : {}),
+      });
+    } catch {
+      // 通信の失敗など。固めずに、もう一度押せるようにする。
+      setSubmitting(false);
+      setCheckoutError("stripe");
+      return;
+    }
     if (res.ok) {
+      startedOrder.current = res;
       // Stripe ホスト型決済ページへ。遷移するので submitting は解除しない。
       window.location.href = res.url;
       return;
@@ -182,6 +233,56 @@ export function CartView() {
     setSubmitting(false);
     setCheckoutError(res.error);
     setShortages(res.shortages ?? []);
+    // セッションが切れていた。取り直して、ログインかゲストかを選べるようにする。
+    if (res.error === "unauth") void refetch();
+  };
+
+  // ログイン・新規登録から戻ってきたら、そのまま決済へ進む。20 歳以上の確認が
+  // カートで済んでいるときだけ。無ければカートを見せて、もう一度確認してもらう。
+  // 一度だけ動かし、再読み込みで走らないよう URL の目印も外す。
+  const resumeChecked = useRef(false);
+  const resumeCheckout = useEffectEvent(() => {
+    if (resumeChecked.current) return;
+    resumeChecked.current = true;
+    if (new URLSearchParams(window.location.search).get("resume") !== "checkout") {
+      return;
+    }
+    window.history.replaceState(null, "", "/cart");
+    if (!takeAgeConfirmed()) return;
+    setAgeConfirmed(true);
+    if (loggedIn && lines.length > 0) void startCheckout();
+  });
+  useEffect(() => {
+    if (ready && !isPending) resumeCheckout();
+  }, [ready, isPending]);
+
+  // 「お支払いへ進む」: 年齢確認と、ゲストならメールアドレスを確かめて決済を始める。
+  const handleCheckout = async () => {
+    if (submitting) return;
+    setCheckoutError(null);
+    setShortages([]);
+    if (!ageConfirmed) {
+      setCheckoutError("age");
+      return;
+    }
+    if (loggedIn) {
+      await startCheckout();
+      return;
+    }
+    const issue = guestEmailIssue(guestEmail);
+    setGuestEmailError(issue);
+    if (!issue) await startCheckout(guestEmail.trim());
+  };
+
+  // ログイン・新規登録へ進む前に、20 歳以上の確認を済ませてもらう。戻ったときに
+  // 確認からやり直すと、そのまま決済へ進めないため。
+  const handleSignInLink = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (!ageConfirmed) {
+      event.preventDefault();
+      setCheckoutError("age");
+      return;
+    }
+    rememberAgeConfirmed();
   };
 
   const quickAdd = (slug: string, ml: number, name: string) => {
@@ -596,31 +697,63 @@ export function CartView() {
             </p>
           ) : null}
 
-          {/* 未ログイン: 購入にはログインが必要 */}
-          {!isPending && !loggedIn ? (
-            <div
-              role="note"
-              className="mt-5 border border-gold/45 bg-paper-tint/80 px-4 py-4 text-[12px] leading-[1.7] text-indigo/88"
-            >
+          {/* 未ログイン: ログインして購入するか、ゲストとして購入するかを選ぶ */}
+          {sessionChecked && !loggedIn ? (
+            <div className="mt-5 border border-gold/45 bg-paper-tint/80 px-4 py-4 text-[12px] leading-[1.7] text-indigo/88">
               <p className="font-semibold">
                 <L
-                  en="Please sign in to complete your purchase."
-                  ja="ご購入にはログインが必要です。"
+                  en="Sign in, or continue as a guest."
+                  ja="ログインするか、ゲストとしてご購入ください。"
                 />
               </p>
               <div className="mt-3 flex flex-wrap gap-3">
                 <Link
-                  href="/login/personal"
+                  href={withRedirect("/login/personal", CHECKOUT_RESUME_PATH)}
+                  onClick={handleSignInLink}
                   className="ed-btn"
                 >
-                  <L en="Sign in" ja="ログイン" />
+                  <L en="Sign in to buy" ja="ログインして購入" />
                 </Link>
                 <Link
-                  href="/register/personal"
+                  href={withRedirect("/register/personal", CHECKOUT_RESUME_PATH)}
+                  onClick={handleSignInLink}
                   className="ed-btn-ghost"
                 >
-                  <L en="Create account" ja="新規登録" />
+                  <L en="Create an account to buy" ja="新規登録して購入" />
                 </Link>
+              </div>
+
+              <div className="mt-5 border-t border-indigo/15 pt-4">
+                <p className="font-semibold">
+                  <L en="Buy as a guest" ja="ゲストとして購入" />
+                </p>
+                <label
+                  htmlFor="guest-email"
+                  className="mt-2 block text-[11.5px] font-semibold text-indigo/75"
+                >
+                  <L en="Email address" ja="メールアドレス" />
+                </label>
+                <input
+                  id="guest-email"
+                  type="email"
+                  autoComplete="email"
+                  inputMode="email"
+                  value={guestEmail}
+                  aria-invalid={guestEmailError ? "true" : undefined}
+                  onChange={(e) => {
+                    setGuestEmail(e.target.value);
+                    setGuestEmailError(null);
+                  }}
+                  placeholder="you@example.com"
+                  className={inputCls}
+                />
+                <FieldError error={guestEmailError ?? undefined} />
+                <p className="mt-2 text-[11.5px] leading-[1.7] text-indigo/65">
+                  <L
+                    en="We'll send your order confirmation and receipt to this address. You'll enter your delivery address and phone number on the next page."
+                    ja="ご注文の確認メールと領収書をこのアドレスへお送りします。お届け先の住所と電話番号は、次の決済ページで入力していただきます。"
+                  />
+                </p>
               </div>
             </div>
           ) : null}
@@ -678,19 +811,30 @@ export function CartView() {
             </div>
           ) : null}
 
-          {/* 決済開始エラー（ログイン・年齢・完売以外） */}
+          {/* 決済開始エラー（年齢・完売以外） */}
           {checkoutError &&
-          checkoutError !== "login" &&
           checkoutError !== "age" &&
           checkoutError !== "soldout" ? (
             <p
               role="alert"
               className="mt-5 border border-crimson/40 bg-crimson/6 px-4 py-3 text-[11.5px] leading-[1.7] text-crimson"
             >
-              <L
-                en="We couldn't start the payment. Please try again."
-                ja="決済を開始できませんでした。もう一度お試しください。"
-              />
+              {checkoutError === "rate" ? (
+                <L
+                  en="Too many attempts to start payment. Please wait a while and try again, or sign in to continue."
+                  ja="決済の開始が続いたため、受け付けを止めています。時間をおいてもう一度お試しいただくか、ログインしてお進みください。"
+                />
+              ) : checkoutError === "unauth" ? (
+                <L
+                  en="Your sign-in has expired. Please sign in again, or continue as a guest."
+                  ja="ログインの有効期限が切れました。もう一度ログインするか、ゲストとしてお進みください。"
+                />
+              ) : (
+                <L
+                  en="We couldn't start the payment. Please try again."
+                  ja="決済を開始できませんでした。もう一度お試しください。"
+                />
+              )}
             </p>
           ) : null}
 
@@ -709,30 +853,40 @@ export function CartView() {
           <button
             type="button"
             onClick={handleCheckout}
-            disabled={submitting || (!isPending && !loggedIn) || blockedByStock}
+            disabled={submitting || !sessionChecked || blockedByStock}
             className={`group/btn mt-6 inline-flex w-full items-center justify-center gap-3 px-7 py-4 text-[11px] font-semibold tracking-[0.12em] transition-all ${
-              submitting || (!isPending && !loggedIn) || blockedByStock
+              submitting || !sessionChecked || blockedByStock
                 ? "cursor-not-allowed border border-indigo/25 bg-indigo/12 text-indigo/45"
                 : "cursor-pointer border border-indigo bg-indigo text-paper-card hover:bg-indigo-lift"
             }`}
           >
             {submitting ? (
               <L en="REDIRECTING TO PAYMENT…" ja="決済ページへ移動中…" />
+            ) : sessionChecked && !loggedIn ? (
+              <L
+                en={`CONTINUE AS GUEST · ¥${yen.format(total)}`}
+                ja={`ゲストとしてお支払いへ進む · ¥${yen.format(total)}`}
+              />
             ) : (
-              <>
-                <L
-                  en={`PROCEED TO PAYMENT · ¥${yen.format(total)}`}
-                  ja={`お支払いへ進む · ¥${yen.format(total)}`}
-                />
-              </>
+              <L
+                en={`PROCEED TO PAYMENT · ¥${yen.format(total)}`}
+                ja={`お支払いへ進む · ¥${yen.format(total)}`}
+              />
             )}
           </button>
 
           <p className="mt-4 text-[11.5px] leading-[1.7] text-indigo/55">
-            <L
-              en="Payment is completed securely on the next screen (Stripe). We ship to the address on your account. If none is saved, you'll enter it at checkout."
-              ja="お支払いは次の画面（Stripe の安全な決済ページ）で行います。お届け先はご登録の住所になります。未登録の場合は決済画面でご入力いただきます。"
-            />
+            {loggedIn ? (
+              <L
+                en="Payment is completed securely on the next screen (Stripe). We ship to the address on your account. If none is saved, you'll enter it at checkout."
+                ja="お支払いは次の画面（Stripe の安全な決済ページ）で行います。お届け先はご登録の住所になります。未登録の場合は決済画面でご入力いただきます。"
+              />
+            ) : (
+              <L
+                en="Payment is completed securely on the next screen (Stripe)."
+                ja="お支払いは次の画面（Stripe の安全な決済ページ）で行います。"
+              />
+            )}
           </p>
         </aside>
       </div>

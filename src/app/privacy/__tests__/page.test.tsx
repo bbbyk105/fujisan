@@ -33,7 +33,7 @@ describe("プライバシーポリシーの保有期間", () => {
 
   it("退会後の注文の保存期間を年数で示す", () => {
     expect(text()).toContain(
-      `退会されたお客様のご注文は、注文日から${ORDER_PII_RETENTION_YEARS}年`,
+      `退会されたお客様とゲストとしてご購入のお客様のご注文は、注文日から${ORDER_PII_RETENTION_YEARS}年`,
     );
     expect(text()).toContain(`${ORDER_PII_RETENTION_YEARS} years`);
   });

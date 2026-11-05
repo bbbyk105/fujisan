@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { EMAIL_RE } from "./email";
 import {
   TRADE_BUSINESS_TYPES,
   requiresLiquorLicence,
@@ -16,7 +17,6 @@ export type FieldErrorKey =
   | "agree"
   | "postal";
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** 前後空白を除いてメール形式かどうかを判定する純関数（再送アクション等で再利用）。 */
 export function isEmailLike(value: string): boolean {

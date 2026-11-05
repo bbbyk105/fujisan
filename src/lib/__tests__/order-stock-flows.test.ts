@@ -36,12 +36,12 @@ jest.mock("@opennextjs/cloudflare", () => ({
     env: { STRIPE_SECRET_KEY: "sk_test_1", STRIPE_WEBHOOK_SECRET: "whsec_1" },
   }),
 }));
+/** ログイン中の利用者。null ならゲスト。 */
+let sessionUser: { id: string; email: string } | null;
 jest.mock("@/lib/auth", () => ({
   getAuth: async () => ({
     api: {
-      getSession: async () => ({
-        user: { id: "u_1", email: "owner@example.com" },
-      }),
+      getSession: async () => (sessionUser ? { user: sessionUser } : null),
     },
   }),
 }));
@@ -59,10 +59,14 @@ jest.mock("@/lib/ops-alert", () => ({
 const verifyStripeSignature = jest.fn();
 const refundsCreate = jest.fn();
 const sessionsRetrieve = jest.fn();
+const sessionsExpire = jest.fn();
 jest.mock("@/lib/stripe", () => ({
   getStripe: () => ({
     checkout: {
-      sessions: { retrieve: (...a: unknown[]) => sessionsRetrieve(...a) },
+      sessions: {
+        retrieve: (...a: unknown[]) => sessionsRetrieve(...a),
+        expire: (...a: unknown[]) => sessionsExpire(...a),
+      },
     },
     refunds: {
       create: (...a: unknown[]) => refundsCreate(...a),
@@ -185,6 +189,7 @@ const chargeRefunded = (amountRefunded: number) => ({
 
 beforeEach(() => {
   jest.clearAllMocks();
+  sessionUser = { id: "u_1", email: "owner@example.com" };
   sqlite = new DatabaseSync(":memory:");
   applyMigrations();
   sqlite.exec(`
@@ -198,6 +203,8 @@ beforeEach(() => {
   );
   refundsCreate.mockImplementation(async () => ({ id: "re_1" }));
   sessionsRetrieve.mockImplementation(async () => ({ payment_intent: "pi_1" }));
+  sessionsExpire.mockReset();
+  sessionsExpire.mockResolvedValue({ id: "cs_1", status: "expired" });
   placeOrder();
 });
 
@@ -608,5 +615,122 @@ describe("手で pending へ戻した注文は、未払いの掃除で消さな�
 
     expect(orderRow()).toBeUndefined();
     expect(stock()).toEqual({ onHand: ON_HAND, reserved: 0 });
+  });
+});
+
+describe("ゲストが決済ページから戻ったとき", () => {
+  beforeEach(() => {
+    sessionUser = null;
+    sqlite.exec("UPDATE orders SET user_id = NULL, paid_at = NULL");
+  });
+
+  it("鍵が合えば、注文を消して在庫を解放する", async () => {
+    await expect(
+      releaseAbandonedCheckoutAction({
+        orderRef: "FJ-0001",
+        guestKey: ORDER_ID,
+      }),
+    ).resolves.toEqual({ ok: true });
+
+    expect(orderRow()).toBeUndefined();
+    expect(stock()).toEqual({ onHand: ON_HAND, reserved: 0 });
+  });
+
+  // 閉じないと、開いたままの決済ページから消した注文に支払えてしまう。
+  it("消す前に Stripe の決済ページを閉じる", async () => {
+    await releaseAbandonedCheckoutAction({
+      orderRef: "FJ-0001",
+      guestKey: ORDER_ID,
+    });
+
+    expect(sessionsExpire).toHaveBeenCalledWith("cs_1");
+  });
+
+  it("決済ページを閉じられなければ、注文も在庫も残す", async () => {
+    sessionsExpire.mockRejectedValue(new Error("session is already complete"));
+    sessionsRetrieve.mockResolvedValue({ status: "complete" });
+
+    await expect(
+      releaseAbandonedCheckoutAction({
+        orderRef: "FJ-0001",
+        guestKey: ORDER_ID,
+      }),
+    ).resolves.toEqual({ ok: false });
+
+    expect(orderRow()?.status).toBe("pending");
+    expect(stock().reserved).toBe(2);
+  });
+
+  it("Session の id が無ければ、閉じられないので消さない", async () => {
+    sqlite.exec("UPDATE orders SET stripe_session_id = NULL");
+
+    await expect(
+      releaseAbandonedCheckoutAction({
+        orderRef: "FJ-0001",
+        guestKey: ORDER_ID,
+      }),
+    ).resolves.toEqual({ ok: false });
+
+    expect(orderRow()?.status).toBe("pending");
+    expect(stock().reserved).toBe(2);
+  });
+
+  // 期限切れの Webhook の処理に失敗した注文。閉じられないのは期限が切れているからで、
+  // 支払いは進まないので消してよい。消せないと引き当てが残り続ける。
+  it("決済ページが期限切れで閉じられないなら、消して在庫を解放する", async () => {
+    sessionsExpire.mockRejectedValue(new Error("session is not open"));
+    sessionsRetrieve.mockResolvedValue({ status: "expired" });
+
+    await expect(
+      releaseAbandonedCheckoutAction({
+        orderRef: "FJ-0001",
+        guestKey: ORDER_ID,
+      }),
+    ).resolves.toEqual({ ok: true });
+
+    expect(orderRow()).toBeUndefined();
+    expect(stock()).toEqual({ onHand: ON_HAND, reserved: 0 });
+  });
+
+  it("鍵が違えば、決済ページも閉じない", async () => {
+    await releaseAbandonedCheckoutAction({
+      orderRef: "FJ-0001",
+      guestKey: "wrong",
+    });
+
+    expect(sessionsExpire).not.toHaveBeenCalled();
+  });
+
+  it("鍵が違えば、何もしない", async () => {
+    await expect(
+      releaseAbandonedCheckoutAction({
+        orderRef: "FJ-0001",
+        guestKey: "wrong",
+      }),
+    ).resolves.toEqual({ ok: false });
+
+    expect(orderRow()?.status).toBe("pending");
+    expect(stock().reserved).toBe(2);
+  });
+
+  it("注文番号だけでは解放できない", async () => {
+    await expect(
+      releaseAbandonedCheckoutAction({ orderRef: "FJ-0001" }),
+    ).resolves.toEqual({ ok: false });
+
+    expect(orderRow()?.status).toBe("pending");
+  });
+
+  it("鍵が合っても、会員の注文は解放できない", async () => {
+    sqlite.exec("UPDATE orders SET user_id = 'u_1'");
+
+    await expect(
+      releaseAbandonedCheckoutAction({
+        orderRef: "FJ-0001",
+        guestKey: ORDER_ID,
+      }),
+    ).resolves.toEqual({ ok: false });
+
+    expect(orderRow()?.status).toBe("pending");
   });
 });

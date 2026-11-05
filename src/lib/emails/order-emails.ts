@@ -28,8 +28,8 @@ export type OrderEmailData = {
   trackingNumber?: string | null;
   /** 返金メール用: 実際に返金した金額（円）。未指定なら total を使う。 */
   refundAmount?: number;
-  /** 返金メール用: 退会済みのお客様か。ログインできないのでアカウントのページへ案内しない。 */
-  accountDeleted?: boolean;
+  /** アカウントが無いお客様か（退会済み・ゲスト購入）。ログインできないページへ案内しない。 */
+  noAccount?: boolean;
   /**
    * 返金メール用: これから発送する注文か（`willStillShip`）。
    * 渡さなければ発送の案内を書かない。発送しない注文に書くほうが害が大きい。
@@ -161,11 +161,29 @@ function htmlShell(args: {
 </html>`;
 }
 
+/** 確定・発送のメールの案内先。アカウントが無いお客様はお問い合わせへ案内する。 */
+function orderLinkFor(
+  d: OrderEmailData,
+  baseUrl: string,
+  member: { label: string; textLabel: string },
+): { label: string; textLabel: string; url: string } {
+  return d.noAccount
+    ? {
+        label: "お問い合わせ",
+        textLabel: "ご注文についてのお問い合わせ / Contact us",
+        url: `${baseUrl}/contact`,
+      }
+    : { ...member, url: `${baseUrl}/account` };
+}
+
 // ── ① 注文確定（決済完了） ─────────────────────────────────────────
 
 export async function sendOrderConfirmedEmail(d: OrderEmailData): Promise<void> {
   const { opts, baseUrl } = await resendOpts();
-  const ctaUrl = `${baseUrl}/account`;
+  const link = orderLinkFor(d, baseUrl, {
+    label: "ご注文状況を見る",
+    textLabel: "ご注文状況の確認 / View your order",
+  });
 
   const text = `FUJISAN SAKE — ご注文を承りました / Order confirmed
 
@@ -191,8 +209,8 @@ ${itemsText(d.items)}
 ${d.customerName} 様
 〒${d.postalCode} ${d.address}
 
-ご注文状況の確認 / View your order:
-${ctaUrl}
+${link.textLabel}:
+${link.url}
 
 ${FUJISAN_LEGAL.sellerName}
 ${FUJISAN_LEGAL.address}
@@ -205,8 +223,8 @@ TEL ${FUJISAN_LEGAL.phone} / ${FUJISAN_LEGAL.email}
     heading: "ご注文を承りました。",
     lead: `${escapeHtml(d.customerName)} 様、お支払いを確認しご注文を確定しました。蔵でひとつずつ検品し、原則2営業日以内に発送いたします。<br/><span style="color:#1D243299;">We've confirmed your payment. Your order is being prepared and ships within two business days.</span>`,
     d,
-    ctaLabel: "ご注文状況を見る",
-    ctaUrl,
+    ctaLabel: link.label,
+    ctaUrl: link.url,
   });
 
   await sendEmail(
@@ -224,7 +242,10 @@ TEL ${FUJISAN_LEGAL.phone} / ${FUJISAN_LEGAL.email}
 
 export async function sendOrderShippedEmail(d: OrderEmailData): Promise<void> {
   const { opts, baseUrl } = await resendOpts();
-  const ctaUrl = `${baseUrl}/account`;
+  const link = orderLinkFor(d, baseUrl, {
+    label: "お届け状況を見る",
+    textLabel: "ご注文状況の確認 / Track your order",
+  });
 
   const hasTracking = Boolean(d.trackingCarrier || d.trackingNumber);
   const trackingText = hasTracking
@@ -248,8 +269,8 @@ ${trackingText}
 ${d.customerName} 様
 〒${d.postalCode} ${d.address}
 
-ご注文状況の確認 / Track your order:
-${ctaUrl}
+${link.textLabel}:
+${link.url}
 
 ${FUJISAN_LEGAL.sellerName} / ${FUJISAN_LEGAL.email}
 ※20歳未満の飲酒は法律で禁止されています。
@@ -261,8 +282,8 @@ ${FUJISAN_LEGAL.sellerName} / ${FUJISAN_LEGAL.email}
     lead: `${escapeHtml(d.customerName)} 様、ご注文の商品を発送いたしました。お届けまで今しばらくお待ちください。<br/><span style="color:#1D243299;">Your order is on its way.</span>`,
     d,
     extraBlock: trackingHtml,
-    ctaLabel: "お届け状況を見る",
-    ctaUrl,
+    ctaLabel: link.label,
+    ctaUrl: link.url,
   });
 
   await sendEmail(
@@ -323,7 +344,7 @@ ${FUJISAN_LEGAL.sellerName} / ${FUJISAN_LEGAL.email}
 
 export async function sendOrderRefundedEmail(d: OrderEmailData): Promise<void> {
   const { opts, baseUrl } = await resendOpts();
-  const cta = d.accountDeleted
+  const cta = d.noAccount
     ? { label: "ショップへ戻る", url: `${baseUrl}/shop/personal` }
     : { label: "ご注文履歴を見る", url: `${baseUrl}/account` };
   const refund = d.refundAmount ?? d.total;

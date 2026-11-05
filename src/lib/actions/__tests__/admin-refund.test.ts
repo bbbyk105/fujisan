@@ -106,7 +106,7 @@ describe("adminRefundOrderAction", () => {
       ok: true,
     });
     expect(sendOrderRefundedEmail).toHaveBeenCalledWith(
-      expect.objectContaining({ accountDeleted: true }),
+      expect.objectContaining({ noAccount: true }),
     );
   });
 
@@ -191,7 +191,7 @@ describe("adminRefundOrderAction", () => {
     await adminRefundOrderAction({ orderId: "o_1" });
 
     expect(sendOrderRefundedEmail).toHaveBeenCalledWith(
-      expect.objectContaining({ accountDeleted: false }),
+      expect.objectContaining({ noAccount: false }),
     );
   });
 });

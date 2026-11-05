@@ -59,8 +59,9 @@ jest.mock("@/lib/inventory", () => ({
   formatStockWarnings: () => null,
 }));
 
+const sendOrderShippedEmail = jest.fn();
 jest.mock("@/lib/emails/order-emails", () => ({
-  sendOrderShippedEmail: jest.fn(),
+  sendOrderShippedEmail: (...a: unknown[]) => sendOrderShippedEmail(...a),
   sendOrderDeliveredEmail: jest.fn(),
   sendOrderRefundedEmail: jest.fn(),
 }));
@@ -236,6 +237,44 @@ describe("adminUpdateOrderAction — 手動ステータス変更と在庫", () =
     const res = await adminUpdateOrderAction({
       orderId: "order_1",
       status: "cancelled",
+    });
+    errSpy.mockRestore();
+
+    expect(res).toEqual({ ok: true });
+    expect(alertOps).toHaveBeenCalledTimes(1);
+    expect(alertOps.mock.calls[0][1]).toContain("FJ-ABC123");
+  });
+});
+
+describe("adminUpdateOrderAction — 発送メールの案内先", () => {
+  it("アカウントが無い注文は noAccount を渡す", async () => {
+    orderRow = { ...row("confirmed"), userId: null };
+    await adminUpdateOrderAction({ orderId: "order_1", status: "shipped" });
+
+    expect(sendOrderShippedEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ noAccount: true }),
+    );
+  });
+
+  it("会員の注文には渡さない", async () => {
+    orderRow = { ...row("confirmed"), userId: "u_1" };
+    await adminUpdateOrderAction({ orderId: "order_1", status: "shipped" });
+
+    expect(sendOrderShippedEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ noAccount: false }),
+    );
+  });
+});
+
+describe("adminUpdateOrderAction — 発送メールの失敗", () => {
+  it("アカウントが無い注文で失敗したら、追跡番号が届かないことを人に知らせる", async () => {
+    const errSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    sendOrderShippedEmail.mockRejectedValueOnce(new Error("resend down"));
+    orderRow = { ...row("confirmed"), userId: null };
+
+    const res = await adminUpdateOrderAction({
+      orderId: "order_1",
+      status: "shipped",
     });
     errSpy.mockRestore();
 

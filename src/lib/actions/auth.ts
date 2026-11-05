@@ -20,6 +20,7 @@ import {
   type RateLimitBucket,
 } from "@/lib/rate-limit";
 import { emailVerifiedCallbackURL } from "@/lib/auth-shared";
+import { safeRedirectPath } from "@/lib/safe-redirect";
 import { createTradeApplication } from "@/lib/trade";
 import type { TradeBusinessType } from "@/data/fujisan-trade";
 import {
@@ -78,6 +79,8 @@ export async function registerPersonalAction(input: {
   name: string;
   email: string;
   password: string;
+  /** 確認のあと、ログインして戻る先（カートから登録したとき）。 */
+  redirect?: string | null;
 }): Promise<AuthActionResult> {
   if (!isValid(registerPersonalSchema, input))
     return { ok: false, error: "generic" };
@@ -90,7 +93,7 @@ export async function registerPersonalAction(input: {
         email: input.email,
         password: input.password,
         role: "personal",
-        callbackURL: emailVerifiedCallbackURL("personal"),
+        callbackURL: emailVerifiedCallbackURL("personal", input.redirect),
       },
       headers: await headers(),
     });
@@ -246,12 +249,16 @@ export async function deleteAccountAction(): Promise<DeleteAccountResult> {
 export async function resendVerificationAction(input: {
   email: string;
   role?: "personal" | "business";
+  redirect?: string | null;
 }): Promise<AuthActionResult> {
   const email = input.email.trim();
   if (!isEmailLike(email)) return { ok: false, error: "invalid" };
   // 認証メールは「誰でも・何度でも」送れてしまうので、ここは必ず絞る。
   if (!(await limit("sendEmail"))) return { ok: false, error: "rate" };
-  const callbackURL = emailVerifiedCallbackURL(input.role ?? "personal");
+  const callbackURL = emailVerifiedCallbackURL(
+    input.role ?? "personal",
+    input.redirect,
+  );
   const auth = await getAuth();
   try {
     await auth.api.sendVerificationEmail({
@@ -410,7 +417,12 @@ export async function googleStartAction(
   const auth = await getAuth();
   try {
     const res = await auth.api.signInSocial({
-      body: { provider: "google", callbackURL, errorCallbackURL },
+      body: {
+        provider: "google",
+        // 公開の Server Action で、Better Auth の origin の確認も通らない経路なのでここで絞る。
+        callbackURL: safeRedirectPath(callbackURL) ?? "/account",
+        errorCallbackURL: safeRedirectPath(errorCallbackURL) ?? undefined,
+      },
       headers: await headers(),
     });
     return { url: (res as { url?: string })?.url ?? null };

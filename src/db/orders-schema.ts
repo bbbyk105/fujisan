@@ -149,7 +149,8 @@ export const order = sqliteTable(
   {
     id: text("id").primaryKey(),
     /**
-     * 注文したアカウント。**退会すると null になる**（注文そのものは残す）。
+     * 注文したアカウント。ゲスト購入は null で、**退会しても null になる**（注文そのものは
+     * 残す）。null を退会者と決めつけないこと。
      *
      * 領収書は適格簡易請求書で写しの保存が要り、プライバシーポリシーにも
      * 退会後も保存すると書いている（期限は `ORDER_PII_RETENTION_YEARS`）。ここを cascade に
@@ -187,7 +188,7 @@ export const order = sqliteTable(
     phone: text("phone").notNull(),
 
     /** 決済情報（Stripe Checkout） */
-    /** 支払いを確定した Checkout Session の id。Webhook の冪等化キーにも使う。 */
+    /** Checkout Session の id。決済の開始で控え、「戻る」で決済ページを閉じるのにも使う。 */
     stripeSessionId: text("stripe_session_id"),
     /** 支払いの PaymentIntent id。返金（refunds.create）の対象に使う。Webhook で保存。 */
     stripePaymentIntentId: text("stripe_payment_intent_id"),
