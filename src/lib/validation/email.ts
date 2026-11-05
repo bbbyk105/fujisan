@@ -18,3 +18,19 @@ export function guestEmailIssue(value: unknown): FieldErrorKey | null {
     !email.includes("..");
   return valid ? null : "email";
 }
+
+/**
+ * ゲスト購入のメールアドレスの確認欄の問題。無ければ null。
+ *
+ * ゲストの宛先は誰も確認していない。打ち間違えると、宛名と住所の入った確定メールが
+ * 他人へ届く。大文字と小文字は同じ宛先に届くので区別しない。
+ */
+export function guestEmailConfirmIssue(
+  email: string,
+  confirmation: string,
+): FieldErrorKey | null {
+  if (!confirmation.trim()) return "required";
+  const same =
+    email.trim().toLowerCase() === confirmation.trim().toLowerCase();
+  return same ? null : "emailMismatch";
+}

@@ -10,6 +10,8 @@ import {
 export type FieldErrorKey =
   | "required"
   | "email"
+  /** 確認用の再入力と一致しない */
+  | "emailMismatch"
   | "min8"
   /** 文字数が上限を超えている */
   | "long"

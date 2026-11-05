@@ -9,6 +9,7 @@ import { order as orderTable, type OrderLine } from "@/db/orders-schema";
 import { user as userTable } from "@/db/auth-schema";
 import { getLiveSkuMap } from "@/lib/catalog";
 import { skuKey } from "@/data/fujisan-products";
+import { TURNSTILE_SITE_KEY } from "@/data/fujisan-turnstile";
 import { MAX_QTY_PER_LINE, shippingFee } from "@/lib/cart/cart-core";
 import { applyStockMove } from "@/lib/order-stock";
 import {
@@ -19,12 +20,14 @@ import {
 import { alertOps } from "@/lib/ops-alert";
 import { clientIpFrom, consumeRateLimit } from "@/lib/rate-limit";
 import { getConsumptionTaxRateId, getStripe } from "@/lib/stripe";
+import { verifyTurnstile } from "@/lib/turnstile";
 import { guestEmailIssue } from "@/lib/validation/email";
 
 /** カートから送られてくる最小限の行（価格はサーバーで引き直す）。 */
 type CartInput = { slug: string; ml: number; qty: number };
 
 type StartCheckoutEnv = {
+  TURNSTILE_SECRET_KEY?: string;
   STRIPE_SECRET_KEY?: string;
   BETTER_AUTH_URL?: string;
 };
@@ -78,6 +81,8 @@ export async function startCheckoutAction(input: {
   ageConfirmed?: boolean;
   /** ゲスト購入のメールアドレス。ログイン中は使わない。 */
   guestEmail?: string;
+  /** ゲスト購入のボット判定のトークン。 */
+  turnstileToken?: string;
 }): Promise<
   | {
       ok: true;
@@ -96,7 +101,8 @@ export async function startCheckoutAction(input: {
         | "db"
         | "soldout"
         | "age"
-        | "rate";
+        | "rate"
+        | "bot";
       /** soldout のとき、どの SKU が何本まで買えるか。UI で名指しするのに使う。 */
       shortages?: ShortageLine[];
     }
@@ -175,12 +181,31 @@ export async function startCheckoutAction(input: {
     "",
   );
 
-  // 入力の検証が済んでから数える。不正な入力で枠を使わせない。
+  // ボット判定はサイトキーと秘密鍵の両方がそろってから。片方だけで判定すると、
+  // ウィジェットが無いのにトークンを求めて、ゲスト全員が止まる。
+  const turnstileSecret =
+    !userId && TURNSTILE_SITE_KEY ? e.TURNSTILE_SECRET_KEY : undefined;
+
+  // トークンの無い要求は問い合わせるまでもなく止める。
+  if (turnstileSecret && !input.turnstileToken) {
+    return { ok: false, error: "bot" };
+  }
+
   if (!userId) {
-    const limit = await consumeRateLimit({
-      bucket: "guestCheckout",
-      ip: clientIpFrom(await headers()),
-    });
+    const ip = clientIpFrom(await headers());
+
+    // 判定を通ってから数える。入力の検証と同じで、落ちる要求に回数の枠を使わせると、
+    // ボットが同じ IP のお客様を締め出せる。
+    if (turnstileSecret) {
+      const passed = await verifyTurnstile({
+        secret: turnstileSecret,
+        token: input.turnstileToken,
+        ip,
+      });
+      if (!passed) return { ok: false, error: "bot" };
+    }
+
+    const limit = await consumeRateLimit({ bucket: "guestCheckout", ip });
     if (!limit.ok) return { ok: false, error: "rate" };
   }
 

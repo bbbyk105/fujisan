@@ -7,6 +7,10 @@ const MESSAGES: Record<FieldErrorKey, { en: string; ja: string }> = {
     en: "Enter a valid email address.",
     ja: "メールアドレスの形式が正しくありません。",
   },
+  emailMismatch: {
+    en: "The email addresses don't match.",
+    ja: "メールアドレスが一致しません。",
+  },
   min8: {
     en: "Must be at least 8 characters.",
     ja: "8文字以上で入力してください。",

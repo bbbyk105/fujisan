@@ -43,7 +43,9 @@ BtoC（個人）と BtoB（法人取扱店・卸価格表示）の二系統の�
 
 - ログインしていなくても、カートでメールアドレスを入れれば購入できる。注文は `user_id` が null で、**お届け先と電話番号は Stripe の決済ページで必須**（自前の住所フォームは作らない）。メールアドレスをカートで聞くのは、決済前に `receipt_email` を渡さないと領収書の宛先を指定できないから。
 - **20 歳以上の確認はゲストも省けない**。`startCheckoutAction` は UI と同じくサーバーで確かめる。
-- ログインなしで注文を作り在庫を 30 分押さえられるので、IP ごとに回数を絞る（`guestCheckout`）。入力の検証を通ってから数える。
+- ログインなしで注文を作り在庫を 30 分押さえられるので、IP ごとに回数を絞り（`guestCheckout`）、Cloudflare Turnstile でボットを止める。回数制限だけでは防げない（全在庫を 1 回で押さえられるので、1 時間に 2 回で足りる）。入力の検証、Turnstile、回数制限の順に見る。
+- Turnstile はサイトキー（`src/data/fujisan-turnstile.ts`、公開してよい値）と秘密鍵（`TURNSTILE_SECRET_KEY`）の**両方がそろったときだけ**動く。Cloudflare の不調や秘密鍵の誤りでは通して `alertOps` で知らせる（`verifyTurnstile`）。**通す判断は Cloudflare からの応答か接続の失敗だけで行うこと** — 利用者が送る値で例外になって通ると、判定を素通りできる（文字列でないトークンを最初に弾いているのはこのため）。トークンは 1 回しか使えないので、決済の開始に失敗したら `key` を変えてウィジェットを作り直す。ゲストのメールアドレスを入れるまで読み込まない（ログインするお客様の情報を Cloudflare へ送らない）。回数は判定を通ってから数える — 落ちる要求に枠を使わせると、ボットが同じ IP のお客様を締め出せる。ウィジェット自体が読めないとトークンが無いのでゲストは止まり、ログインへ案内する（トークン無しを通すと判定の意味が無い）。
+- ゲストのメールアドレスは確認欄と照合する（`guestEmailConfirmIssue`）。打ち間違えると、宛名と住所の入った確定メールが他人へ届く。
 - ゲストは本人を確かめられないので、`releaseAbandonedCheckoutAction` は注文番号だけでは動かない。決済ページから戻る URL に注文の id（推測できない UUID）を `key` として付け、これを「決済を始めたブラウザ」の鍵にする。
 - **「戻る」で注文を消す前に `checkout.sessions.expire` で決済ページを閉じる**（ゲストも会員も）。Session は期限まで有効で、閉じないと注文の無い支払いができてしまう。閉じられないときや id が無いときは消さずに Webhook へ任せる（期限切れなら消す）。そのために決済の開始で `stripe_session_id` を控えている。ブラウザの「戻る」は `cancel_url` を通らないので、`pageshow` で同じ解放を行う。解放のあとは `refreshLiveCatalog` で在庫を取り直す。
 - `user_id` が null の注文にはログインできるアカウントが無い（ゲストと退会者）。メールは `noAccount` を渡して `/account` へ案内しない。9 年後の匿名化も同じ条件で対象になるので、プライバシーポリシーにもゲストを書いてある。
@@ -239,7 +241,7 @@ pending の掃除失敗はログのみ（入金に影響しないため）。
 - **Next.js 16 の `error.js` は `reset` ではなく `unstable_retry`**。旧 API 名のままだと再試行ボタンが動かない。`global-error.js` も同じ。
 - **`cloudflare-env.d.ts` は生成物で `.gitignore` 済み**。`prebuild` が `cf-typegen` を走らせるので `npm run build` は clone 直後でも通るが、エディタの型エラーを消すには一度 `npm run cf-typegen` が要る。
 - **dev は `next dev --webpack`**（Turbopack ではない）。`initOpenNextCloudflareForDev()` により dev でも D1/env バインディングが `.dev.vars` から供給される。
-- **`.dev.vars` が真の env ファイル**（BETTER_AUTH_SECRET / BETTER_AUTH_URL / ADMIN_EMAILS / RESEND_API_KEY / GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET / STRIPE_SECRET_KEY / STRIPE_WEBHOOK_SECRET）。本番は `wrangler secret put <NAME>`。`.env.example` は古いテンプレで一部実態と乖離あり。
+- **`.dev.vars` が真の env ファイル**（BETTER_AUTH_SECRET / BETTER_AUTH_URL / ADMIN_EMAILS / RESEND_API_KEY / GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET / STRIPE_SECRET_KEY / STRIPE_WEBHOOK_SECRET / TURNSTILE_SECRET_KEY）。本番は `wrangler secret put <NAME>`。`.env.example` は古いテンプレで一部実態と乖離あり。
 - STRIPE_SECRET_KEY 未設定だと checkout は `config` エラーを返す。Webhook のローカル検証は Stripe CLI の forward が必要（`STRIPE_WEBHOOK_SECRET` を合わせる）。
 - スキーマ変更後は drizzle-kit で SQL 生成 + `wrangler d1 migrations apply` を忘れない（`--local` と `--remote` は別 DB）。Better Auth のフィールド変更時は CLI `generate` が静的 `auth` インスタンスを読む。
 - 成功リダイレクトに依存する処理を書かない（確定・メールは Webhook 側。ユーザーがタブを閉じても成立する設計）。

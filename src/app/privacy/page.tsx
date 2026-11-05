@@ -86,6 +86,11 @@ const sections: DocumentSection[] = [
         ja="お問い合わせとゲストとしてのご購入の際、連投による自動送信や在庫の占有を防ぐ目的でのみ、IP アドレスを復元できない形に変換した値を保存します（IP アドレスそのものは保存しません）。"
       />,
       <L
+        key="3b2"
+        en="For guest purchases, we use Cloudflare Turnstile to block automated access. Cloudflare processes your IP address, TLS fingerprint and browser information (User-Agent) for this purpose. It does not read what you enter in forms."
+        ja="ゲストとしてのご購入の際、自動操作を防ぐために Cloudflare Turnstile を使用します。この目的で、Cloudflare が IP アドレス、TLS フィンガープリント、ブラウザの情報（User-Agent）を処理します。フォームの入力内容は取得しません。"
+      />,
+      <L
         key="3c"
         en="Sign-in and account pages count recent attempts per IP address to block password guessing and mass email sending. These counters hold the address for at most one hour and are then deleted."
         ja="ログイン・アカウント関連のページでは、パスワードの総当たりやメールの大量送信を防ぐため、IP アドレスごとの試行回数を数えます。この記録は最長でも 1 時間で削除します。"
@@ -118,6 +123,11 @@ const sections: DocumentSection[] = [
         key="3"
         en="Age verification at the point of sale, as required by law"
         ja="法令に基づく販売時の年齢確認"
+      />,
+      <L
+        key="3b"
+        en="Preventing fraud and automated access"
+        ja="不正利用や自動操作の防止"
       />,
       <L
         key="4"
@@ -159,8 +169,8 @@ const sections: DocumentSection[] = [
       />,
       <L
         key="2"
-        en="Cloudflare: site hosting and database"
-        ja="Cloudflare: サイトのホスティング・データベース"
+        en="Cloudflare: site hosting and database, and bot detection for guest purchases (Turnstile)"
+        ja="Cloudflare: サイトのホスティング・データベース、ゲストとしてのご購入の際のボット判定（Turnstile）"
       />,
       <L key="3" en="Resend: transactional email" ja="Resend: メールの配信" />,
       <L

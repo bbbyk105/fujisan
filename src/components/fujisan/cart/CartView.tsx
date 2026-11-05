@@ -34,10 +34,15 @@ import {
 } from "@/lib/actions/checkout";
 import { fujisanProducts, primaryVolume } from "@/data/fujisan-products";
 import { SHIPPING_FEE } from "@/data/fujisan-legal";
+import { TURNSTILE_SITE_KEY } from "@/data/fujisan-turnstile";
 import { inputCls } from "@/components/fujisan/auth/ui";
+import { TurnstileWidget } from "@/components/fujisan/cart/TurnstileWidget";
 import { FieldError } from "@/components/fujisan/FieldError";
 import { LivePrice } from "@/components/fujisan/LivePrice";
-import { guestEmailIssue } from "@/lib/validation/email";
+import {
+  guestEmailConfirmIssue,
+  guestEmailIssue,
+} from "@/lib/validation/email";
 import type { FieldErrorKey } from "@/lib/validation/forms";
 import { L } from "@/i18n/Localized";
 import { useLocale } from "@/i18n/useLocale";
@@ -154,6 +159,24 @@ export function CartView() {
   const [guestEmailError, setGuestEmailError] = useState<FieldErrorKey | null>(
     null,
   );
+  const [guestEmailConfirm, setGuestEmailConfirm] = useState("");
+  const [guestEmailConfirmError, setGuestEmailConfirmError] =
+    useState<FieldErrorKey | null>(null);
+  // ボット判定のトークン。1 回しか使えないので、決済を始めるたびに作り直して取り直す。
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [turnstileKey, setTurnstileKey] = useState(0);
+  const [turnstileFailed, setTurnstileFailed] = useState(false);
+  const retryTurnstile = () => {
+    setTurnstileToken(null);
+    setTurnstileFailed(false);
+    setTurnstileKey((n) => n + 1);
+  };
+  // ゲストとして買うと分かってから読み込む。ログインするお客様や、見ているだけの人の
+  // 情報を Cloudflare へ送らない。一度読み込んだら、訂正の途中で形式が崩れても消さない。
+  const [guestEmailEntered, setGuestEmailEntered] = useState(false);
+  if (!guestEmailEntered && !guestEmailIssue(guestEmail)) {
+    setGuestEmailEntered(true);
+  }
   const [submitting, setSubmitting] = useState(false);
   const [checkoutError, setCheckoutError] = useState<CheckoutError | null>(null);
   // 在庫が足りなかった SKU（決済開始時にサーバーが返す）。どれが買えないかを名指しする。
@@ -199,6 +222,7 @@ export function CartView() {
     const onPageShow = (event: PageTransitionEvent) => {
       if (!event.persisted) return;
       setSubmitting(false);
+      retryTurnstile();
       const started = startedOrder.current;
       startedOrder.current = null;
       if (started?.orderRef) releaseOrder(started.orderRef, started.guestKey);
@@ -217,11 +241,13 @@ export function CartView() {
         locale,
         ageConfirmed: true,
         ...(guest ? { guestEmail: guest } : {}),
+        ...(guest && turnstileToken ? { turnstileToken } : {}),
       });
     } catch {
       // 通信の失敗など。固めずに、もう一度押せるようにする。
       setSubmitting(false);
       setCheckoutError("stripe");
+      retryTurnstile();
       return;
     }
     if (res.ok) {
@@ -233,6 +259,7 @@ export function CartView() {
     setSubmitting(false);
     setCheckoutError(res.error);
     setShortages(res.shortages ?? []);
+    retryTurnstile();
     // セッションが切れていた。取り直して、ログインかゲストかを選べるようにする。
     if (res.error === "unauth") void refetch();
   };
@@ -270,8 +297,24 @@ export function CartView() {
       return;
     }
     const issue = guestEmailIssue(guestEmail);
+    const confirmIssue = issue
+      ? null
+      : guestEmailConfirmIssue(guestEmail, guestEmailConfirm);
     setGuestEmailError(issue);
-    if (!issue) await startCheckout(guestEmail.trim());
+    setGuestEmailConfirmError(confirmIssue);
+    if (issue || confirmIssue) return;
+    if (TURNSTILE_SITE_KEY && !turnstileToken) {
+      setCheckoutError("bot");
+      // 判定の途中で作り直すと最初からやり直しになるので、失敗しているときだけ。
+      if (turnstileFailed) retryTurnstile();
+      return;
+    }
+    await startCheckout(guestEmail.trim());
+  };
+
+  const handleTurnstileToken = (token: string | null) => {
+    setTurnstileToken(token);
+    if (token) setCheckoutError((e) => (e === "bot" ? null : e));
   };
 
   // ログイン・新規登録へ進む前に、20 歳以上の確認を済ませてもらう。戻ったときに
@@ -743,11 +786,43 @@ export function CartView() {
                   onChange={(e) => {
                     setGuestEmail(e.target.value);
                     setGuestEmailError(null);
+                    setGuestEmailConfirmError(null);
                   }}
                   placeholder="you@example.com"
                   className={inputCls}
                 />
                 <FieldError error={guestEmailError ?? undefined} />
+                <label
+                  htmlFor="guest-email-confirm"
+                  className="mt-3 block text-[11.5px] font-semibold text-indigo/75"
+                >
+                  <L en="Confirm email address" ja="メールアドレス（確認）" />
+                </label>
+                <input
+                  id="guest-email-confirm"
+                  type="email"
+                  autoComplete="off"
+                  inputMode="email"
+                  value={guestEmailConfirm}
+                  aria-invalid={guestEmailConfirmError ? "true" : undefined}
+                  onChange={(e) => {
+                    setGuestEmailConfirm(e.target.value);
+                    setGuestEmailConfirmError(null);
+                  }}
+                  placeholder="you@example.com"
+                  className={inputCls}
+                />
+                <FieldError error={guestEmailConfirmError ?? undefined} />
+                {TURNSTILE_SITE_KEY && guestEmailEntered ? (
+                  <div className="mt-3">
+                    <TurnstileWidget
+                      key={turnstileKey}
+                      siteKey={TURNSTILE_SITE_KEY}
+                      onToken={handleTurnstileToken}
+                      onFailure={() => setTurnstileFailed(true)}
+                    />
+                  </div>
+                ) : null}
                 <p className="mt-2 text-[11.5px] leading-[1.7] text-indigo/65">
                   <L
                     en="We'll send your order confirmation and receipt to this address. You'll enter your delivery address and phone number on the next page."
@@ -823,6 +898,11 @@ export function CartView() {
                 <L
                   en="Too many attempts to start payment. Please wait a while and try again, or sign in to continue."
                   ja="決済の開始が続いたため、受け付けを止めています。時間をおいてもう一度お試しいただくか、ログインしてお進みください。"
+                />
+              ) : checkoutError === "bot" ? (
+                <L
+                  en="We couldn't finish the security check. Please wait a moment and try again, or sign in to continue."
+                  ja="セキュリティの確認が完了していません。少し待ってからもう一度お試しいただくか、ログインしてお進みください。"
                 />
               ) : checkoutError === "unauth" ? (
                 <L
