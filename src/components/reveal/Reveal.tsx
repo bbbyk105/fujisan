@@ -41,6 +41,8 @@ export function Reveal({
       "(prefers-reduced-motion: reduce)",
     ).matches;
     if (prefersReduced) {
+      // matchMedia はブラウザでしか読めないので、マウント後に反映する。
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShown(true);
       return;
     }
