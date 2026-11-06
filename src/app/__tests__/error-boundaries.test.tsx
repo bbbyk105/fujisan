@@ -9,7 +9,8 @@
 // ときも、手で渡すテストなら通ってしまう。だから Next の本物の ErrorBoundary に載せて確かめる。
 // `next/dist/...` を読んでいるのはこのためで、Next を上げて props が変わればここで落ちる。
 //
-// tsc ではこのずれを検出できない（`.next/types/validator.ts` が見るのは
+// tsc で分かるのは `retry` が公開型（`ErrorInfo`）から消えたときだけで、Next が実行時に
+// 渡さなくなったことは分からない（`.next/types/validator.ts` が見るのは
 // page / layout / route だけで、error / global-error は対象外）。
 
 import { fireEvent, render, screen } from "@testing-library/react";

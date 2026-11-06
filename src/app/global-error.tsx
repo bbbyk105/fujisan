@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import type { ErrorInfo } from "next/error";
 import "./globals.css";
 
 /**
@@ -19,7 +20,7 @@ export default function GlobalError({
   retry,
 }: {
   error: Error & { digest?: string };
-  retry: () => void;
+  retry: ErrorInfo["retry"];
 }) {
   useEffect(() => {
     console.error("[app:global-error]", error.digest ?? "(no digest)", error);

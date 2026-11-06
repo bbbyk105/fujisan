@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import type { ErrorInfo } from "next/error";
 import Link from "next/link";
 import { L } from "@/i18n/Localized";
 
@@ -18,7 +19,7 @@ export default function Error({
   retry,
 }: {
   error: Error & { digest?: string };
-  retry: () => void;
+  retry: ErrorInfo["retry"];
 }) {
   useEffect(() => {
     // Workers のログに残す。digest があれば Cloudflare のログと突き合わせられる。
