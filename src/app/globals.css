@@ -575,7 +575,7 @@ details:not([open]) > :not(summary) {
   }
 
   .ed-small {
-    font-size: 12px;
+    font-size: 13px;
     line-height: 1.85;
     color: var(--ed-muted);
   }
@@ -753,13 +753,8 @@ details:not([open]) > :not(summary) {
   }
   .ed-note .ed-p {
     max-width: 46em;
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.95;
-  }
-  @media (min-width: 768px) {
-    .ed-note .ed-p {
-      font-size: 13.5px;
-    }
   }
   /* 注記の中は「段落」ではなく続けて読む数行。段落の間隔を空けない */
   .ed-note .ed-p + .ed-p {

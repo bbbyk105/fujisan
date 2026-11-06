@@ -75,7 +75,7 @@ export function FujisanInnerHero({
 
       <div className="relative z-10 mx-auto max-w-[1360px] px-7 pb-20 pt-12 sm:px-8 md:px-12 md:pb-24 md:pt-20">
         {crumbs && crumbs.length > 0 && (
-          <Reveal className="flex flex-wrap items-center gap-2 text-[10.5px] font-semibold tracking-[0.24em]">
+          <Reveal className="flex flex-wrap items-center gap-2 text-[12px] font-semibold tracking-[0.24em]">
             {crumbs.map((crumb, i) => (
               <span key={crumb.href} className="flex items-center gap-2">
                 <Link
@@ -83,7 +83,7 @@ export function FujisanInnerHero({
                   className={`no-underline transition-colors ${
                     isDark
                       ? "text-linen/60 hover:text-[#D7B46A]"
-                      : "text-indigo/60 hover:text-gold"
+                      : "text-indigo/66 hover:text-gold"
                   }`}
                 >
                   {crumb.label}
@@ -105,8 +105,8 @@ export function FujisanInnerHero({
           <Reveal className="flex items-center gap-4" delay={revealDelays.d1}>
             {chapter && (
               <span
-                className={`font-serif text-[11px] font-medium tracking-[0.36em] ${
-                  isDark ? "text-[#D7B46A]" : "text-gold"
+                className={`font-serif text-[12px] font-medium tracking-[0.36em] ${
+                  isDark ? "text-[#D7B46A]" : "text-gold-ink"
                 }`}
               >
                 {chapter}
@@ -118,8 +118,8 @@ export function FujisanInnerHero({
               }`}
             />
             <span
-              className={`text-[10px] font-semibold uppercase tracking-[0.38em] ${
-                isDark ? "text-[#D7B46A]/85" : "text-gold"
+              className={`text-[12px] font-semibold uppercase tracking-[0.38em] ${
+                isDark ? "text-[#D7B46A]/85" : "text-gold-ink"
               }`}
             >
               {eyebrow}

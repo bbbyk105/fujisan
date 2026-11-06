@@ -201,11 +201,11 @@ export function AdminOrderRow({ order, canRefund }: Props) {
           </span>
           <span className="truncate text-[12px] text-indigo/80">
             {order.customerName}
-            <span className="ml-2 text-indigo/45">
+            <span className="ml-2 text-indigo/66">
               {order.customerEmail}
             </span>
           </span>
-          <span className="text-[11.5px] text-indigo/65">
+          <span className="text-[12px] text-indigo/65">
             {fmt(order.createdAt).replace(/\s.+$/, "")} · {order.itemsCount}本 ·
             ¥{yen.format(order.total)}
           </span>
@@ -218,11 +218,11 @@ export function AdminOrderRow({ order, canRefund }: Props) {
           </span>
           <span className="min-w-0 truncate text-[12px] text-indigo/80">
             {order.customerName}
-            <span className="ml-2 text-indigo/45">
+            <span className="ml-2 text-indigo/66">
               {order.customerEmail}
             </span>
           </span>
-          <span className="text-[11.5px] text-indigo/65">
+          <span className="text-[12px] text-indigo/65">
             {fmt(order.createdAt).replace(/\s.+$/, "")}
           </span>
           <span className="text-right font-serif text-[13px] tracking-[0.02em] text-indigo">
@@ -271,7 +271,7 @@ export function AdminOrderRow({ order, canRefund }: Props) {
                     <li key={i} className="flex justify-between gap-3">
                       <span>
                         {it.name} {it.variant}
-                        <span className="text-indigo/55">
+                        <span className="text-indigo/66">
                           {" "}
                           · {it.ml}ml × {it.qty}
                         </span>
@@ -322,7 +322,7 @@ export function AdminOrderRow({ order, canRefund }: Props) {
                     </option>
                   ))}
                 </select>
-                <p className="mt-2 text-[11px] leading-[1.6] text-indigo/55">
+                <p className="mt-2 text-[13px] leading-[1.6] text-indigo/66">
                   「発送済み」「お届け済み」に進めると発送日・お届け日が自動で記録されます。
                 </p>
               </Section>
@@ -372,7 +372,7 @@ export function AdminOrderRow({ order, canRefund }: Props) {
                 </a>
                 {message && (
                   <span
-                    className={`text-[11.5px] ${
+                    className={`text-[13px] ${
                       message.startsWith("保存失敗")
                         ? "text-crimson"
                         : "text-moss"
@@ -390,12 +390,12 @@ export function AdminOrderRow({ order, canRefund }: Props) {
                     返金
                   </p>
                   {alreadyRefunded > 0 && (
-                    <p className="mt-2 text-[11.5px] font-semibold text-crimson">
+                    <p className="mt-2 text-[12px] font-semibold text-crimson">
                       返金済み ¥{yen.format(alreadyRefunded)} / 残額 ¥
                       {yen.format(remainingRefundable)}
                     </p>
                   )}
-                  <p className="mt-2 text-[11px] leading-[1.6] text-indigo/60">
+                  <p className="mt-2 text-[13px] leading-[1.6] text-indigo/66">
                     Stripe 経由で返金し、お客様へ返金メールを送ります。取り消せません。
                     一部だけ返した場合、注文のステータスは変わらず、
                     <strong className="font-semibold">在庫は自動では戻りません</strong>。
@@ -413,7 +413,7 @@ export function AdminOrderRow({ order, canRefund }: Props) {
                         : `全額返金（¥${yen.format(remainingRefundable)}）`}
                     </button>
 
-                    <span className="text-[11px] text-indigo/45">または</span>
+                    <span className="text-[12px] text-indigo/66">または</span>
 
                     <label
                       htmlFor={`refund-amount-${order.id}`}
@@ -456,7 +456,7 @@ export function AdminOrderRow({ order, canRefund }: Props) {
 
                   {refundMsg && (
                     <p
-                      className={`mt-3 text-[11.5px] leading-normal ${
+                      className={`mt-3 text-[13px] leading-normal ${
                         refundMsg.startsWith("返金失敗")
                           ? "text-crimson"
                           : "text-moss"
@@ -484,7 +484,7 @@ function Section({
 }) {
   return (
     <div>
-      <p className="text-[12px] font-semibold tracking-[0.04em] text-indigo/55">
+      <p className="text-[12px] font-semibold tracking-[0.04em] text-indigo/66">
         {title}
       </p>
       <div className="mt-2">{children}</div>

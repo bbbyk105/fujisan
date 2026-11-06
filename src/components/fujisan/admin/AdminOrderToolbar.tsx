@@ -80,7 +80,7 @@ export function AdminOrderToolbar({
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="orders-from"
-            className="text-[12px] tracking-[0.04em] text-indigo/55"
+            className="text-[12px] tracking-[0.04em] text-indigo/66"
           >
             開始日
           </label>
@@ -93,11 +93,11 @@ export function AdminOrderToolbar({
             className={inputCls}
           />
         </div>
-        <span className="pb-2.5 text-indigo/40">〜</span>
+        <span className="pb-2.5 text-indigo/66">〜</span>
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="orders-to"
-            className="text-[12px] tracking-[0.04em] text-indigo/55"
+            className="text-[12px] tracking-[0.04em] text-indigo/66"
           >
             終了日
           </label>
@@ -127,7 +127,7 @@ export function AdminOrderToolbar({
               setEnd("");
               apply("", "");
             }}
-            className="px-2 py-2.5 text-[12px] tracking-[0.04em] text-indigo/50 underline decoration-indigo/20 underline-offset-4 transition-colors hover:text-indigo"
+            className="px-2 py-2.5 text-[12px] tracking-[0.04em] text-indigo/66 underline decoration-indigo/20 underline-offset-4 transition-colors hover:text-indigo"
           >
             期間を解除
           </button>
@@ -145,7 +145,7 @@ export function AdminOrderToolbar({
         </button>
       </div>
 
-      <p className="mt-3 text-[11px] leading-[1.7] text-indigo/55">
+      <p className="mt-3 text-[13px] leading-[1.7] text-indigo/66">
         日付は日本時間。終了日はその日いっぱいを含みます。CSV
         は画面と同じ条件で、1 注文 1 行で書き出します（一覧の表示上限
         200 件に対し、CSV は 5,000 件まで）。

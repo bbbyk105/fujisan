@@ -242,10 +242,10 @@ export function FujisanContactForm() {
           <FieldError error={fieldErrors.message} />
           <span
             aria-hidden
-            className={`ml-auto shrink-0 text-[11.5px] tracking-[0.14em] tabular-nums transition-colors ${
+            className={`ml-auto shrink-0 text-[12px] tracking-[0.14em] tabular-nums transition-colors ${
               message.length > MESSAGE_MAX * 0.9
                 ? "text-gold"
-                : "text-indigo/40"
+                : "text-indigo/66"
             }`}
           >
             {message.length} / {MESSAGE_MAX}
@@ -253,7 +253,7 @@ export function FujisanContactForm() {
         </div>
       </Field>
 
-      <p className="text-[11px] leading-[1.65] text-indigo/55">
+      <p className="text-[13px] leading-[1.65] text-indigo/66">
         <L
           en={
             <>
@@ -286,7 +286,7 @@ export function FujisanContactForm() {
       {submitError ? (
         <p
           role="alert"
-          className="border border-crimson/40 bg-crimson/6 px-4 py-3 text-[12px] leading-[1.75] text-crimson"
+          className="border border-crimson/40 bg-crimson/6 px-4 py-3 text-[13px] leading-[1.75] text-crimson"
         >
           {submitError === "rate" ? (
             <L

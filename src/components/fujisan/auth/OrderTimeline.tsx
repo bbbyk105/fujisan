@@ -84,8 +84,8 @@ export function OrderTimeline({ status }: { status: OrderStatus }) {
                 isCurrent
                   ? "font-semibold text-indigo"
                   : reached
-                    ? "text-indigo/70"
-                    : "text-indigo/40"
+                    ? "text-indigo/82"
+                    : "text-indigo/66"
               }`}
             >
               <L en={step.en} ja={step.ja} />

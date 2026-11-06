@@ -246,7 +246,7 @@ export default async function ProductDetailPage({
             <dl className="mt-7 grid grid-cols-2 gap-x-8 gap-y-5 sm:grid-cols-3">
               {product.specs.map((s) => (
                 <div key={s.label}>
-                  <dt className="text-[12px] font-semibold tracking-[0.04em] text-indigo/56">
+                  <dt className="text-[12px] font-semibold tracking-[0.04em] text-indigo/66">
                     <L en={s.label.toUpperCase()} ja={specLabelJp(s.label)} />
                   </dt>
                   <dd className="mt-1.5 font-serif text-[17px] text-indigo">
@@ -261,7 +261,7 @@ export default async function ProductDetailPage({
               <L en="SERVING" ja="飲み方" />
             </p>
             <div className="mt-4 h-px w-8 bg-indigo/30" />
-            <p className="mt-7 text-[12px] font-semibold tracking-[0.04em] text-indigo/56">
+            <p className="mt-7 text-[12px] font-semibold tracking-[0.04em] text-indigo/66">
               <L en="SUGGESTED TEMPERATURE" ja="おすすめ温度" />
             </p>
             <p className="mt-2 font-serif text-[18px] text-indigo">
@@ -332,7 +332,7 @@ export default async function ProductDetailPage({
                   : "md:items-start border-b md:border-b-0"
               }`}
             >
-              <span className="text-[12px] font-semibold tracking-[0.04em] text-indigo/60">
+              <span className="text-[12px] font-semibold tracking-[0.04em] text-indigo/66">
                 <L
                   en={
                     align === "left"

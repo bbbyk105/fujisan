@@ -24,7 +24,7 @@ export function AdminKpi({
 }) {
   return (
     <div className="border-t border-indigo/15 pt-3">
-      <dt className="text-[12.5px] text-indigo/60">{label}</dt>
+      <dt className="text-[12.5px] text-indigo/66">{label}</dt>
       <dd
         className={`mt-1.5 font-serif text-[26px] font-medium leading-none tabular-nums tracking-[0.01em] md:text-[30px] ${
           tone === "alert" ? "text-gold-ink" : "text-indigo"
@@ -32,7 +32,7 @@ export function AdminKpi({
       >
         {value}
         {suffix && (
-          <span className="ml-1 text-[13px] font-normal text-indigo/55">
+          <span className="ml-1 text-[13px] font-normal text-indigo/66">
             {suffix}
           </span>
         )}
@@ -139,12 +139,12 @@ export function AdminSubNav({
                 className={`block border-b-2 pb-3 pt-1 text-[14px] no-underline transition-colors ${
                   item.active
                     ? "border-gold font-semibold text-indigo"
-                    : "border-transparent text-indigo/60 hover:text-indigo"
+                    : "border-transparent text-indigo/66 hover:text-indigo"
                 }`}
               >
                 {item.label}
                 {item.count !== undefined && (
-                  <span className="ml-1.5 text-[12.5px] font-normal tabular-nums text-indigo/55">
+                  <span className="ml-1.5 text-[12.5px] font-normal tabular-nums text-indigo/66">
                     {item.count}
                   </span>
                 )}

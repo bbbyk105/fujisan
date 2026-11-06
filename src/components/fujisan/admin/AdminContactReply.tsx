@@ -122,7 +122,7 @@ export function AdminContactReply({
           <ul className="mt-3 flex flex-col gap-5">
             {message.replies.map((reply) => (
               <li key={reply.id}>
-                <p className="text-[12.5px] tabular-nums text-indigo/60 [overflow-wrap:anywhere]">
+                <p className="text-[12.5px] tabular-nums text-indigo/66 [overflow-wrap:anywhere]">
                   {formatDateTimeJp(reply.createdAt)}
                   <span aria-hidden className="mx-2 text-indigo/30">
                     ／
@@ -158,7 +158,7 @@ export function AdminContactReply({
             }}
             className="mt-2 block w-full border border-indigo/25 bg-white px-3 py-2.5 text-[14px] leading-[1.9] text-indigo outline-none focus:border-gold disabled:opacity-60"
           />
-          <p className="mt-2 text-[12.5px] leading-[1.7] text-indigo/60">
+          <p className="mt-2 text-[12.5px] leading-[1.7] text-indigo/66">
             宛名、いただいた内容の引用、販売者の表記は自動で入ります。
             {FUJISAN_LEGAL.email} から送信します。
           </p>

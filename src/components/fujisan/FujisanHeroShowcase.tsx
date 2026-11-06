@@ -81,10 +81,10 @@ export function FujisanHeroShowcase({ products }: Props) {
               className={`fujisan-rise group flex flex-col items-center px-1 text-center no-underline outline-none focus-visible:ring-2 focus-visible:ring-gold/60 ${stagger(i)}`}
               style={{ animationDelay: `${1400 + i * 120}ms` }}
             >
-              <p className="font-serif text-[12px] font-semibold tracking-[0.16em] text-indigo transition-colors duration-300 group-hover:text-gold md:text-[15px] md:tracking-[0.18em]">
+              <p className="font-serif text-[14px] md:text-[15px] font-semibold tracking-[0.16em] text-indigo transition-colors duration-300 group-hover:text-gold md:tracking-[0.18em]">
                 {p.name}
               </p>
-              <p className="mt-1 whitespace-pre-line text-[9px] font-semibold leading-[1.35] tracking-[0.13em] text-indigo/80 md:text-[10px] md:tracking-[0.16em]">
+              <p className="mt-1 whitespace-pre-line text-[12px] font-semibold leading-[1.35] tracking-[0.13em] text-indigo/80 md:tracking-[0.16em]">
                 {p.variant}
               </p>
             </Link>
@@ -100,7 +100,7 @@ export function FujisanHeroShowcase({ products }: Props) {
         <span aria-hidden className="h-px w-16 bg-indigo/22 md:w-24" />
         <Link
           href="/products"
-          className="group/all inline-flex items-center gap-3 border border-indigo/35 bg-paper/65 px-7 py-3.5 text-[10.5px] font-semibold tracking-[0.34em] text-indigo no-underline backdrop-blur-sm transition-colors hover:border-indigo hover:bg-[#F1E6CB]/80 hover:text-indigo md:px-9 md:py-4"
+          className="group/all inline-flex items-center gap-3 border border-indigo/35 bg-paper/65 px-7 py-3.5 text-[12px] font-semibold tracking-[0.34em] text-indigo no-underline backdrop-blur-sm transition-colors hover:border-indigo hover:bg-[#F1E6CB]/80 hover:text-indigo md:px-9 md:py-4"
         >
           <span className="relative">
             <L en="VIEW THE COLLECTION" ja="銘柄一覧を見る" />

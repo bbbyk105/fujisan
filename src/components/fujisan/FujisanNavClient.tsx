@@ -356,7 +356,7 @@ export function FujisanNavClient({ links }: Props) {
                             onClick={closeMenuNow}
                             className="group/sub flex items-start gap-4 px-6 py-3.5 no-underline transition-colors hover:bg-paper-tint/64"
                           >
-                            <span className="mt-1 font-serif text-[11px] font-medium tracking-[0.12em] text-gold">
+                            <span className="mt-1 font-serif text-[12px] font-medium tracking-[0.12em] text-gold-ink">
                               {String(i + 1).padStart(2, "0")}
                             </span>
                             <span className="flex flex-col gap-0.5">
@@ -447,7 +447,7 @@ export function FujisanNavClient({ links }: Props) {
                     }}
                     className="group flex items-baseline gap-4 py-[18px] no-underline outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
                   >
-                    <span className="font-serif text-[11.5px] font-medium tracking-[0.12em] text-gold">
+                    <span className="font-serif text-[12px] font-medium tracking-[0.12em] text-gold-ink">
                       {String(i + 1).padStart(2, "0")}
                     </span>
                     <span

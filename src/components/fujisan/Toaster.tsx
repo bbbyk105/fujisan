@@ -26,7 +26,7 @@ export function Toaster() {
           <span className="text-gold" aria-hidden>
             ✓
           </span>
-          <p className="flex-1 text-[12.5px] leading-[1.5] tracking-[0.04em]">
+          <p className="flex-1 text-[13px] leading-[1.5] tracking-[0.04em]">
             <L en={toast.en} ja={toast.ja} />
           </p>
           {toast.action ? (

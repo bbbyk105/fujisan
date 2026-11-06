@@ -24,7 +24,7 @@ export function AdminPersonalRow({ customer }: { customer: PersonalCustomer }) {
               </span>
             )}
           </p>
-          <p className="mt-1 text-[11.5px] text-indigo/65">
+          <p className="mt-1 text-[12px] text-indigo/65">
             {customer.email}
             {customer.phone && (
               <>
@@ -34,27 +34,27 @@ export function AdminPersonalRow({ customer }: { customer: PersonalCustomer }) {
             )}
           </p>
           {customer.address && (
-            <p className="mt-1 text-[11.5px] text-indigo/55">
+            <p className="mt-1 text-[12px] text-indigo/66">
               〒{customer.postalCode ?? "—"} {customer.address}
             </p>
           )}
         </div>
 
-        <div className="flex items-baseline gap-6 text-[11.5px] tabular-nums">
-          <span className="text-indigo/60">
+        <div className="flex items-baseline gap-6 text-[12px] tabular-nums">
+          <span className="text-indigo/66">
             ご注文{" "}
             <strong className="text-[13px] text-indigo">
               {customer.orderCount}
             </strong>{" "}
             件
           </span>
-          <span className="text-indigo/60">
+          <span className="text-indigo/66">
             累計{" "}
             <strong className="text-[13px] text-indigo">
               ¥{yen.format(customer.totalSpent)}
             </strong>
           </span>
-          <span className="text-indigo/50">
+          <span className="text-indigo/66">
             {hasOrders && customer.lastOrderedAt
               ? `最終 ${formatDateShortJp(customer.lastOrderedAt)}`
               : `登録 ${formatDateShortJp(customer.createdAt)}`}

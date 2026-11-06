@@ -236,7 +236,7 @@ export function RegisterBusinessForm() {
           ))}
         </select>
         {businessType && (
-          <p className="mt-2 text-[11px] leading-[1.7] text-indigo/55">
+          <p className="mt-2 text-[13px] leading-[1.7] text-indigo/66">
             <L
               en={TRADE_BUSINESS_TYPE_LABELS[businessType].note.en}
               ja={TRADE_BUSINESS_TYPE_LABELS[businessType].note.ja}
@@ -267,7 +267,7 @@ export function RegisterBusinessForm() {
             className={inputCls}
             placeholder="〇〇税務署 第〇〇号"
           />
-          <p className="mt-2 text-[11px] leading-[1.7] text-indigo/55">
+          <p className="mt-2 text-[13px] leading-[1.7] text-indigo/66">
             <L
               en="We verify the licence before opening your account."
               ja="口座開設の前に、内容を確認いたします。"
@@ -292,7 +292,7 @@ export function RegisterBusinessForm() {
         <FieldError error={fieldErrors.password} />
       </Field>
 
-      <p className="text-[11px] leading-[1.65] text-indigo/55">
+      <p className="text-[13px] leading-[1.65] text-indigo/66">
         <L
           en="Registering opens an application, not an account. We check the details by hand, and wholesale pricing is shown only after approval. By applying you confirm your business handles, or is licensed to handle, alcoholic beverages."
           ja="ご登録は「お申し込み」です。内容を確認して承認した後に、卸価格が表示されます。お申し込みをもって、貴社が酒類を取り扱う（または取り扱う免許を有する）ことを確認したものとみなします。"
@@ -307,7 +307,7 @@ export function RegisterBusinessForm() {
         )}
       </PrimaryButton>
 
-      <p className="mt-2 text-[12.5px] leading-[1.7] text-indigo/72">
+      <p className="mt-2 text-[13px] leading-[1.7] text-indigo/72">
         <L en="Already have an account?" ja="アカウントをお持ちの方は" />{" "}
         <Link
           href="/login/business"

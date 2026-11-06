@@ -30,7 +30,7 @@ export function AccountNavLink({ mobile = false }: { mobile?: boolean }) {
             <L en="SIGN IN" ja="ログイン" />
           )}
         </span>
-        <span aria-hidden className="text-[11px] tracking-[0.12em] text-gold">
+        <span aria-hidden className="text-[12px] tracking-[0.12em] text-gold">
           ●
         </span>
       </Link>

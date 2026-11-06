@@ -87,7 +87,7 @@ export function AdminTeamRow({ member }: Props) {
           <span className="font-serif text-[14px] font-semibold tracking-[0.04em] text-indigo">
             {member.name || "（名前なし）"}
             {member.isSelf && (
-              <span className="ml-2 text-[12px] font-semibold tracking-[0.04em] text-gold">
+              <span className="ml-2 text-[12px] font-semibold tracking-[0.04em] text-gold-ink">
                 YOU
               </span>
             )}
@@ -125,14 +125,14 @@ export function AdminTeamRow({ member }: Props) {
             {pending ? "保存中…" : "保存"}
           </button>
         </div>
-        <span className="text-[10.5px] text-indigo/55">
+        <span className="text-[12px] text-indigo/66">
           登録: {formatDateShortJp(member.createdAt)}
         </span>
       </div>
 
       {message && (
         <span
-          className={`w-full text-[11.5px] md:basis-full ${
+          className={`w-full text-[13px] md:basis-full ${
             message === "保存しました" ? "text-moss" : "text-crimson"
           }`}
         >
@@ -163,20 +163,20 @@ function RoleBadge({
     <span className="inline-flex items-baseline gap-2 whitespace-nowrap">
       <span
         className={`font-serif text-[14px] tracking-[0.08em] ${
-          m.muted ? "text-indigo/45" : "text-indigo"
+          m.muted ? "text-indigo/66" : "text-indigo"
         }`}
       >
         {m.jp}
       </span>
       <span
         className={`text-[12px] font-semibold tracking-[0.04em] ${
-          m.accent ? "text-gold" : "text-indigo/40"
+          m.accent ? "text-gold" : "text-indigo/66"
         }`}
       >
         {m.en}
       </span>
       {envOwner && (
-        <span className="border-l border-indigo/15 pl-2 text-[12px] tracking-[0.04em] text-indigo/40">
+        <span className="border-l border-indigo/15 pl-2 text-[12px] tracking-[0.04em] text-indigo/66">
           env固定
         </span>
       )}

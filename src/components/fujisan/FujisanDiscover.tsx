@@ -48,11 +48,11 @@ export default function FujisanDiscover() {
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] lg:items-end lg:gap-16">
           <div>
             <Reveal className="flex items-center gap-4">
-              <span className="font-serif text-[11px] font-medium tracking-[0.36em] text-gold">
+              <span className="font-serif text-[12px] font-medium tracking-[0.36em] text-gold-ink">
                 Ⅰ
               </span>
               <span className="h-px w-10 bg-gold/55" />
-              <span className="text-[10px] font-semibold uppercase tracking-[0.38em] text-indigo/60">
+              <span className="text-[12px] font-semibold uppercase tracking-[0.38em] text-indigo/66">
                 <L en="Discover" ja="こだわり" />
               </span>
             </Reveal>
@@ -108,11 +108,11 @@ export default function FujisanDiscover() {
                     <span className="font-serif text-[17px] font-semibold tracking-[0.14em] text-indigo transition-colors duration-500 group-hover:text-gold md:text-[21px]">
                       <L en={f.title} ja={f.titleJp} />
                     </span>
-                    <span className="i18n-en font-jp text-[11px] tracking-[0.3em] text-gold md:text-[11.5px]">
+                    <span className="i18n-en font-jp text-[12px] tracking-[0.3em] text-gold-ink">
                       {f.jp}
                     </span>
                   </span>
-                  <span className="mt-2 line-clamp-2 hidden max-w-[520px] text-[12.5px] font-light leading-[1.8] text-[#2B2419]/68 md:block">
+                  <span className="mt-2 line-clamp-2 hidden max-w-[520px] text-[13px] font-light leading-[1.8] text-[#2B2419]/68 md:block">
                     <L en={f.desc} ja={f.descJp} />
                   </span>
                 </span>

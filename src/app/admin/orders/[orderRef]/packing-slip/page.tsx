@@ -68,7 +68,7 @@ export default async function PackingSlipPage(props: {
           <h1 className="font-serif text-[28px] font-semibold tracking-[0.5em] text-indigo">
             納品書
           </h1>
-          <p className="mt-2 text-[12px] tracking-[0.04em] text-indigo/55">
+          <p className="mt-2 text-[12px] tracking-[0.04em] text-indigo/66">
             PACKING SLIP
           </p>
         </header>
@@ -76,7 +76,7 @@ export default async function PackingSlipPage(props: {
         {/* お届け先と注文情報 */}
         <div className="mt-10 flex flex-wrap justify-between gap-8">
           <div className="min-w-[280px]">
-            <p className="text-[12px] tracking-[0.04em] text-indigo/55">
+            <p className="text-[12px] tracking-[0.04em] text-indigo/66">
               お届け先
             </p>
             <p className="mt-3 border-b border-indigo/25 pb-1 font-serif text-[19px] tracking-[0.08em]">
@@ -93,22 +93,22 @@ export default async function PackingSlipPage(props: {
 
           <dl className="min-w-[220px] text-[12.5px] leading-[2]">
             <div className="flex justify-between gap-6">
-              <dt className="text-indigo/55">注文番号</dt>
+              <dt className="text-indigo/66">注文番号</dt>
               <dd className="font-semibold tracking-[0.08em]">
                 {order.orderRef}
               </dd>
             </div>
             <div className="flex justify-between gap-6">
-              <dt className="text-indigo/55">ご注文日</dt>
+              <dt className="text-indigo/66">ご注文日</dt>
               <dd>{formatDateJp(order.createdAt)}</dd>
             </div>
             <div className="flex justify-between gap-6">
-              <dt className="text-indigo/55">状態</dt>
+              <dt className="text-indigo/66">状態</dt>
               <dd>{orderStatusJp(order.status)}</dd>
             </div>
             {order.trackingNumber && (
               <div className="flex justify-between gap-6">
-                <dt className="text-indigo/55">追跡番号</dt>
+                <dt className="text-indigo/66">追跡番号</dt>
                 <dd className="tabular-nums">
                   {order.trackingCarrier} {order.trackingNumber}
                 </dd>
@@ -116,7 +116,7 @@ export default async function PackingSlipPage(props: {
             )}
             {order.shippedAt && (
               <div className="flex justify-between gap-6">
-                <dt className="text-indigo/55">発送日時</dt>
+                <dt className="text-indigo/66">発送日時</dt>
                 <dd>{formatDateTimeJp(order.shippedAt)}</dd>
               </div>
             )}
@@ -126,7 +126,7 @@ export default async function PackingSlipPage(props: {
         {/* 明細。梱包のチェックに使うので、本数を大きく出す。 */}
         <table className="mt-10 w-full border-collapse text-[12.5px]">
           <thead>
-            <tr className="border-b border-indigo/35 text-[12px] tracking-[0.04em] text-indigo/60">
+            <tr className="border-b border-indigo/35 text-[12px] tracking-[0.04em] text-indigo/66">
               <th className="py-2 text-left font-semibold">品名</th>
               <th className="py-2 text-right font-semibold">単価</th>
               <th className="py-2 text-right font-semibold">数量</th>
@@ -141,7 +141,7 @@ export default async function PackingSlipPage(props: {
               >
                 <td className="py-3">
                   {it.name} {it.variant}
-                  <span className="ml-2 text-[11.5px] text-indigo/60">
+                  <span className="ml-2 text-[12px] text-indigo/66">
                     {it.ml}ml
                   </span>
                 </td>
@@ -184,7 +184,7 @@ export default async function PackingSlipPage(props: {
         </table>
 
         <footer className="mt-12 flex flex-wrap items-end justify-between gap-6">
-          <p className="max-w-[40ch] text-[11px] leading-[1.9] text-indigo/70">
+          <p className="max-w-[40ch] text-[13px] leading-[1.9] text-indigo/70">
             このたびはお買い上げいただき、ありがとうございます。
             <br />
             万一、品物に不足や破損がございましたら、お手数ですが下記までご連絡ください。
@@ -199,7 +199,7 @@ export default async function PackingSlipPage(props: {
           </div>
         </footer>
 
-        <p className="mt-8 border-t border-indigo/12 pt-4 text-[10.5px] leading-[1.8] text-indigo/55">
+        <p className="mt-8 border-t border-indigo/12 pt-4 text-[14px] leading-[1.8] text-indigo/66">
           {UNDERAGE_NOTICE_JP}
           <br />
           本書は納品の控えです。領収書は決済時にお送りしたメール、またはお客様のアカウントからご確認いただけます。

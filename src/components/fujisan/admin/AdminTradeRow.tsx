@@ -105,7 +105,7 @@ export function AdminTradeRow({ account }: { account: TradeAccountRow }) {
             {account.companyName || "（会社名未登録）"}
           </h2>
           {typeLabel && (
-            <span className="text-[12px] tracking-[0.04em] text-indigo/55">
+            <span className="text-[12px] tracking-[0.04em] text-indigo/66">
               {typeLabel}
             </span>
           )}
@@ -149,7 +149,7 @@ export function AdminTradeRow({ account }: { account: TradeAccountRow }) {
           <div className="flex flex-col gap-3">
             <label
               htmlFor={`note-${account.id}`}
-              className="text-[12px] font-semibold tracking-[0.04em] text-indigo/50"
+              className="text-[12px] font-semibold tracking-[0.04em] text-indigo/66"
             >
               見送りの理由（お客様へのメールにそのまま載ります）
             </label>
@@ -180,14 +180,14 @@ export function AdminTradeRow({ account }: { account: TradeAccountRow }) {
                 見送る
               </button>
               {pending && (
-                <span className="text-[11px] text-indigo/55">保存中…</span>
+                <span className="text-[12px] text-indigo/66">保存中…</span>
               )}
             </div>
           </div>
         )}
 
         {account.reviewedByEmail && (
-          <p className="mt-3 text-[11px] text-indigo/55">
+          <p className="mt-3 text-[12px] text-indigo/66">
             審査: {account.reviewedByEmail}
             {account.reviewedAt ? ` / ${formatDateTimeJp(account.reviewedAt)}` : ""}
           </p>
@@ -206,7 +206,7 @@ export function AdminTradeRow({ account }: { account: TradeAccountRow }) {
 function Field({ label, value }: { label: string; value?: string | null }) {
   return (
     <div className="flex flex-col gap-1">
-      <span className="text-[12px] font-semibold tracking-[0.04em] text-indigo/50">
+      <span className="text-[12px] font-semibold tracking-[0.04em] text-indigo/66">
         {label}
       </span>
       <span className="text-[13px] leading-[1.6] text-indigo/85">

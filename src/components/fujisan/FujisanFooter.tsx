@@ -48,7 +48,7 @@ export default function FujisanFooter() {
         aria-label="20歳未満の飲酒防止のお知らせ"
         className="border-b border-paper-tint/12 bg-indigo"
       >
-        <div className="mx-auto flex max-w-[1360px] flex-col items-center gap-1 px-7 py-4 text-center text-[11px] leading-[1.7] tracking-[0.04em] text-paper-tint/82 md:px-12 md:text-[12px]">
+        <div className="mx-auto flex max-w-[1360px] flex-col items-center gap-1 px-7 py-4 text-center text-[14px] leading-[1.7] tracking-[0.04em] text-paper-tint/82 md:px-12">
           <L
             ja={
               <>
@@ -65,7 +65,7 @@ export default function FujisanFooter() {
               </>
             }
           />
-          <p className="mt-1 text-[11.5px] tracking-[0.06em] text-paper-tint/55">
+          <p className="mt-1 text-[13px] tracking-[0.06em] text-paper-tint/55">
             <Link
               href="/tokushoho"
               className="text-paper-tint/70 underline decoration-gold/45 underline-offset-2 transition-colors hover:text-gold"
@@ -79,7 +79,7 @@ export default function FujisanFooter() {
         </div>
       </div>
 
-      <div className="mx-auto flex max-w-[1360px] flex-col items-center justify-between gap-5 px-7 py-7 text-[11px] text-paper-tint/88 md:flex-row md:px-12">
+      <div className="mx-auto flex max-w-[1360px] flex-col items-center justify-between gap-5 px-7 py-7 text-[12px] text-paper-tint/88 md:flex-row md:px-12">
         <p className="text-[12px] tracking-[0.04em] text-paper-tint/70">
           © {new Date().getFullYear()} FUJISAN SAKE
         </p>

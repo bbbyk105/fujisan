@@ -46,7 +46,7 @@ export function RoleSwitch({
             className={`-mb-px flex items-center justify-center border-b-2 px-4 py-3.5 text-center text-[13px] font-semibold tracking-[0.06em] no-underline transition-colors ${
               on
                 ? "border-indigo text-indigo"
-                : "border-transparent text-indigo/45 hover:text-indigo/75"
+                : "border-transparent text-indigo/66 hover:text-indigo/75"
             }`}
           >
             {it.label}

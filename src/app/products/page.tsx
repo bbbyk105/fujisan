@@ -110,7 +110,7 @@ function CollectionRow({
               {String(index + 1).padStart(2, "0")}
             </span>
             <span className="h-px w-10 bg-gold/55" />
-            <span className="text-[10px] font-semibold uppercase tracking-[0.34em] text-gold">
+            <span className="text-[12px] font-semibold uppercase tracking-[0.34em] text-gold-ink">
               <L en={product.variantLine} ja={product.variantLineJp} />
             </span>
           </div>
@@ -122,7 +122,7 @@ function CollectionRow({
             </span>
           </h2>
 
-          <p className="mt-3 font-jp text-[12px] tracking-[0.26em] text-indigo/60">
+          <p className="mt-3 font-jp text-[12px] tracking-[0.26em] text-indigo/66">
             <L en={product.title} ja={product.titleJp} />
           </p>
 
@@ -136,7 +136,7 @@ function CollectionRow({
                 key={f.en}
                 className="border-t border-indigo/12 pt-3"
               >
-                <dt className="text-[9.5px] font-semibold uppercase tracking-[0.28em] text-indigo/50">
+                <dt className="text-[12px] font-semibold uppercase tracking-[0.28em] text-indigo/66">
                   <L en={f.en} ja={f.ja} />
                 </dt>
                 <dd className="mt-1.5 text-[12px] leading-[1.5] text-indigo/85">
@@ -153,7 +153,7 @@ function CollectionRow({
                 className="font-serif text-[18px] font-semibold tracking-[0.02em] text-indigo"
               >
                 ¥{yen.format(v.priceJpy)}
-                <span className="ml-1.5 align-middle text-[10px] font-medium tracking-[0.14em] text-indigo/70">
+                <span className="ml-1.5 align-middle text-[12px] font-medium tracking-[0.14em] text-indigo/70">
                   <L en={`${v.ml}ml · tax incl.`} ja={`${v.ml}ml・税込`} />
                 </span>
               </p>
@@ -171,7 +171,7 @@ function CollectionRow({
 
             <Link
               href={`/products/${product.slug}`}
-              className="group/cta inline-flex items-center gap-3 text-[10.5px] font-semibold tracking-[0.34em] text-indigo no-underline"
+              className="group/cta inline-flex items-center gap-3 text-[12px] font-semibold tracking-[0.34em] text-indigo no-underline"
             >
               <span className="relative pb-1">
                 <L en="VIEW THE BOTTLE" ja="この銘柄を詳しく" />
@@ -187,7 +187,7 @@ function CollectionRow({
           </div>
 
           {multiVolume ? (
-            <p className="mt-3 text-[10.5px] tracking-[0.12em] text-indigo/60">
+            <p className="mt-3 text-[13px] tracking-[0.12em] text-indigo/66">
               <L
                 ja={`ここからカートに入るのは ${base.ml}ml です。ほかの容量は商品ページからお選びいただけます。`}
                 en={`Adds the ${base.ml} ml bottle. Other sizes are available on the product page.`}
@@ -243,11 +243,11 @@ export default function ProductsIndexPage() {
           <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
             <div>
               <Reveal className="flex items-center gap-3">
-                <span className="font-serif text-[11px] font-medium tracking-[0.32em] text-gold">
+                <span className="font-serif text-[12px] font-medium tracking-[0.32em] text-gold-ink">
                   Ⅱ.Ⅰ
                 </span>
                 <span className="h-px w-10 bg-gold/55" />
-                <span className="text-[10px] font-semibold uppercase tracking-[0.36em] text-indigo/65">
+                <span className="text-[12px] font-semibold uppercase tracking-[0.36em] text-indigo/65">
                   PURCHASE · ご購入
                 </span>
               </Reveal>
@@ -269,7 +269,7 @@ export default function ProductsIndexPage() {
             >
               <Link
                 href="/shop/personal"
-                className="group/btn inline-flex items-center justify-center gap-3 border border-indigo bg-indigo px-8 py-4 text-[10.5px] font-semibold tracking-[0.34em] text-paper-card no-underline transition-colors hover:bg-[#1D2432]"
+                className="group/btn inline-flex items-center justify-center gap-3 border border-indigo bg-indigo px-8 py-4 text-[12px] font-semibold tracking-[0.34em] text-paper-card no-underline transition-colors hover:bg-[#1D2432]"
               >
                 <L en="ORDER FOR YOUR TABLE" ja="個人のお客様はこちら" />
                 <span
@@ -281,7 +281,7 @@ export default function ProductsIndexPage() {
               </Link>
               <Link
                 href="/shop/business"
-                className="group/link inline-flex items-center gap-3 text-[10.5px] font-semibold tracking-[0.34em] text-indigo no-underline"
+                className="group/link inline-flex items-center gap-3 text-[12px] font-semibold tracking-[0.34em] text-indigo no-underline"
               >
                 <span className="relative pb-1">
                   <L en="FOR TRADE ACCOUNTS" ja="法人・卸のご相談" />

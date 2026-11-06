@@ -101,13 +101,13 @@ export default function ProductPurchaseBlock({
           >
             {productName}{" "}
             <L en={variant} ja={`${variant} ${variantJp}`} />{" "}
-            <span className="text-indigo/60">/ {variantLine}</span>
+            <span className="text-indigo/66">/ {variantLine}</span>
           </h2>
 
           {/* 金額は年齢確認より小さくする（国税局指導）。拡大しないこと。 */}
           <p className="mt-6 font-serif text-[22px] font-semibold leading-[1.15] tracking-[0.02em] text-indigo md:text-[24px]">
             <LivePrice slug={slug} ml={selected.ml} fallback={selected.priceJpy} />
-            <span className="ml-2 align-middle text-[12px] font-medium tracking-[0.04em] text-indigo/60">
+            <span className="ml-2 align-middle text-[12px] font-medium tracking-[0.04em] text-indigo/66">
               <L en="(tax incl.)" ja="（税込）" />
             </span>
           </p>
@@ -136,7 +136,7 @@ export default function ProductPurchaseBlock({
                   >
                     {v.ml}ml
                     <span
-                      className={`ml-1.5 text-[10.5px] font-medium ${
+                      className={`ml-1.5 text-[12px] font-medium ${
                         vSoldOut ? "line-through" : ""
                       } ${active ? "text-paper-card/75" : "text-indigo/70"}`}
                     >
@@ -316,7 +316,7 @@ export default function ProductPurchaseBlock({
           {needsConfirm ? (
             <p
               role="alert"
-              className="mt-3 pl-7 text-[11px] font-semibold leading-[1.6] text-crimson"
+              className="mt-3 pl-7 text-[13px] font-semibold leading-[1.6] text-crimson"
             >
               <L
                 en="Please confirm your age above to add this item to the cart."
@@ -326,7 +326,7 @@ export default function ProductPurchaseBlock({
           ) : null}
           <p
             id="age-check-note"
-            className="mt-2 pl-7 text-[10.5px] leading-[1.6] text-indigo/72"
+            className="mt-2 pl-7 text-[13px] leading-[1.6] text-indigo/72"
           >
             <L
               en="* Age verification may also be performed at delivery."
@@ -366,7 +366,7 @@ export default function ProductPurchaseBlock({
             )}
           </button>
           {soldOut ? (
-            <p className="mt-3 text-[11.5px] leading-[1.7] text-indigo/70">
+            <p className="mt-3 text-[13px] leading-[1.7] text-indigo/70">
               <L
                 en="This size is currently sold out. Please check back soon or contact us for restock updates."
                 ja="この容量は現在完売しています。入荷までいましばらくお待ちください。"
@@ -374,7 +374,7 @@ export default function ProductPurchaseBlock({
             </p>
           ) : null}
 
-          <p className="mt-4 text-[10.5px] leading-[1.7] text-indigo/72">
+          <p className="mt-4 text-[13px] leading-[1.7] text-indigo/72">
             <L
               en="Before completing your order, age verification and shipping conditions will be confirmed once more at checkout."
               ja="ご注文の確定前に、ご購入手続き画面で再度年齢確認と配送条件をご確認いただきます。"

@@ -77,7 +77,7 @@ export default function AgeGate() {
 
         <div
           id="age-gate-desc"
-          className="mt-6 space-y-1.5 text-[12.5px] leading-[1.7] text-indigo/80"
+          className="mt-6 space-y-1.5 text-[14px] leading-[1.7] text-indigo/80"
         >
           <L
             ja={

@@ -202,7 +202,7 @@ export function LoginForm({
         </>
       )}
 
-      <p className="mt-2 text-[12.5px] leading-[1.7] text-indigo/72">
+      <p className="mt-2 text-[13px] leading-[1.7] text-indigo/72">
         <L en="No account yet?" ja="アカウントをお持ちでない方は" />{" "}
         <Link
           href={registerHref}

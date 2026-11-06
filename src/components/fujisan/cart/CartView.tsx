@@ -138,7 +138,7 @@ function LineStockNotice({ stock }: { stock: LineStock }) {
   if (!stock) return null;
   if (stock.kind === "soldout") {
     return (
-      <p className="mt-2 text-[11.5px] font-semibold leading-[1.6] text-crimson">
+      <p className="mt-2 text-[13px] font-semibold leading-[1.6] text-crimson">
         <L
           en="Sold out. Please remove this item to continue."
           ja="完売しました。お手数ですが削除してお進みください。"
@@ -147,7 +147,7 @@ function LineStockNotice({ stock }: { stock: LineStock }) {
     );
   }
   return (
-    <p className="mt-2 text-[11.5px] font-semibold leading-[1.6] text-gold-ink">
+    <p className="mt-2 text-[13px] font-semibold leading-[1.6] text-gold-ink">
       <L
         en={`Only ${stock.available} left. Please reduce the quantity.`}
         ja={`残り ${stock.available} 本です。数量を減らしてください。`}
@@ -445,7 +445,7 @@ export function CartView() {
                     className="mt-3 font-serif text-[13.5px] font-semibold tracking-[0.08em] text-indigo no-underline transition-colors hover:text-gold"
                   >
                     {p.name}{" "}
-                    <span className="text-indigo/55">{p.variant}</span>
+                    <span className="text-indigo/66">{p.variant}</span>
                   </Link>
                   <p className="mt-1 font-serif text-[13px] font-semibold text-indigo">
                     <LivePrice
@@ -576,7 +576,7 @@ export function CartView() {
                         <button
                           type="button"
                           onClick={() => setConfirmingKey(null)}
-                          className="cursor-pointer text-indigo/55 transition-colors hover:text-indigo"
+                          className="cursor-pointer text-indigo/66 transition-colors hover:text-indigo"
                         >
                           <L en="Cancel" ja="キャンセル" />
                         </button>
@@ -651,7 +651,7 @@ export function CartView() {
               />
             </p>
             {checkoutError === "regionRequired" ? (
-              <p role="alert" className="mt-2 text-[12.5px] font-semibold text-crimson">
+              <p role="alert" className="mt-2 text-[13px] font-semibold text-crimson">
                 <L
                   en="Please choose your delivery area."
                   ja="お届け地域を選んでください。"
@@ -686,7 +686,7 @@ export function CartView() {
           {/* 送料無料までの残額 */}
           {SHIPPING_FEE.freeThresholdJpy > 0 ? (
             <div className="mt-6">
-              <p className="text-[11px] leading-[1.6] tracking-[0.02em] text-indigo/72">
+              <p className="text-[13px] leading-[1.6] tracking-[0.02em] text-indigo/72">
                 {freeReached && region && surcharge > 0 ? (
                   <L
                     en={`Base shipping is free. ¥${yen.format(surcharge)} is added for ${region.en}.`}
@@ -733,7 +733,7 @@ export function CartView() {
             </p>
           </div>
 
-          <p className="mt-3 text-[11.5px] leading-[1.7] text-indigo/55">
+          <p className="mt-3 text-[13px] leading-[1.7] text-indigo/66">
             <L
               en={FUJISAN_LEGAL.shippingFeeNoteEn}
               ja={FUJISAN_LEGAL.shippingFeeNote}
@@ -744,7 +744,7 @@ export function CartView() {
           {canceled ? (
             <p
               role="status"
-              className="mt-6 border border-gold/45 bg-paper-tint/80 px-4 py-3 text-[11.5px] leading-[1.7] text-indigo/85"
+              className="mt-6 border border-gold/45 bg-paper-tint/80 px-4 py-3 text-[13px] leading-[1.7] text-indigo/85"
             >
               <L
                 en="Payment was cancelled. Your cart is unchanged, and you can try again at any time."
@@ -754,7 +754,7 @@ export function CartView() {
           ) : null}
 
           {/* 国内発送のみ・海外案内 */}
-          <p className="mt-6 text-[11px] leading-[1.7] text-indigo/60">
+          <p className="mt-6 text-[13px] leading-[1.7] text-indigo/66">
             <L
               en={
                 <>
@@ -817,8 +817,9 @@ export function CartView() {
               />
             </span>
           </label>
-          {/* 申込みの年齢確認のすぐ近くに置く表示（20歳未満の者の飲酒防止に関する表示基準） */}
-          <div className="mt-3 space-y-1 text-[13.5px] leading-[1.7] text-indigo/85">
+          {/* 申込みの年齢確認のすぐ近くに置く表示（20歳未満の者の飲酒防止に関する表示基準）。
+              商品ページと同じく、金額の文字より小さくしない */}
+          <div className="mt-3 space-y-1 text-[18px] font-medium leading-[1.55] text-indigo">
             <L
               ja={
                 <>
@@ -837,7 +838,7 @@ export function CartView() {
             />
           </div>
           {checkoutError === "age" ? (
-            <p role="alert" className="mt-2 text-[12.5px] font-semibold text-crimson">
+            <p role="alert" className="mt-2 text-[13px] font-semibold text-crimson">
               <L
                 en="Please confirm you are 20 or older to continue."
                 ja="20歳以上であることをご確認ください。"
@@ -847,7 +848,7 @@ export function CartView() {
 
           {/* 未ログイン: ログインして購入するか、ゲストとして購入するかを選ぶ */}
           {sessionChecked && !loggedIn ? (
-            <div className="mt-5 border border-gold/45 bg-paper-tint/80 px-4 py-4 text-[12px] leading-[1.7] text-indigo/88">
+            <div className="mt-5 border border-gold/45 bg-paper-tint/80 px-4 py-4 text-[13px] leading-[1.7] text-indigo/88">
               <p className="font-semibold">
                 <L
                   en="Sign in, or continue as a guest."
@@ -877,7 +878,7 @@ export function CartView() {
                 </p>
                 <label
                   htmlFor="guest-email"
-                  className="mt-2 block text-[11.5px] font-semibold text-indigo/75"
+                  className="mt-2 block text-[12.5px] font-semibold text-indigo/75"
                 >
                   <L en="Email address" ja="メールアドレス" />
                 </label>
@@ -899,7 +900,7 @@ export function CartView() {
                 <FieldError error={guestEmailError ?? undefined} />
                 <label
                   htmlFor="guest-email-confirm"
-                  className="mt-3 block text-[11.5px] font-semibold text-indigo/75"
+                  className="mt-3 block text-[12.5px] font-semibold text-indigo/75"
                 >
                   <L en="Confirm email address" ja="メールアドレス（確認）" />
                 </label>
@@ -928,7 +929,7 @@ export function CartView() {
                     />
                   </div>
                 ) : null}
-                <p className="mt-2 text-[11.5px] leading-[1.7] text-indigo/65">
+                <p className="mt-2 text-[13px] leading-[1.7] text-indigo/65">
                   <L
                     en="We'll send your order confirmation and receipt to this address. You'll enter your delivery address and phone number on the next page."
                     ja="ご注文の確認メールと領収書をこのアドレスへお送りします。お届け先の住所と電話番号は、次の決済ページで入力していただきます。"
@@ -942,7 +943,7 @@ export function CartView() {
           {checkoutError === "soldout" ? (
             <div
               role="alert"
-              className="mt-5 border border-crimson/40 bg-crimson/6 px-4 py-3 text-[11.5px] leading-[1.7] text-crimson"
+              className="mt-5 border border-crimson/40 bg-crimson/6 px-4 py-3 text-[13px] leading-[1.7] text-crimson"
             >
               {shortages.length > 0 ? (
                 <>
@@ -998,7 +999,7 @@ export function CartView() {
           checkoutError !== "soldout" ? (
             <p
               role="alert"
-              className="mt-5 border border-crimson/40 bg-crimson/6 px-4 py-3 text-[11.5px] leading-[1.7] text-crimson"
+              className="mt-5 border border-crimson/40 bg-crimson/6 px-4 py-3 text-[13px] leading-[1.7] text-crimson"
             >
               {checkoutError === "region" ? (
                 <L
@@ -1032,7 +1033,7 @@ export function CartView() {
           {blockedByStock ? (
             <p
               role="alert"
-              className="mt-6 border border-crimson/40 bg-crimson/[0.06] px-4 py-3 text-[12px] leading-[1.7] text-crimson"
+              className="mt-6 border border-crimson/40 bg-crimson/[0.06] px-4 py-3 text-[13px] leading-[1.7] text-crimson"
             >
               <L
                 en="Some items in your cart are no longer available in the quantity you selected. Please adjust them above to continue."
@@ -1042,7 +1043,7 @@ export function CartView() {
           ) : null}
 
           {/* 確定の前に見せる事項（特商法 12 条の 6）。Stripe の決済ページにも同じ内容を出す */}
-          <dl className="mt-6 space-y-2 text-[12.5px] leading-[1.7] text-indigo/72">
+          <dl className="mt-6 space-y-2 text-[13px] leading-[1.7] text-indigo/72">
             <div>
               <dt className="font-semibold">
                 <L en="Delivery" ja="お届け" />
@@ -1103,7 +1104,7 @@ export function CartView() {
             )}
           </button>
 
-          <p className="mt-4 text-[11.5px] leading-[1.7] text-indigo/55">
+          <p className="mt-4 text-[13px] leading-[1.7] text-indigo/66">
             {loggedIn ? (
               <L
                 en="Payment is completed securely on the next screen (Stripe). We ship to the address on your account. If none is saved, you'll enter it at checkout."
