@@ -90,7 +90,7 @@ export default function ProductPurchaseBlock({
     >
       <div className="mx-auto grid max-w-[1280px] grid-cols-1 gap-12 px-7 py-16 md:grid-cols-[1.1fr_1fr] md:gap-14 md:px-12 md:py-20">
         <div>
-          <p className="font-serif text-[11px] font-semibold tracking-[0.3em] text-indigo/66">
+          <p className="font-serif text-[12px] font-semibold tracking-[0.04em] text-indigo/66">
             <L en="PURCHASE" ja="ご購入" />
           </p>
           <div className="mt-4 h-px w-8 bg-indigo/30" />
@@ -107,14 +107,14 @@ export default function ProductPurchaseBlock({
           {/* 金額は年齢確認より小さくする（国税局指導）。拡大しないこと。 */}
           <p className="mt-6 font-serif text-[22px] font-semibold leading-[1.15] tracking-[0.02em] text-indigo md:text-[24px]">
             <LivePrice slug={slug} ml={selected.ml} fallback={selected.priceJpy} />
-            <span className="ml-2 align-middle text-[12px] font-medium tracking-[0.18em] text-indigo/60">
+            <span className="ml-2 align-middle text-[12px] font-medium tracking-[0.04em] text-indigo/60">
               <L en="(tax incl.)" ja="（税込）" />
             </span>
           </p>
 
           {/* 容量の選択（複数容量がある場合のみボタン表示） */}
           <div className="mt-6">
-            <span className="text-[10.5px] font-semibold tracking-[0.28em] text-indigo/70">
+            <span className="text-[12px] font-semibold tracking-[0.04em] text-indigo/70">
               <L en="VOLUME" ja="容量" />
             </span>
             <div className="mt-3 flex flex-wrap gap-3">
@@ -144,7 +144,7 @@ export default function ProductPurchaseBlock({
                     </span>
                     {vSoldOut ? (
                       <span
-                        className={`ml-1.5 text-[9px] font-semibold tracking-[0.14em] ${
+                        className={`ml-1.5 text-[12px] font-semibold tracking-[0.04em] ${
                           active ? "text-paper-card/85" : "text-crimson"
                         }`}
                       >
@@ -204,7 +204,7 @@ export default function ProductPurchaseBlock({
 
           <div className="mt-7 flex items-center gap-4">
             <span
-              className="text-[10.5px] font-semibold tracking-[0.28em] text-indigo/70"
+              className="text-[12px] font-semibold tracking-[0.04em] text-indigo/70"
             >
               <L en="QTY" ja="数量" />
             </span>
@@ -239,7 +239,7 @@ export default function ProductPurchaseBlock({
 
         {/* 年齢確認・未成年防止表示・購入ボタン */}
         <div className="md:border-l md:border-indigo/12 md:pl-14">
-          <p className="font-serif text-[11px] font-semibold tracking-[0.3em] text-indigo/66">
+          <p className="font-serif text-[12px] font-semibold tracking-[0.04em] text-indigo/66">
             <L en="AGE VERIFICATION" ja="年齢確認" />
           </p>
           <div className="mt-4 h-px w-8 bg-indigo/30" />
@@ -339,7 +339,7 @@ export default function ProductPurchaseBlock({
             onClick={onAddToCart}
             aria-disabled={soldOut || !confirmed}
             disabled={soldOut}
-            className={`mt-7 inline-flex w-full items-center justify-center gap-3 px-7 py-4 text-[11px] font-semibold tracking-[0.28em] transition-all ${
+            className={`mt-7 inline-flex w-full items-center justify-center gap-3 px-7 py-4 text-[13px] font-semibold tracking-[0.06em] transition-all ${
               soldOut
                 ? "cursor-not-allowed border border-indigo/25 bg-indigo/[0.07] text-indigo/45"
                 : confirmed

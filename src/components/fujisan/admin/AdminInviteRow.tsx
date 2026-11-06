@@ -72,7 +72,7 @@ export function AdminInviteRow({ invite }: { invite: PendingInvite }) {
           type="button"
           onClick={revoke}
           disabled={pending}
-          className="px-2 py-2 text-[10.5px] tracking-[0.18em] text-indigo/50 underline decoration-indigo/20 underline-offset-4 transition-colors hover:text-crimson disabled:opacity-40"
+          className="px-2 py-2 text-[12px] tracking-[0.04em] text-indigo/50 underline decoration-indigo/20 underline-offset-4 transition-colors hover:text-crimson disabled:opacity-40"
         >
           招待を取り消す
         </button>

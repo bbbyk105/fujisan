@@ -97,7 +97,7 @@ export function AdminTradeRow({ account }: { account: TradeAccountRow }) {
       <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
           <span
-            className={`border px-2.5 py-1 text-[10px] font-semibold tracking-[0.2em] ${STATUS_STYLE[status]}`}
+            className={`border px-2.5 py-1 text-[12px] font-semibold tracking-[0.04em] ${STATUS_STYLE[status]}`}
           >
             {STATUS_TEXT[status]}
           </span>
@@ -105,13 +105,13 @@ export function AdminTradeRow({ account }: { account: TradeAccountRow }) {
             {account.companyName || "（会社名未登録）"}
           </h2>
           {typeLabel && (
-            <span className="text-[11px] tracking-[0.12em] text-indigo/55">
+            <span className="text-[12px] tracking-[0.04em] text-indigo/55">
               {typeLabel}
             </span>
           )}
         </div>
         <span
-          className={`text-[10px] font-semibold tracking-[0.24em] ${
+          className={`text-[12px] font-semibold tracking-[0.04em] ${
             account.emailVerified ? "text-moss" : "text-crimson"
           }`}
         >
@@ -140,7 +140,7 @@ export function AdminTradeRow({ account }: { account: TradeAccountRow }) {
               type="button"
               disabled={pending}
               onClick={() => review("rejected")}
-              className="border border-crimson/45 px-4 py-2 text-[10.5px] font-semibold tracking-[0.24em] text-crimson hover:bg-crimson/8 disabled:opacity-60"
+              className="border border-crimson/45 px-4 py-2 text-[12px] font-semibold tracking-[0.04em] text-crimson hover:bg-crimson/8 disabled:opacity-60"
             >
               承認を取り消す
             </button>
@@ -149,7 +149,7 @@ export function AdminTradeRow({ account }: { account: TradeAccountRow }) {
           <div className="flex flex-col gap-3">
             <label
               htmlFor={`note-${account.id}`}
-              className="text-[9.5px] font-semibold tracking-[0.28em] text-indigo/50"
+              className="text-[12px] font-semibold tracking-[0.04em] text-indigo/50"
             >
               見送りの理由（お客様へのメールにそのまま載ります）
             </label>
@@ -167,7 +167,7 @@ export function AdminTradeRow({ account }: { account: TradeAccountRow }) {
                 type="button"
                 disabled={pending}
                 onClick={() => review("approved")}
-                className="border border-indigo bg-indigo px-5 py-2 text-[10.5px] font-semibold tracking-[0.24em] text-paper-card hover:bg-indigo-lift disabled:opacity-60"
+                className="border border-indigo bg-indigo px-5 py-2 text-[12px] font-semibold tracking-[0.04em] text-paper-card hover:bg-indigo-lift disabled:opacity-60"
               >
                 承認して口座を開く
               </button>
@@ -175,7 +175,7 @@ export function AdminTradeRow({ account }: { account: TradeAccountRow }) {
                 type="button"
                 disabled={pending}
                 onClick={() => review("rejected")}
-                className="border border-crimson/45 px-5 py-2 text-[10.5px] font-semibold tracking-[0.24em] text-crimson hover:bg-crimson/8 disabled:opacity-60"
+                className="border border-crimson/45 px-5 py-2 text-[12px] font-semibold tracking-[0.04em] text-crimson hover:bg-crimson/8 disabled:opacity-60"
               >
                 見送る
               </button>
@@ -206,7 +206,7 @@ export function AdminTradeRow({ account }: { account: TradeAccountRow }) {
 function Field({ label, value }: { label: string; value?: string | null }) {
   return (
     <div className="flex flex-col gap-1">
-      <span className="text-[9.5px] font-semibold tracking-[0.28em] text-indigo/50">
+      <span className="text-[12px] font-semibold tracking-[0.04em] text-indigo/50">
         {label}
       </span>
       <span className="text-[13px] leading-[1.6] text-indigo/85">

@@ -90,11 +90,11 @@ export default async function AdminTeamPage() {
         {invites.length > 0 && (
           <div className="mb-10">
             <div className="flex items-baseline gap-4 border-b border-indigo/15 pb-4">
-              <span className="font-jp text-[12px] tracking-[0.3em] text-gold">
+              <span className="font-jp text-[12px] tracking-[0.04em] text-gold">
                 招待中
               </span>
               <span className="h-px flex-1 bg-indigo/12" />
-              <span className="text-[11px] tracking-[0.22em] text-indigo/55">
+              <span className="text-[12px] tracking-[0.04em] text-indigo/55">
                 {invites.length} 件
                 {expiredCount > 0 && (
                   <span className="ml-2 text-crimson">
@@ -119,11 +119,11 @@ export default async function AdminTeamPage() {
 
         {/* メンバー見出し */}
         <div className="flex items-baseline gap-4 border-b border-indigo/15 pb-4">
-          <span className="font-jp text-[12px] tracking-[0.3em] text-gold">
+          <span className="font-jp text-[12px] tracking-[0.04em] text-gold">
             現在のメンバー
           </span>
           <span className="h-px flex-1 bg-indigo/12" />
-          <span className="text-[11px] tracking-[0.22em] text-indigo/55">
+          <span className="text-[12px] tracking-[0.04em] text-indigo/55">
             {members.length} 名
           </span>
         </div>

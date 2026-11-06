@@ -80,7 +80,7 @@ export function AdminSkuRow({
 function StockSummary({ row }: { row: Row }) {
   if (!row.tracked) {
     return (
-      <span className="border border-indigo/20 px-2.5 py-1 text-[10px] tracking-[0.18em] text-indigo/55">
+      <span className="border border-indigo/20 px-2.5 py-1 text-[12px] tracking-[0.04em] text-indigo/55">
         在庫管理なし（無制限）
       </span>
     );
@@ -142,7 +142,7 @@ function PriceSection({
   if (!canEdit) {
     return (
       <div className="flex flex-wrap items-baseline gap-x-6 gap-y-1 text-[12px] text-indigo/70">
-        <span className="text-[10px] font-semibold tracking-[0.24em] text-indigo/45">
+        <span className="text-[12px] font-semibold tracking-[0.04em] text-indigo/45">
           価格
         </span>
         <span className="tabular-nums">
@@ -228,7 +228,7 @@ function PriceSection({
   return (
     <div>
       <div className="flex flex-wrap items-end gap-x-4 gap-y-3">
-        <span className="pb-2.5 text-[10px] font-semibold tracking-[0.24em] text-indigo/45">
+        <span className="pb-2.5 text-[12px] font-semibold tracking-[0.04em] text-indigo/45">
           価格
         </span>
         <Field
@@ -260,7 +260,7 @@ function PriceSection({
           type="button"
           onClick={save}
           disabled={pending || !dirty}
-          className="border border-indigo bg-indigo px-4 py-2 text-[10.5px] font-semibold tracking-[0.22em] text-paper-card transition-colors hover:bg-indigo-lift disabled:cursor-not-allowed disabled:opacity-35"
+          className="border border-indigo bg-indigo px-4 py-2 text-[12px] font-semibold tracking-[0.04em] text-paper-card transition-colors hover:bg-indigo-lift disabled:cursor-not-allowed disabled:opacity-35"
         >
           保存
         </button>
@@ -269,7 +269,7 @@ function PriceSection({
             type="button"
             onClick={reset}
             disabled={pending}
-            className="px-2 py-2 text-[10.5px] tracking-[0.18em] text-indigo/50 underline decoration-indigo/20 underline-offset-4 transition-colors hover:text-indigo disabled:opacity-40"
+            className="px-2 py-2 text-[12px] tracking-[0.04em] text-indigo/50 underline decoration-indigo/20 underline-offset-4 transition-colors hover:text-indigo disabled:opacity-40"
           >
             カタログ価格に戻す
           </button>
@@ -357,7 +357,7 @@ function StockSection({ row, label }: { row: Row; label: string }) {
   return (
     <div>
       <div className="flex flex-wrap items-end gap-x-4 gap-y-3">
-        <span className="pb-2.5 text-[10px] font-semibold tracking-[0.24em] text-indigo/45">
+        <span className="pb-2.5 text-[12px] font-semibold tracking-[0.04em] text-indigo/45">
           在庫
         </span>
         <Field
@@ -382,7 +382,7 @@ function StockSection({ row, label }: { row: Row; label: string }) {
           type="button"
           onClick={save}
           disabled={pending || !dirty}
-          className="border border-indigo bg-indigo px-4 py-2 text-[10.5px] font-semibold tracking-[0.22em] text-paper-card transition-colors hover:bg-indigo-lift disabled:cursor-not-allowed disabled:opacity-35"
+          className="border border-indigo bg-indigo px-4 py-2 text-[12px] font-semibold tracking-[0.04em] text-paper-card transition-colors hover:bg-indigo-lift disabled:cursor-not-allowed disabled:opacity-35"
         >
           {row.tracked ? "保存" : "管理を開始"}
         </button>
@@ -391,7 +391,7 @@ function StockSection({ row, label }: { row: Row; label: string }) {
             type="button"
             onClick={untrack}
             disabled={pending}
-            className="px-2 py-2 text-[10.5px] tracking-[0.18em] text-indigo/50 underline decoration-indigo/20 underline-offset-4 transition-colors hover:text-crimson disabled:opacity-40"
+            className="px-2 py-2 text-[12px] tracking-[0.04em] text-indigo/50 underline decoration-indigo/20 underline-offset-4 transition-colors hover:text-crimson disabled:opacity-40"
           >
             管理をやめる
           </button>
@@ -423,7 +423,7 @@ function Field({
     <div className="flex flex-col gap-1.5">
       <label
         htmlFor={id}
-        className="text-[10px] tracking-[0.14em] text-indigo/55"
+        className="text-[12px] tracking-[0.04em] text-indigo/55"
       >
         {label}
       </label>

@@ -19,7 +19,7 @@ export function AdminPersonalRow({ customer }: { customer: PersonalCustomer }) {
           <p className="font-serif text-[14.5px] font-semibold tracking-[0.04em] text-indigo">
             {customer.name.trim() || "（お名前未設定）"}
             {!customer.emailVerified && (
-              <span className="ml-2 border border-gold/55 px-2 py-0.5 text-[9.5px] font-semibold tracking-[0.18em] text-gold-ink">
+              <span className="ml-2 border border-gold/55 px-2 py-0.5 text-[12px] font-semibold tracking-[0.04em] text-gold-ink">
                 メール未確認
               </span>
             )}

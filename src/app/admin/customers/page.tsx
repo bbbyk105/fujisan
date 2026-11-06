@@ -147,14 +147,14 @@ export default async function AdminCustomersPage(props: {
           />
           <button
             type="submit"
-            className="border border-indigo bg-indigo px-4 py-2 text-[10.5px] font-semibold tracking-[0.26em] text-paper-card hover:bg-indigo-lift"
+            className="border border-indigo bg-indigo px-4 py-2 text-[12px] font-semibold tracking-[0.04em] text-paper-card hover:bg-indigo-lift"
           >
             検索
           </button>
           {q && (
             <Link
               href="/admin/customers"
-              className="text-[10.5px] font-semibold tracking-[0.26em] text-indigo/65 no-underline hover:text-indigo"
+              className="text-[12px] font-semibold tracking-[0.04em] text-indigo/65 no-underline hover:text-indigo"
             >
               クリア
             </Link>

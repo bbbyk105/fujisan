@@ -89,7 +89,7 @@ export function AdminInviteForm() {
         <button
           type="submit"
           disabled={pending}
-          className="inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 border border-indigo bg-indigo px-6 py-2.5 text-[10.5px] font-semibold tracking-[0.26em] text-paper-card transition-colors hover:bg-indigo-lift disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 border border-indigo bg-indigo px-6 py-2.5 text-[12px] font-semibold tracking-[0.04em] text-paper-card transition-colors hover:bg-indigo-lift disabled:cursor-not-allowed disabled:opacity-50"
         >
           {pending ? "送信中…" : "招待する"}
         </button>

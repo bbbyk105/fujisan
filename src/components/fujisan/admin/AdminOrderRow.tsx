@@ -358,7 +358,7 @@ export function AdminOrderRow({ order, canRefund }: Props) {
                   type="button"
                   onClick={handleSave}
                   disabled={!dirty || pending}
-                  className="inline-flex cursor-pointer items-center gap-2 border border-indigo bg-indigo px-5 py-3 text-[11px] font-semibold tracking-[0.26em] text-paper-card transition-colors hover:bg-indigo-lift disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex cursor-pointer items-center gap-2 border border-indigo bg-indigo px-5 py-3 text-[12px] font-semibold tracking-[0.04em] text-paper-card transition-colors hover:bg-indigo-lift disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {pending ? "保存中…" : "保存"}
                 </button>
@@ -366,7 +366,7 @@ export function AdminOrderRow({ order, canRefund }: Props) {
                   href={`/admin/orders/${order.orderRef}/packing-slip`}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-2 border border-indigo/30 px-5 py-3 text-[10.5px] font-semibold tracking-[0.22em] text-indigo no-underline transition-colors hover:border-indigo"
+                  className="inline-flex items-center gap-2 border border-indigo/30 px-5 py-3 text-[12px] font-semibold tracking-[0.04em] text-indigo no-underline transition-colors hover:border-indigo"
                 >
                   納品書を印刷
                 </a>
@@ -386,7 +386,7 @@ export function AdminOrderRow({ order, canRefund }: Props) {
               {/* 返金（owner のみ・支払い済み注文のみ）。破損・誤配送などの実務対応。 */}
               {showRefund && (
                 <div className="mt-3 border-t border-crimson/15 pt-5">
-                  <p className="text-[10px] font-semibold tracking-[0.3em] text-crimson/80">
+                  <p className="text-[12px] font-semibold tracking-[0.04em] text-crimson/80">
                     返金
                   </p>
                   {alreadyRefunded > 0 && (
@@ -406,7 +406,7 @@ export function AdminOrderRow({ order, canRefund }: Props) {
                       type="button"
                       onClick={() => handleRefund()}
                       disabled={refunding}
-                      className="inline-flex cursor-pointer items-center gap-2 border border-crimson bg-transparent px-5 py-3 text-[11px] font-semibold tracking-[0.22em] text-crimson transition-colors hover:bg-crimson hover:text-paper-card disabled:cursor-not-allowed disabled:opacity-50"
+                      className="inline-flex cursor-pointer items-center gap-2 border border-crimson bg-transparent px-5 py-3 text-[12px] font-semibold tracking-[0.04em] text-crimson transition-colors hover:bg-crimson hover:text-paper-card disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {refunding
                         ? "返金処理中…"
@@ -448,7 +448,7 @@ export function AdminOrderRow({ order, canRefund }: Props) {
                         handleRefund(n);
                       }}
                       disabled={refunding}
-                      className="cursor-pointer border border-indigo/30 bg-transparent px-4 py-2.5 text-[11px] font-semibold tracking-[0.18em] text-indigo transition-colors hover:border-indigo disabled:cursor-not-allowed disabled:opacity-50"
+                      className="cursor-pointer border border-indigo/30 bg-transparent px-4 py-2.5 text-[12px] font-semibold tracking-[0.04em] text-indigo transition-colors hover:border-indigo disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       この額を返金
                     </button>
@@ -484,7 +484,7 @@ function Section({
 }) {
   return (
     <div>
-      <p className="text-[10px] font-semibold tracking-[0.3em] text-indigo/55">
+      <p className="text-[12px] font-semibold tracking-[0.04em] text-indigo/55">
         {title}
       </p>
       <div className="mt-2">{children}</div>
@@ -526,7 +526,7 @@ function StatusPill({ status }: { status: OrderStatus }) {
   const s = STYLES[status];
   return (
     <span
-      className={`inline-flex items-center justify-center gap-1.5 border px-2.5 py-1 text-[9.5px] font-semibold tracking-[0.22em] ${s.cls}`}
+      className={`inline-flex items-center justify-center gap-1.5 border px-2.5 py-1 text-[12px] font-semibold tracking-[0.04em] ${s.cls}`}
     >
       <span aria-hidden className={`h-[5px] w-[5px] rounded-full ${s.dot}`} />
       {ORDER_STATUS_LABELS_JA[status]}

@@ -87,7 +87,7 @@ export function AdminTeamRow({ member }: Props) {
           <span className="font-serif text-[14px] font-semibold tracking-[0.04em] text-indigo">
             {member.name || "（名前なし）"}
             {member.isSelf && (
-              <span className="ml-2 text-[10px] font-semibold tracking-[0.24em] text-gold">
+              <span className="ml-2 text-[12px] font-semibold tracking-[0.04em] text-gold">
                 YOU
               </span>
             )}
@@ -120,7 +120,7 @@ export function AdminTeamRow({ member }: Props) {
             type="button"
             onClick={handleSave}
             disabled={!dirty || isEnvLocked || pending}
-            className="inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 border border-indigo bg-indigo px-5 text-[10.5px] font-semibold tracking-[0.26em] text-paper-card transition-colors hover:bg-indigo-lift disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 border border-indigo bg-indigo px-5 text-[12px] font-semibold tracking-[0.04em] text-paper-card transition-colors hover:bg-indigo-lift disabled:cursor-not-allowed disabled:opacity-50"
           >
             {pending ? "保存中…" : "保存"}
           </button>
@@ -169,14 +169,14 @@ function RoleBadge({
         {m.jp}
       </span>
       <span
-        className={`text-[9px] font-semibold tracking-[0.3em] ${
+        className={`text-[12px] font-semibold tracking-[0.04em] ${
           m.accent ? "text-gold" : "text-indigo/40"
         }`}
       >
         {m.en}
       </span>
       {envOwner && (
-        <span className="border-l border-indigo/15 pl-2 text-[9px] tracking-[0.22em] text-indigo/40">
+        <span className="border-l border-indigo/15 pl-2 text-[12px] tracking-[0.04em] text-indigo/40">
           env固定
         </span>
       )}
