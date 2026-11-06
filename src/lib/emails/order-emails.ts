@@ -152,7 +152,7 @@ function htmlShell(args: {
           ${escapeHtml(FUJISAN_LEGAL.sellerName)}<br/>
           ${escapeHtml(FUJISAN_LEGAL.address)}<br/>
           TEL ${escapeHtml(FUJISAN_LEGAL.phone)}　${escapeHtml(FUJISAN_LEGAL.email)}<br/>
-          <span style="color:#C9A84C99;">20歳未満の飲酒は法律で禁止されています。</span>
+          <span style="color:#C9A84C99;">20歳未満の者の飲酒は法律で禁止されています。</span>
         </td></tr>
       </table>
     </td></tr>
@@ -215,7 +215,7 @@ ${link.url}
 ${FUJISAN_LEGAL.sellerName}
 ${FUJISAN_LEGAL.address}
 TEL ${FUJISAN_LEGAL.phone} / ${FUJISAN_LEGAL.email}
-※20歳未満の飲酒は法律で禁止されています。
+※20歳未満の者の飲酒は法律で禁止されています。
 `;
 
   const html = htmlShell({
@@ -273,7 +273,7 @@ ${link.textLabel}:
 ${link.url}
 
 ${FUJISAN_LEGAL.sellerName} / ${FUJISAN_LEGAL.email}
-※20歳未満の飲酒は法律で禁止されています。
+※20歳未満の者の飲酒は法律で禁止されています。
 `;
 
   const html = htmlShell({
@@ -317,7 +317,7 @@ Please store away from direct sunlight in a cool place, and enjoy soon after ope
 ${ctaUrl}
 
 ${FUJISAN_LEGAL.sellerName} / ${FUJISAN_LEGAL.email}
-※20歳未満の飲酒は法律で禁止されています。
+※20歳未満の者の飲酒は法律で禁止されています。
 `;
 
   const html = htmlShell({
@@ -403,7 +403,7 @@ If you have any questions, simply reply to this email.
 ${FUJISAN_LEGAL.sellerName}
 ${FUJISAN_LEGAL.address}
 TEL ${FUJISAN_LEGAL.phone} / ${FUJISAN_LEGAL.email}
-※20歳未満の飲酒は法律で禁止されています。
+※20歳未満の者の飲酒は法律で禁止されています。
 `;
 
   const html = htmlShell({

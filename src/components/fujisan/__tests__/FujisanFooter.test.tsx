@@ -15,3 +15,24 @@ describe("フッターの法定表示への案内", () => {
     expect(text).not.toContain("retail licence");
   });
 });
+
+describe("フッターのリンク", () => {
+  it("日本語の名前を持つ", () => {
+    const { container } = render(<FujisanFooter />);
+    const names = [...container.querySelectorAll("li a")].map(
+      (a) => a.textContent ?? "",
+    );
+
+    for (const ja of [
+      "特定商取引法に基づく表示",
+      "プライバシーポリシー",
+      "利用規約",
+      "お届けと返品",
+      "よくあるご質問",
+    ]) {
+      expect(names.some((n) => n.includes(ja))).toBe(true);
+    }
+    expect(container.textContent).not.toContain("PRIVACY POLICY");
+    expect(container.textContent).not.toContain("ALL RIGHTS RESERVED");
+  });
+});

@@ -37,9 +37,6 @@ export function EmailVerifiedView({
     return (
       <>
         <AuthHeading
-          role={role}
-          eyebrowEn="Email verified"
-          eyebrowJp="確認完了"
           titleEn="Your email address is verified"
           titleJp="メールアドレスを確認しました"
           leadEn={
@@ -64,9 +61,6 @@ export function EmailVerifiedView({
     <>
       {state === "expired" ? (
         <AuthHeading
-          role={role}
-          eyebrowEn="Link expired"
-          eyebrowJp="期限切れ"
           titleEn="This link has expired"
           titleJp="確認リンクの有効期限が切れています"
           leadEn={`Verification links expire ${hours} hour${hours === 1 ? "" : "s"} after they're sent. Enter your email address and password on the sign-in page, and you can have a new link sent.`}
@@ -74,9 +68,6 @@ export function EmailVerifiedView({
         />
       ) : (
         <AuthHeading
-          role={role}
-          eyebrowEn="Invalid link"
-          eyebrowJp="確認できませんでした"
           titleEn="We couldn't verify this link"
           titleJp="このリンクでは確認できませんでした"
           leadEn="The link may have been cut off when it was opened. Open the link in the email again, or have a new one sent from the sign-in page."

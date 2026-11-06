@@ -10,7 +10,13 @@ import { user as userTable } from "@/db/auth-schema";
 import { getLiveSkuMap } from "@/lib/catalog";
 import { skuKey } from "@/data/fujisan-products";
 import { TURNSTILE_SITE_KEY } from "@/data/fujisan-turnstile";
-import { MAX_QTY_PER_LINE, shippingFee } from "@/lib/cart/cart-core";
+import {
+  MAX_QTY_PER_LINE,
+  isShippingRegion,
+  regionOfPostalCode,
+  shippingFee,
+  shippingRegionMismatch,
+} from "@/lib/cart/cart-core";
 import { applyStockMove } from "@/lib/order-stock";
 import {
   releaseStock,
@@ -18,7 +24,12 @@ import {
   type ShortageLine,
 } from "@/lib/inventory";
 import { clientIpFrom, consumeRateLimit } from "@/lib/rate-limit";
-import { CONSUMPTION_TAX_NOTE } from "@/data/fujisan-legal";
+import {
+  CONSUMPTION_TAX_NOTE,
+  FUJISAN_LEGAL,
+  SHIPPING_REGIONS,
+  type ShippingRegion,
+} from "@/data/fujisan-legal";
 import { getStripe } from "@/lib/stripe";
 import { verifyTurnstile } from "@/lib/turnstile";
 import { guestEmailIssue } from "@/lib/validation/email";
@@ -83,6 +94,8 @@ export async function startCheckoutAction(input: {
   guestEmail?: string;
   /** ゲスト購入のボット判定のトークン。 */
   turnstileToken?: string;
+  /** カートで選んだお届け地域。送料はこれで決まる（既定: 本州・四国・九州）。 */
+  shippingRegion?: ShippingRegion;
 }): Promise<
   | {
       ok: true;
@@ -102,9 +115,12 @@ export async function startCheckoutAction(input: {
         | "soldout"
         | "age"
         | "rate"
-        | "bot";
+        | "bot"
+        | "region";
       /** soldout のとき、どの SKU が何本まで買えるか。UI で名指しするのに使う。 */
       shortages?: ShortageLine[];
+      /** region のとき、登録住所に合うお届け地域。カートの選択をこれに合わせる。 */
+      shippingRegion?: ShippingRegion;
     }
 > {
   // 認証チェック
@@ -128,6 +144,11 @@ export async function startCheckoutAction(input: {
   const customerEmail = (userId ? user?.email : input.guestEmail)?.trim() ?? "";
 
   if (!Array.isArray(input.items) || input.items.length === 0) {
+    return { ok: false, error: "invalid" };
+  }
+
+  const shippingRegion = input.shippingRegion ?? "mainland";
+  if (!isShippingRegion(shippingRegion)) {
     return { ok: false, error: "invalid" };
   }
 
@@ -169,7 +190,7 @@ export async function startCheckoutAction(input: {
 
   const itemsCount = items.reduce((n, it) => n + it.qty, 0);
   const subtotal = items.reduce((n, it) => n + it.lineTotal, 0);
-  const shipping = shippingFee(subtotal);
+  const shipping = shippingFee(subtotal, shippingRegion);
   const total = subtotal + shipping;
 
   // 環境（Stripe 秘密鍵・サイト URL）
@@ -242,6 +263,15 @@ export async function startCheckoutAction(input: {
           phone: (profile?.phone ?? "").trim(),
           name: (profile?.name ?? user?.name ?? "").trim(),
         };
+        // 登録住所へ送るので、地域が合わなければ請求額が変わる。カートの合計と
+        // 違う額を黙って請求しないよう、確かめてもらってからやり直す。
+        if (shippingRegionMismatch(shippingRegion, postal)) {
+          return {
+            ok: false,
+            error: "region",
+            shippingRegion: regionOfPostalCode(postal) ?? "mainland",
+          };
+        }
       }
     }
 
@@ -287,6 +317,8 @@ export async function startCheckoutAction(input: {
   // 計算と 1 円ずれる注文ができる。適格簡易請求書は税額か税率のどちらかでよいので、
   // 税率を品名に書く。
   const taxNote = CONSUMPTION_TAX_NOTE[input.locale === "en" ? "en" : "ja"];
+  const english = input.locale === "en";
+  const region = SHIPPING_REGIONS[shippingRegion];
   const lineItems = items.map((it) => ({
     quantity: it.qty,
     price_data: {
@@ -303,7 +335,12 @@ export async function startCheckoutAction(input: {
       price_data: {
         currency: "jpy",
         unit_amount: shipping,
-        product_data: { name: `配送料 / Shipping ${taxNote}` },
+        product_data: {
+          name:
+            shippingRegion === "mainland"
+              ? `配送料 / Shipping ${taxNote}`
+              : `配送料（${region.ja}） / Shipping (${region.en}) ${taxNote}`,
+        },
       },
     });
   }
@@ -328,6 +365,24 @@ export async function startCheckoutAction(input: {
             shipping_address_collection: { allowed_countries: ["JP"] },
             phone_number_collection: { enabled: true },
           }),
+      // 確定ボタンを押す画面なので、特商法 12 条の 6 の事項をここにも出す。
+      // お届け地域は住所から決められないので、選んだ地域と合わせてもらう。
+      custom_text: {
+        ...(savedAddress
+          ? {}
+          : {
+              shipping_address: {
+                message: english
+                  ? `Enter an address in the delivery area you chose in the cart (${region.en}). If it differs, we may contact you before dispatch.`
+                  : `カートで選んだお届け地域（${region.ja}）の住所を入力してください。異なる場合は発送前にご連絡することがあります。`,
+              },
+            }),
+        submit: {
+          message: english
+            ? `${FUJISAN_LEGAL.deliveryTimingEn} ${FUJISAN_LEGAL.paymentTimingEn} ${FUJISAN_LEGAL.returnsPolicyEn}`
+            : `${FUJISAN_LEGAL.deliveryTiming}${FUJISAN_LEGAL.paymentTiming}${FUJISAN_LEGAL.returnsPolicy}`,
+        },
+      },
       billing_address_collection: "auto",
       // 決済ページの有効期限。既定の 24 時間のままだと、決済を放棄した注文が
       // まる 1 日ぶん在庫を押さえ続け、最後の 1 本が翌日まで買えなくなる。
@@ -335,9 +390,9 @@ export async function startCheckoutAction(input: {
       // （解放は checkout.session.expired の Webhook が行う）。
       expires_at: Math.floor(Date.now() / 1000) + CHECKOUT_EXPIRY_SECONDS,
       // 注文の逆引きキー。Webhook はこれを使って確定する。
-      metadata: { orderId: id, orderRef },
+      metadata: { orderId: id, orderRef, shippingRegion },
       payment_intent_data: {
-        metadata: { orderId: id, orderRef },
+        metadata: { orderId: id, orderRef, shippingRegion },
         // Stripe の管理画面で注文番号から支払いを探すため。領収書の SUMMARY にも載る。
         description: `ご注文 ${orderRef}`,
         // 指定すると、本番の決済が成功したときに Stripe が領収書を送る。

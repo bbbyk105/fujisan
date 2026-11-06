@@ -1,6 +1,7 @@
 import {
   INVOICE_REGISTRATION_NUMBER,
   SHIPPING_FEE,
+  SHIPPING_REGIONS,
 } from "@/data/fujisan-legal";
 
 describe("適格請求書発行事業者の登録番号", () => {
@@ -44,5 +45,14 @@ describe("送料表記", () => {
   it("金額は円の整数（JPY は小数を持たない）", () => {
     expect(Number.isInteger(SHIPPING_FEE.flatJpy)).toBe(true);
     expect(Number.isInteger(SHIPPING_FEE.freeThresholdJpy)).toBe(true);
+    for (const { surchargeJpy } of Object.values(SHIPPING_REGIONS)) {
+      expect(Number.isInteger(surchargeJpy)).toBe(true);
+    }
+  });
+
+  it("表記は地域の追加額を金額で示す", () => {
+    expect(SHIPPING_FEE.remote).toContain("500円");
+    expect(SHIPPING_FEE.remote).toContain("1,700円");
+    expect(SHIPPING_FEE.flat).not.toContain("全国一律");
   });
 });

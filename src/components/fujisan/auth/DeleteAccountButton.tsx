@@ -51,7 +51,7 @@ export function DeleteAccountButton() {
         <p className="mt-3 max-w-[62ch] text-[14px] leading-[1.9] text-indigo/75">
           <L
             en={`Deleting your account removes your registration, sessions, and connected providers. This action cannot be undone. Order records are kept for ${ORDER_PII_RETENTION_YEARS} years from the order date, after which your personal details are deleted. Your receipts remain available from the emails sent when you paid.`}
-            ja={`退会すると、ご登録情報・ログインセッション・連携アカウントがすべて削除され、元に戻すことはできません。ご注文の記録は注文日から${ORDER_PII_RETENTION_YEARS}年間保存し、その後は個人情報を削除します。領収書は、決済時にお送りしたメールからご確認いただけます。`}
+            ja={`退会すると、ご登録情報・ログイン状態・連携アカウントがすべて削除され、元に戻すことはできません。ご注文の記録は注文日から${ORDER_PII_RETENTION_YEARS}年間保存し、その後は個人情報を削除します。領収書は、決済時にお送りしたメールからご確認いただけます。`}
           />
         </p>
         <button

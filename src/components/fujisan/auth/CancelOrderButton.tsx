@@ -88,7 +88,7 @@ export function CancelOrderButton({ orderRef }: { orderRef: string }) {
 
       <label
         htmlFor={`cancel-reason-${orderRef}`}
-        className="mt-4 block text-[11px] font-semibold tracking-[0.12em] text-indigo/60"
+        className="mt-4 block text-[12.5px] font-semibold tracking-[0.04em] text-indigo/66"
       >
         <L en="REASON (OPTIONAL)" ja="理由（任意）" />
       </label>
@@ -130,9 +130,9 @@ export function CancelOrderButton({ orderRef }: { orderRef: string }) {
             setError(null);
           }}
           disabled={pending}
-          className="cursor-pointer text-[11px] tracking-[0.18em] text-indigo/60 transition-colors hover:text-indigo disabled:opacity-60"
+          className="cursor-pointer text-[12.5px] tracking-[0.04em] text-indigo/66 transition-colors hover:text-indigo disabled:opacity-60"
         >
-          <L en="Keep my order" ja="やめる" />
+          <L en="Keep my order" ja="閉じる" />
         </button>
       </div>
     </div>

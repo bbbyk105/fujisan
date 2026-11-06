@@ -2,7 +2,11 @@
  * @jest-environment node
  */
 import { fujisanProducts, getFujisanProductBySlug } from "@/data/fujisan-products";
-import { SHIPPING_FEE } from "@/data/fujisan-legal";
+import {
+  FUJISAN_LEGAL,
+  SHIPPING_FEE,
+  SHIPPING_REGIONS,
+} from "@/data/fujisan-legal";
 
 // ── 依存のモック ───────────────────────────────────────────────
 // 決済開始はサーバー専用の依存（認証・D1・Cloudflare env・Stripe）の上に建っている。
@@ -622,6 +626,7 @@ describe("startCheckoutAction — Stripe セッション", () => {
     expect(args.metadata).toEqual({
       orderId: order.id,
       orderRef: order.orderRef,
+      shippingRegion: "mainland",
     });
     expect(args.payment_intent_data.metadata).toEqual(args.metadata);
     expect(order.orderRef).toMatch(/^FJ-[0-9A-Z]+$/);
@@ -825,5 +830,125 @@ describe("カタログの前提", () => {
         expect(Number.isInteger(v.wholesalePriceJpy)).toBe(true);
       }
     }
+  });
+});
+
+describe("startCheckoutAction — お届け地域", () => {
+  const CART = [{ slug: "shogun", ml: 300, qty: 1 }];
+  const shippingLineOf = () =>
+    lastSessionArgs().line_items[lastSessionArgs().line_items.length - 1];
+
+  it("選んだ地域の送料を注文と Stripe の両方に載せ、品名に地域を書く", async () => {
+    await start({ items: CART, shippingRegion: "hokkaido" });
+    const shipping = SHIPPING_FEE.flatJpy + SHIPPING_REGIONS.hokkaido.surchargeJpy;
+
+    expect(lastOrder().shipping).toBe(shipping);
+    expect(lastOrder().total).toBe(SHOGUN_300.priceJpy + shipping);
+    expect(shippingLineOf().price_data.unit_amount).toBe(shipping);
+    expect(shippingLineOf().price_data.product_data.name).toContain("北海道");
+    expect(lastSessionArgs().metadata.shippingRegion).toBe("hokkaido");
+  });
+
+  it("地域を渡さなければ本州・四国・九州の送料", async () => {
+    await start({ items: CART });
+
+    expect(lastOrder().shipping).toBe(SHIPPING_FEE.flatJpy);
+    expect(lastSessionArgs().metadata.shippingRegion).toBe("mainland");
+  });
+
+  it("送料無料の注文でも、地域の追加分は請求する", async () => {
+    await start({
+      items: [{ slug: "shogun", ml: 300, qty: 10 }],
+      shippingRegion: "remote",
+    });
+
+    expect(lastOrder().shipping).toBe(SHIPPING_REGIONS.remote.surchargeJpy);
+    expect(shippingLineOf().price_data.unit_amount).toBe(
+      SHIPPING_REGIONS.remote.surchargeJpy,
+    );
+  });
+
+  it("知らない地域は invalid を返し、注文を作らない", async () => {
+    const res = await start({
+      items: CART,
+      shippingRegion: "mars" as never,
+    });
+
+    expect(res).toEqual({ ok: false, error: "invalid" });
+    expect(inserted).toHaveLength(0);
+  });
+
+  it("登録住所の地域と合わなければ、請求せずに地域を返す", async () => {
+    profileRow = {
+      name: "佐藤 優子",
+      phone: "09012345678",
+      postalCode: "0600001",
+      address: "北海道札幌市中央区北一条西1-1",
+    };
+
+    const res = await start({ items: CART, shippingRegion: "mainland" });
+
+    expect(res).toEqual({
+      ok: false,
+      error: "region",
+      shippingRegion: "hokkaido",
+    });
+    expect(inserted).toHaveLength(0);
+    expect(sessionsCreate).not.toHaveBeenCalled();
+  });
+
+  it("登録住所の地域と合っていれば、そのまま進む", async () => {
+    profileRow = {
+      name: "佐藤 優子",
+      phone: "09012345678",
+      postalCode: "0600001",
+      address: "北海道札幌市中央区北一条西1-1",
+    };
+
+    const res = await start({ items: CART, shippingRegion: "hokkaido" });
+
+    expect(res.ok).toBe(true);
+  });
+});
+
+describe("startCheckoutAction — 決済ページの表示", () => {
+  const CART = [{ slug: "shogun", ml: 300, qty: 1 }];
+
+  it("確定ボタンの画面に、引渡時期・支払時期・返品の条件を出す", async () => {
+    await start({ items: CART });
+    const message = lastSessionArgs().custom_text.submit.message;
+
+    expect(message).toContain(FUJISAN_LEGAL.deliveryTiming);
+    expect(message).toContain(FUJISAN_LEGAL.paymentTiming);
+    expect(message).toContain(FUJISAN_LEGAL.returnsPolicy);
+    expect(message.length).toBeLessThanOrEqual(1200);
+  });
+
+  it("英語のページでは英語で出す", async () => {
+    await start({ items: CART, locale: "en" });
+    const message = lastSessionArgs().custom_text.submit.message;
+
+    expect(message).toContain(FUJISAN_LEGAL.returnsPolicyEn);
+    expect(message.length).toBeLessThanOrEqual(1200);
+  });
+
+  it("住所を Stripe で集めるときは、選んだ地域の住所を入れるよう案内する", async () => {
+    await start({ items: CART, shippingRegion: "remote" });
+
+    expect(lastSessionArgs().custom_text.shipping_address.message).toContain(
+      "沖縄・離島",
+    );
+  });
+
+  it("登録住所へ送るときは住所の案内を出さない", async () => {
+    profileRow = {
+      name: "佐藤 優子",
+      phone: "09012345678",
+      postalCode: "4170051",
+      address: "静岡県富士市吉原2-8-21",
+    };
+    await start({ items: CART });
+
+    expect(lastSessionArgs().custom_text.shipping_address).toBeUndefined();
   });
 });

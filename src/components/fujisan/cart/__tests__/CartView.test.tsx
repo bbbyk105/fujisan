@@ -118,6 +118,8 @@ beforeEach(() => {
   mockSiteKey = null;
   mockWidget.mounts = 0;
   sessionStorage.clear();
+  // 地域の選択はここの多くのテストの関心事ではないので、選んである状態から始める。
+  sessionStorage.setItem("fujisan-checkout-shipping-region", "mainland");
   window.history.replaceState(null, "", "/cart");
   // 決済ページへの移動そのものは jsdom では動かないので、呼び出しまでを見る。
   startCheckoutAction.mockResolvedValue({ ok: false, error: "stripe" });
@@ -159,7 +161,7 @@ describe("CartView — ログインして購入", () => {
     );
 
     expect(allowed).toBe(true);
-    expect(sessionStorage.length).toBe(1);
+    expect(sessionStorage.getItem("fujisan-checkout-age-confirmed")).not.toBeNull();
   });
 
   it("ログインして戻ると、そのまま決済へ進む", async () => {
@@ -667,5 +669,139 @@ describe("CartView — ゲストとして購入", () => {
     expect((await screen.findByRole("alert")).textContent).toContain(
       "時間をおいて",
     );
+  });
+});
+
+describe("CartView — ご注文内容", () => {
+  it("ボタンの金額は括弧で示し、中黒でつながない", () => {
+    signedIn();
+    render(<CartView />);
+
+    const label = payButton().textContent ?? "";
+    expect(label).toContain("お支払いへ進む（¥6,600）");
+    expect(label).not.toContain("·");
+  });
+
+  it("送料無料までの残りは文だけで伝え、進捗バーは出さない", () => {
+    signedIn();
+    const { container } = render(<CartView />);
+
+    expect(container.textContent).toContain("で送料無料です。");
+    expect(container.querySelector(".bg-gold")).toBeNull();
+  });
+});
+
+describe("CartView — お届け地域", () => {
+  const regionSelect = () =>
+    document.getElementById("shipping-region") as HTMLInputElement;
+
+  it("地域を選ぶまで合計を出さず、決済へ進ませない", () => {
+    sessionStorage.clear();
+    signedIn();
+    render(<CartView />);
+
+    expect(regionSelect().value).toBe("");
+    expect(payButton().textContent).not.toContain("¥");
+
+    fireEvent.click(ageCheckbox());
+    fireEvent.click(payButton());
+
+    expect(startCheckoutAction).not.toHaveBeenCalled();
+    expect(screen.getByRole("alert").textContent).toContain(
+      "お届け地域を選んでください",
+    );
+  });
+
+  it("地域を選ばずにログインから戻ったら、自動では決済へ進まない", async () => {
+    sessionStorage.clear();
+    signedOut();
+    const { unmount } = render(<CartView />);
+    fireEvent.click(ageCheckbox());
+    fireEvent.click(screen.getByRole("link", { name: /ログインして購入/ }));
+    unmount();
+
+    signedIn();
+    window.history.replaceState(null, "", "/cart?resume=checkout");
+    render(<CartView />);
+
+    await waitFor(() => expect(ageCheckbox().checked).toBe(true));
+    expect(startCheckoutAction).not.toHaveBeenCalled();
+  });
+
+  it("地域を選ぶと、送料と合計とボタンの金額が変わる", () => {
+    signedIn();
+    render(<CartView />);
+
+    fireEvent.change(regionSelect(), { target: { value: "hokkaido" } });
+
+    expect(payButton().textContent).toContain("（¥7,100）");
+  });
+
+  it("選んだ地域で決済を始める", async () => {
+    signedIn();
+    render(<CartView />);
+
+    fireEvent.change(regionSelect(), { target: { value: "remote" } });
+    fireEvent.click(ageCheckbox());
+    fireEvent.click(payButton());
+
+    await waitFor(() => expect(startCheckoutAction).toHaveBeenCalled());
+    expect(startCheckoutAction.mock.calls[0][0].shippingRegion).toBe("remote");
+  });
+
+  it("登録住所と合わなければ、地域を合わせて確かめてもらう", async () => {
+    startCheckoutAction.mockResolvedValue({
+      ok: false,
+      error: "region",
+      shippingRegion: "hokkaido",
+    });
+    signedIn();
+    render(<CartView />);
+
+    fireEvent.click(ageCheckbox());
+    fireEvent.click(payButton());
+
+    expect((await screen.findByRole("alert")).textContent).toContain(
+      "お届け地域を変更しました",
+    );
+    expect(regionSelect().value).toBe("hokkaido");
+    expect(payButton().textContent).toContain("（¥7,100）");
+  });
+
+  it("ログインして戻っても、選んだ地域は変わらない", async () => {
+    signedOut();
+    const { unmount } = render(<CartView />);
+    fireEvent.change(regionSelect(), { target: { value: "hokkaido" } });
+    fireEvent.click(ageCheckbox());
+    fireEvent.click(screen.getByRole("link", { name: /ログインして購入/ }));
+    unmount();
+
+    signedIn();
+    window.history.replaceState(null, "", "/cart?resume=checkout");
+    render(<CartView />);
+
+    await waitFor(() => expect(startCheckoutAction).toHaveBeenCalled());
+    expect(startCheckoutAction.mock.calls[0][0].shippingRegion).toBe("hokkaido");
+  });
+});
+
+describe("CartView — 確定の前に見せる事項", () => {
+  it("年齢確認の近くに 20 歳未満の飲酒防止の表示を置く", () => {
+    signedIn();
+    render(<CartView />);
+
+    const label = ageCheckbox().closest("label");
+    expect(label?.nextElementSibling?.textContent).toContain(
+      "20歳未満の者の飲酒は法律で禁止されています。",
+    );
+  });
+
+  it("引渡時期・支払時期・返品の条件を出す", () => {
+    signedIn();
+    const { container } = render(<CartView />);
+
+    expect(container.textContent).toContain("原則2営業日以内に発送");
+    expect(container.textContent).toContain("ご注文時に確定します");
+    expect(container.textContent).toContain("お客様都合での返品交換");
   });
 });

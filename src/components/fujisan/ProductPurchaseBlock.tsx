@@ -247,7 +247,7 @@ export default function ProductPurchaseBlock({
           {/* 未成年飲酒防止表示 — 法令上、日本語表記は常に必要 */}
           <div
             role="note"
-            aria-label="未成年飲酒防止のお知らせ"
+            aria-label="20歳未満の飲酒防止のお知らせ"
             className="mt-7 border border-gold/35 bg-paper-tint/80 px-5 py-5 text-[22px] font-medium leading-[1.55] text-[#1D2432]/86 md:text-[24px]"
           >
             <L

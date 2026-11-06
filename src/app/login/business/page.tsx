@@ -17,23 +17,20 @@ export default function LoginBusinessPage() {
       role="business"
       mode="login"
       brand={{
-        kanji: "取引",
-        kickerJp: "取扱店ログイン",
-        titleEn: "For trade accounts",
-        titleJp: "取扱店の方へ",
-        textEn:
-          "Sign in to view wholesale pricing. Orders are arranged after a quote, in Japanese or English.",
-        textJp:
-          "ログインすると、卸価格をご覧いただけます。ご注文はお見積りのうえで承ります。日本語・英語でご相談いただけます。",
+        panel: {
+          titleEn: "For trade accounts",
+          titleJp: "取扱店の方へ",
+          textEn:
+            "Orders are arranged after a quote, in Japanese or English.",
+          textJp:
+            "ご注文はお見積りのうえで承ります。日本語・英語でご相談いただけます。",
+        },
         crumbHref: "/shop/business",
         crumbEn: "Back to trade",
         crumbJp: "取扱店ページへ戻る",
       }}
     >
       <AuthHeading
-        role="business"
-        eyebrowEn="TRADE SIGN IN"
-        eyebrowJp="取扱店ログイン"
         titleEn="Sign in to your trade account"
         titleJp="取扱店アカウントにログイン"
         leadEn="For restaurants, bars, shops, and hotels. Wholesale pricing is shown only to approved trade accounts."

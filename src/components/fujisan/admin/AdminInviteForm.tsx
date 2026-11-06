@@ -35,7 +35,7 @@ export function AdminInviteForm() {
       const msg: Record<string, string> = {
         unauth: "ログインが切れています。再度ログインしてください。",
         forbidden: "権限がありません。",
-        invalid: "入力が不正です。",
+        invalid: "入力内容を確認してください。",
         db: "処理に失敗しました。時間をおいて再度お試しください。",
       };
       setNotice({ tone: "err", text: msg[res.error] ?? "失敗しました。" });

@@ -202,7 +202,7 @@ export function RegisterPersonalForm({
       )}
 
       <p className="mt-2 text-[12.5px] leading-[1.7] text-indigo/72">
-        <L en="Already have an account?" ja="すでにアカウントをお持ちですか？" />{" "}
+        <L en="Already have an account?" ja="アカウントをお持ちの方は" />{" "}
         <Link
           href={loginHref}
           className="font-semibold text-indigo underline decoration-gold/60 underline-offset-4 transition-colors hover:decoration-gold"

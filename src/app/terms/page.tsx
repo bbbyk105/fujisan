@@ -14,12 +14,12 @@ export const metadata = buildMetadata({
 const sections: DocumentSection[] = [
   {
     num: "01",
-    heading: <L en="Acceptance" ja="ご同意" />,
+    heading: <L en="Acceptance" ja="本規約への同意" />,
     body: [
       <L
         key="b"
         en="By accessing sakefujisan.com or placing an order, you agree to these Terms of Use. If you do not agree, please do not use the site."
-        ja="sakefujisan.com のご利用、またはご注文をもって、本利用規約に同意いただいたものとみなします。ご同意いただけない場合は、本サイトのご利用をお控えください。"
+        ja="sakefujisan.com のご利用、またはご注文をもって、本利用規約に同意いただいたものとみなします。同意いただけない場合は、当サイトのご利用をお控えください。"
       />,
     ],
   },
@@ -62,7 +62,7 @@ const sections: DocumentSection[] = [
       <L
         key="b"
         en="All prices are shown in JPY with consumption tax included, unless otherwise stated, and may be adjusted to reflect duties or shipping. Shipping fees are borne by the customer; see the Tokutei Shōtorihiki notice for full sale conditions. We reserve the right to correct pricing errors and cancel affected orders, refunding any charges in full."
-        ja="商品ページに表示している販売価格はすべて日本円・消費税10%込みの税込価格です。送料等は別途お客様のご負担となります。詳しい販売条件は「特定商取引法に基づく表示」をご確認ください。価格の誤りがあった場合、当社は訂正のうえ該当注文をキャンセルし、お支払い済みの料金は全額返金いたします。"
+        ja="商品ページに表示している販売価格はすべて日本円・消費税10%込みの税込価格です。送料は別途お客様のご負担となります。詳しい販売条件は「特定商取引法に基づく表示」をご確認ください。価格の誤りがあった場合、当社は訂正のうえ該当注文をキャンセルし、お支払い済みの料金は全額返金いたします。"
       />,
     ],
   },
@@ -73,7 +73,7 @@ const sections: DocumentSection[] = [
       <L
         key="b"
         en="All photography, copy, illustrations, and brand marks on this site are the property of FUJISAN SAKE or used under licence. They may not be reproduced commercially without written permission."
-        ja="本サイトのすべての写真・文章・イラスト・ブランド標章は、FUJISAN SAKE に帰属するか、許諾を得て使用しています。書面による許可なく商用で複製することを禁じます。"
+        ja="当サイトのすべての写真・文章・イラスト・ブランド標章は、FUJISAN SAKE に帰属するか、許諾を得て使用しています。書面による許可なく商用で複製することを禁じます。"
       />,
     ],
   },
@@ -84,7 +84,7 @@ const sections: DocumentSection[] = [
       <L
         key="b"
         en="To the extent permitted by law, FUJISAN SAKE is not liable for indirect, incidental, or consequential damages arising from the use of this site or our products. Nothing in these terms excludes liability that cannot be excluded by applicable law."
-        ja="法律で認められる範囲において、FUJISAN SAKE は本サイトまたは当社製品の利用から生じる間接的・付随的・結果的損害について責任を負いません。適用法令上排除できない責任を排除するものではありません。"
+        ja="法律で認められる範囲において、FUJISAN SAKE は当サイトまたは当社製品の利用から生じる間接的・付随的・結果的損害について責任を負いません。適用法令上排除できない責任を排除するものではありません。"
       />,
     ],
   },
@@ -104,7 +104,6 @@ const sections: DocumentSection[] = [
 export default function TermsPage() {
   return (
     <DocumentPage
-      kicker={<L en="Legal" ja="規約" />}
       title={<L en="Terms of Use" ja="利用規約" />}
       lead={
         <L
@@ -112,7 +111,7 @@ export default function TermsPage() {
           ja="当サイトのご利用とご購入についての取り決めです。"
         />
       }
-      updated="2026.09"
+      updated="2026.11"
       sections={sections}
     />
   );

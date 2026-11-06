@@ -31,7 +31,7 @@ const yen = new Intl.NumberFormat("ja-JP");
 
 const steps = [
   {
-    heading: <L en="Choose your bottle" ja="一本を選ぶ" />,
+    heading: <L en="Choose your bottle" ja="銘柄を選ぶ" />,
     body: (
       <L
         en="Pick from the five bottles. Each product page lists the serving temperature and tasting notes."
@@ -40,7 +40,7 @@ const steps = [
     ),
   },
   {
-    heading: <L en="Confirm age and quantity" ja="年齢を確かめ、本数を決める" />,
+    heading: <L en="Confirm age and quantity" ja="年齢を確認し、本数を選ぶ" />,
     body: (
       <L
         en="On the bottle page, confirm that you are 20 or older and choose how many bottles you would like."
@@ -52,8 +52,8 @@ const steps = [
     heading: <L en="Receive it at home" ja="ご自宅で受け取る" />,
     body: (
       <L
-        en="Checked by hand, packed in a chilled outer box, and dispatched within two business days. The courier verifies age again at the door."
-        ja="ひとつずつ検品し、保冷外箱に詰めて、原則2営業日以内に発送します。お受け取りの際にも年齢の確認をお願いします。"
+        en="Checked by hand and dispatched within two business days. The courier verifies age again at the door."
+        ja="ひとつずつ検品し、原則2営業日以内に発送します。お受け取りの際にも年齢の確認をお願いします。"
       />
     ),
   },
@@ -130,7 +130,6 @@ export default function ShopPersonalPage() {
     <EditorialPage>
       <EditorialPageHeader
         width="wide"
-        kicker={<L en="Purchase" ja="ご購入" />}
         title={<L en="Personal orders" ja="個人のお客様" />}
         lead={
           <L
@@ -195,9 +194,9 @@ export default function ShopPersonalPage() {
         {/* 未成年飲酒防止表示は法令上の必須表示。装飾を足さず、位置で目立たせる */}
         <EdNote
           role="note"
-          aria-label="未成年飲酒防止のお知らせ"
+          aria-label="20歳未満の飲酒防止のお知らせ"
           className="mt-14"
-          label={<L en="Age 20+" ja="未成年者の飲酒防止" />}
+          label={<L en="Age 20+" ja="20歳未満の飲酒防止" />}
         >
           <L
             ja={

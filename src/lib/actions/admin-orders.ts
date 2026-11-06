@@ -332,7 +332,7 @@ export async function adminUpdateOrderAction(input: {
           `注文番号: ${current.orderRef}`,
           "",
           "在庫は引き落としたままです。このあと取り消しや全額返金をしても自動では戻りません。",
-          "品物が蔵にある場合は /admin/products で在庫を足してください。",
+          "品物が手元にある場合は /admin/products で在庫を足してください。",
         ].join("\n"),
       );
     }

@@ -20,27 +20,22 @@ export default async function LoginPersonalPage() {
       role="personal"
       mode="login"
       brand={{
-        kanji: "会員",
-        kickerJp: "会員ログイン",
-        titleEn: "What you can do with an account",
-        titleJp: "ログインしてできること",
-        textEn:
-          "Order to your saved address, check your order history, and reorder the same bottle in a few steps.",
-        textJp:
-          "登録した住所でのご注文、注文履歴の確認、同じ銘柄の再注文ができます。",
+        panel: {
+          titleEn: "What you can do with an account",
+          titleJp: "ログインしてできること",
+          textEn:
+            "Order to your saved address, check your order history, and reorder the same bottle in a few steps.",
+          textJp:
+            "登録した住所でのご注文、注文履歴の確認、同じ銘柄の再注文ができます。",
+        },
         crumbHref: "/shop/personal",
         crumbEn: "Back to shop",
         crumbJp: "ショップへ戻る",
       }}
     >
       <AuthHeading
-        role="personal"
-        eyebrowEn="MEMBER SIGN IN"
-        eyebrowJp="会員ログイン"
         titleEn="Sign in to your account"
         titleJp="アカウントにログイン"
-        leadEn="For individual customers. Use your email and password, or continue with Google."
-        leadJp="個人のお客様向けです。メールアドレスとパスワード、または Google でログインできます。"
       />
       <Suspense>
         <LoginForm role="personal" googleEnabled={googleEnabled} />

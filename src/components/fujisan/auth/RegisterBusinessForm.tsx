@@ -97,7 +97,7 @@ export function RegisterBusinessForm() {
         <Notice tone="success">
           <L
             en={`We've sent a confirmation link to ${email}. Verify your address, then we'll review your application and reply within two business days. Wholesale pricing appears once the account is approved.`}
-            ja={`${email} に確認メールを送信しました。メールアドレスをご認証ください。お申し込みの内容を蔵で確認のうえ、2 営業日以内に審査の結果をご連絡します。卸価格は承認後に表示されます。`}
+            ja={`${email} に確認メールを送信しました。メールアドレスの確認をお願いします。お申し込みの内容を確認のうえ、2 営業日以内に審査の結果をご連絡します。卸価格は承認後に表示されます。`}
           />
         </Notice>
         <ResendVerification email={email} role="business" />
@@ -136,7 +136,7 @@ export function RegisterBusinessForm() {
         </Notice>
       )}
 
-      <Field id="biz-company" label="COMPANY" jp="貴社・店舗名" required>
+      <Field id="biz-company" label="COMPANY" jp="会社名・店舗名" required>
         <input
           id="biz-company"
           type="text"
@@ -270,7 +270,7 @@ export function RegisterBusinessForm() {
           <p className="mt-2 text-[11px] leading-[1.7] text-indigo/55">
             <L
               en="We verify the licence before opening your account."
-              ja="口座開設の前に、蔵で内容を確認いたします。"
+              ja="口座開設の前に、内容を確認いたします。"
             />
           </p>
           <FieldError error={fieldErrors.licenceNumber} />
@@ -295,7 +295,7 @@ export function RegisterBusinessForm() {
       <p className="text-[11px] leading-[1.65] text-indigo/55">
         <L
           en="Registering opens an application, not an account. We check the details by hand, and wholesale pricing is shown only after approval. By applying you confirm your business handles, or is licensed to handle, alcoholic beverages."
-          ja="ご登録は「お申し込み」です。内容を蔵で確認のうえ承認した後に、卸価格が表示されます。お申し込みをもって、貴社が酒類を取り扱う（または取り扱う免許を有する）ことを確認したものとみなします。"
+          ja="ご登録は「お申し込み」です。内容を確認して承認した後に、卸価格が表示されます。お申し込みをもって、貴社が酒類を取り扱う（または取り扱う免許を有する）ことを確認したものとみなします。"
         />
       </p>
 
@@ -308,7 +308,7 @@ export function RegisterBusinessForm() {
       </PrimaryButton>
 
       <p className="mt-2 text-[12.5px] leading-[1.7] text-indigo/72">
-        <L en="Already have an account?" ja="すでにアカウントをお持ちですか？" />{" "}
+        <L en="Already have an account?" ja="アカウントをお持ちの方は" />{" "}
         <Link
           href="/login/business"
           className="font-semibold text-indigo underline decoration-gold/60 underline-offset-4 transition-colors hover:decoration-gold"

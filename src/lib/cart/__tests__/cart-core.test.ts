@@ -2,6 +2,10 @@ import {
   MAX_QTY_PER_LINE,
   addLine,
   amountToFreeShipping,
+  isShippingRegion,
+  regionOfPostalCode,
+  shippingRegionMismatch,
+  shippingRegionNeedsReview,
   cartCount,
   cartSubtotal,
   normalizeLines,
@@ -12,7 +16,7 @@ import {
   type CartLine,
 } from "@/lib/cart/cart-core";
 import { fujisanProducts, primaryVolume } from "@/data/fujisan-products";
-import { SHIPPING_FEE } from "@/data/fujisan-legal";
+import { SHIPPING_FEE, SHIPPING_REGIONS } from "@/data/fujisan-legal";
 
 // 実在の slug / 容量 / 価格を使う（データ駆動でテストが陳腐化しないように）
 const A = fujisanProducts[0]; // shogun（300ml / 180ml）
@@ -184,5 +188,104 @@ describe("toLineViews", () => {
     expect(views.map((v) => v.slug)).toEqual([A.slug, B.slug]);
     expect(views[0].product.name).toBe(A.name);
     expect(views[0].volume.ml).toBe(A_ML);
+  });
+});
+
+describe("お届け地域の送料", () => {
+  const { flatJpy, freeThresholdJpy } = SHIPPING_FEE;
+  const { hokkaido, remote } = SHIPPING_REGIONS;
+
+  it("基本送料に地域の追加分を足す", () => {
+    expect(shippingFee(1000)).toBe(flatJpy);
+    expect(shippingFee(1000, "mainland")).toBe(flatJpy);
+    expect(shippingFee(1000, "hokkaido")).toBe(flatJpy + hokkaido.surchargeJpy);
+    expect(shippingFee(1000, "remote")).toBe(flatJpy + remote.surchargeJpy);
+  });
+
+  it("送料無料になるのは基本送料だけで、地域の追加分は残る", () => {
+    expect(shippingFee(freeThresholdJpy, "mainland")).toBe(0);
+    expect(shippingFee(freeThresholdJpy, "hokkaido")).toBe(hokkaido.surchargeJpy);
+    expect(shippingFee(freeThresholdJpy, "remote")).toBe(remote.surchargeJpy);
+  });
+
+  it("空のカートは地域にかかわらず 0 円", () => {
+    expect(shippingFee(0, "remote")).toBe(0);
+  });
+
+  it("知らない地域は受け付けない", () => {
+    expect(isShippingRegion("hokkaido")).toBe(true);
+    expect(isShippingRegion("mars")).toBe(false);
+    expect(isShippingRegion("toString")).toBe(false);
+    expect(isShippingRegion(undefined)).toBe(false);
+  });
+});
+
+describe("郵便番号からの地域の判定", () => {
+  it.each([
+    ["0600001", "hokkaido"], // 札幌市（06）
+    ["0010010", "hokkaido"], // 札幌市（00）
+    ["0400001", "hokkaido"], // 函館市（04）
+    ["0980000", "hokkaido"], // 稚内周辺（09）
+    ["9000001", "remote"], // 那覇市
+    ["907-0000", "remote"], // 石垣市（ハイフン付き）
+  ])("%s は %s", (postal, region) => {
+    expect(regionOfPostalCode(postal)).toBe(region);
+  });
+
+  it.each([
+    ["0100001"], // 秋田市
+    ["0200021"], // 盛岡市
+    ["0300801"], // 青森市
+    ["4170051"], // 富士市
+    ["1000001"], // 千代田区
+  ])("%s は判定できる地域ではない", (postal) => {
+    expect(regionOfPostalCode(postal)).toBeNull();
+  });
+
+  it("7 桁でなければ判定しない", () => {
+    expect(regionOfPostalCode("060")).toBeNull();
+    expect(regionOfPostalCode("")).toBeNull();
+  });
+});
+
+describe("選んだ地域と住所の食い違い", () => {
+  it("本州などを選んで北海道・沖縄の住所なら食い違い", () => {
+    expect(shippingRegionMismatch("mainland", "0600001")).toBe(true);
+    expect(shippingRegionMismatch("mainland", "9000001")).toBe(true);
+    expect(shippingRegionMismatch("mainland", "1000001")).toBe(false);
+  });
+
+  it("北海道を選んでほかの住所なら食い違い", () => {
+    expect(shippingRegionMismatch("hokkaido", "0600001")).toBe(false);
+    expect(shippingRegionMismatch("hokkaido", "1000001")).toBe(true);
+  });
+
+  it("「沖縄・離島」はどの番号でも離島のことがあるので食い違いにしない", () => {
+    expect(shippingRegionMismatch("remote", "9000001")).toBe(false);
+    expect(shippingRegionMismatch("remote", "1000001")).toBe(false);
+    expect(shippingRegionMismatch("remote", "0970101")).toBe(false); // 利尻
+  });
+
+  it("郵便番号が読めなければ判定しない", () => {
+    expect(shippingRegionMismatch("mainland", "")).toBe(false);
+  });
+});
+
+describe("発送前に人が確かめる注文", () => {
+  it("明らかに合わない注文を含む", () => {
+    expect(shippingRegionNeedsReview("mainland", "0600001")).toBe(true);
+  });
+
+  it("沖縄以外の番号で「沖縄・離島」が選ばれた注文を含む", () => {
+    expect(shippingRegionNeedsReview("remote", "1000001")).toBe(true);
+    expect(shippingRegionNeedsReview("remote", "0970101")).toBe(true);
+  });
+
+  it("沖縄の番号で「沖縄・離島」なら確かめなくてよい", () => {
+    expect(shippingRegionNeedsReview("remote", "9000001")).toBe(false);
+  });
+
+  it("郵便番号が読めなければ判定しない", () => {
+    expect(shippingRegionNeedsReview("remote", "")).toBe(false);
   });
 });

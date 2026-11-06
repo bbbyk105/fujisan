@@ -98,7 +98,7 @@ export function FujisanContactForm() {
         <h3 className="ed-h2 mt-3">
           <L
             en={`Thank you, ${name || "friend of Fujisan"}.`}
-            ja={`${name || "富士山の友"}さま、ありがとうございます。`}
+            ja={name ? `${name}さま、ありがとうございます。` : "ありがとうございます。"}
           />
         </h3>
         <p className="ed-p mt-5">
@@ -218,7 +218,7 @@ export function FujisanContactForm() {
         </div>
       </Field>
 
-      <Field id="contact-message" label="Message" jp="ご用件詳細" required>
+      <Field id="contact-message" label="Message" jp="お問い合わせ内容" required>
         <div className="relative">
           <textarea
             id="contact-message"
@@ -233,7 +233,7 @@ export function FujisanContactForm() {
             className="peer w-full resize-none border-b border-indigo/22 bg-transparent py-3 text-[15px] leading-[1.7] text-indigo outline-none transition-colors placeholder:text-indigo/35 aria-[invalid=true]:border-crimson"
             placeholder={
               locale === "ja"
-                ? "ご用件を簡単にお書きください…"
+                ? "お問い合わせの内容をご記入ください"
                 : "Tell us a little about your enquiry…"
             }
           />

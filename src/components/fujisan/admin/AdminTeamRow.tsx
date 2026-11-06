@@ -9,9 +9,9 @@ import { useUnsavedChanges } from "@/lib/unsaved-changes";
 const ERROR_MESSAGES: Record<string, string> = {
   unauth: "ログインが切れています。再度ログインしてください。",
   forbidden: "権限がありません。",
-  invalid: "入力が不正です。",
+  invalid: "入力内容を確認してください。",
   self_demote:
-    "自分自身を降格することはできません（鍵を失わないための保護）。",
+    "自分自身の権限を下げることはできません。",
   env_owner_protected:
     "このメンバーは環境変数で owner 指定されています。env で外してから操作してください。",
   last_owner:

@@ -86,7 +86,7 @@ export function AccountView({
                 {email}
                 {!emailVerified ? (
                   <span className="ml-3 font-semibold text-gold-ink">
-                    <L en="Email not verified" ja="メール未認証" />
+                    <L en="Email not verified" ja="メール未確認" />
                   </span>
                 ) : null}
               </p>

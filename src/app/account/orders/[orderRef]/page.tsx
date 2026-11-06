@@ -239,7 +239,7 @@ export default async function OrderDetailPage({
                 </div>
                 <div className="mt-2 flex items-baseline justify-between gap-3 text-[12.5px] text-indigo">
                   <span>
-                    <L en="Net charged" ja="差引ご負担額" />
+                    <L en="Net charged" ja="返金後のお支払い額" />
                   </span>
                   <span className="font-semibold tabular-nums">
                     ¥{yen.format(order.total - partialRefund)}
@@ -285,14 +285,14 @@ export default async function OrderDetailPage({
                 }
                 ja={
                   <>
-                    ご注文についてのお問い合わせは
+                    ご注文についてのお問い合わせは、
                     <Link
                       href="/contact"
                       className="ed-link"
                     >
                       こちら
                     </Link>
-                    から。
+                    からお願いします。
                   </>
                 }
               />

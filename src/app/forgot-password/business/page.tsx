@@ -17,27 +17,22 @@ export default function ForgotPasswordBusinessPage() {
       mode="login"
       showRoleSwitch={false}
       brand={{
-        kanji: "設定",
-        kickerJp: "法人・取扱店",
-        titleEn: "Resetting your password",
-        titleJp: "パスワードの再設定",
-        textEn:
-          "Enter your account email and we'll send a secure link to set a new password.",
-        textJp:
-          "ご登録のメールアドレスをご入力ください。パスワードを再設定するためのリンクをお送りします。",
         crumbHref: "/login/business",
         crumbEn: "Back to trade sign in",
         crumbJp: "取扱店ログインへ戻る",
+        panel: {
+          titleEn: "Trade customers",
+          titleJp: "法人・取扱店のお客様",
+          textEn: "If you can't recall your email address, please contact us.",
+          textJp: "メールアドレスが分からない場合は、お問い合わせください。",
+        },
       }}
     >
       <AuthHeading
-        role="business"
-        eyebrowEn="RESET PASSWORD"
-        eyebrowJp="パスワード再設定"
         titleEn="Forgot your password?"
-        titleJp="パスワードをお忘れですか？"
+        titleJp="パスワードの再設定"
         leadEn="Enter the email registered to your trade account. We'll send you a link to set a new password."
-        leadJp="お取引アカウントのメールアドレスを入力してください。新しいパスワードを設定するリンクをお送りします。"
+        leadJp="取扱店アカウントのメールアドレスを入力してください。新しいパスワードを設定するリンクをお送りします。"
       />
       <ForgotPasswordForm role="business" />
     </AuthShell>

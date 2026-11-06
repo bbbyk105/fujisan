@@ -15,7 +15,7 @@ import { useUnsavedChanges } from "@/lib/unsaved-changes";
 const ERROR_MESSAGES: Record<string, string> = {
   unauth: "ログインが切れています。再度ログインしてください。",
   forbidden: "権限がありません。",
-  invalid: "入力が不正です。",
+  invalid: "入力内容を確認してください。",
   notfound: "このアカウントは見つかりませんでした。",
   db: "保存に失敗しました。時間をおいて再度お試しください。",
 };
@@ -115,7 +115,7 @@ export function AdminTradeRow({ account }: { account: TradeAccountRow }) {
             account.emailVerified ? "text-moss" : "text-crimson"
           }`}
         >
-          {account.emailVerified ? "メール認証済" : "メール未認証"}
+          {account.emailVerified ? "メール確認済み" : "メール未確認"}
         </span>
       </div>
 
@@ -124,7 +124,7 @@ export function AdminTradeRow({ account }: { account: TradeAccountRow }) {
         <Field label="メール" value={account.email} />
         <Field label="電話" value={account.phone} />
         <Field label="ご登録" value={formatDateShortJp(account.createdAt)} />
-        <Field label="酒類販売免許番号" value={account.licenceNumber} />
+        <Field label="酒類販売業免許番号" value={account.licenceNumber} />
         <div className="sm:col-span-2 lg:col-span-3">
           <Field label="所在地" value={account.address} />
         </div>

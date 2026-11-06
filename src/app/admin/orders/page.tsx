@@ -42,7 +42,7 @@ const FILTERS: Array<{
   { key: "all", label: "すべて", statuses: null },
   { key: "action", label: "要対応", statuses: ["pending", "confirmed", "preparing"] },
   { key: "shipped", label: "発送済み", statuses: ["shipped"] },
-  { key: "delivered", label: "お届け済", statuses: ["delivered"] },
+  { key: "delivered", label: "お届け済み", statuses: ["delivered"] },
   { key: "closed", label: "キャンセル・返金", statuses: ["cancelled", "refunded"] },
 ];
 
@@ -129,9 +129,9 @@ export default async function AdminOrdersPage(props: {
         kpis={
           <>
             <AdminKpi label="進行中" value={`${inFlight}`} suffix="件" />
-            <AdminKpi label="発送済" value={`${counts.shipped}`} suffix="件" />
+            <AdminKpi label="発送済み" value={`${counts.shipped}`} suffix="件" />
             <AdminKpi
-              label="お届け済"
+              label="お届け済み"
               value={`${counts.delivered}`}
               suffix="件"
             />

@@ -15,6 +15,8 @@ import {
   type OrderEmailData,
 } from "@/lib/emails/order-emails";
 import { alertOps } from "@/lib/ops-alert";
+import { SHIPPING_REGIONS } from "@/data/fujisan-legal";
+import { isShippingRegion, shippingRegionNeedsReview } from "@/lib/cart/cart-core";
 import { applyStockMove } from "@/lib/order-stock";
 import { formatDateTimeJp } from "@/lib/format-date";
 import { orderStatusJp } from "@/data/fujisan-orders";
@@ -466,6 +468,25 @@ async function fulfillOrder(
   // 押さえていた在庫を確定する。失敗しても入金は成立しているので、500 にせず
   // 運用へ知らせる（applyStockMove が行う）。
   await applyStockMove(row, row.stockState, stockTarget);
+
+  // 住所で送料を変えられないので、カートで選んだ地域と合わなければ人が確かめる。
+  const shippingRegion = session.metadata?.shippingRegion;
+  if (
+    isShippingRegion(shippingRegion) &&
+    shippingRegionNeedsReview(shippingRegion, postalCode)
+  ) {
+    await alertOps(
+      "お届け地域と住所を確認してほしい注文があります",
+      [
+        `注文番号: ${row.orderRef}`,
+        `カートで選んだ地域: ${SHIPPING_REGIONS[shippingRegion].ja}`,
+        `お届け先: 〒${postalCode} ${address}`,
+        `受け取った送料: ¥${row.shipping.toLocaleString("ja-JP")}`,
+        "",
+        "発送前に、離島かどうかと送料の過不足を確かめ、必要ならお客様へ連絡してください。",
+      ].join("\n"),
+    );
+  }
 
   const data: OrderEmailData = {
     noAccount: row.userId === null,

@@ -57,7 +57,7 @@ const rows = [
       <>
         <span className="block">
           <L
-            en={`Phone: ${FUJISAN_LEGAL.phone} (Weekdays 10:00–17:00 JST, excl. weekends & holidays)`}
+            en={`Phone: ${FUJISAN_LEGAL.phone} (${FUJISAN_LEGAL.phoneHoursEn})`}
             ja={`電話 ${FUJISAN_LEGAL.phone}（${FUJISAN_LEGAL.phoneHours}）`}
           />
         </span>
@@ -66,8 +66,8 @@ const rows = [
         </a>
         <span className="ed-small mt-1 block">
           <L
-            en="We reply to email enquiries within three business days as a rule."
-            ja="メールでのお問い合わせは原則3営業日以内にご返信いたします。"
+            en="We reply to email enquiries within two business days as a rule."
+            ja="メールでのお問い合わせは原則2営業日以内にご返信いたします。"
           />
         </span>
       </>
@@ -126,7 +126,7 @@ const rows = [
     label: <L en="Returns & exchanges" ja="返品・交換条件" />,
     value: (
       <L
-        en="Due to the nature of alcoholic beverages, we cannot accept returns or exchanges of opened bottles, or returns for change of mind. For breakage in transit, wrong delivery, or defects, please contact us by email within 7 days of arrival; we will arrange a replacement or refund at our cost."
+        en={FUJISAN_LEGAL.returnsPolicyEn}
         ja={FUJISAN_LEGAL.returnsPolicy}
       />
     ),
@@ -165,7 +165,6 @@ export default function TokushohoPage() {
   return (
     <EditorialPage>
       <EditorialPageHeader
-        kicker={<L en="Legal" ja="法定表示" />}
         title={
           <L
             en="Legal notice"
@@ -191,8 +190,8 @@ export default function TokushohoPage() {
       <EditorialSection ruled={false} className="py-12 md:py-16">
         <EdNote
           role="note"
-          aria-label="未成年飲酒防止のお知らせ"
-          label={<L en="Age 20+" ja="未成年者の飲酒防止" />}
+          aria-label="20歳未満の飲酒防止のお知らせ"
+          label={<L en="Age 20+" ja="20歳未満の飲酒防止" />}
         >
           <L
             ja={

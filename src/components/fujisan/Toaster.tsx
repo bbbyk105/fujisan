@@ -34,7 +34,7 @@ export function Toaster() {
               <Link
                 href={toast.action.href}
                 onClick={() => dismissToast(toast.id)}
-                className="group/toast shrink-0 text-[11.5px] font-semibold tracking-[0.18em] text-gold no-underline"
+                className="group/toast shrink-0 text-[12.5px] font-semibold tracking-[0.04em] text-gold no-underline"
               >
                 <span className="relative pb-0.5">
                   <L en={toast.action.en} ja={toast.action.ja} />
@@ -48,7 +48,7 @@ export function Toaster() {
                   toast.action?.onClick?.();
                   dismissToast(toast.id);
                 }}
-                className="group/toast shrink-0 cursor-pointer text-[11.5px] font-semibold tracking-[0.18em] text-gold"
+                className="group/toast shrink-0 cursor-pointer text-[12.5px] font-semibold tracking-[0.04em] text-gold"
               >
                 <span className="relative pb-0.5">
                   <L en={toast.action.en} ja={toast.action.ja} />

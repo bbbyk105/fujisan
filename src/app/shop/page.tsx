@@ -34,7 +34,10 @@ const routes = [
       },
       {
         label: { en: "Shipping", ja: "送料" },
-        value: { en: SHIPPING_FEE.flatEn, ja: SHIPPING_FEE.flat },
+        value: {
+          en: `${SHIPPING_FEE.flatEn} (extra for Hokkaido, Okinawa and remote islands)`,
+          ja: `${SHIPPING_FEE.flat}（北海道・沖縄・離島は追加あり）`,
+        },
       },
       {
         label: { en: "Dispatch", ja: "発送" },
@@ -44,7 +47,7 @@ const routes = [
         },
       },
     ],
-    cta: { en: "Browse the collection", ja: "コレクションを見る" },
+    cta: { en: "Browse the collection", ja: "商品一覧を見る" },
   },
   {
     href: "/shop/business",
@@ -52,8 +55,8 @@ const routes = [
     imagePos: "object-[50%_46%]",
     heading: { en: "Trade accounts", ja: "法人・取扱店のお客様" },
     lead: {
-      en: "For restaurants, bars, shops, hotels, and other businesses. We offer wholesale pricing, case deliveries, and a dedicated contact.",
-      ja: "レストラン・バー・小売店・ホテルなど、法人のお客様向けです。卸価格、ケース単位でのお届け、専任担当によるサポートをご用意します。",
+      en: "For restaurants, bars, shops, hotels, and other businesses. We offer wholesale pricing and case deliveries.",
+      ja: "飲食店・小売店・宿泊施設など、法人のお客様向けです。卸価格とケース単位でのお届けをご用意します。",
     },
     facts: [
       {
@@ -64,11 +67,11 @@ const routes = [
         label: { en: "Quote", ja: "お見積り" },
         value: {
           en: "Within two business days, JPY",
-          ja: "2営業日以内・円建て",
+          ja: "2営業日以内に日本円でご提示",
         },
       },
     ],
-    cta: { en: "Open a trade account", ja: "卸・取扱のご相談へ" },
+    cta: { en: "Open a trade account", ja: "卸・お取り扱いのご相談" },
   },
 ];
 
@@ -76,15 +79,15 @@ const assurances = [
   {
     label: { en: "Hand-checked", ja: "検品" },
     value: {
-      en: "Every order is checked by hand at the kura before it ships, and packed in a chilled outer box.",
-      ja: "すべてのご注文を、出荷前に蔵でひとつずつ検品し、保冷外箱に詰めてお送りします。",
+      en: "Every order is checked by hand at the kura before it ships.",
+      ja: "すべてのご注文を、出荷前に蔵でひとつずつ検品してお送りします。",
     },
   },
   {
     label: { en: "Prices", ja: "価格" },
     value: {
-      en: "All prices include tax. Sale conditions are documented in the Tokutei Shōtorihiki notice.",
-      ja: "価格はすべて税込で表示しています。販売条件は特定商取引法に基づく表示に明記しています。",
+      en: "All prices include tax.",
+      ja: "価格はすべて税込で表示しています。",
     },
   },
   {
@@ -101,7 +104,6 @@ export default function ShopHubPage() {
     <EditorialPage>
       <EditorialPageHeader
         width="wide"
-        kicker={<L en="Purchase" ja="ご購入" />}
         title={<L en="How to order" ja="ご購入方法" />}
         lead={
           <L

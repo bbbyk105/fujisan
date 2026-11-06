@@ -73,7 +73,7 @@ export async function submitContactAction(
     return { ok: false, error: "invalid" };
   }
   // 用件は既知のコードのみ受け付ける（select の改ざん対策）。
-  if (!CONTACT_SUBJECTS.includes(subject as ContactSubject)) {
+  if (!(CONTACT_SUBJECTS as readonly string[]).includes(subject)) {
     return { ok: false, error: "invalid" };
   }
 
