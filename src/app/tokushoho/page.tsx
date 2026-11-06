@@ -190,8 +190,8 @@ export default function TokushohoPage() {
       <EditorialSection ruled={false} className="py-12 md:py-16">
         <EdNote
           role="note"
-          aria-label="未成年飲酒防止のお知らせ"
-          label={<L en="Age 20+" ja="未成年者の飲酒防止" />}
+          aria-label="20歳未満の飲酒防止のお知らせ"
+          label={<L en="Age 20+" ja="20歳未満の飲酒防止" />}
         >
           <L
             ja={

@@ -30,7 +30,7 @@ export default function ForgotPasswordBusinessPage() {
     >
       <AuthHeading
         titleEn="Forgot your password?"
-        titleJp="パスワードをお忘れですか？"
+        titleJp="パスワードの再設定"
         leadEn="Enter the email registered to your trade account. We'll send you a link to set a new password."
         leadJp="取扱店アカウントのメールアドレスを入力してください。新しいパスワードを設定するリンクをお送りします。"
       />

@@ -30,7 +30,7 @@ import { alertOps } from "@/lib/ops-alert";
 
 const STOCK_STATE_LABELS: Record<StockState, string> = {
   reserved: "引き当て中",
-  committed: "引き落とし済み（蔵にある）",
+  committed: "引き落とし済み（発送前）",
   shipped: "引き落とし済み（発送済み）",
   none: "在庫への反映なし",
 };

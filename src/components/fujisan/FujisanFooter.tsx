@@ -45,7 +45,7 @@ export default function FujisanFooter() {
       {/* 法令対応：未成年飲酒防止表示（全ページ常時掲示） */}
       <div
         role="note"
-        aria-label="未成年飲酒防止のお知らせ"
+        aria-label="20歳未満の飲酒防止のお知らせ"
         className="border-b border-paper-tint/12 bg-indigo"
       >
         <div className="mx-auto flex max-w-[1360px] flex-col items-center gap-1 px-7 py-4 text-center text-[11px] leading-[1.7] tracking-[0.04em] text-paper-tint/82 md:px-12 md:text-[12px]">

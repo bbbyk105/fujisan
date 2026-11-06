@@ -47,7 +47,7 @@ const routes = [
         },
       },
     ],
-    cta: { en: "Browse the collection", ja: "コレクションを見る" },
+    cta: { en: "Browse the collection", ja: "商品一覧を見る" },
   },
   {
     href: "/shop/business",
@@ -56,7 +56,7 @@ const routes = [
     heading: { en: "Trade accounts", ja: "法人・取扱店のお客様" },
     lead: {
       en: "For restaurants, bars, shops, hotels, and other businesses. We offer wholesale pricing and case deliveries.",
-      ja: "レストラン・バー・小売店・ホテルなど、法人のお客様向けです。卸価格とケース単位でのお届けをご用意します。",
+      ja: "飲食店・小売店・宿泊施設など、法人のお客様向けです。卸価格とケース単位でのお届けをご用意します。",
     },
     facts: [
       {
@@ -67,11 +67,11 @@ const routes = [
         label: { en: "Quote", ja: "お見積り" },
         value: {
           en: "Within two business days, JPY",
-          ja: "2営業日以内・円建て",
+          ja: "2営業日以内に日本円でご提示",
         },
       },
     ],
-    cta: { en: "Open a trade account", ja: "卸・取扱のご相談へ" },
+    cta: { en: "Open a trade account", ja: "卸・お取り扱いのご相談" },
   },
 ];
 

@@ -56,7 +56,7 @@ export function ShopAddToCart({
     // 未確認のままの即時追加を防ぐ（通常は AgeGate 通過済みなので素通り）
     if (window.localStorage.getItem("fujisan-age-confirmed") !== "yes") {
       pushToast({
-        ja: "ご購入には年齢確認が必要です。商品ページからお進みください",
+        ja: "ご購入には年齢確認が必要です。商品ページからお進みください。",
         en: "Age verification is required. Please continue from the product page",
         action: {
           href: `/products/${slug}`,

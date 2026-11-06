@@ -67,7 +67,7 @@ export default async function AdminTeamPage() {
 
       <AdminHeader
         title="メンバー管理"
-        lead="注文・配送を扱う蔵人を、メールでお招きします。招待した方が登録すると、自動で権限が付きます。"
+        lead="注文・配送を担当するスタッフを、メールで招待します。招待した方が登録すると、自動で権限が付きます。"
         email={email}
         isOwnerUser
         current="team"
@@ -135,7 +135,7 @@ export default async function AdminTeamPage() {
               まだメンバーはあなただけです。
             </p>
             <p className="mx-auto mt-3 max-w-[44ch] text-[12.5px] leading-[1.85] text-indigo/65">
-              上の「メールアドレスで招待」から、蔵人をお招きください。
+              上の「メールアドレスで招待」から、スタッフを招待してください。
             </p>
           </div>
         ) : (

@@ -16,7 +16,7 @@ import { loginPathFor } from "@/lib/safe-redirect";
 
 export const metadata = buildMetadata({
   title: "Admin",
-  description: "蔵の管理トップ。",
+  description: "管理画面のトップです。",
   path: "/admin",
   noIndex: true,
 });

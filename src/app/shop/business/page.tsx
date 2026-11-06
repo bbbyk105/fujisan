@@ -81,7 +81,7 @@ const process = [
     body: (
       <L
         en="Once licence verification and payment terms are agreed, we open your trade account and arrange the first delivery."
-        ja="酒類販売免許とお支払い条件を確認のうえ、お取引口座を開設します。開設後は、初回のご注文からすみやかに出荷いたします。"
+        ja="酒類販売業免許とお支払い条件を確認のうえ、お取引口座を開設します。開設後は、初回のご注文からすみやかに出荷いたします。"
       />
     ),
   },
@@ -89,7 +89,7 @@ const process = [
 
 const faqs = [
   {
-    q: <L en="What is your minimum order quantity?" ja="最低発注ロットは？" />,
+    q: <L en="What is your minimum order quantity?" ja="最小ロットは？" />,
     a: (
       <L
         en="Domestic orders begin at one case (15 bottles, for both 300 ml and 180 ml). Export shipments start at 3,000 bottles, mixed SKUs allowed. Details can be discussed."

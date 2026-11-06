@@ -93,7 +93,7 @@ describe("一部返金の案内", () => {
     async (status) => {
       const text = await pageText({ status });
       expect(text).not.toContain("このまま発送いたします");
-      expect(text).toContain("差引ご負担額");
+      expect(text).toContain("返金後のお支払い額");
     },
   );
 });

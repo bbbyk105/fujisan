@@ -39,7 +39,7 @@ export const FUJISAN_NAV_LINKS: FujisanNavLinkItem[] = [
       },
       {
         label: "FOR YOUR PROGRAMME",
-        jp: "法人・卸 / 取扱店",
+        jp: "法人・取扱店のお客様",
         href: "/shop/business",
         desc: "Restaurants, bars, retailers, hospitality.",
         descJp: "飲食店・小売店・宿泊施設の方向けです。",

@@ -83,7 +83,7 @@ const sections: DocumentSection[] = [
       <L
         key="3b"
         en="For enquiries and guest purchases, we store a one-way hash of your IP address (never the address itself), used only to block repeated automated submissions and attempts to hold stock."
-        ja="お問い合わせとゲストとしてのご購入の際、連投による自動送信や在庫の占有を防ぐ目的でのみ、IP アドレスを復元できない形に変換した値を保存します（IP アドレスそのものは保存しません）。"
+        ja="お問い合わせとゲストとしてのご購入の際、自動での連続送信や在庫の占有を防ぐ目的でのみ、IP アドレスを復元できない形に変換した値を保存します（IP アドレスそのものは保存しません）。"
       />,
       <L
         key="3b2"
@@ -292,7 +292,7 @@ const sections: DocumentSection[] = [
       <L
         key="b"
         en="We may update this policy as our services evolve. Material changes will be announced on this page. The date below indicates the most recent revision."
-        ja="サービスの変化に応じて、本ポリシーを更新することがあります。重要な変更は本ページでお知らせします。下記の日付は最終改訂日を示します。"
+        ja="サービス内容の変更に応じて、本ポリシーを更新することがあります。重要な変更は本ページでお知らせします。下記の日付は最終改訂日を示します。"
       />,
     ],
   },

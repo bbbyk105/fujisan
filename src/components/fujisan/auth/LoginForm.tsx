@@ -173,7 +173,7 @@ export function LoginForm({
           }
           className="mt-2 w-fit text-[12px] text-indigo/70 underline decoration-gold/50 underline-offset-4 transition-colors hover:text-indigo hover:decoration-gold"
         >
-          <L en="Forgot your password?" ja="パスワードをお忘れですか？" />
+          <L en="Forgot your password?" ja="パスワードをお忘れの方" />
         </Link>
       </Field>
 
@@ -203,7 +203,7 @@ export function LoginForm({
       )}
 
       <p className="mt-2 text-[12.5px] leading-[1.7] text-indigo/72">
-        <L en="No account yet?" ja="アカウントをお持ちでないですか？" />{" "}
+        <L en="No account yet?" ja="アカウントをお持ちでない方は" />{" "}
         <Link
           href={registerHref}
           className="font-semibold text-indigo underline decoration-gold/60 underline-offset-4 transition-colors hover:decoration-gold"

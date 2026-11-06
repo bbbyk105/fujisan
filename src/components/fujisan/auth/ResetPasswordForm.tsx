@@ -52,7 +52,7 @@ export function ResetPasswordForm({
         <Notice tone="error">
           <L
             en="This password reset link is invalid or has expired. Please request a new one."
-            ja="このパスワード再設定リンクは無効か、有効期限が切れています。お手数ですが、再度お申し込みください。"
+            ja="このパスワード再設定リンクは無効か、有効期限が切れています。お手数ですが、再度お手続きください。"
           />
         </Notice>
         <Link
@@ -117,7 +117,7 @@ export function ResetPasswordForm({
           ) : errorKey === "unverified" || errorKey === "invalid" ? (
             <L
               en="This reset link is invalid or has expired. Please request a new one."
-              ja="この再設定リンクは無効か、有効期限が切れています。再度お申し込みください。"
+              ja="この再設定リンクは無効か、有効期限が切れています。再度お手続きください。"
             />
           ) : (
             <L

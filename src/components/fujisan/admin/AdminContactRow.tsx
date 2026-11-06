@@ -18,7 +18,7 @@ import { useUnsavedChanges } from "@/lib/unsaved-changes";
 const ERROR_MESSAGES: Record<string, string> = {
   unauth: "ログインが切れています。再度ログインしてください。",
   forbidden: "権限がありません。",
-  invalid: "入力が不正です。",
+  invalid: "入力内容を確認してください。",
   db: "保存に失敗しました。時間をおいて再度お試しください。",
   conflict: "ほかの管理者が先に更新しました。最新の状況を表示しています。",
 };

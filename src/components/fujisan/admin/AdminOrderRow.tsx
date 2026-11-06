@@ -132,7 +132,7 @@ export function AdminOrderRow({ order, canRefund }: Props) {
   };
 
   const REFUND_ERRORS: Record<string, string> = {
-    unauth: "権限がありません（再ログイン）",
+    unauth: "権限がありません。再度ログインしてください。",
     forbidden: "返金は owner のみ可能です",
     invalid: "注文が見つかりません",
     not_refundable: "この注文は返金できません（未入金/返金済み）",
@@ -323,7 +323,7 @@ export function AdminOrderRow({ order, canRefund }: Props) {
                   ))}
                 </select>
                 <p className="mt-2 text-[11px] leading-[1.6] text-indigo/55">
-                  「発送済み」「お届け済」に進めると発送日・お届け日が自動で記録されます。
+                  「発送済み」「お届け済み」に進めると発送日・お届け日が自動で記録されます。
                 </p>
               </Section>
 

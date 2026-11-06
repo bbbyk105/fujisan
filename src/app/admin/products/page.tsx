@@ -91,7 +91,7 @@ export default async function AdminProductsPage() {
             <strong className="font-semibold">
               {lowStock.length} SKU が在庫僅少です
             </strong>
-            — 仕込みか追加の棚卸しをご検討ください。
+            — 追加の発注か棚卸しを検討してください。
           </p>
         )}
 
@@ -111,7 +111,7 @@ export default async function AdminProductsPage() {
             <ul className="mt-2 flex list-disc flex-col gap-1 pl-5">
               <li>
                 <strong>実在庫</strong> …
-                蔵にある本数。棚卸しで数えた数をそのまま入れます。
+                手元にある本数。棚卸しで数えた数をそのまま入れます。
               </li>
               <li>
                 <strong>決済待ち</strong> …

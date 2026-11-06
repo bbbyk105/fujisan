@@ -30,7 +30,7 @@ export default function NotFound() {
 
         <div className="mt-12 flex flex-wrap items-center gap-x-10 gap-y-4">
           <Link href="/products" className="ed-btn">
-            <L en="Browse the collection" ja="コレクションを見る" />
+            <L en="Browse the collection" ja="商品一覧を見る" />
           </Link>
           <Link href="/" className="ed-link text-[13px]">
             <L en="Back to home" ja="トップへ戻る" />

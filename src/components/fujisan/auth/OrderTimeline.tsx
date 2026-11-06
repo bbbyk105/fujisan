@@ -5,11 +5,11 @@ type Step = { key: OrderStatus; en: string; ja: string };
 
 /** 配送進行のメインステップ。cancelled はタイムラインに含めない（別表示で対応）。 */
 const STEPS: Step[] = [
-  { key: "pending", en: "Received", ja: "受付済" },
+  { key: "pending", en: "Received", ja: "受付済み" },
   { key: "confirmed", en: "Confirmed", ja: "注文確定" },
   { key: "preparing", en: "Preparing", ja: "発送準備中" },
   { key: "shipped", en: "Shipped", ja: "発送済み" },
-  { key: "delivered", en: "Delivered", ja: "お届け済" },
+  { key: "delivered", en: "Delivered", ja: "お届け済み" },
 ];
 
 /**

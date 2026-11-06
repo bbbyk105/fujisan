@@ -12,11 +12,11 @@ import type { OrderStatus } from "@/db/orders-schema";
  * サーバー専用の依存を持たせないこと（クライアントからも読むため）。
  */
 export const ORDER_STATUS_LABELS: Record<OrderStatus, { ja: string; en: string }> = {
-  pending: { ja: "受付済", en: "Received" },
+  pending: { ja: "受付済み", en: "Received" },
   confirmed: { ja: "注文確定", en: "Confirmed" },
   preparing: { ja: "発送準備中", en: "Preparing" },
   shipped: { ja: "発送済み", en: "Shipped" },
-  delivered: { ja: "お届け済", en: "Delivered" },
+  delivered: { ja: "お届け済み", en: "Delivered" },
   cancelled: { ja: "キャンセル", en: "Cancelled" },
   refunded: { ja: "返金済み", en: "Refunded" },
 };

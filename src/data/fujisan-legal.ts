@@ -88,7 +88,7 @@ export const FUJISAN_LEGAL = {
   brewerEn: "Makino Shuzo Goshi Kaisha (Makino Sake Brewery)",
   // 価格・支払・引渡
   priceNote:
-    "各商品ページに表示している金額（消費税10%込）です。表示価格以外に送料等が必要となる場合があります。",
+    "各商品ページに表示している金額（消費税10%込）です。表示価格のほかに送料が必要となる場合があります。",
   shipping: SHIPPING_FEE,
   shippingFeeNote: `${SHIPPING_FEE.flat}です。${SHIPPING_FEE.remote}。${SHIPPING_FEE.free}です。`,
   // 英語ロケール表示用（特商法ページは日本語のまま。EC 説明部分のみ英語へ切替）

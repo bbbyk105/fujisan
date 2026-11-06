@@ -297,7 +297,7 @@ export function formatStockWarnings(warnings: readonly StockWarning[]): {
     }
     lines.push("");
   }
-  lines.push("仕込みか棚卸しをご検討ください。");
+  lines.push("追加の発注か棚卸しを検討してください。");
   lines.push("在庫は /admin/products で確認・変更できます。");
 
   return { subject, body: lines.join("\n") };

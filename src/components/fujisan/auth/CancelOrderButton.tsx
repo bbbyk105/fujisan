@@ -132,7 +132,7 @@ export function CancelOrderButton({ orderRef }: { orderRef: string }) {
           disabled={pending}
           className="cursor-pointer text-[12.5px] tracking-[0.04em] text-indigo/66 transition-colors hover:text-indigo disabled:opacity-60"
         >
-          <L en="Keep my order" ja="やめる" />
+          <L en="Keep my order" ja="閉じる" />
         </button>
       </div>
     </div>

@@ -65,7 +65,7 @@ const sections: DocumentSection[] = [
       <L
         key="2"
         en="Hokkaido, Okinawa and remote islands: allow an extra day"
-        ja="北海道・沖縄・離島: さらに1日ほど頂戴する場合があります"
+        ja="北海道・沖縄・離島: さらに1日ほどかかる場合があります"
       />,
     ],
   },
@@ -92,7 +92,7 @@ const sections: DocumentSection[] = [
       <L
         key="b"
         en={`Photograph the outer box and the bottle as soon as you notice damage, and contact us within seven days at ${FUJISAN_LEGAL.email}. We will replace damaged bottles or refund the order.`}
-        ja={`破損に気づかれたら、すぐに外箱とボトルを撮影し、7日以内に ${FUJISAN_LEGAL.email} までご連絡ください。破損品の交換、またはご返金で対応いたします。`}
+        ja={`破損に気づかれましたら、すぐに外箱とボトルを撮影し、7日以内に ${FUJISAN_LEGAL.email} までご連絡ください。破損品の交換、またはご返金で対応いたします。`}
       />,
     ],
   },
