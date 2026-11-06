@@ -10,16 +10,16 @@ import "./globals.css";
  * グローバル CSS を自前で用意する必要がある。フォント（next/font）や
  * LocaleBoot もここには無いため、文言は日英を併記して CSS 切替に頼らない。
  *
- * Next.js 16 の再試行引数は `reset` ではなく `unstable_retry`。
+ * 再試行の引数は `retry`（`error.tsx` と同じ）。
  * また、エラーバウンダリはクライアントコンポーネントなので `metadata` は
  * 使えない。タイトルは React の `<title>` で出す。
  */
 export default function GlobalError({
   error,
-  unstable_retry,
+  retry,
 }: {
   error: Error & { digest?: string };
-  unstable_retry: () => void;
+  retry: () => void;
 }) {
   useEffect(() => {
     console.error("[app:global-error]", error.digest ?? "(no digest)", error);
@@ -107,7 +107,7 @@ export default function GlobalError({
           >
             <button
               type="button"
-              onClick={() => unstable_retry()}
+              onClick={() => retry()}
               style={{
                 cursor: "pointer",
                 border: "1px solid #0B1A2E",
