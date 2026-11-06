@@ -137,11 +137,11 @@ export default async function CraftPage({
                   />
                 </div>
               </div>
-              <figcaption className="mt-4 flex items-baseline justify-between gap-4 text-[11px] tracking-[0.12em] text-indigo/50">
+              <figcaption className="mt-4 flex items-baseline justify-between gap-4 text-[12px] tracking-[0.04em] text-indigo/50">
                 <span>
                   <L en={pillar.eyebrow} ja={pillar.jp} />
                 </span>
-                <span className="shrink-0 font-serif tracking-[0.2em] text-indigo/45">
+                <span className="shrink-0 font-serif tracking-[0.04em] text-indigo/45">
                   FIG. {pillar.num}
                 </span>
               </figcaption>
@@ -161,7 +161,7 @@ export default async function CraftPage({
                   className="flex items-baseline justify-between gap-6 border-b border-indigo/12 py-5"
                 >
                   <dt>
-                    <span className="text-[11.5px] font-semibold tracking-[0.12em] text-indigo/60">
+                    <span className="text-[12px] font-semibold tracking-[0.04em] text-indigo/60">
                       <L en={s.label} ja={s.labelJp} />
                     </span>
                     {s.caption ? (
@@ -202,10 +202,10 @@ export default async function CraftPage({
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <div>
-                  <h3 className="font-serif text-[15px] font-semibold tracking-[0.18em] text-indigo transition-colors duration-500 group-hover:text-gold md:text-[16px]">
+                  <h3 className="font-serif text-[15px] font-semibold tracking-[0.06em] text-indigo transition-colors duration-500 group-hover:text-gold md:text-[16px]">
                     <L en={step.en} ja={step.jp} />
                   </h3>
-                  <p className="i18n-en mt-1.5 font-jp text-[11.5px] tracking-[0.12em] text-gold/85">
+                  <p className="i18n-en mt-1.5 font-jp text-[12px] tracking-[0.04em] text-gold/85">
                     {step.jp}
                   </p>
                 </div>
@@ -244,13 +244,13 @@ export default async function CraftPage({
                   : "border-b md:items-start md:border-b-0"
               }`}
             >
-              <span className="text-[11px] font-semibold tracking-[0.12em] text-indigo/55">
+              <span className="text-[12px] font-semibold tracking-[0.04em] text-indigo/55">
                 <L en={labelEn} ja={labelJa} />
               </span>
               <span className="font-serif text-[clamp(20px,2.2vw,28px)] font-semibold tracking-[0.05em] text-indigo transition-colors duration-500 group-hover:text-gold">
                 {p.title}
               </span>
-              <span className="font-jp text-[11px] tracking-[0.12em] text-gold/85">
+              <span className="font-jp text-[12px] tracking-[0.04em] text-gold/85">
                 {p.jp}
               </span>
             </Link>

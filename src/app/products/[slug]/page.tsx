@@ -124,12 +124,12 @@ export default async function ProductDetailPage({
           <div className="max-w-[620px]">
             <Link
               href="/#showcase"
-              className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.24em] text-indigo/70 no-underline transition-colors hover:text-gold"
+              className="inline-flex items-center gap-2 text-[12px] font-semibold tracking-[0.04em] text-indigo/70 no-underline transition-colors hover:text-gold"
             >
               <span aria-hidden>←</span> <L en="OUR SAKE" ja="日本酒一覧へ" />
             </Link>
 
-            <p className="mt-5 font-serif text-[12px] font-semibold tracking-[0.28em] text-gold">
+            <p className="mt-5 font-serif text-[12px] font-semibold tracking-[0.04em] text-gold">
               <L
                 en={product.variantLine.toUpperCase()}
                 ja={product.variantLineJp}
@@ -143,20 +143,20 @@ export default async function ProductDetailPage({
               <span className="mt-2 block text-[clamp(40px,6vw,84px)] font-semibold tracking-[0.04em]">
                 <L en={product.variant} ja={product.variantJp} />
               </span>
-              <span className="mt-2 block font-jp text-[clamp(13px,1.1vw,15px)] font-semibold tracking-[0.34em] text-gold">
+              <span className="mt-2 block font-jp text-[clamp(13px,1.1vw,15px)] font-semibold tracking-[0.08em] text-gold">
                 <L en={product.variantJp} ja={product.variant} />
               </span>
             </h1>
 
-            <p className="mt-6 font-jp text-[clamp(16px,1.4vw,20px)] font-medium tracking-[0.16em] text-[#1D2432]">
+            <p className="mt-6 font-jp text-[clamp(16px,1.4vw,20px)] font-medium tracking-[0.06em] text-[#1D2432]">
               <L en={product.title} ja={product.titleJp} />
             </p>
 
             <div className="mt-7 flex flex-wrap items-center gap-3">
-              <span className="border border-indigo/30 bg-white/64 px-3 py-1 text-[10px] font-semibold tracking-[0.18em] text-indigo">
+              <span className="border border-indigo/30 bg-white/64 px-3 py-1 text-[12px] font-semibold tracking-[0.04em] text-indigo">
                 {product.smv}
               </span>
-              <span className="border border-indigo/30 bg-white/64 px-3 py-1 text-[10px] font-semibold tracking-[0.18em] text-indigo">
+              <span className="border border-indigo/30 bg-white/64 px-3 py-1 text-[12px] font-semibold tracking-[0.04em] text-indigo">
                 <L en={product.grade.toUpperCase()} ja={product.gradeJp} />
               </span>
             </div>
@@ -192,7 +192,7 @@ export default async function ProductDetailPage({
         <div className="mx-auto max-w-[760px] px-7 py-16 md:px-12 md:py-24">
           {/* EN locale */}
           <div className="i18n-en">
-            <p className="font-serif text-[11px] font-semibold tracking-[0.3em] text-[#D7B46A]">
+            <p className="font-serif text-[12px] font-semibold tracking-[0.04em] text-[#D7B46A]">
               THE STORY
             </p>
             <div className="mt-4 h-px w-8 bg-[#D7B46A]/60" />
@@ -207,7 +207,7 @@ export default async function ProductDetailPage({
           </div>
           {/* JA locale */}
           <div className="i18n-ja">
-            <p className="font-jp text-[11px] font-semibold tracking-[0.3em] text-[#D7B46A]">
+            <p className="font-jp text-[12px] font-semibold tracking-[0.04em] text-[#D7B46A]">
               物語
             </p>
             <div className="mt-4 h-px w-8 bg-[#D7B46A]/60" />
@@ -239,14 +239,14 @@ export default async function ProductDetailPage({
       <section className="bg-paper">
         <div className="mx-auto grid max-w-[1280px] grid-cols-1 gap-12 px-7 py-16 md:grid-cols-[1.1fr_1fr] md:gap-14 md:px-12 md:py-20">
           <div>
-            <p className="font-serif text-[11px] font-semibold tracking-[0.3em] text-indigo/66">
+            <p className="font-serif text-[12px] font-semibold tracking-[0.04em] text-indigo/66">
               <L en="SPECIFICATIONS" ja="商品仕様" />
             </p>
             <div className="mt-4 h-px w-8 bg-indigo/30" />
             <dl className="mt-7 grid grid-cols-2 gap-x-8 gap-y-5 sm:grid-cols-3">
               {product.specs.map((s) => (
                 <div key={s.label}>
-                  <dt className="text-[10px] font-semibold tracking-[0.2em] text-indigo/56">
+                  <dt className="text-[12px] font-semibold tracking-[0.04em] text-indigo/56">
                     <L en={s.label.toUpperCase()} ja={specLabelJp(s.label)} />
                   </dt>
                   <dd className="mt-1.5 font-serif text-[17px] text-indigo">
@@ -257,11 +257,11 @@ export default async function ProductDetailPage({
             </dl>
           </div>
           <div className="md:border-l md:border-indigo/12 md:pl-14">
-            <p className="font-serif text-[11px] font-semibold tracking-[0.3em] text-indigo/66">
+            <p className="font-serif text-[12px] font-semibold tracking-[0.04em] text-indigo/66">
               <L en="SERVING" ja="飲み方" />
             </p>
             <div className="mt-4 h-px w-8 bg-indigo/30" />
-            <p className="mt-7 text-[10px] font-semibold tracking-[0.2em] text-indigo/56">
+            <p className="mt-7 text-[12px] font-semibold tracking-[0.04em] text-indigo/56">
               <L en="SUGGESTED TEMPERATURE" ja="おすすめ温度" />
             </p>
             <p className="mt-2 font-serif text-[18px] text-indigo">
@@ -276,7 +276,7 @@ export default async function ProductDetailPage({
         <div className="mx-auto max-w-[1280px] px-7 py-14 md:px-12 md:py-20">
           <div className="flex items-end justify-between gap-6">
             <div>
-              <p className="font-serif text-[11px] font-semibold tracking-[0.3em] text-indigo/66">
+              <p className="font-serif text-[12px] font-semibold tracking-[0.04em] text-indigo/66">
                 <L en="THE COLLECTION" ja="銘柄一覧" />
               </p>
               <h2 className="mt-3 font-serif text-[clamp(22px,2.4vw,30px)] font-semibold tracking-[0.06em] text-indigo">
@@ -285,7 +285,7 @@ export default async function ProductDetailPage({
             </div>
             <Link
               href="/shop/personal"
-              className="group/all inline-flex shrink-0 items-center gap-2.5 text-[11px] font-semibold tracking-[0.22em] text-indigo/70 no-underline"
+              className="group/all inline-flex shrink-0 items-center gap-2.5 text-[12px] font-semibold tracking-[0.04em] text-indigo/70 no-underline"
             >
               <span className="relative pb-1">
                 <L en="VIEW ALL" ja="一覧を見る" />
@@ -332,7 +332,7 @@ export default async function ProductDetailPage({
                   : "md:items-start border-b md:border-b-0"
               }`}
             >
-              <span className="text-[10px] font-semibold tracking-[0.28em] text-indigo/60">
+              <span className="text-[12px] font-semibold tracking-[0.04em] text-indigo/60">
                 <L
                   en={
                     align === "left"
@@ -349,7 +349,7 @@ export default async function ProductDetailPage({
               <span className="font-serif text-[clamp(22px,2.4vw,30px)] font-semibold tracking-[0.04em] text-indigo group-hover:text-gold">
                 {p.name} <L en={p.variant} ja={p.variantJp} />
               </span>
-              <span className="text-[11px] font-semibold tracking-[0.16em] text-indigo/72">
+              <span className="text-[12px] font-semibold tracking-[0.04em] text-indigo/72">
                 <L en={p.variantLine} ja={p.variantLineJp} />
               </span>
             </Link>

@@ -80,7 +80,7 @@ export function AdminOrderToolbar({
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="orders-from"
-            className="text-[10px] tracking-[0.18em] text-indigo/55"
+            className="text-[12px] tracking-[0.04em] text-indigo/55"
           >
             開始日
           </label>
@@ -97,7 +97,7 @@ export function AdminOrderToolbar({
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="orders-to"
-            className="text-[10px] tracking-[0.18em] text-indigo/55"
+            className="text-[12px] tracking-[0.04em] text-indigo/55"
           >
             終了日
           </label>
@@ -114,7 +114,7 @@ export function AdminOrderToolbar({
         <button
           type="button"
           onClick={() => apply(start, end)}
-          className="border border-indigo bg-indigo px-5 py-2.5 text-[10.5px] font-semibold tracking-[0.22em] text-paper-card transition-colors hover:bg-indigo-lift"
+          className="border border-indigo bg-indigo px-5 py-2.5 text-[12px] font-semibold tracking-[0.04em] text-paper-card transition-colors hover:bg-indigo-lift"
         >
           この期間で絞る
         </button>
@@ -127,7 +127,7 @@ export function AdminOrderToolbar({
               setEnd("");
               apply("", "");
             }}
-            className="px-2 py-2.5 text-[10.5px] tracking-[0.18em] text-indigo/50 underline decoration-indigo/20 underline-offset-4 transition-colors hover:text-indigo"
+            className="px-2 py-2.5 text-[12px] tracking-[0.04em] text-indigo/50 underline decoration-indigo/20 underline-offset-4 transition-colors hover:text-indigo"
           >
             期間を解除
           </button>
@@ -139,7 +139,7 @@ export function AdminOrderToolbar({
           type="button"
           onClick={download}
           disabled={exporting}
-          className="border border-indigo/30 bg-transparent px-5 py-2.5 text-[10.5px] font-semibold tracking-[0.22em] text-indigo transition-colors hover:border-indigo disabled:cursor-wait disabled:opacity-50"
+          className="border border-indigo/30 bg-transparent px-5 py-2.5 text-[12px] font-semibold tracking-[0.04em] text-indigo transition-colors hover:border-indigo disabled:cursor-wait disabled:opacity-50"
         >
           {exporting ? "書き出し中…" : "CSV でダウンロード"}
         </button>

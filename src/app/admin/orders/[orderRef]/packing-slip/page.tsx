@@ -56,7 +56,7 @@ export default async function PackingSlipPage(props: {
       <div className="mx-auto mb-6 flex max-w-[760px] flex-wrap items-center justify-between gap-4 px-6 print:hidden">
         <Link
           href="/admin/orders"
-          className="inline-flex items-center gap-2 text-[11px] font-semibold tracking-[0.24em] text-indigo/75 no-underline hover:text-indigo"
+          className="inline-flex items-center gap-2 text-[12px] font-semibold tracking-[0.04em] text-indigo/75 no-underline hover:text-indigo"
         >
           <span aria-hidden>←</span> 注文一覧へ戻る
         </Link>
@@ -68,7 +68,7 @@ export default async function PackingSlipPage(props: {
           <h1 className="font-serif text-[28px] font-semibold tracking-[0.5em] text-indigo">
             納品書
           </h1>
-          <p className="mt-2 text-[10px] tracking-[0.3em] text-indigo/55">
+          <p className="mt-2 text-[12px] tracking-[0.04em] text-indigo/55">
             PACKING SLIP
           </p>
         </header>
@@ -76,7 +76,7 @@ export default async function PackingSlipPage(props: {
         {/* お届け先と注文情報 */}
         <div className="mt-10 flex flex-wrap justify-between gap-8">
           <div className="min-w-[280px]">
-            <p className="text-[10px] tracking-[0.28em] text-indigo/55">
+            <p className="text-[12px] tracking-[0.04em] text-indigo/55">
               お届け先
             </p>
             <p className="mt-3 border-b border-indigo/25 pb-1 font-serif text-[19px] tracking-[0.08em]">
@@ -126,7 +126,7 @@ export default async function PackingSlipPage(props: {
         {/* 明細。梱包のチェックに使うので、本数を大きく出す。 */}
         <table className="mt-10 w-full border-collapse text-[12.5px]">
           <thead>
-            <tr className="border-b border-indigo/35 text-[10px] tracking-[0.2em] text-indigo/60">
+            <tr className="border-b border-indigo/35 text-[12px] tracking-[0.04em] text-indigo/60">
               <th className="py-2 text-left font-semibold">品名</th>
               <th className="py-2 text-right font-semibold">単価</th>
               <th className="py-2 text-right font-semibold">数量</th>
@@ -168,7 +168,7 @@ export default async function PackingSlipPage(props: {
           <tfoot>
             <tr className="border-t-2 border-indigo">
               <td
-                className="py-3 text-[11px] font-semibold tracking-[0.2em]"
+                className="py-3 text-[12px] font-semibold tracking-[0.04em]"
                 colSpan={2}
               >
                 合計（消費税10%込）

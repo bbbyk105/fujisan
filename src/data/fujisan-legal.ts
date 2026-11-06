@@ -96,9 +96,9 @@ export const FUJISAN_LEGAL = {
   // 個人（toC）のお支払いは Stripe Checkout で使える手段。銀行振込は法人（toB）専用。
   // Stripe のダッシュボードで決済手段を増減したら、ここも合わせる。
   paymentMethods:
-    "クレジットカード（VISA / Mastercard / JCB / AMEX / Diners）、Apple Pay、Link",
+    "クレジットカード（VISA / Mastercard / JCB / AMEX / Diners）、Apple Pay、Google Pay、Link",
   paymentMethodsEn:
-    "Credit card (VISA / Mastercard / JCB / AMEX / Diners), Apple Pay, Link.",
+    "Credit card (VISA / Mastercard / JCB / AMEX / Diners), Apple Pay, Google Pay, Link.",
   paymentTiming: "お支払いはご注文時に確定します。",
   paymentTimingEn: "Payment is charged at order.",
   deliveryTiming: "ご注文確認後、原則2営業日以内に発送いたします。",

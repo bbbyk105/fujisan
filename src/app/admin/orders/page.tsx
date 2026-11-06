@@ -180,7 +180,7 @@ export default async function AdminOrdersPage(props: {
             ) : (
               <>
                 {/* Table header（モバイルは各行がカード表示になるため非表示） */}
-                <div className="mt-6 hidden grid-cols-[120px_minmax(0,1fr)_110px_100px_130px_24px] items-center gap-4 border-b border-indigo/15 px-6 pb-3 text-[10px] font-semibold tracking-[0.28em] text-indigo/55 md:grid">
+                <div className="mt-6 hidden grid-cols-[120px_minmax(0,1fr)_110px_100px_130px_24px] items-center gap-4 border-b border-indigo/15 px-6 pb-3 text-[12px] font-semibold tracking-[0.04em] text-indigo/55 md:grid">
                   <span>注文番号</span>
                   <span>顧客</span>
                   <span>注文日</span>
