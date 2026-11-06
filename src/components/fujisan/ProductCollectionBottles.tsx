@@ -43,10 +43,10 @@ export function ProductCollectionBottles({ products, columns = 5 }: Props) {
             </div>
             <span className="absolute bottom-0 left-1/2 h-4 w-[52%] -translate-x-1/2 rounded-[50%] bg-indigo/16 blur-[9px]" />
           </div>
-          <p className="mt-3 text-center font-serif text-[11px] font-semibold tracking-[0.18em] text-indigo transition-colors group-hover:text-gold md:text-[13px]">
+          <p className="mt-3 text-center font-serif text-[13px] font-semibold tracking-[0.18em] text-indigo transition-colors group-hover:text-gold md:text-[14px]">
             {p.name}
           </p>
-          <p className="mt-1 whitespace-pre-line text-center text-[9px] font-semibold leading-[1.35] tracking-[0.14em] text-indigo/70 md:text-[10px]">
+          <p className="mt-1 whitespace-pre-line text-center text-[12px] font-semibold leading-[1.35] tracking-[0.14em] text-indigo/70">
             {p.variant}
           </p>
         </Link>

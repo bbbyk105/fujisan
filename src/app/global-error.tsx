@@ -47,7 +47,7 @@ export default function GlobalError({
         >
           <p
             style={{
-              fontSize: "11px",
+              fontSize: "12px",
               fontWeight: 600,
               letterSpacing: "0.34em",
               color: "#8B1A1A",
@@ -88,9 +88,9 @@ export default function GlobalError({
             <p
               style={{
                 margin: 0,
-                fontSize: "11px",
+                fontSize: "12px",
                 letterSpacing: "0.1em",
-                color: "rgba(11,26,46,0.45)",
+                color: "rgba(11,26,46,0.66)",
               }}
             >
               Reference: {error.digest}
@@ -114,7 +114,7 @@ export default function GlobalError({
                 background: "#0B1A2E",
                 color: "#F7F1E3",
                 padding: "1rem 2rem",
-                fontSize: "10.5px",
+                fontSize: "12px",
                 fontWeight: 600,
                 letterSpacing: "0.32em",
               }}
@@ -133,7 +133,7 @@ export default function GlobalError({
                 border: "1px solid rgba(11,26,46,0.25)",
                 color: "#0B1A2E",
                 padding: "1rem 2rem",
-                fontSize: "10.5px",
+                fontSize: "12px",
                 fontWeight: 600,
                 letterSpacing: "0.28em",
                 textDecoration: "none",

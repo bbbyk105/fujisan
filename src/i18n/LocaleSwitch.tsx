@@ -59,8 +59,8 @@ export function LocaleSwitch({
     <div
       role="group"
       aria-label="Language switcher"
-      className={`inline-flex items-center ${
-        isInline ? "gap-2 text-[12px]" : "gap-1 text-[11px]"
+      className={`inline-flex items-center text-[12px] ${
+        isInline ? "gap-2" : "gap-1"
       } font-medium tracking-[0.16em] select-none ${className}`}
     >
       <button
@@ -70,7 +70,7 @@ export function LocaleSwitch({
         className={`cursor-pointer px-1 transition-colors ${
           locale === "ja"
             ? "text-indigo"
-            : "text-indigo/40 hover:text-indigo/80"
+            : "text-indigo/66 hover:text-indigo/80"
         }`}
       >
         JP
@@ -85,7 +85,7 @@ export function LocaleSwitch({
         className={`cursor-pointer px-1 transition-colors ${
           locale === "en"
             ? "text-indigo"
-            : "text-indigo/40 hover:text-indigo/80"
+            : "text-indigo/66 hover:text-indigo/80"
         }`}
       >
         EN

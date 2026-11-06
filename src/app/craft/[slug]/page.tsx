@@ -137,11 +137,11 @@ export default async function CraftPage({
                   />
                 </div>
               </div>
-              <figcaption className="mt-4 flex items-baseline justify-between gap-4 text-[12px] tracking-[0.04em] text-indigo/50">
+              <figcaption className="mt-4 flex items-baseline justify-between gap-4 text-[12px] tracking-[0.04em] text-indigo/66">
                 <span>
                   <L en={pillar.eyebrow} ja={pillar.jp} />
                 </span>
-                <span className="shrink-0 font-serif tracking-[0.04em] text-indigo/45">
+                <span className="shrink-0 font-serif tracking-[0.04em] text-indigo/66">
                   FIG. {pillar.num}
                 </span>
               </figcaption>
@@ -161,11 +161,11 @@ export default async function CraftPage({
                   className="flex items-baseline justify-between gap-6 border-b border-indigo/12 py-5"
                 >
                   <dt>
-                    <span className="text-[12px] font-semibold tracking-[0.04em] text-indigo/60">
+                    <span className="text-[12px] font-semibold tracking-[0.04em] text-indigo/66">
                       <L en={s.label} ja={s.labelJp} />
                     </span>
                     {s.caption ? (
-                      <span className="mt-1 block text-[11.5px] font-light leading-[1.5] tracking-[0.06em] text-indigo/48">
+                      <span className="mt-1 block text-[13px] font-light leading-[1.5] tracking-[0.06em] text-indigo/66">
                         <L en={s.caption} ja={s.captionJp ?? s.caption} />
                       </span>
                     ) : null}
@@ -244,7 +244,7 @@ export default async function CraftPage({
                   : "border-b md:items-start md:border-b-0"
               }`}
             >
-              <span className="text-[12px] font-semibold tracking-[0.04em] text-indigo/55">
+              <span className="text-[12px] font-semibold tracking-[0.04em] text-indigo/66">
                 <L en={labelEn} ja={labelJa} />
               </span>
               <span className="font-serif text-[clamp(20px,2.2vw,28px)] font-semibold tracking-[0.05em] text-indigo transition-colors duration-500 group-hover:text-gold">

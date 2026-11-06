@@ -132,7 +132,7 @@ export function AdminContactRow({
                 className={`flex min-h-[44px] cursor-pointer items-center justify-center text-[12.5px] transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-gold ${
                   status === s
                     ? STATUS_STYLE[s]
-                    : "text-indigo/60 hover:text-indigo"
+                    : "text-indigo/66 hover:text-indigo"
                 }`}
               >
                 <input
@@ -177,7 +177,7 @@ export function AdminContactRow({
           </p>
         )}
         {!dirty && message.status === "done" && message.handledByEmail && (
-          <p className="mt-3 text-[12.5px] leading-[1.7] text-indigo/60 [overflow-wrap:anywhere]">
+          <p className="mt-3 text-[12.5px] leading-[1.7] text-indigo/66 [overflow-wrap:anywhere]">
             {message.handledByEmail}
             {message.handledAt ? (
               <>

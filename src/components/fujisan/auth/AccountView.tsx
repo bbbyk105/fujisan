@@ -73,7 +73,7 @@ export function AccountView({
         <div className="ed-wrap pt-12 md:pt-16">
           <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-4">
             <div>
-              <p className="text-[13px] text-indigo/60">
+              <p className="text-[13px] text-indigo/66">
                 <L
                   en={isBusiness ? "Trade account" : "Personal account"}
                   ja={isBusiness ? "法人・取扱店のお客様" : "個人のお客様"}
@@ -115,7 +115,7 @@ export function AccountView({
                       className={`block border-b-2 pb-3.5 text-[15px] no-underline transition-colors ${
                         on
                           ? "border-indigo font-semibold text-indigo"
-                          : "border-transparent text-indigo/55 hover:text-indigo"
+                          : "border-transparent text-indigo/66 hover:text-indigo"
                       }`}
                     >
                       {t.label}
@@ -234,7 +234,7 @@ function OrdersTab({
                 </div>
                 {o.trackingNumber ? (
                   <p className="mt-5 text-[13.5px] text-indigo/80">
-                    <span className="text-indigo/55">
+                    <span className="text-indigo/66">
                       <L en="Tracking" ja="追跡番号" />
                     </span>
                     <span className="ml-3 font-serif tabular-nums text-indigo">
@@ -276,7 +276,7 @@ function OrderLineRow({ o }: { o: OrderRecord }) {
   return (
     <div className="flex items-start justify-between gap-6">
       <div className="min-w-0">
-        <p className="text-[13px] tabular-nums text-indigo/55">
+        <p className="text-[13px] tabular-nums text-indigo/66">
           {formatDateShortJp(o.createdAt)}
         </p>
         <Link

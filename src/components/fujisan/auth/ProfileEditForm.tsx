@@ -98,7 +98,7 @@ export function ProfileEditForm({
 
         {/* メールは変更不可（変更にはサポート対応が必要）。読み取り専用で表示。 */}
         <FieldBlock labelEn="Email" labelJp="メールアドレス">
-          <p className="border-b border-transparent py-2.5 text-[15px] text-indigo/60">
+          <p className="border-b border-transparent py-2.5 text-[15px] text-indigo/66">
             {initial.email}
           </p>
         </FieldBlock>
@@ -166,7 +166,7 @@ export function ProfileEditForm({
         </button>
         {notice && (
           <span
-            className={`text-[12px] ${
+            className={`text-[13px] ${
               notice.tone === "ok" ? "text-moss" : "text-crimson"
             }`}
           >
@@ -175,7 +175,7 @@ export function ProfileEditForm({
         )}
       </div>
 
-      <p className="mt-5 text-[12.5px] leading-[1.8] text-indigo/60">
+      <p className="mt-5 text-[13px] leading-[1.8] text-indigo/66">
         <L
           en="Save your postal code and address here to skip the address form at checkout. We'll ship to the address on file. To change your email address, use the Security tab."
           ja="郵便番号と住所を登録しておくと、ご注文時の住所入力を省略し、登録のお届け先へ発送します。メールアドレスは「ログインと退会」から変更できます。"

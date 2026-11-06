@@ -90,11 +90,11 @@ export default async function AdminTeamPage() {
         {invites.length > 0 && (
           <div className="mb-10">
             <div className="flex items-baseline gap-4 border-b border-indigo/15 pb-4">
-              <span className="font-jp text-[12px] tracking-[0.04em] text-gold">
+              <span className="font-jp text-[12px] tracking-[0.04em] text-gold-ink">
                 招待中
               </span>
               <span className="h-px flex-1 bg-indigo/12" />
-              <span className="text-[12px] tracking-[0.04em] text-indigo/55">
+              <span className="text-[12px] tracking-[0.04em] text-indigo/66">
                 {invites.length} 件
                 {expiredCount > 0 && (
                   <span className="ml-2 text-crimson">
@@ -110,7 +110,7 @@ export default async function AdminTeamPage() {
               ))}
             </ul>
 
-            <p className="mt-4 text-[11.5px] leading-[1.75] text-indigo/60">
+            <p className="mt-4 text-[13px] leading-[1.75] text-indigo/66">
               招待は <strong>14 日</strong>で失効します。招待した方が登録を済ませると、
               この一覧から消えて「現在のメンバー」に移ります。
             </p>
@@ -119,11 +119,11 @@ export default async function AdminTeamPage() {
 
         {/* メンバー見出し */}
         <div className="flex items-baseline gap-4 border-b border-indigo/15 pb-4">
-          <span className="font-jp text-[12px] tracking-[0.04em] text-gold">
+          <span className="font-jp text-[12px] tracking-[0.04em] text-gold-ink">
             現在のメンバー
           </span>
           <span className="h-px flex-1 bg-indigo/12" />
-          <span className="text-[12px] tracking-[0.04em] text-indigo/55">
+          <span className="text-[12px] tracking-[0.04em] text-indigo/66">
             {members.length} 名
           </span>
         </div>

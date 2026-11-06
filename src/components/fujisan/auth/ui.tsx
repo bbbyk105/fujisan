@@ -67,7 +67,7 @@ export function Notice({
     <div
       role="status"
       aria-live="polite"
-      className={`text-[12.5px] font-medium leading-[1.75] ${cls}`}
+      className={`text-[13px] font-medium leading-[1.75] ${cls}`}
     >
       {children}
     </div>

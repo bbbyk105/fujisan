@@ -88,7 +88,7 @@ function ShopBottle({ product }: { product: FujisanProduct }) {
               ml={base.ml}
               fallback={base.priceJpy}
             />
-            <span className="ml-2 align-middle text-[11px] font-normal tracking-[0.06em] text-indigo/60">
+            <span className="ml-2 align-middle text-[12px] font-normal tracking-[0.06em] text-indigo/66">
               <L en={`${base.ml}ml, tax incl.`} ja={`${base.ml}ml・税込`} />
             </span>
           </p>

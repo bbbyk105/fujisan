@@ -146,7 +146,7 @@ export function ResetPasswordForm({
           placeholder="••••••••"
         />
         <FieldError error={fieldErrors.password} />
-        <p className="mt-2 text-[11.5px] leading-[1.6] text-indigo/55">
+        <p className="mt-2 text-[13px] leading-[1.6] text-indigo/66">
           <L
             en="At least 8 characters."
             ja="8文字以上で設定してください。"

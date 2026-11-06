@@ -53,7 +53,7 @@ export default function FujisanExperience() {
         <div className="relative z-10 flex flex-col items-center px-6 text-center">
           <Reveal className="flex items-center gap-3">
             <span className="h-px w-10 bg-[#E2C97E]/70" />
-            <span className="font-jp text-[11.5px] tracking-[0.38em] text-[#E2C97E] md:text-[12px]">
+            <span className="font-jp text-[12px] tracking-[0.38em] text-[#E2C97E]">
               飲み方
             </span>
             <span className="h-px w-10 bg-[#E2C97E]/70" />
@@ -109,7 +109,7 @@ export default function FujisanExperience() {
                 <p className="font-serif text-[15px] font-semibold tracking-[0.22em] text-indigo md:text-[16px]">
                   <L en={label} ja={labelJp} />
                 </p>
-                <p className="mt-2 text-[11.5px] font-light leading-[1.7] tracking-[0.14em] text-[#2B2419]/68 md:text-[12px]">
+                <p className="mt-2 text-[12px] font-light leading-[1.7] tracking-[0.14em] text-[#2B2419]/68">
                   <L en={sub} ja={subJp} />
                 </p>
               </div>
@@ -124,7 +124,7 @@ export default function FujisanExperience() {
           <span aria-hidden className="h-px w-24 bg-indigo/18" />
           <Link
             href="/craft/water"
-            className="group/craft inline-flex items-center gap-3 border border-indigo/35 bg-paper/65 px-7 py-3.5 text-[10.5px] font-semibold tracking-[0.34em] text-indigo no-underline transition-colors hover:border-indigo hover:bg-[#F1E6CB]/80 md:px-9 md:py-4"
+            className="group/craft inline-flex items-center gap-3 border border-indigo/35 bg-paper/65 px-7 py-3.5 text-[12px] font-semibold tracking-[0.34em] text-indigo no-underline transition-colors hover:border-indigo hover:bg-[#F1E6CB]/80 md:px-9 md:py-4"
           >
             <L en="READ THE CRAFT" ja="造りを読む" />
             <span

@@ -54,11 +54,11 @@ export function AdminSkuRow({
         <div>
           <p className="font-serif text-[14.5px] font-semibold tracking-[0.04em] text-indigo">
             {row.productName} {row.variant}
-            <span className="ml-2 font-jp text-[11.5px] text-indigo/55">
+            <span className="ml-2 font-jp text-[12px] text-indigo/66">
               {row.variantJp}
             </span>
           </p>
-          <p className="mt-1 text-[11.5px] tracking-[0.06em] text-indigo/60">
+          <p className="mt-1 text-[12px] tracking-[0.06em] text-indigo/66">
             {row.ml}ml
             {row.catalogSoldOut && (
               <span className="ml-2 text-crimson">カタログで販売停止中</span>
@@ -80,19 +80,19 @@ export function AdminSkuRow({
 function StockSummary({ row }: { row: Row }) {
   if (!row.tracked) {
     return (
-      <span className="border border-indigo/20 px-2.5 py-1 text-[12px] tracking-[0.04em] text-indigo/55">
+      <span className="border border-indigo/20 px-2.5 py-1 text-[12px] tracking-[0.04em] text-indigo/66">
         在庫管理なし（無制限）
       </span>
     );
   }
   const soldOut = row.available === 0;
   return (
-    <div className="flex items-center gap-5 text-[11.5px] tabular-nums">
-      <span className="text-indigo/60">
+    <div className="flex items-center gap-5 text-[12px] tabular-nums">
+      <span className="text-indigo/66">
         実在庫{" "}
         <strong className="text-[13px] text-indigo">{row.onHand}</strong>
       </span>
-      <span className="text-indigo/60">
+      <span className="text-indigo/66">
         決済待ち{" "}
         <strong className="text-[13px] text-indigo">{row.reserved}</strong>
       </span>
@@ -106,8 +106,8 @@ function StockSummary({ row }: { row: Row }) {
         }
       >
         販売可能 <strong className="text-[13px]">{row.available}</strong>
-        {soldOut && <span className="ml-1.5 text-[10px]">完売</span>}
-        {row.lowStock && <span className="ml-1.5 text-[10px]">僅少</span>}
+        {soldOut && <span className="ml-1.5 text-[12px]">完売</span>}
+        {row.lowStock && <span className="ml-1.5 text-[12px]">僅少</span>}
       </span>
     </div>
   );
@@ -142,7 +142,7 @@ function PriceSection({
   if (!canEdit) {
     return (
       <div className="flex flex-wrap items-baseline gap-x-6 gap-y-1 text-[12px] text-indigo/70">
-        <span className="text-[12px] font-semibold tracking-[0.04em] text-indigo/45">
+        <span className="text-[12px] font-semibold tracking-[0.04em] text-indigo/66">
           価格
         </span>
         <span className="tabular-nums">
@@ -158,7 +158,7 @@ function PriceSection({
           </strong>
         </span>
         <span className="tabular-nums">1ケース {row.caseSize}本</span>
-        <span className="text-[11px] text-indigo/45">
+        <span className="text-[12px] text-indigo/66">
           {source}・変更は蔵元（owner）のみ
         </span>
       </div>
@@ -228,7 +228,7 @@ function PriceSection({
   return (
     <div>
       <div className="flex flex-wrap items-end gap-x-4 gap-y-3">
-        <span className="pb-2.5 text-[12px] font-semibold tracking-[0.04em] text-indigo/45">
+        <span className="pb-2.5 text-[12px] font-semibold tracking-[0.04em] text-indigo/66">
           価格
         </span>
         <Field
@@ -269,13 +269,13 @@ function PriceSection({
             type="button"
             onClick={reset}
             disabled={pending}
-            className="px-2 py-2 text-[12px] tracking-[0.04em] text-indigo/50 underline decoration-indigo/20 underline-offset-4 transition-colors hover:text-indigo disabled:opacity-40"
+            className="px-2 py-2 text-[12px] tracking-[0.04em] text-indigo/66 underline decoration-indigo/20 underline-offset-4 transition-colors hover:text-indigo disabled:opacity-40"
           >
             カタログ価格に戻す
           </button>
         )}
       </div>
-      <p className="mt-2 text-[12px] leading-[1.8] text-indigo/55">
+      <p className="mt-2 text-[12px] leading-[1.8] text-indigo/66">
         {source}
         <br />
         「1ケースの本数」は、取扱店向けの卸価格表で「1ケース」の金額（卸 ×
@@ -357,7 +357,7 @@ function StockSection({ row, label }: { row: Row; label: string }) {
   return (
     <div>
       <div className="flex flex-wrap items-end gap-x-4 gap-y-3">
-        <span className="pb-2.5 text-[12px] font-semibold tracking-[0.04em] text-indigo/45">
+        <span className="pb-2.5 text-[12px] font-semibold tracking-[0.04em] text-indigo/66">
           在庫
         </span>
         <Field
@@ -391,7 +391,7 @@ function StockSection({ row, label }: { row: Row; label: string }) {
             type="button"
             onClick={untrack}
             disabled={pending}
-            className="px-2 py-2 text-[12px] tracking-[0.04em] text-indigo/50 underline decoration-indigo/20 underline-offset-4 transition-colors hover:text-crimson disabled:opacity-40"
+            className="px-2 py-2 text-[12px] tracking-[0.04em] text-indigo/66 underline decoration-indigo/20 underline-offset-4 transition-colors hover:text-crimson disabled:opacity-40"
           >
             管理をやめる
           </button>
@@ -423,7 +423,7 @@ function Field({
     <div className="flex flex-col gap-1.5">
       <label
         htmlFor={id}
-        className="text-[12px] tracking-[0.04em] text-indigo/55"
+        className="text-[12px] tracking-[0.04em] text-indigo/66"
       >
         {label}
       </label>
@@ -439,7 +439,7 @@ function Field({
           onChange={(e) => onChange(e.target.value)}
           className={`${width} border border-indigo/25 bg-white px-3 py-2 text-right text-[13px] tabular-nums text-indigo outline-none focus:border-gold disabled:opacity-60`}
         />
-        <span className="text-[11px] text-indigo/50">{unit}</span>
+        <span className="text-[12px] text-indigo/66">{unit}</span>
       </div>
     </div>
   );

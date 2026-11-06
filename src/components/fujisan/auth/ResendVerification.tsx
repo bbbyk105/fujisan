@@ -31,7 +31,7 @@ export function ResendVerification({
 
   if (state === "sent") {
     return (
-      <p className="text-[12px] leading-[1.7] text-indigo/75">
+      <p className="text-[13px] leading-[1.7] text-indigo/75">
         <L
           en="Verification email re-sent. Please check your inbox (and spam folder)."
           ja="確認メールを再送しました。受信トレイ（迷惑メールフォルダもあわせて）をご確認ください。"
@@ -55,7 +55,7 @@ export function ResendVerification({
         )}
       </button>
       {state === "error" && (
-        <p className="text-[11.5px] leading-[1.6] text-crimson">
+        <p className="text-[13px] leading-[1.6] text-crimson">
           <L
             en="Could not resend. Please check the email address and try again."
             ja="再送できませんでした。メールアドレスをご確認のうえ、もう一度お試しください。"

@@ -113,7 +113,7 @@ export default async function OrderDetailPage({
               {order.trackingNumber}
             </p>
             {order.shippedAt && (
-              <p className="mt-1 text-[11.5px] text-indigo/60">
+              <p className="mt-1 text-[12px] text-indigo/66">
                 <L en="Shipped" ja="発送日" />: {formatDateJp(order.shippedAt)}
               </p>
             )}
@@ -153,10 +153,10 @@ export default async function OrderDetailPage({
                         <p className="font-serif text-[15px] font-semibold tracking-[0.08em] text-indigo">
                           {it.name} {it.variant}
                         </p>
-                        <p className="mt-1 text-[11.5px] tracking-[0.1em] text-indigo/62">
+                        <p className="mt-1 text-[12px] tracking-[0.1em] text-indigo/66">
                           {it.ml}ml × {it.qty}
                         </p>
-                        <p className="mt-1 text-[11px] text-indigo/50">
+                        <p className="mt-1 text-[12px] text-indigo/66">
                           <L en="Unit price" ja="単価" /> ¥
                           {yen.format(it.unitPrice)}
                         </p>
@@ -246,7 +246,7 @@ export default async function OrderDetailPage({
                   </span>
                 </div>
                 {willStillShip(order) && (
-                  <p className="mt-2 text-[11px] leading-[1.7] text-indigo/65">
+                  <p className="mt-2 text-[13px] leading-[1.7] text-indigo/65">
                     <L
                       en="The remainder of your order will still be shipped."
                       ja="ご注文はこのまま発送いたします。"
@@ -269,7 +269,7 @@ export default async function OrderDetailPage({
               {canCancel && <CancelOrderButton orderRef={order.orderRef} />}
             </div>
 
-            <p className="mt-6 text-[11px] leading-[1.7] text-indigo/55">
+            <p className="mt-6 text-[13px] leading-[1.7] text-indigo/66">
               <L
                 en={
                   <>

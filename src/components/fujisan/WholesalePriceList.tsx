@@ -115,7 +115,7 @@ export async function WholesalePriceList() {
                   </span>
                   <span className="text-right font-serif text-[15px] tabular-nums text-indigo">
                     {yen(unit * caseSize)}
-                    <span className="ml-2 align-baseline text-[11px] font-normal tabular-nums text-indigo/55">
+                    <span className="ml-2 align-baseline text-[12px] font-normal tabular-nums text-indigo/66">
                       ×{caseSize}
                     </span>
                   </span>

@@ -201,7 +201,7 @@ export function RegisterPersonalForm({
         </>
       )}
 
-      <p className="mt-2 text-[12.5px] leading-[1.7] text-indigo/72">
+      <p className="mt-2 text-[13px] leading-[1.7] text-indigo/72">
         <L en="Already have an account?" ja="アカウントをお持ちの方は" />{" "}
         <Link
           href={loginHref}

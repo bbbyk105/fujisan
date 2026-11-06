@@ -8,7 +8,7 @@ const yen = new Intl.NumberFormat("ja-JP");
 
 /** 状態は文字の色だけで示す（ピル・ドットは作らない）。顧客向けの表示と色を揃える */
 const STATUS_TONE: Record<OrderStatus, string> = {
-  pending: "text-indigo/55",
+  pending: "text-indigo/66",
   confirmed: "text-gold-ink",
   preparing: "text-gold-ink",
   shipped: "text-moss",
@@ -140,7 +140,7 @@ function Todo({ summary }: { summary: DashboardSummary }) {
                 </span>
                 <span className="shrink-0 font-serif text-[22px] font-medium leading-none tabular-nums text-gold-ink">
                   {i.n}
-                  <span className="ml-1 text-[13px] font-normal text-indigo/55">
+                  <span className="ml-1 text-[13px] font-normal text-indigo/66">
                     件
                   </span>
                 </span>
@@ -166,7 +166,7 @@ function RecentOrders({ recent }: { recent: DashboardSummary["recent"] }) {
         // 表は表として組む。行を罫で仕切り、金額は右揃えの等幅数字
         <table className="w-full border-collapse text-left">
           <thead>
-            <tr className="border-b border-indigo/10 text-[12.5px] text-indigo/55">
+            <tr className="border-b border-indigo/10 text-[12.5px] text-indigo/66">
               <th scope="col" className="py-3 pr-4 font-normal">
                 注文番号
               </th>
@@ -200,7 +200,7 @@ function RecentOrders({ recent }: { recent: DashboardSummary["recent"] }) {
                 </td>
                 <td className="hidden py-3.5 pr-4 text-indigo/85 sm:table-cell">
                   {o.customerName || (
-                    <span className="text-indigo/45">お名前未取得</span>
+                    <span className="text-indigo/66">お名前未取得</span>
                   )}
                 </td>
                 <td
@@ -208,7 +208,7 @@ function RecentOrders({ recent }: { recent: DashboardSummary["recent"] }) {
                 >
                   {orderStatusJp(o.status)}
                 </td>
-                <td className="hidden py-3.5 pr-4 tabular-nums text-indigo/60 md:table-cell">
+                <td className="hidden py-3.5 pr-4 tabular-nums text-indigo/66 md:table-cell">
                   {formatDayTimeJp(o.createdAt)}
                 </td>
                 <td className="py-3.5 text-right font-serif tabular-nums text-indigo">
@@ -290,7 +290,7 @@ function Totals({ summary }: { summary: DashboardSummary }) {
           </div>
         ))}
       </dl>
-      <p className="mt-4 text-[12.5px] leading-[1.8] text-indigo/55">
+      <p className="mt-4 text-[12.5px] leading-[1.8] text-indigo/66">
         売上はキャンセル・返金を除いた金額です。日付は日本時間で区切っています。
       </p>
     </section>

@@ -96,7 +96,7 @@ export function ChangeEmailForm({ currentEmail }: { currentEmail: string }) {
               ja={`現在のアドレス宛に確認リンクをお送りしました。リンクを開いて ${sentTo} への変更をご承認ください。その後、新しいアドレスにも確認メールをお送りします。`}
             />
           </p>
-          <p className="mt-1.5 text-[12.5px] text-moss/80">
+          <p className="mt-1.5 text-[13px] text-moss/80">
             <L
               en="If the new address is already registered to another account, no email will be sent to it."
               ja="新しいアドレスが既に他のアカウントでご登録済みの場合、そちらへのメールは送られません。"

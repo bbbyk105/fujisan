@@ -28,7 +28,7 @@ export function SoldOutBadge({
 
   return (
     <span
-      className={`${className} border border-crimson/40 bg-paper-card/90 px-2.5 py-1 text-[9px] font-semibold tracking-[0.22em] text-crimson`}
+      className={`${className} border border-crimson/40 bg-paper-card/90 px-2.5 py-1 text-[12px] font-semibold tracking-[0.22em] text-crimson`}
     >
       <L en="SOLD OUT" ja="完売" />
     </span>

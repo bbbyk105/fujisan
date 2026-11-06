@@ -74,11 +74,11 @@ export default function FujisanGuide() {
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)] lg:items-end lg:gap-16">
           <div>
             <Reveal className="flex items-center gap-4">
-              <span className="font-serif text-[11px] font-medium tracking-[0.36em] text-gold">
+              <span className="font-serif text-[12px] font-medium tracking-[0.36em] text-gold-ink">
                 Ⅱ
               </span>
               <span className="h-px w-10 bg-gold/55" />
-              <span className="text-[10px] font-semibold uppercase tracking-[0.38em] text-indigo/60">
+              <span className="text-[12px] font-semibold uppercase tracking-[0.38em] text-indigo/66">
                 <L en="Guide" ja="ご案内" />
               </span>
             </Reveal>
@@ -128,7 +128,7 @@ function Group({
 }) {
   return (
     <div>
-      <p className="border-b border-indigo/12 pb-4 text-[12px] font-semibold tracking-[0.12em] text-indigo/55">
+      <p className="border-b border-indigo/12 pb-4 text-[12px] font-semibold tracking-[0.12em] text-indigo/66">
         <L en={label.en} ja={label.ja} />
       </p>
       <ul>
@@ -149,7 +149,7 @@ function Group({
                 <span className="block font-serif text-[16px] font-semibold tracking-[0.08em] text-indigo transition-colors duration-500 group-hover:text-gold md:text-[18px]">
                   <L en={e.title.en} ja={e.title.ja} />
                 </span>
-                <span className="mt-1.5 block text-[12.5px] font-light leading-[1.7] text-indigo/65 md:text-[13px]">
+                <span className="mt-1.5 block text-[13px] font-light leading-[1.7] text-indigo/65">
                   <L en={e.desc.en} ja={e.desc.ja} />
                 </span>
               </span>

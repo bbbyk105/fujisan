@@ -12,7 +12,7 @@ import type { OrderStatus } from "@/db/orders-schema";
  * ピルにも、左に帯を立てた形にもしない。状態は文字の色だけで足りる。
  */
 const STYLES: Record<OrderStatus, string> = {
-  pending: "text-indigo/60",
+  pending: "text-indigo/66",
   confirmed: "text-gold-ink",
   preparing: "text-gold-ink",
   shipped: "text-moss",

@@ -178,7 +178,7 @@ export default async function AdminCustomersPage(props: {
                   <AdminPersonalRow key={c.id} customer={c} />
                 ))}
               </ul>
-              <p className="mt-4 text-[11.5px] leading-[1.75] text-indigo/55">
+              <p className="mt-4 text-[13px] leading-[1.75] text-indigo/66">
                 ご注文の件数と金額は、キャンセル・返金を除いた集計です（ダッシュボードと同じ規則）。
                 新しく登録された順に最大 200 名まで表示します。
               </p>

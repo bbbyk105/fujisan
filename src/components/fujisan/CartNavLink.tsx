@@ -46,7 +46,7 @@ export function CartNavLink({
         {showCount ? (
           <span
             key={count}
-            className="fujisan-badge-pop absolute -right-1.5 -top-1.5 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-indigo px-1 text-[11px] font-semibold leading-none text-paper-card"
+            className="fujisan-badge-pop absolute -right-1.5 -top-1.5 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-indigo px-1 text-[12px] font-semibold leading-none text-paper-card"
           >
             {count}
           </span>
@@ -72,7 +72,7 @@ export function CartNavLink({
         </span>
         <span
           aria-hidden
-          className="text-[11px] tracking-[0.12em] text-gold"
+          className="text-[12px] tracking-[0.12em] text-gold"
         >
           ●
         </span>
@@ -91,7 +91,7 @@ export function CartNavLink({
       {showCount ? (
         <span
           key={count}
-          className="fujisan-badge-pop ml-0.5 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-indigo px-1 text-[11px] font-semibold leading-none text-paper-card"
+          className="fujisan-badge-pop ml-0.5 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-indigo px-1 text-[12px] font-semibold leading-none text-paper-card"
         >
           {count}
         </span>

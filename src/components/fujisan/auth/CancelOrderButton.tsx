@@ -64,7 +64,7 @@ export function CancelOrderButton({ orderRef }: { orderRef: string }) {
       <button
         type="button"
         onClick={() => setConfirming(true)}
-        className="inline-flex cursor-pointer items-center justify-center gap-2 border-0 bg-transparent px-6 py-2 text-[11.5px] font-semibold tracking-[0.12em] text-indigo/60 underline decoration-indigo/25 underline-offset-4 transition-colors hover:text-crimson"
+        className="inline-flex cursor-pointer items-center justify-center gap-2 border-0 bg-transparent px-6 py-2 text-[13px] font-semibold tracking-[0.12em] text-indigo/66 underline decoration-indigo/25 underline-offset-4 transition-colors hover:text-crimson"
       >
         <L en="Request cancellation" ja="キャンセルを依頼する" />
       </button>
@@ -73,13 +73,13 @@ export function CancelOrderButton({ orderRef }: { orderRef: string }) {
 
   return (
     <div className="border border-crimson/35 bg-crimson/[0.05] px-5 py-5">
-      <p className="text-[12.5px] font-semibold leading-[1.7] text-crimson">
+      <p className="text-[13px] font-semibold leading-[1.7] text-crimson">
         <L
           en="Request cancellation of this order?"
           ja="このご注文のキャンセルを依頼しますか？"
         />
       </p>
-      <p className="mt-2 text-[11.5px] leading-[1.75] text-indigo/78">
+      <p className="mt-2 text-[13px] leading-[1.75] text-indigo/78">
         <L
           en="We'll stop the dispatch and refund the full amount to your card. Our team confirms each request by hand, so the refund is not immediate. We'll email you once it's done."
           ja="発送を止め、カードへ全額をご返金いたします。ご依頼は担当が一件ずつ確認するため、返金は即時ではありません。完了しだいメールでお知らせします。"
@@ -105,7 +105,7 @@ export function CancelOrderButton({ orderRef }: { orderRef: string }) {
       />
 
       {error && (
-        <p role="alert" className="mt-3 text-[12px] font-semibold text-crimson">
+        <p role="alert" className="mt-3 text-[13px] font-semibold text-crimson">
           {error}
         </p>
       )}
@@ -115,7 +115,7 @@ export function CancelOrderButton({ orderRef }: { orderRef: string }) {
           type="button"
           onClick={submit}
           disabled={pending}
-          className="inline-flex cursor-pointer items-center justify-center border border-crimson bg-crimson px-5 py-2.5 text-[11.5px] font-semibold tracking-[0.12em] text-white transition-colors hover:bg-crimson-deep disabled:cursor-wait disabled:opacity-60"
+          className="inline-flex cursor-pointer items-center justify-center border border-crimson bg-crimson px-5 py-2.5 text-[13px] font-semibold tracking-[0.12em] text-white transition-colors hover:bg-crimson-deep disabled:cursor-wait disabled:opacity-60"
         >
           {pending ? (
             <L en="Sending…" ja="送信中…" />

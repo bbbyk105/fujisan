@@ -63,7 +63,7 @@ export function AdminInviteForm() {
         <h2 className="font-serif text-[14px] font-semibold tracking-[0.04em] text-indigo">
           メールアドレスで招待
         </h2>
-        <p className="text-[11.5px] leading-[1.6] text-indigo/60">
+        <p className="text-[13px] leading-[1.6] text-indigo/66">
           まだ登録していない相手も招待できます。未登録なら招待メールを送り、登録時に自動で権限が付きます。
         </p>
       </div>
@@ -97,7 +97,7 @@ export function AdminInviteForm() {
 
       {notice && (
         <p
-          className={`text-[11.5px] leading-[1.6] ${
+          className={`text-[13px] leading-[1.6] ${
             notice.tone === "ok" ? "text-moss" : "text-crimson"
           }`}
         >
