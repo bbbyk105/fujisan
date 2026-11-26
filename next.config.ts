@@ -2,9 +2,6 @@ import type { NextConfig } from "next";
 import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 
 const nextConfig: NextConfig = {
-  experimental: {
-    viewTransition: true,
-  },
   // Cloudflare(opennext) では /_next/image の最適化が効かず原寸PNGを返すため、
   // 画像は事前に WebP へ最適化済み。next/image の最適化は無効化し、
   // 軽量 WebP を直接配信して Worker CPU も節約する。

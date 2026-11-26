@@ -315,6 +315,8 @@ export function CartView() {
     }
   });
   useEffect(() => {
+    // URL と sessionStorage はマウント後にしか読めない。resumeChecked で 1 回だけ動く。
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (ready && !isPending) resumeCheckout();
   }, [ready, isPending]);
 

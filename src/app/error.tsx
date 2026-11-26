@@ -1,24 +1,25 @@
 "use client";
 
 import { useEffect } from "react";
+import type { ErrorInfo } from "next/error";
 import Link from "next/link";
 import { L } from "@/i18n/Localized";
 
 /**
  * ルートセグメントのエラーバウンダリ。
  *
- * Next.js 16 では再試行の引数が `reset` ではなく **`unstable_retry`**。
- * （旧 API 名のままだと再試行ボタンが動かない）
+ * 再試行の引数は **`retry`**（16.3 で安定版になった）。`unstable_retry` はもう渡されず、
+ * `reset` は再取得しないので Server Component のエラーから戻れない。
  *
  * エラーバウンダリはクライアントコンポーネントでなければならないため、
  * サーバー専用の Nav / Footer は使わず、この画面だけで完結させる。
  */
 export default function Error({
   error,
-  unstable_retry,
+  retry,
 }: {
   error: Error & { digest?: string };
-  unstable_retry: () => void;
+  retry: ErrorInfo["retry"];
 }) {
   useEffect(() => {
     // Workers のログに残す。digest があれば Cloudflare のログと突き合わせられる。
@@ -55,7 +56,7 @@ export default function Error({
         <div className="mt-12 flex flex-wrap items-center gap-x-10 gap-y-4">
           <button
             type="button"
-            onClick={() => unstable_retry()}
+            onClick={() => retry()}
             className="ed-btn"
           >
             <L en="Try again" ja="もう一度試す" />

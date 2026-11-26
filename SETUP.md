@@ -322,12 +322,8 @@ NEXT_PUBLIC_TURNSTILE_SITE_KEY=1x00000000000000000000AA npx next dev --webpack -
   **先に**手でマイグレーションを適用してから push する
 
   ```bash
-  npx wrangler@4.136.2 d1 migrations apply fujisan-db --remote
+  npx wrangler d1 migrations apply fujisan-db --remote
   ```
-
-  > 同梱の wrangler 4.86.0 は `d1 migrations apply --remote` が Cloudflare API から
-  > 7403 を返す（`list` と `execute` は同じ認証で通るので、権限の問題ではない）。
-  > 依存の wrangler を上げたら、このバージョン指定は外してよい。
 
 ---
 
